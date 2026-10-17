@@ -886,7 +886,7 @@
               if (global.console) console.error(err);
               runCleanups();
               body.innerHTML = '<p role="alert">' + esc(err.message || String(err)) + '</p><button class="zh-btn zh-btn--primary" data-game-retry>重新載入此段</button>';
-              body.querySelector('[data-game-retry]').onclick = () => save().then(() => location.reload());
+              body.querySelector('[data-game-retry]').onclick = () => save().then(() => ZH.reloadPage());
             });
           return;
         }

@@ -42,7 +42,10 @@
 <?!= include('Codex_js') ?>
 <?!= include('Art_kit') ?>
 <?!= include('World_geo') ?>
-<?!= include(JSON.parse(params).w === 'zg' ? 'Data_world_zg' : JSON.parse(params).w === 'cq' ? 'Data_world_cq' : 'Data_world_ch') ?>
+<!-- GitHub 的共用地圖頁在回應時才取得 w；三卷資料都須先存在，再由下方選卷。 -->
+<?!= include('Data_world_ch') ?>
+<?!= include('Data_world_cq') ?>
+<?!= include('Data_world_zg') ?>
 <?!= include('Data_world_rules') ?>
 <?!= include('Eng_World') ?>
 <script>

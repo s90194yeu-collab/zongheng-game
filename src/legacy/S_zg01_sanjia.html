@@ -253,7 +253,7 @@ ZH.ready(async()=>{
  journal=ZH.story.createJournal({id:SID,mode:MODE,scope:ZH.user?.email||window.ZH_BOOT.user?.email||'guest',remote:s=>ZH.save(SID,MODE,{engine:s,chapterVersion:VERSION})});
  ZH.loading(true,'展開晉陽竹簡');
  try{const [saved,bank]=await Promise.all([load(),ZH.anchor.load(SID),ZH.codex.init()]);if(ORDER.some(id=>!ZH.anchor.get(SID,id)))throw Error('本話題庫尚未更新。請將新版 S_zg01_sanjia_data 一併替換，並清除題庫快取後再部署。');ZH.loading(false);if(String(params.mode||'')===MODE&&saved?.vars?.schema===SCHEMA)start(saved);else title(saved);}
- catch(e){ZH.loading(false);ROOT.innerHTML='<main class="sj-title"><h1>載入尚未完成</h1><p>'+E(e.message||String(e))+'</p><button class="zh-btn zh-btn--primary" data-reload>重新載入</button></main>';ROOT.querySelector('[data-reload]').onclick=()=>location.reload();}
+ catch(e){ZH.loading(false);ROOT.innerHTML='<main class="sj-title"><h1>載入尚未完成</h1><p>'+E(e.message||String(e))+'</p><button class="zh-btn zh-btn--primary" data-reload>重新載入</button></main>';ROOT.querySelector('[data-reload]').onclick=()=>ZH.reloadPage();}
 });
 })();
 </script><script>ZH.ready(function(){ZH.textplay?.install("S_zg01_sanjia",null);});</script>

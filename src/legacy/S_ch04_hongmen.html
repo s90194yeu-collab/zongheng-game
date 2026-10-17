@@ -1174,7 +1174,7 @@ guestScenarios: <?!= guestScenariosJson ?> };
       // 從首頁「繼續遊戲」帶著模式進來：直接接續
       if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
       renderTitle(saved);
-    }).catch(err => { ZH.loading(false); ROOT.innerHTML = '<main class="ep-title__main"><h1 class="ep-h1">竹簡尚未展開</h1><p>' + esc(err.message || String(err)) + '</p><button type="button" class="zh-btn zh-btn--primary" data-retry>重新載入</button><button type="button" class="zh-btn" data-home>回首頁</button></main>'; ROOT.querySelector('[data-retry]').onclick=()=>location.reload(); ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub'); });
+    }).catch(err => { ZH.loading(false); ROOT.innerHTML = '<main class="ep-title__main"><h1 class="ep-h1">竹簡尚未展開</h1><p>' + esc(err.message || String(err)) + '</p><button type="button" class="zh-btn zh-btn--primary" data-retry>重新載入</button><button type="button" class="zh-btn" data-home>回首頁</button></main>'; ROOT.querySelector('[data-retry]').onclick=()=>ZH.reloadPage(); ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub'); });
   });
 })();
 </script>

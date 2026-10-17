@@ -203,6 +203,13 @@
     });
   };
 
+  /** 回到正式入口重載目前頁面；不能重載 Apps Script 的內層 userHtmlFrame。 */
+  ZH.reloadPage = function () {
+    const params = Object.assign({}, BOOT.params || {});
+    delete params.page;
+    ZH.go(BOOT.page || 'hub', params);
+  };
+
   /** 前往 Google 帳號登入，沿用目前分頁。 */
   ZH.login = function () {
     ZH.flush();
