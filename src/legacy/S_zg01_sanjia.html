@@ -1,0 +1,260 @@
+<!-- 本話任務：守城爭取密談時間，韓魏見共同威脅後才有內外接應與反灌的可能。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!-- Re:縱橫鼎業・戰國第一話 三家分晉；v1.1.0（2026-10-09），status ready。
+28主線節點、10錨點 sj_01–10、10指定圖鑑、3項必要挑戰。程式繪圖人形Q版。
+最新 Eng_Story v0.2.4 / Art_kit v0.1.5 / Core_css v0.1.2；保留既有平台路由。
+索地地名有蔡/藺異文，避以異文為考點；鼃與説保留原文，解析說明。
+存檔由共用 createJournal 處理；舊版進度不可套入新版節點。
+-->
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top">
+<script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script>
+<?!= include('Core_css') ?>
+<style>.zg01-page{overflow-x:hidden}.zg01-page button,.zg01-page .sty-icon,.zg01-page .sty-opt{min-height:44px;min-width:44px;font-size:16px;white-space:normal}.zg01-page button:focus-visible{outline:3px solid var(--gilt);outline-offset:-3px}.zg01-page .sty-place,.zg01-page .sty-place span,.zg01-page .sty-m,.zg01-page .sty-game__status,.zg01-page .sty-opt__desc{font-size:15px}.zg01-page .sty-game__head{flex-wrap:wrap;gap:6px}.zg01-page:has(.sj-game) .sty-meters{display:none}
+.sj-title{max-width:1060px;margin:auto;padding:18px var(--gutter) 40px;display:grid;gap:20px}.sj-title-bar{display:flex;justify-content:space-between;gap:10px;align-items:center}.sj-kicker{color:var(--gilt);font-size:15px;letter-spacing:.08em}.sj-title h1{font-size:clamp(40px,8vw,80px);letter-spacing:.08em;line-height:1.2}.sj-subtitle{font-size:clamp(18px,3vw,24px);margin-top:8px}.sj-note{font-size:15px;color:var(--text-dim);line-height:1.65}.sj-title-scene{height:290px;position:relative;border:1px solid var(--gilt);border-radius:12px;overflow:hidden;background:#151b36}.sj-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}.sj-title-cast{position:absolute;inset:10% 18% 0;display:flex;justify-content:center;align-items:end;gap:12%}.sj-title-cast>span{height:90%;width:30%;max-width:190px;position:relative}.sj-title-cast>span::after{content:'';position:absolute;bottom:2%;left:15%;width:70%;height:4%;background:#0004;border-radius:50%;z-index:0}.sj-title-cast .ck{height:100%;width:100%;position:relative;z-index:1}.sj-start{display:grid;grid-template-columns:64px 1fr 220px;gap:16px;align-items:center;border:1px solid var(--gilt);border-radius:12px;padding:18px;background:var(--night-2)}.sj-seal{display:grid;place-items:center;width:64px;height:64px;border:3px double #a8622c;border-radius:8px;font-size:32px;color:#dfaa6e}.sj-start h2{font-size:22px}.sj-start-actions{display:grid;gap:8px}.sj-points{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.sj-points>div{padding:16px;border:1px solid var(--line-soft);border-radius:10px;background:var(--night-2)}.sj-points b{display:block;color:var(--gilt);margin-bottom:5px;font-size:18px}
+.sj-game{max-width:900px;margin:auto;display:grid;gap:10px;padding:12px;line-height:1.65;font-size:16px}.sj-game h2{font-size:24px;color:var(--gilt)}.sj-game p,.sj-game button,.sj-game span{font-size:16px}.sj-live{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:9px 12px;border:1px solid var(--gilt);border-radius:8px;background:var(--night);font-variant-numeric:tabular-nums}.sj-feedback{padding:10px;border-left:3px solid var(--patina);min-height:46px;background:var(--night-2)}.sj-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.sj-cards button{padding:12px;min-height:80px;text-align:left}.sj-cards button b,.sj-cards button span{display:block}.sj-cards button span{color:var(--text-dim);font-size:15px}.sj-cards button.is-picked{border-color:var(--patina);background:var(--night-3)}.sj-help-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between}.sj-help-row button{flex:1 1 170px}.sj-board{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#263349;aspect-ratio:16/7}.sj-board>svg{display:block;width:100%;height:100%}.sj-flood-level{transition:transform .3s linear}.sj-board text{font-family:var(--f-body);font-size:24px;fill:#faeac3}
+.sj-talk-scene{position:relative;height:220px;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#292132}.sj-talk-scene>.sc{position:absolute;inset:0;width:100%;height:100%}.sj-talk-cast{position:absolute;inset:4% 16% 0;display:flex;align-items:end;justify-content:center;gap:18%}.sj-talk-cast>span{height:94%;width:32%;max-width:160px}.sj-talk-cast .ck{width:100%;height:100%;animation:none!important}.sj-doubt{padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--night-2)}
+.sj-crowd{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px;background:linear-gradient(#334b53,#28312d);border:1px solid var(--line);border-radius:10px}.sj-candidate{padding:7px!important;position:relative;overflow:hidden;background:#eee3c5!important;color:#30251e!important;border:2px solid transparent!important;display:grid;gap:2px;align-content:start}.sj-candidate:hover,.sj-candidate:focus-visible{border-color:var(--gilt)!important}.sj-candidate-art{position:relative;height:155px;display:block!important}.sj-candidate-art .ck{height:100%;width:100%;animation:none!important}.sj-candidate .ck *{animation:none!important}.sj-candidate.is-forward .ck{transform:rotate(-8deg) translateX(-4px);transform-origin:50% 95%}.sj-candidate-mark{height:44px;width:90px;display:block;margin:auto;max-width:100%}.sj-candidate-mark .callus{fill:#875330}.sj-candidate-mark .palm{fill:#ffd7b4;stroke:#755239;stroke-width:1.4}.sj-candidate-label{font-size:15px!important}.sj-clues{color:var(--gilt);padding:9px;border:1px solid var(--gilt);border-radius:8px}.sj-clues span{display:inline-block;margin-right:12px}.sj-anchor{z-index:100}.sj-anchor blockquote{padding:14px;margin:12px 0;background:var(--paper);color:var(--ink);border:1px solid var(--gilt);border-radius:8px;font-family:var(--f-display);font-size:20px;line-height:1.8}.sj-anchor .sty-choice__card{max-height:88dvh;overflow-y:auto}.sj-anchor h2{font-size:22px}.sj-anchor .zh-choice__text{font-size:16px}.sj-anchor .zh-choice{min-height:60px}.sj-follow{padding:12px;border:1px solid var(--patina);border-radius:8px;color:var(--paper);line-height:1.8}.sj-save-status{font-size:15px;color:var(--text-dim)}
+@media(max-width:700px){.sj-start{grid-template-columns:64px 1fr}.sj-start-actions{grid-column:1/-1}.sj-points{grid-template-columns:1fr}.sj-title-scene{height:240px}.sj-title-cast{inset:10% 8% 0}.sj-game{padding:8px;gap:8px}.sj-game p,.sj-game button,.sj-game span{font-size:15px}.sj-game h2{font-size:21px}.sj-cards{gap:6px}.sj-cards button{padding:9px;min-height:84px}.sj-crowd{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sj-candidate-art{height:132px}.sj-talk-scene{height:180px}.sj-talk-cast{inset:4% 8% 0}.sj-board{aspect-ratio:16/9}.sj-anchor blockquote{font-size:19px}.sj-crowd .sj-candidate{min-height:200px}.sj-note{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){.zg01-page *, .sj-anchor *{scroll-behavior:auto!important}.sj-flood-level{transition:none}}
+
+@media(max-width:700px){.sj-crowd .sj-candidate{min-height:0}.sj-crowd--5,.sj-crowd--6{grid-template-columns:repeat(3,minmax(0,1fr))}.sj-crowd--8{grid-template-columns:repeat(4,minmax(0,1fr))}.sj-candidate-art{height:96px}.sj-candidate-mark{height:34px}.sj-candidate-label{font-size:14px!important}.zg01-page:has([data-kind="observe"]) .ar-race__goal{display:none}.zg01-page:has([data-kind="observe"]) .sj-live{padding:6px 9px}.zg01-page:has([data-kind="observe"]) .sj-clues{padding:7px}.zg01-page:has([data-kind="observe"]) .sj-game{gap:6px}.zg01-page:has([data-kind="observe"]) .sj-game h2{font-size:19px}}
+
+@media(max-width:700px){.zg01-page:has([data-kind="observe"]) .sty-top .sty-menu,.zg01-page:has([data-kind="observe"]) .sty-game__status{display:none}}
+</style></head>
+<body class="zg01-page"><div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>(function(global){
+  'use strict';
+  const copy=v=>JSON.parse(JSON.stringify(v)), clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
+  const shuffle=(a,rng)=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  const actions=[
+    {id:'wall',name:'加高城牆',desc:'城高＋9，民心－3',wall:9,people:-3,water:0},
+    {id:'drain',name:'疏導積水',desc:'水勢－12，城高－1',wall:-1,people:0,water:-12},
+    {id:'grain',name:'開倉安民',desc:'民心＋9，城高＋1',wall:1,people:9,water:0},
+    {id:'patrol',name:'巡城鼓舞',desc:'城高＋3，民心＋5',wall:3,people:5,water:0}
+  ];
+  function flood(saved,rng){
+    const s=saved?copy(saved):{round:0,wall:60,people:65,water:22,left:4,phase:'play',chosen:null,history:[],combo:0,guide:0,first:null};
+    function deck(){if(!s.deck)s.deck=Array.from({length:15},(_,i)=>({cards:shuffle(actions.map(x=>x.id),rng).slice(0,3),event:i%4===3?'rain':i%7===6?'breach':'rise'}));}
+    deck();
+    function select(id){if(s.phase==='assist'){const expected=['wall','drain','grain','patrol'][s.guide%4],a=actions.find(x=>x.id===expected);if(id!==expected){s.note='本輪先'+a.name+'，觀察它改變哪個資源，再下令。';return false;}const row=s.deck[s.guide];s.wall=clamp(s.wall+a.wall);s.people=clamp(s.people+a.people);s.water=clamp(s.water+a.water+4+(row.event==='rain'?8:row.event==='breach'?12:0));s.wall=clamp(s.wall-Math.max(1,Math.floor(s.water/19))-(row.event==='breach'?5:0));s.people=clamp(s.people-2-(row.event==='rain'?3:0));s.guideHistory=s.guideHistory||[];s.guideHistory.push({round:s.guide+1,action:id,event:row.event,wall:s.wall,people:s.people,water:s.water});s.guide++;s.note='已下令'+a.name+'；水勢也繼續變化。首次成績仍保留。';if(s.guide===15)s.phase='done';return true;}if(s.phase!=='play'||s.chosen||!s.deck[s.round].cards.includes(id))return false;s.chosen=id;return true;}
+    function advance(dt){if(s.phase!=='play')return false;s.left-=dt;if(s.left>0)return false;const row=s.deck[s.round],a=actions.find(x=>x.id===s.chosen),before=s.water;
+      if(a){s.wall=clamp(s.wall+a.wall);s.people=clamp(s.people+a.people);s.water=clamp(s.water+a.water);s.combo++;}else s.combo=0;
+      s.water=clamp(s.water+4+(row.event==='rain'?8:row.event==='breach'?12:0));
+      s.wall=clamp(s.wall-Math.max(1,Math.floor(s.water/19))-(row.event==='breach'?5:0));s.people=clamp(s.people-2-(row.event==='rain'?3:0));
+      s.history.push({round:s.round+1,action:s.chosen,waterBefore:before,event:row.event,wall:s.wall,people:s.people});s.round++;s.left=4;s.chosen=null;
+      s.note=(a?'已執行'+a.name:'此回合未下令')+'；'+(row.event==='rain'?'大雨加劇水勢。':row.event==='breach'?'堤岸破口，城牆承壓。':'水勢持續上升。');
+      if(s.wall<=0||s.people<=0||s.round===15){s.first={score:Math.floor(Math.min(5,s.wall/60*5)+Math.min(5,s.people/90*5)),max:10,passed:s.wall>0&&s.people>0&&s.history.length===15&&s.history.every(x=>x.action),wall:s.wall,people:s.people,water:s.water};if(!s.first.passed)s.first.score=Math.min(3,s.first.score);s.phase=s.first.passed?'done':'failed';}
+      return true;
+    }
+    function assist(){if(s.phase==='done')return;s.first=s.first||{score:0,max:10,passed:false,wall:s.wall,people:s.people,water:s.water};s.phase='assist';s.guide=0;s.wall=60;s.people=65;s.water=22;s.assisted=true;s.chosen=null;s.note='不計時補做十五次下令，首次挑戰成績仍保留。';}
+    return {s,select,advance,assist,actions,snapshot:()=>copy(s),result:()=>({...s.first,assisted:!!s.assisted,completed:s.phase==='done',actions:s.history,guideActions:s.guide,guideHistory:s.guideHistory||[]})};
+  }
+  const doubts=[
+    {who:'han',title:'智伯勢大',text:'趙城危急，我們若背離智伯，豈不是把自己也拖下水？',good:'先看他索地不止：趙一亡，韓、魏將失去牽制智氏的力量。',bad:['他人多，所以我們只需等他心情變好。','趙氏有天命，韓、魏不用採取行動。','你們膽小，先投降趙氏再談。'],why:'把共同威脅說清楚，才能讓對方重新計算利害。'},
+    {who:'wei',title:'眼前地利',text:'趙亡以後，我們也能分到土地。你拿什麼說服我？',good:'眼前分地若換來智氏獨大，這次的收益可能變成下一次索地的起點。',bad:['我保證每家立刻拿到天下一半。','土地一點用也沒有，別再想了。','只要不看帳目，就不會有損失。'],why:'不能只看短期收益，也要計算未來強弱失衡。'},
+    {who:'han',title:'趙城將亡',text:'水都快到城頭了。你說結盟，趙氏還有力氣配合嗎？',good:'晉陽民心未散；約好時機，趙軍從內接應，韓、魏從外配合。',bad:['你們獨自進攻，我們只在城內等捷報。','只要喊口號，洪水自然會退。','不必查城況，現在猜一個時辰即可。'],why:'盟友需要看到可執行的互助方式，不能只聽保證。'},
+    {who:'wei',title:'洩密風險',text:'絺疵已經懷疑我們。密約一洩露，兩家都危險。',good:'減少接觸者，分別確認時間與內外接應；今晚的密談不傳入智營。',bad:['把密約貼在智伯帳前，表示我們很坦蕩。','人人傳話，消息一定比較正確。','風險很可怕，所以把警戒全撤掉。'],why:'合作也需要保密、確認與共同承擔風險。'},
+    {who:'han',title:'反攻之後',text:'智氏若亡，趙氏會不會轉頭對付我們？',good:'三家彼此制衡，約定同步反攻；各家的安全不能只靠一家的承諾。',bad:['只要永遠服從趙氏，就不會有任何問題。','反攻後誰也不必遵守今天的約定。','勝利後趙軍接收韓、魏的全部城邑。'],why:'互相制衡和可核對的約定，比空口保證更能建立信任。'}
+  ];
+  function speech(saved,rng){
+    const s=saved?copy(saved):{round:0,phase:'play',left:8,persuasion:0,suspicion:0,answers:[],guide:0,first:null};
+    if(!s.order)s.order=doubts.map(()=>shuffle([0,1,2,3],rng));
+    const options=()=>[doubts[s.phase==='assist'?s.guide:s.round].good,...doubts[s.phase==='assist'?s.guide:s.round].bad];
+    function choose(key){if(!['play','assist'].includes(s.phase))return false;const guided=s.phase==='assist',r=guided?s.guide:s.round,correct=key===0;if(guided){s.note=correct?doubts[r].why:'把對方真正擔心的利害、時機或保密問題說清楚，再選一次。';if(correct){s.guide++;if(s.guide===5)s.phase='done';}return true;}
+      s.answers.push({round:r+1,key,correct,left:Math.max(0,s.left)});s.persuasion+=correct?20:0;s.suspicion+=correct?2:20;s.note=correct?doubts[r].why:'這句話沒有解決疑慮，絺疵的警戒提高了。';s.phase='feedback';return true;
+    }
+    function next(){if(s.phase!=='feedback')return;s.round++;s.left=8;if(s.round===5){const n=s.answers.filter(x=>x.correct).length;s.first={score:Math.min(10,Math.round(n*1.6+s.answers.reduce((a,x)=>a+(x.correct?x.left/8:0),0)*.4)),max:10,passed:n>=3,persuasion:s.persuasion,suspicion:s.suspicion};s.phase=n===5?'done':'failed';}else s.phase='play';}
+    function advance(dt){if(s.phase!=='play')return false;s.left-=dt;if(s.left<=0){choose(null);return true;}return false;}
+    function assist(){if(s.phase==='done')return;s.first=s.first||{score:0,max:10,passed:false,persuasion:s.persuasion,suspicion:s.suspicion};s.phase='assist';s.guide=0;s.assisted=true;s.note='逐句完成五項疑慮，不限時；首次成績仍保留。';}
+    return {s,choose,next,advance,assist,options,doubts,snapshot:()=>copy(s),result:()=>({...s.first,assisted:!!s.assisted,completed:s.phase==='done',answers:s.answers,guideAnswers:s.guide})};
+  }
+  const clueNames=['掌心厚繭','重心前傾','雙眼警覺','雙手握杖'];
+  function observe(saved,rng){
+    const s=saved?copy(saved):{round:0,phase:'play',left:12,answers:[],guide:0,first:null};
+    if(!s.crowds)s.crowds=[4,5,6,8].map((n,r)=>{const req=r===0?[0,1]:r===1?[1,2,3]:r===2?[0,2,3]:[0,1,2,3],target=Math.floor(rng()*n);return{req,target,people:Array.from({length:n},(_,i)=>({id:i,kind:['beggar','merchant','worker','traveler'][Math.floor(rng()*4)],mask:i===target?[0,1,2,3]:req.filter((_,j)=>j!==Math.floor((i+(r%2))%req.length)),robe:['#705b43','#507565','#716887','#a17749'][Math.floor(rng()*4)]}))};});
+    const crowd=()=>s.crowds[s.phase==='assist'?s.guide:s.round];
+    function choose(i){if(!['play','assist'].includes(s.phase))return false;const guided=s.phase==='assist',r=guided?s.guide:s.round,c=s.crowds[r],correct=i===c.target;
+      if(guided){s.note=correct?'你把本輪線索合在同一人身上了。':'再找一次：必須同時符合每項線索，不能只凭衣著判斷。';if(correct){s.guide++;if(s.guide===4)s.phase='done';}return true;}
+      s.answers.push({round:r+1,index:i,correct,left:Math.max(0,s.left)});s.note=correct?'此人同時符合本輪線索，衛士上前查驗。':'你選的人少了部分線索；接下來仍需仔細觀察。';s.phase='feedback';return true;
+    }
+    function next(){if(s.phase!=='feedback')return;s.round++;s.left=[12,10,9,8][s.round]||0;if(s.round===4){const n=s.answers.filter(x=>x.correct).length;s.first={score:Math.min(10,Math.round(n*2+s.answers.reduce((a,x,i)=>a+(x.correct?x.left/[12,10,9,8][i]:0),0)*.5)),max:10,passed:n>=3,found:n};s.phase=n>=3&&s.answers.every(x=>x.index!==null)?'done':'failed';}else s.phase='play';}
+    function advance(dt){if(s.phase!=='play')return false;s.left-=dt;if(s.left<=0){choose(null);return true;}return false;}
+    function assist(){if(s.phase==='done')return;s.first=s.first||{score:0,max:10,passed:false,found:s.answers.filter(x=>x.correct).length};s.phase='assist';s.guide=0;s.assisted=true;s.note='不限時重新辨認四輪；首次成績保留，線索只供這次模擬。';}
+    return {s,choose,next,advance,assist,crowd,clueNames,snapshot:()=>copy(s),result:()=>({...s.first,assisted:!!s.assisted,completed:s.phase==='done',answers:s.answers,guideRounds:s.guide})};
+  }
+  global.ZG01Models={flood,speech,observe,shuffle};
+})(window);
+
+(function(){
+'use strict';
+const SID='S_zg01_sanjia', VERSION='v1.1.0', SCHEMA='sanjia-20261009', MODE='history';
+const ROOT=document.getElementById('ep-root'), E=ZH.esc, copy=v=>JSON.parse(JSON.stringify(v)), params=ZH.params||window.ZH_BOOT.params||{}, M=window.ZG01Models;
+const ORDER=Array.from({length:10},(_,i)=>'sj_'+String(i+1).padStart(2,'0'));
+const CODEX_KEYS=['person:zg_zhaoxiangzi','person:zg_zhibo','person:zg_zhangmengtan','person:zg_yurang','person:zg_simaguang','idiom:chunwangchihan','idiom:shiweizhijizhesi','treasure:zg_jinyang','text:zizhitongjian','text:zg_sanjiafenjin'];
+const CHARACTERS=[
+ {id:'zhao',name:'趙襄子',glyph:'趙',color:'#a8622c',title:'趙氏宗主・趙毋卹',art:{st:'趙',hat:'guan',beard:1,robe:'#a8622c'}},
+ {id:'zhang',name:'張孟談',glyph:'談',color:'#397d76',title:'趙氏說客',art:{st:'趙',hat:'guan',prop:'scroll',beard:0,robe:'#397d76'}},
+ {id:'zhi',name:'智伯',glyph:'智',color:'#5a5a7a',title:'智氏宗主・智瑤',art:{hat:'guan',beard:2,robe:'#5a5a7a',eyes:'sharp'}},
+ {id:'han',name:'韓康子',glyph:'韓',color:'#528676',title:'韓氏宗主',art:{st:'韓',hat:'guan',beard:1}},
+ {id:'wei',name:'魏桓子',glyph:'魏',color:'#776783',title:'魏氏宗主',art:{st:'魏',hat:'guan',beard:1}},
+ {id:'duan',name:'段規',glyph:'規',color:'#647879',title:'韓氏謀臣',art:{st:'韓',hat:'guan',prop:'scroll',beard:2}},
+ {id:'chi',name:'絺疵',glyph:'疵',color:'#675879',title:'智氏謀臣',art:{hat:'guan',beard:2,robe:'#675879',eyes:'sharp'}},
+ {id:'yu',name:'豫讓',glyph:'讓',color:'#6a5745',title:'智伯故臣',art:{hat:'jin',beard:1,robe:'#6a5745',jade:false}},
+ {id:'sima',name:'司馬光',glyph:'鑑',color:'#75977a',title:'北宋史家・書房旁述',art:{hat:'guan',age:'old',hair:'#bcb8b0',beard:3,robe:'#577565',prop:'scroll'}},
+ {id:'shiguan',name:'史官',glyph:'史',color:'#9c9176',title:'本話旁述者',art:{hat:'jin',beard:2,robe:'#776e56',prop:'scroll'}}
+];
+const C=id=>CHARACTERS.find(x=>x.id===id);
+const SCENES={book:{base:'academy',tod:'night'},zhiPalace:{base:'palace',tod:'day',banner:'#5a5a7a',glyph:'智'},zhiHall:{base:'hall',tod:'dusk',banner:'#5a5a7a',glyph:'智'},zhaoHall:{base:'hall',tod:'day',banner:'#a8622c',glyph:'趙'},journey:{base:'road',tod:'dusk'},jinyang:{base:'night',tod:'night',banner:'#a8622c',glyph:'趙',weather:'rain'},water:{base:'river',tod:'day'},zhiCamp:{base:'camp',tod:'night',banner:'#5a5a7a',glyph:'智'},alliance:{base:'tent',tod:'night',banner:'#528676',glyph:'韓'},field:{base:'field',tod:'dawn',banner:'#a8622c',glyph:'趙'},bridge:{base:'forest',tod:'day'},appointment:{base:'palace',tod:'day',banner:'#aa8746',glyph:'周'}};
+const HELP='<p>你扮演趙襄子，並在夜說韓魏時切換成張孟談。城高、民心與盟約是教學模型。</p><p>三項挑戰可各挑戰三次，首次與最佳成績分開。卡關時可按「協助補做」：不計時，仍須親自完成核心操作。</p><p>原文對讀要親自修正答錯之處；首次判斷不會被覆蓋。切換分頁或開啟說明會暫停挑戰倒數。</p>';
+let game=null,journal=null,latest=null,loading=false;
+const checkpoint=()=>game?game.save():Promise.resolve();
+function snapshot(snap,live){
+  const v=live.vars||{};snap.vars=snap.vars||{};
+  for(const key of ['schema','runId','firstAnchors','choices','submitted','finishPayload'])if(v[key]!==undefined)snap.vars[key]=copy(v[key]);
+  if(Number.isFinite(live.rng))snap.rng=live.rng;
+  // Completed attempts resume from Arena's result card; their working decks
+  // need not occupy cloud saves. Keep the active attempt, first/best results
+  // and all required-operation evidence, including assisted actions.
+  for(const key of Object.keys(snap.progress||{})){
+    const m=key.match(/^(sj_flood|wen_sj_shuo|sj_yurang):(\d+)$/);if(!m)continue;
+    const ar=snap.progress['arena:'+m[1]];
+    if(ar?.last&&(!ar.active||Number(m[2])<Number(ar.tries)))delete snap.progress[key];
+  }
+}
+function save(s){latest=s;return journal.enqueue(s);}
+async function load(){let cloud=null;try{const r=await ZH.load(SID,MODE);cloud=r?.state?.engine||null;}catch(e){}return journal.load(cloud);}
+function pause(){return document.hidden||!!document.querySelector('.zh-modal,.sj-anchor');}
+function portrait(id,expr='normal'){return ART.portrait(C(id),{expr});}
+function panorama(scene,ids){const d=SCENES[scene];return ART.scene(d.base,d)+'<div class="sj-title-cast">'+ids.map(id=>'<span>'+portrait(id)+'</span>').join('')+'</div>';}
+async function scene(ctx,key,place,time,cast){await ctx.scene(key,{place,time});ctx.cast(cast||[]);}
+async function choice(ctx,id,options){const saved=ctx.state.vars.choices?.[id];if(saved!==undefined)return saved;const value=await ctx.choose(options);ctx.state.vars.choices=ctx.state.vars.choices||{};ctx.state.vars.choices[id]=value;await checkpoint();return value;}
+function anchorRunner(a,opt){return new Promise(resolve=>{
+ const v=game.state.vars;v.firstAnchors=v.firstAnchors||{};let rec=v.firstAnchors[a.id];if(rec?.completed)return resolve(copy(rec));
+ const ordered=rec?.order||M.shuffle(a.options.map(x=>x.key),game.ctx.rng);let order=ordered.map(key=>a.options.find(o=>o.key===key));
+ let reading=rec?.finalAnswer===a.answer,finished=false,started=performance.now();const prior=document.activeElement;
+ const title=(a.role?'【你是'+a.role+'】':'')+a.stem;
+ const wrap=ZH.html('<div class="sty-choice sj-anchor" role="dialog" aria-modal="true" aria-labelledby="sj-question"><div class="sty-choice__card"><p class="sj-kicker">原文對讀 '+opt.index+'／10</p><h2 id="sj-question">'+E(title)+'</h2><blockquote>'+E(a.passage)+'</blockquote><div class="zh-choices">'+order.map((o,i)=>'<button class="zh-choice" type="button" data-answer="'+E(o.key)+'"><span class="zh-choice__key">'+'甲乙丙丁'[i]+'</span><span class="zh-choice__text">'+E(o.text)+'</span></button>').join('')+'</div><p class="sj-feedback" role="status" data-feedback hidden></p><p class="sj-follow" data-follow hidden>'+E(a.followUp||'')+'</p><button type="button" class="zh-btn zh-btn--primary" data-read-done hidden>讀畢，回到劇情</button><p class="sj-note">首次判斷會保留，答錯後請親自修正。</p></div></div>');
+ document.body.append(wrap);wrap.querySelector('button').focus();
+ function read(){reading=true;wrap.querySelectorAll('[data-answer]').forEach(b=>b.disabled=true);const fb=wrap.querySelector('[data-feedback]');fb.hidden=false;fb.textContent=a.explanation;wrap.querySelector('[data-follow]').hidden=!a.followUp;const b=wrap.querySelector('[data-read-done]');b.hidden=false;b.focus();}
+ if(reading)read();
+ wrap.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const bs=[...wrap.querySelectorAll('button:not([hidden]):not(:disabled)')];if(e.shiftKey&&document.activeElement===bs[0]){e.preventDefault();bs.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===bs.at(-1)){e.preventDefault();bs[0].focus();}});
+ wrap.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled||finished)return;
+  if(b.hasAttribute('data-read-done')&&reading){finished=true;rec.completed=true;v.firstAnchors[a.id]=rec;await checkpoint();wrap.remove();if(prior?.isConnected)prior.focus({preventScroll:true});resolve(copy(rec));return;}
+  if(!b.dataset.answer||reading)return;const key=b.dataset.answer,correct=key===a.answer,seconds=Math.round((performance.now()-started)/100)/10,op=a.options.find(o=>o.key===key);
+  if(!rec)rec={anchorId:a.id,choice:key,correct,seconds,attempts:0,completed:false,order:ordered};
+  rec.attempts++;rec.path=correct?(rec.attempts===1?'direct':'fork'):'fork';
+  ZH.track('anchor',{scenarioId:SID,anchorId:a.id,attempt:rec.attempts,choice:key,correct,firstTry:rec.attempts===1,path:rec.path,distractorType:correct?'':op.type||'',seconds});
+  if(correct){rec.finalAnswer=key;read();}else{const fb=wrap.querySelector('[data-feedback]');fb.hidden=false;fb.textContent=(op.fork||'請重新對讀原文。')+' 請再判斷一次。';started=performance.now();}
+  v.firstAnchors[a.id]=rec;await checkpoint();
+ });
+});}
+function boardFlood(s){return '<div class="sj-board" role="img" aria-label="晉陽水勢示意，水勢'+s.water+'，城高'+s.wall+'"><svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sj-water" x2="0" y2="1"><stop stop-color="#76b7c1"/><stop offset="1" stop-color="#325c78"/></linearGradient></defs><path fill="#33435d" d="M0 0H960V420H0Z"/><path fill="#46556a" d="M0 135 140 65 265 135 400 45 580 155 730 85 960 155V420H0Z"/><path fill="#718396" d="M580 220V125H890V220Z"/><path fill="#bdab88" d="M575 168h45v-35h40v35h45v-35h40v35h45v-35h40v35h45v-35h40v287H575Z"/><path fill="#565550" d="M670 420V270Q735 205 800 270V420"/><path fill="#41414b" d="M633 125 735 55 839 125Z"/><path fill="#a8622c" d="M780 73h67l-8 43-17-8-15 8-27-3Z"/><path stroke="#a5a089" stroke-width="3" d="M778 70v84M575 235h300M575 305h95m130 0h75M610 169v66m82 0v70m100-137v67M595 305v70"/><text x="795" y="99">趙</text><g class="sj-flood-level" style="transform:translateY('+(230-s.water*1.8)+'px)"><path fill="url(#sj-water)" opacity=".84" d="M0 180q80-20 160 0t160 0t160 0t160 0t160 0t160 0V620H0Z"/><path fill="none" stroke="#bddce0" stroke-width="4" d="M25 225h155m40 45h130m-25-45h90m25 80h155m130-70h85"/></g><text x="35" y="45">汾水・晉陽</text><text x="35" y="389">城高 '+s.wall+'　民心 '+s.people+'　水勢 '+s.water+'</text></svg></div>';}
+function makeTalk(who){return '<div class="sj-talk-scene" aria-hidden="true">'+ART.scene('tent',{tod:'night'})+'<div class="sj-talk-cast"><span>'+portrait('zhang','serious')+'</span><span>'+portrait(who,'worried')+'</span></div></div>';}
+function candidate(p,round){const mask=p.mask,watch=mask.includes(2),art={id:'crowd-'+round+'-'+p.id,name:'行人',title:p.kind==='beggar'?'乞者':p.kind==='merchant'?'商人':p.kind==='worker'?'工匠':'旅人',art:{hat:p.kind==='traveler'?'li':'jin',robe:p.robe,beard:p.kind==='beggar'?2:0,jade:false,eyes:watch?'sharp':undefined}};
+ const detail=[mask.includes(0)?'掌心有厚繭':'掌心沒有厚繭',mask.includes(1)?'重心前傾':'站立平穩',watch?'目光警覺':'目光放鬆',mask.includes(3)?'雙手握杖':'單手持物'].join('、');
+ const palm='<svg class="sj-candidate-mark" viewBox="0 0 90 44" aria-hidden="true"><path class="palm" d="M11 31V17q0-4 3-4t3 4V9q0-4 3-4t3 4v8V7q0-4 3-4t3 4v10V10q0-4 3-4t3 4v12l3-4q4-4 6 0l-5 12q-4 9-12 9z"/>'+(mask.includes(0)?'<ellipse class="callus" cx="25" cy="28" rx="7" ry="4"/>':'')+'<path stroke="#825430" stroke-width="4" d="M68 1v42"/><ellipse class="palm" cx="68" cy="28" rx="8" ry="4"/>'+(mask.includes(3)?'<ellipse class="palm" cx="68" cy="16" rx="8" ry="4"/>':'')+'</svg>';
+ return '<button type="button" class="sj-candidate '+(mask.includes(1)?'is-forward':'')+'" data-person="'+p.id+'" aria-label="行人'+(p.id+1)+'，'+detail+'"><span class="sj-candidate-art">'+ART.portrait(art,{expr:watch?'serious':'normal'})+'</span>'+palm+'<span class="sj-candidate-label">行人 '+(p.id+1)+'</span></button>';
+}
+function play(kind){return (body,g)=>new Promise(resolve=>{
+ const old=g.getProgress(),model=M[kind](old.model,g.rng),s=model.s;let alive=true,last=performance.now(),lastPersist=-1;
+ if(kind==='flood'&&!old.model){s.wall=game.ctx.meter('wall');s.people=game.ctx.meter('people');}
+ const race=g.race({me:kind==='flood'?'守城調度':kind==='speech'?'韓魏共識':'觀察查驗',rival:kind==='flood'?'水勢':kind==='speech'?'絺疵警戒':'倒數',goal:'首次與最佳成績分開；必要操作可協助補做'});
+ const persist=()=>g.setProgress({model:model.snapshot()});
+ function paint(){
+  if(!alive)return;const assist=s.phase==='assist',failed=s.phase==='failed',done=s.phase==='done';
+  const r=assist?s.guide:s.round,total=kind==='flood'?15:kind==='speech'?5:4;
+  let content='',cards='';
+  if(kind==='flood'){
+   content=(assist?'<p class="sj-clues">本輪先'+model.actions.find(a=>a.id===['wall','drain','grain','patrol'][s.guide%4]).name+'，下令後觀察水勢與資源變化。</p>':'')+boardFlood(s)+'<p class="sj-note">計分：城高60達5分、民心90達5分，合計取整數；兩項各最多5分。</p>';if(!done&&!failed)cards='<div class="sj-cards">'+(assist?model.actions:s.deck[s.round].cards.map(id=>model.actions.find(x=>x.id===id))).map(a=>'<button type="button" class="zh-btn '+(s.chosen===a.id?'is-picked':'')+'" data-action="'+a.id+'" '+(!assist&&s.chosen?'disabled':'')+'><b>'+a.name+'</b><span>'+a.desc+'</span></button>').join('')+'</div>';
+  }else if(kind==='speech'&&!done&&!failed){const d=model.doubts[r];content=makeTalk(d.who)+'<div class="sj-doubt"><b>'+E(C(d.who).name)+'・'+E(d.title)+'</b><p>'+E(d.text)+'</p></div>';cards='<div class="sj-cards">'+s.order[r].map((key,i)=>'<button type="button" class="zh-btn" data-argument="'+key+'" '+(s.phase==='feedback'?'disabled':'')+'>'+E(model.options()[key])+'</button>').join('')+'</div>';
+  }else if(kind==='observe'&&!done&&!failed){const c=model.crowd();content='<p class="sj-clues"><b>本輪線索：</b>'+c.req.map(i=>'<span>'+model.clueNames[i]+'</span>').join('')+'</p><p class="sj-note">找出符合全部線索的人；掌心與握杖見下方小圖。</p>';cards='<div class="sj-crowd sj-crowd--'+c.people.length+'">'+c.people.map(p=>candidate(p,r)).join('')+'</div>';}
+  const title=kind==='flood'?'水淹晉陽・你是趙襄子':kind==='speech'?'夜說韓魏・你是張孟談':'橋下伏影・你是趙襄子';
+  body.innerHTML='<div class="sj-game" data-kind="'+kind+'"><h2>'+title+'</h2><div class="sj-live"><b>'+(assist?'協助補做 ':done?'操作完成 ':failed?'挑戰結束 ':'第 ')+Math.min(r+1,total)+'／'+total+'</b><span data-clock>'+(assist?'不限時':s.phase==='play'?'剩 '+Math.ceil(s.left)+' 秒':'倒數暫停')+'</span></div>'+content+(kind==='observe'?cards:'')+(s.note?'<p class="sj-feedback" role="status">'+E(s.note)+'</p>':'')+(kind==='observe'?'':cards)+(s.phase==='feedback'?'<button type="button" class="zh-btn zh-btn--primary" data-next>確認判斷，下一輪</button>':'')+(failed?'<p>首次成績 '+s.first.score+'／10。先補做必要操作，再回到劇情；排行榜不會把補做算成高分。</p>':'')+(done?'<p class="sj-feedback">首次成績 '+s.first.score+'／10'+(s.assisted?'；協助操作完成。':'；必要體驗完成。')+'</p><button type="button" class="zh-btn zh-btn--primary" data-finish>交回挑戰成績</button>':'<div class="sj-help-row"><button type="button" class="zh-btn '+(failed?'zh-btn--primary':'zh-btn--quiet')+'" data-assist '+(assist?'hidden':'')+'>協助補做・不限時</button></div>')+'</div>';
+  clock();persist();g.setStatus(assist?'不計時補做・保留首次成績':done?'必要操作完成':failed?'請親自補做':'正在挑戰');
+ }
+ function clock(){const el=body.querySelector('[data-clock]');if(el&&s.phase==='play')el.textContent='剩 '+Math.max(0,Math.ceil(s.left))+' 秒';
+  if(kind==='flood'){race.me(s.wall/100);race.rival(s.water/100);}else if(kind==='speech'){race.me(s.persuasion/100);race.rival(s.suspicion/100);}else{race.me(s.answers.filter(x=>x.correct).length/4);race.rival(1-Math.max(0,s.left)/([12,10,9,8][s.round]||12));}}
+ const click=async e=>{const b=e.target.closest('button');if(!b||b.disabled||!alive)return;
+  if(b.hasAttribute('data-assist')){const ok=await ZH.modal({title:'協助補做',body:'<p>轉為不限時、逐步提示，但仍由你完成必要操作。本次挑戰先前的成績會保留；尚未完成挑戰時，首次成績記為0分。</p>',actions:[{label:'繼續挑戰',value:false,kind:'quiet'},{label:'開始補做',value:true,kind:'primary'}]});if(ok&&alive){model.assist();last=performance.now();paint();}return;}
+  if(b.hasAttribute('data-finish')){if(s.phase!=='done')return;alive=false;persist();resolve({...model.result(),sec:g.elapsed()});return;}
+  if(b.hasAttribute('data-next'))model.next();
+  else if(b.dataset.action)model.select(b.dataset.action);
+  else if(b.dataset.argument!==undefined)model.choose(Number(b.dataset.argument));
+  else if(b.dataset.person!==undefined)model.choose(Number(b.dataset.person));
+  else return;g.sfx('click');last=performance.now();paint();
+ };
+ body.addEventListener('click',click);
+ const interval=setInterval(()=>{const now=performance.now(),dt=Math.min(.5,(now-last)/1000);last=now;if(!alive||pause())return;const changed=model.advance(dt);if(changed){g.combo(kind==='flood'?s.combo:s.answers.filter(x=>x.correct).length);paint();}else clock();const whole=Math.floor(g.elapsed()/5);if(whole!==lastPersist){lastPersist=whole;persist();}},250);
+ g.onCleanup(()=>{alive=false;clearInterval(interval);body.removeEventListener('click',click);});paint();
+});}
+async function challenge(ctx,id,kind,title,goal){const r=await ctx.minigame({id,title,goal,help:HELP,skip:false,attempts:3},play(kind));const first=r.firstResult||r;if(!r.completed)throw Error('必要操作未完成，請接續補做。');ctx.state.vars[kind]=copy({...r,firstScore:first.score,firstMax:first.max});return r;}
+const NODES={
+ n_01:async ctx=>{await scene(ctx,'book','北宋・司馬光書房','夜・編年起筆',['sima']);await ctx.chapter('序　史書從哪一年開始？','趙襄子・大水淹到只剩三版');await ctx.say([{who:'sima',expr:'serious',text:'「初命晉大夫魏斯、趙籍、韓虔為諸侯。」我以這件事作為《通鑑》的起筆。'}, {who:'sima',expr:'worried',text:'諸侯的名分改變以前，強弱與人心早已變了。只讀這一道命令，你還看不見五十年前的危機。'}, {text:'書頁往前翻。前455年前後，你是趙毋卹，後人稱趙襄子。韓、魏、智、趙仍是晉國卿族；他們還不是這道命令中的三位諸侯。'}]);ctx.unlock('person:zg_simaguang');ctx.unlock('text:zizhitongjian');return 'n_02';},
+ n_02:async ctx=>{await scene(ctx,'zhiPalace','智氏府邸','白日・索地',['zhi','han','duan']);await ctx.chapter('第一幕　給地，還是拒絕？','好利而愎');await ctx.say([{who:'zhi',expr:'smirk',text:'韓氏有地，我智氏也有事要辦。拿一片封邑來，大家還是同盟。'}, {who:'han',expr:'angry',text:'他憑什麼開口就要？今天給這片，明天又要哪片？'}, {who:'duan',expr:'serious',text:'主君，先把怒氣放下。他貪利又固執；拒絕可能立即換來進攻。先讓一步，還要看其他家族怎麼想。'}]);await ctx.anchor('sj_01');ctx.unlock('person:zg_zhibo');return 'n_03';},
+ n_03:async ctx=>{await scene(ctx,'zhiHall','智氏會盟之所','黃昏・魏氏來使',['zhi','wei']);await ctx.say([{who:'wei',expr:'worried',text:'韓氏已給地。我若獨自拒絕，兵鋒便會先指向魏氏。'}, {who:'shiguan',expr:'serious',text:'魏桓子也聽從任章的建議，交出封邑。退讓換來眼前平靜，卻沒有讓智伯停下索求。'}, {who:'zhi',expr:'happy',text:'韓、魏懂得同盟的分寸。趙氏呢？輪到你了。'}]);return 'n_04';},
+ n_04:async ctx=>{await scene(ctx,'zhaoHall','趙氏府邸','白日・智氏索地',['zhao','zhang']);await ctx.say([{who:'zhao',expr:'serious',text:'韓、魏已給。他如今向我索地，我該守住什麼，又準備付出什麼？'}, {who:'zhang',expr:'worried',text:'一紙答覆不會讓危機消失。交地要承擔擴張的後果，拒絕要準備守城。'}]);await ctx.anchor('sj_02');const a=ctx.state.anchors.find(x=>x.anchorId==='sj_02');if(!a.correct){ctx.add('people',-3);await ctx.say([{text:'你最初的回應讓部下猶豫，民心－3。重新核對後，趙氏仍按史實拒絕索地，開始準備迎敵。'}]);}else await ctx.say([{who:'zhao',expr:'serious',text:'地不給。把各城情況送來，拒絕之後的責任不能交給別人。'}]);ctx.unlock('person:zg_zhaoxiangzi');return 'n_05';},
+ n_05:async ctx=>{await ctx.say([{text:'智伯率韓、魏之兵攻趙。你面前有三條退路：長子的厚城、邯鄲的實倉，以及晉陽的民心。'}, {who:'zhang',expr:'serious',text:'厚牆和糧食都是資源。但人若不願一起守，資源未必守得住。'}]);await ctx.anchor('sj_03');if(!ctx.state.anchors.find(x=>x.anchorId==='sj_03').correct){ctx.add('wall',-4);await ctx.say([{text:'你最初的路線耽誤了備城，城高－4。修正後，隊伍改向晉陽。這是模擬後果，並非史書另有一次走錯路。'}]);}return 'n_06';},
+ n_06:async ctx=>{await scene(ctx,'journey','奔往晉陽的道路','黃昏・車隊前行',['zhao','zhang']);await ctx.say([{who:'zhao',expr:'worried',text:'我父親把晉陽託付尹鐸。他沒有只把百姓當作添滿倉庫的工具。如今，這份寬厚能不能救一座城？'}, {who:'zhang',expr:'serious',text:'先前的施政到了危急時才看出重量。到城內後，我們還得用每一道命令回答百姓。'}, {text:'遠處城門打開。人們把糧袋往高處搬，把木材交給守城的工匠。你不能只站在城樓看。'}]);ctx.unlock('treasure:zg_jinyang');return 'n_07';},
+ n_07:async ctx=>{await scene(ctx,'jinyang','晉陽城頭','夜・風雨初至',['zhao','zhang']);await ctx.chapter('第二幕　水淹晉陽','城高與民心都要守');await ctx.say([{who:'zhao',expr:'worried',text:'敵人引水來了。加牆、排水、開倉、巡城，不能每件事同時做；把人派在哪裡，由你決定。'}, {who:'zhang',expr:'serious',text:'每四秒是一個壓縮回合，共十五回合。選好一張行動，等到回合末執行；大雨和堤岸破口會加重壓力。'}, {text:'刻度是教學模型，不是古代工程的實測。城高或民心降到零，挑戰失敗；可以協助補做，但第一份成績會留下。'}]);return 'n_08';},
+ n_08:async ctx=>{const r=await challenge(ctx,'sj_flood','flood','水淹晉陽','十五回合，每回合親自調度一次；兼顧城高與民心。');const f=r.firstResult||r;ctx.add('wall',Number(f.wall)-ctx.meter('wall'));ctx.add('people',Number(f.people)-ctx.meter('people'));await ctx.say([{who:'zhao',expr:r.assisted?'worried':'serious',text:r.assisted?'我看見哪幾道命令失了平衡，也親自補做了。首次守城的危急程度仍寫在紀錄上。':'命令都下了。水還沒退，但大家沒有散。接著必須找出城外的轉機。'}]);return 'n_09';},
+ n_09:async ctx=>{await ctx.say([{text:'史書中的水患已極危急：城牆露出水面只餘三版，爐竈淹沒，蛙在其中。城內卻仍「民無叛意」。'}, {who:'zhao',expr:'sad',text:'眼前的困境會逼人回頭檢查：平日的每次征斂、每次寬政，到底留下了什麼？'}]);await ctx.anchor('sj_04');return 'n_10';},
+ n_10:async ctx=>{await scene(ctx,'water','汾水旁・聯軍巡視','白日・水勢高漲',['zhi','han','wei']);await ctx.say([{who:'zhi',expr:'smirk',text:'我現在才知道，水也能使別人的國家滅亡。'}, {who:'wei',expr:'surprised',text:'……'}, {who:'han',expr:'worried',text:'……'}, {text:'魏桓子碰了韓康子的手肘；韓康子踩了魏桓子的腳背。兩人各自想到，也能流向自己城邑的河水。'}]);await ctx.anchor('sj_05');return 'n_11';},
+ n_11:async ctx=>{await scene(ctx,'zhiCamp','智伯大營','夜・帳前密談',['zhi','chi']);await ctx.say([{who:'chi',expr:'serious',text:'韓、魏要反。趙城將亡，他們本該喜得土地，臉上卻只剩擔心；這不是可以忽略的表情。'}, {who:'zhi',expr:'angry',text:'你把他們想得太多了。他們既跟著我的軍隊，又能走到哪裡？'}, {text:'絺疵的警告沒有被採納。強勢能命人同行，卻不一定能使同行的人安心。'}]);return 'n_12';},
+ n_12:async ctx=>{await scene(ctx,'jinyang','晉陽城內','深夜・決定出使',['zhao','zhang']);await ctx.chapter('第三幕　把恐懼說成盟約','切換視角・張孟談');await ctx.say([{who:'zhang',expr:'serious',text:'韓、魏害怕下一場水攻。我要出去找他們，讓三家的安危被看見。'}, {who:'zhao',expr:'worried',text:'你出城，是把自己放進敵軍之間。我不能給你空白承諾；內外接應要說得清楚。'}, {text:'現在你是張孟談。五輪密談，每輪八秒。回答真正的疑慮，別拿羞辱、天命或不可能的分地承諾代替說理。'}]);return 'n_13';},
+ n_13:async ctx=>{await scene(ctx,'alliance','韓氏軍帳・秘密會談','夜・不入智營',['zhang','han','wei']);const r=await challenge(ctx,'wen_sj_shuo','speech','夜說韓魏','五項疑慮，說明共同利害、接應、保密與彼此制衡。');const f=r.firstResult||r;ctx.add('alliance',Number(f.persuasion)-ctx.meter('alliance'));await ctx.say([{who:'zhang',expr:r.assisted?'serious':'happy',text:r.assisted?'有些話我先前說得太急，補談時才把對方真正的疑慮處理好。密約能成立，靠的是每一句有用的回答。':'我們把各自的風險說清楚，也把同步行動說清楚。這一夜，合作不再只是希望。'}]);ctx.unlock('person:zg_zhangmengtan');return 'n_14';},
+ n_14:async ctx=>{await ctx.say([{who:'zhang',expr:'serious',text:'趙若亡，韓、魏便是下一個目標。這不是要求兩家只為趙犧牲；這是提醒他們保護自己也需要保住彼此。'}]);await ctx.anchor('sj_06');ctx.unlock('idiom:chunwangchihan');return 'n_15';},
+ n_15:async ctx=>{await scene(ctx,'jinyang','晉陽城頭','反攻前夜・核對密約',['zhao','zhang']);await ctx.say([{who:'zhao',expr:'serious',text:'你帶回約定，我們還要確認內外同時。若各做各的，再好的說辭也救不了城。'}]);const p=await choice(ctx,'sync',{title:'你如何確認合作？',text:'密約已經成立，要把它變成同步的行動。',options:[{label:'分別確認時機、接應與信號',desc:'確認責任與時機，再按密約執行。',value:'check'},{label:'只催促韓、魏先出兵',desc:'把風險全交給盟友，趙城暫不回應。',value:'push'},{label:'先宣布趙氏獨占勝利',desc:'還沒反攻，就先要求所有收益。',value:'claim'}]});
+ if(p!=='check'){ctx.add('people',-5);await ctx.say([{who:'zhang',expr:'worried',text:'這會讓合作再次搖晃。先停下，把趙軍的內應責任與約定時機補齊；不是別人替我們冒險。'}]);}else{ctx.add('people',3);await ctx.say([{who:'zhang',expr:'serious',text:'時機與責任都核對了。今天保住自己的方法，是讓盟友也能完成他們的那一份。'}]);}return 'n_16';},
+ n_16:async ctx=>{await scene(ctx,'field','晉陽城外','前453年・內外反攻',['zhao','zhang']);await ctx.say([{text:'按密約，趙氏從城內反擊，韓、魏從外配合。水勢倒向智軍，聯軍的主從關係在一夜之間翻轉。'}, {who:'zhao',expr:'surprised',text:'原本逼近城頭的水，成了反攻的轉機。但不是水自己改變了立場，是人決定不再被各個擊破。'}, {who:'zhang',expr:'serious',text:'前453年，智氏敗亡。這一局無論首次成績如何，史實都回到三家聯手的結果。'}]);return 'n_17';},
+ n_17:async ctx=>{await ctx.say([{text:'智伯被殺，趙襄子又漆其頭骨為飲器；這是史書所記的戰後報復，不在遊戲中操作。'}, {who:'shiguan',expr:'sad',text:'勝利結束了一場圍城，卻未立刻消除仇恨。智伯故臣豫讓，把他的知遇牢牢記在心上。'}, {text:'三家分取智氏之地，新的權力格局形成。接下來看另一種選擇：一個失去主人的臣子，如何理解恩義？'}]);return 'n_18';},
+ n_18:async ctx=>{await scene(ctx,'bridge','橋邊林道','白日・趙襄子出行',['zhao','yu']);await ctx.chapter('第四幕　橋下伏影','觀察，不以衣著定罪');await ctx.say([{who:'yu',expr:'serious',text:'智伯知道我，重用我。他亡了，我不能當作什麼也沒發生。'}, {who:'zhao',expr:'worried',text:'路上的行人很多，衣服不能告訴我誰是敵人。先查驗具體線索，不能隨意捕人。'}, {text:'橋下伏影是觀察模擬。四輪逐漸增加人數，從掌心、姿態、目光與握杖方式找出符合全部提示的人；這些身體線索是遊戲設計，史書沒有這份辨認清單。'}]);return 'n_19';},
+ n_19:async ctx=>{const r=await challenge(ctx,'sj_yurang','observe','橋下伏影','在四輪倒數內辨認線索；找到三輪以上才過關。');await ctx.say([{who:'zhao',expr:'serious',text:r.assisted?'我重新把線索合在同一人身上。補做讓我看清自己漏看了什麼，不會改掉首次判斷。':'不能只憑像不像刺客下判斷。先有線索，再有查驗。'}, {text:'史實中，豫讓伏於橋下，被趙襄子察覺並捕獲。遊戲不用戰鬥重演這段。'}]);ctx.unlock('person:zg_yurang');return 'n_20';},
+ n_20:async ctx=>{ctx.cast(['yu','zhao']);await ctx.say([{who:'yu',expr:'serious',text:'智伯給我的，不只是俸祿。我認為回報知遇，是我不能退讓的責任。'}, {who:'shiguan',expr:'worried',text:'理解人物的選擇，和要求自己照做，是兩件事。這個責任是否只能用刺殺完成？'}]);await ctx.anchor('sj_07');ctx.unlock('idiom:shiweizhijizhesi');return 'n_21';},
+ n_21:async ctx=>{await scene(ctx,'zhaoHall','回想較早的宮中事件','橋下被捕之前・時序回看',['zhao','yu']);await ctx.say([{text:'這不是你們第一次相遇。把時間往前移：豫讓曾較早潛入宮中被捕；那一次，趙襄子赦免了他。'}, {who:'zhao',expr:'serious',text:'智伯已亡，他仍願為知遇付出。我敬重這份義，也知道自己必須謹慎避開他。'}, {text:'這裡回看先前的赦免，不是說橋下再次被捕後，趙襄子又放他離開。'}]);await ctx.anchor('sj_08');return 'n_22';},
+ n_22:async ctx=>{await scene(ctx,'bridge','橋邊・回到後來的被捕','前453年之後',['zhao','yu']);await ctx.say([{text:'後來橋下再被捕的豫讓，以擊襄子衣作象徵報仇，最後自盡。'}, {who:'shiguan',expr:'sad',text:'史書保留他的決心，也留下不可挽回的代價。把知遇記在心裡，是否還能用建言、守約與照顧他人回報？'}]);return 'n_23';},
+ n_23:async ctx=>{await scene(ctx,'appointment','周王城・五十年後','前403年・正式命為諸侯',[]);await ctx.chapter('尾聲　從城下到史書的起點','前453年 → 前403年');await ctx.say([{text:'翻過五十年的書頁。前453年智氏滅亡；到了前403年，韓、趙、魏三家的後世君主，被周威烈王正式命為諸侯。'}, {text:'此時的趙籍不是你剛才扮演的趙襄子。魏斯、韓虔也不是晉陽之戰時的魏桓子、韓康子。兩幕相連，卻不是同一代人。'}]);return 'n_24';},
+ n_24:async ctx=>{await ctx.anchor('sj_09');ctx.unlock('text:zg_sanjiafenjin');await ctx.say([{who:'shiguan',expr:'serious',text:'封地與軍隊早已重新分配，天子命令則改變正式的名分。司馬光從這裡起筆，問的不只有誰獲勝，也有政治秩序如何變了。'}]);return 'n_25';},
+ n_25:async ctx=>{await scene(ctx,'book','北宋・司馬光書房','夜・史事與史論',['sima']);await ctx.say([{who:'sima',expr:'serious',text:'我說智伯「才勝德」。他有能力，卻不能讓能力受到德的引導。你也可以回看他的具體行為，檢驗這句評論。'}, {who:'sima',expr:'worried',text:'強大的水攻、擴張的計算，並沒有替他保住韓、魏的信任。看見本領，還要看本領被拿來做什麼。'}]);return 'n_26';},
+ n_26:async ctx=>{await ctx.anchor('sj_10');await ctx.say([{who:'sima',expr:'serious',text:'史家的評論要拿事件來支持，不是記住一句就結束。哪一件事最能支持才勝德？又有沒有能補充這個說法的角度？'}]);return 'n_27';},
+ n_27:async ctx=>{await ctx.say([{text:'《墨子・非攻中》也拿智伯當例子：以武力擴張、貪求更多，最後遭韓、趙、魏聯手擊敗。能力與收益之外，還要計算受攻者與人民付出的代價。'}, {who:'shiguan',expr:'serious',text:'本話結束後，墨家會由共用史冊收入。你親自守城、說盟、觀察，最後仍要回到行動如何影響他人的問題。'}]);return 'n_28';},
+ n_28:async ctx=>{await ctx.chapter('收卷　你的趙世家','把這一局帶回日常');await ctx.say([{text:'回看首次紀錄：水淹晉陽 '+ctx.state.vars.flood.firstScore+' 分，夜說韓魏 '+ctx.state.vars.speech.firstScore+' 分，橋下伏影 '+ctx.state.vars.observe.firstScore+' 分。挑戰最佳與首次紀錄分開，補做保留原分。'}]);
+ const reflect=await choice(ctx,'reflection',{title:'你想把哪一個問題帶到結算？',text:'選一題作為反思起點。結算頁可以寫出自己的理由與例子。',options:[{label:'才幹該由什麼價值引導？',value:'talent'},{label:'日常中誰與我脣亡齒寒？',value:'dependence'},{label:'知遇如何回報，暴力有何界線？',value:'loyalty'}]});ctx.log('反思起點：'+reflect);const key=ctx.meter('wall')<20?'bad':ctx.meter('wall')>=40&&ctx.meter('alliance')>=70?'great':'good';return ctx.end({key});}
+};
+const ENDINGS={great:{id:'jinyang_not_fallen',title:'晉陽不沒',good:true,text:'此局守住城高與民心，也說出了足以合作的共同利益。史實仍歸於智氏敗亡、三家分晉。'},good:{id:'three_houses',title:'三家分晉',good:true,text:'危急中完成守城、說盟與查驗；有些判斷仍待打磨。史實仍歸於智氏敗亡、三家分晉。'},bad:{id:'three_boards',title:'僅存三版',good:false,text:'此局的首次守城陷入極大危機；必要操作已補做。重新檢查資源與民心的平衡，史實仍歸於智氏敗亡、三家分晉。'}};
+function payload(s,ending){const scores=['flood','speech','observe'].map(k=>s.vars[k].firstScore);const firstCorrect=s.anchors.filter(a=>a.correct).length;
+ return {scenarioId:SID,chapterVersion:VERSION,runId:s.vars.runId,mode:MODE,faction:'趙',country:'趙',role:'趙襄子',roleKind:'shijia',bioTitle:'趙世家',bioOpening:'趙氏之先，與秦共祖。',ending,
+ scoreStrategy:Math.round(scores.reduce((a,b)=>a+b,0)/30*100),scoreVirtue:Math.round((firstCorrect/10*.65+Number(s.vars.choices.sync==='check')*.35)*100),turns:s.steps,durationSec:Math.min(5400,Math.round((Date.now()-s.startedAt)/1000)),
+ deeds:['智氏索地，襄子弗與；退守晉陽，取尹鐸寬政之民心。','此局親調守城十五事，核城高與民心；首次成績'+scores[0]+'分。','遣張孟談夜說韓魏，明脣齒之勢，議內外相應；首次成績'+scores[1]+'分。','三家反攻，智氏亡；又讀豫讓知遇之義，思復仇之限。','後五十年，周命韓趙魏為諸侯；讀司馬光才德之論。'],
+ anchors:copy(s.anchors),games:copy(s.games),codex:s.codex.slice(),opener:'遊戲史官評語（自擬）：余觀晉陽，知牆垣之外更有人心，強兵之間亦有脣齒；才有所用，當省其所向。',
+ prompts:['用智伯的一件具體作為，支持或補充司馬光的才德論。','你在日常中有哪些互相依存的關係？如何讓合作責任清楚、讓風險不只落在一個人身上？','你如何理解豫讓的知遇之情？提出一種不傷害他人的報恩方式，說明你的界線。'],
+ experience:{firstAnchors:copy(s.vars.firstAnchors),flood:copy(s.vars.flood),speech:copy(s.vars.speech),observe:copy(s.vars.observe),decisions:copy(s.vars.choices)} };
+}
+async function onEnd(r,ctx){const s=ctx.state;const required=['sj_flood','wen_sj_shuo','sj_yurang'];
+ if(ORDER.some(id=>!s.anchors.some(a=>a.anchorId===id))||required.some(id=>!s.games.some(g=>g.gameId===id&&!g.skipped))||['flood','speech','observe'].some(k=>!s.vars[k]?.completed)||CODEX_KEYS.some(id=>!s.codex.includes(id)))throw Error('必要體驗或對讀尚未完成，請接續本話。');
+ const ending=ENDINGS[r.key]||ENDINGS.good, p=s.vars.finishPayload||payload(s,ending);
+ await ctx.banner(ending.title,'趙襄子・此局趙世家');await ctx.say([{text:ending.text},{who:'shiguan',expr:'serious',text:'你的首次判斷與補做都會留下。接下來在結算頁寫自己的反思；由遊戲生成的列傳，不當作另一份史實。'}]);
+ if(s.vars.submitted){ZH.session.set('result:'+SID,p);ZH.go('result',{s:SID});return;}
+ s.vars.finishPayload=p;await checkpoint();await journal.flush();ZH.finishScenario(p);s.vars.submitted=true;await checkpoint();
+}
+async function start(saved){if(loading)return;loading=true;ROOT.innerHTML='';game=ZH.story.create(ROOT,{id:SID,mode:MODE,title:'三家分晉',subtitle:'大水淹到只剩三版，我們還沒投降',seed:Number(params.seed)||0,start:'n_01',characters:CHARACTERS,scenes:SCENES,nodes:NODES,meters:[{id:'wall',label:'城高',icon:'shield',max:100,start:60,danger:20},{id:'people',label:'民心',icon:'people',max:100,start:65,danger:20},{id:'alliance',label:'盟約',icon:'scroll',max:100,start:0}],help:HELP,anchorOrder:ORDER,anchorTotal:10,anchorRunner,snapshot,save,onProgress:save,onEnd,initState:()=>({vars:{schema:SCHEMA,runId:'sj_'+Date.now().toString(36)+'_'+crypto.getRandomValues(new Uint32Array(1))[0].toString(36),firstAnchors:{},choices:{}}})});window.__ep=game;loading=false;game.start(saved||null);}
+function title(saved){const compatible=saved?.vars?.schema===SCHEMA,st=compatible?saved:null;ROOT.innerHTML='<main class="sj-title"><div class="sj-title-bar"><span class="zh-mark"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></span><button class="zh-btn zh-btn--quiet" data-home>回首頁</button></div><header><p class="sj-kicker">戰國篇・第一話・前455年</p><h1>三家分晉</h1><p class="sj-subtitle">大水淹到只剩三版，我們還沒投降</p><div class="ep-chips"><span class="zh-chip zh-chip--patina">守城 × 夜說 × 觀察</span><span class="zh-chip">自動存檔</span></div></header><section class="sj-title-scene" aria-label="晉陽城頭的趙襄子與張孟談">'+panorama('jinyang',['zhao','zhang'])+'</section><section class="sj-start"><span class="sj-seal" aria-hidden="true">趙</span><div><h2>趙襄子・趙毋卹</h2><p class="sj-note">親自調度守城，切換張孟談說盟，再在橋邊觀察查驗。不是只看歷史的結局，而是體驗決定如何改變處境。</p></div><div class="sj-start-actions">'+(st?'<button class="zh-btn zh-btn--primary" data-continue>'+(st.ended?'查看結局':'繼續遊戲')+'</button>':'')+'<button class="zh-btn '+(st?'zh-btn--quiet':'zh-btn--primary')+'" data-new>'+(st?'重新開始':'開始遊戲')+'</button></div></section><section class="sj-points"><div><b>水淹晉陽</b><p class="sj-note">十五回合，城高與民心都要顧。行動會互相牽動，敵人也不會停手。</p></div><div><b>夜說韓魏</b><p class="sj-note">五種疑慮，八秒回應。把脣亡齒寒說成可執行的合作。</p></div><div><b>橋下伏影</b><p class="sj-note">四輪限時觀察，從多項線索辨人，再思考知遇與報恩的界線。</p></div></section>'+(saved&&!compatible?'<p class="sj-follow">偵測到舊版進度。新版題目與玩法已調整，請另開一局；先前已登錄的成績與史冊仍保留。</p>':'')+'<p class="sj-note">預留約20～30分鐘。十個原文對讀、三項必要體驗，卡關時可不限時補做。新版 v1.1.0</p></main>';
+ ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');const cont=ROOT.querySelector('[data-continue]');if(cont)cont.onclick=()=>start(st);
+ ROOT.querySelector('[data-new]').onclick=async()=>{if(loading)return;if(saved){const ok=await ZH.modal({title:'另開一局？',body:'<p>此話尚未完成的存檔會清除，從新版第一幕開始；已登錄的成績和史冊保留。</p>',actions:[{label:'取消',value:false,kind:'quiet'},{label:'重新開始',value:true,kind:'primary'}]});if(!ok)return;loading=true;await journal.clear();try{await ZH.deleteSave(SID,MODE);}catch(e){}loading=false;}start(null);};
+}
+ZH.ready(async()=>{
+ if(!ZH.story?.createJournal||!ZH.arena||!window.ART){ROOT.innerHTML='<main class="sj-title"><h1>共用核心尚未齊備</h1><p>請使用你這次提供的 Eng_Story、Art_kit，以及既有 Arena_js，再載入第一話。</p><button class="zh-btn" data-home>回首頁</button></main>';ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');return;}
+ journal=ZH.story.createJournal({id:SID,mode:MODE,scope:ZH.user?.email||window.ZH_BOOT.user?.email||'guest',remote:s=>ZH.save(SID,MODE,{engine:s,chapterVersion:VERSION})});
+ ZH.loading(true,'展開晉陽竹簡');
+ try{const [saved,bank]=await Promise.all([load(),ZH.anchor.load(SID),ZH.codex.init()]);if(ORDER.some(id=>!ZH.anchor.get(SID,id)))throw Error('本話題庫尚未更新。請將新版 S_zg01_sanjia_data 一併替換，並清除題庫快取後再部署。');ZH.loading(false);if(String(params.mode||'')===MODE&&saved?.vars?.schema===SCHEMA)start(saved);else title(saved);}
+ catch(e){ZH.loading(false);ROOT.innerHTML='<main class="sj-title"><h1>載入尚未完成</h1><p>'+E(e.message||String(e))+'</p><button class="zh-btn zh-btn--primary" data-reload>重新載入</button></main>';ROOT.querySelector('[data-reload]').onclick=()=>location.reload();}
+});
+})();
+</script><script>ZH.ready(function(){ZH.textplay?.install("S_zg01_sanjia",null);});</script>
+</body></html>

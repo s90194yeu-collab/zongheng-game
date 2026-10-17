@@ -1,0 +1,201 @@
+<!-- 子產治鄭・三項必要體驗 v0.1.0（2026-10-13）。只供 S_cq13_zichan 引入。 -->
+<style>
+.cq13-game{display:grid;gap:12px;width:min(720px,100%);margin:auto;padding:12px 12px 24px;font-size:16px;line-height:1.6;box-sizing:border-box;overflow-wrap:anywhere}
+.cq13-game h2{font-size:24px;color:var(--gilt);margin:0}.cq13-game p{margin:0}.cq13-note{color:var(--text-dim);font-size:15px}
+.cq13-tools{display:flex;flex-wrap:wrap;gap:6px}.cq13-game button{min-height:44px;font:inherit;touch-action:manipulation;cursor:pointer}.cq13-tools button{flex:1 1 90px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--night-2);color:var(--text)}
+.cq13-tools button[aria-pressed=true]{border:2px solid var(--gilt);color:var(--gilt)}.cq13-message{min-height:3.2em;color:#b9e5d4}.cq13-message.is-bad{color:#ffb9ae}
+.cq13-scroll{border:1px solid #bba367;border-radius:12px;background:linear-gradient(100deg,#e2ce9f,#f6e9c8,#e2ce9f);color:#342d24;padding:16px;box-shadow:inset 0 0 0 5px #70543322}
+.cq13-scroll blockquote{margin:8px 0;font-size:21px;line-height:1.8}.cq13-answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cq13-answers button{padding:12px;background:#243649;color:#f4ead1;border:1px solid #bda163;border-radius:10px;text-align:left;font-size:17px;min-height:80px}.cq13-answers button:disabled{opacity:.6}
+.cq13-roundbar{height:8px;background:#ffffff22;border-radius:5px;overflow:hidden}.cq13-roundbar i{display:block;height:100%;width:100%;background:var(--gilt)}
+.cq13-farm{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;width:min(540px,100%);margin:auto;padding:4px;background:#4f6148;border:2px solid #c7aa68;border-radius:10px;box-sizing:border-box}
+.cq13-farm button{position:relative;min-width:0;min-height:46px;aspect-ratio:1;border:1px solid #b0a270;border-radius:5px;background:repeating-linear-gradient(0deg,#677c4f 0 7px,#738658 8px 10px);color:white;font-size:16px;font-weight:bold;padding:0;overflow:hidden}
+.cq13-farm button.is-canal{background:linear-gradient(130deg,#36586d,#75aaa8,#36586d);border-color:#abded8}.cq13-farm button.is-dry{background:#4c626e;border:2px dashed #e2b94e}.cq13-farm button.is-dispute{border:3px solid #ffb6a1;background:#9d5946}.cq13-farm button.is-hint::after{content:'洫';position:absolute;inset:0;display:grid;place-items:center;color:#f9e4a5;background:#17344877;pointer-events:none}
+.cq13-legend{display:flex;flex-wrap:wrap;gap:7px}.cq13-legend span{padding:4px 8px;border-radius:5px;border:1px solid var(--line);font-size:15px}.cq13-ding{width:80px;height:60px;display:block;margin:0 auto 8px}
+.cq13-feedback{animation:cq13-arrive .2s ease-out}.cq13-game button:focus-visible{outline:3px solid #fff0ad;outline-offset:2px}
+@keyframes cq13-arrive{from{opacity:.5}to{opacity:1}}
+@media(max-width:860px){.cq13-game{padding:8px;gap:9px}.cq13-answers{grid-template-columns:1fr}.cq13-answers button{min-height:54px;font-size:16px;padding:9px}.cq13-farm{gap:2px;padding:2px}.cq13-tools button{flex-basis:70px;font-size:15px}.cq13-scroll{padding:12px}.cq13-scroll blockquote{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.cq13-feedback{animation:none}}
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+  const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
+  const paused = () => document.hidden || !!document.querySelector('.zh-modal');
+  const shuffle = (a,rng) => { const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; };
+  const tones = ['#b98e52','#5d91b0','#9d6faa','#70955a','#b76a63'];
+  // 首次表現於啟用提示或時間到時定格；完成操作後才回到劇情。
+  function session(body,g,seconds,judge,resolve) {
+    let done=false,assisted=false,first=null,elapsed=0,left=seconds,timer=null,tick=null,last=performance.now();
+    const clean = () => { clearInterval(tick); if(timer)timer.stop(); };
+    const freeze = () => { if(!first) first=Object.assign({max:10,sec:Math.round(elapsed)},judge()); };
+    const assist = () => {
+      if(done||assisted)return;
+      freeze();assisted=true;if(timer)timer.stop();
+      body.querySelector('[data-assist]').disabled=true;
+      body.querySelector('[data-guide]').hidden=false;
+      body.querySelector('[data-guide]').textContent='已保存首次表現。現在無時限練習，請親自完成；提示不會代你操作。';
+      if(api.onAssist)api.onAssist();
+    };
+    const api={get done(){return done;},get assisted(){return assisted;},get left(){return left;},get elapsed(){return elapsed;},onStep:null,onAssist:null,assist,
+      finish(extra){if(done)return;freeze();done=true;clean();resolve(Object.assign({},first,extra,{completed:true,assisted,independentScore:first.score,independentPassed:first.passed}));},
+      message(text,bad){const m=body.querySelector('[data-message]');m.textContent=text;m.classList.toggle('is-bad',!!bad);},
+      feedback(ok,streak){g.sfx(ok?'ok':'ng');if(g.combo)g.combo(ok?streak:0);if(g.flash)g.flash(ok?'ok':'bad');},
+      dispose(){done=true;clean();}
+    };
+    if(g.timer)timer=g.timer(seconds,{warn:10,onEnd:assist});
+    tick=setInterval(()=>{
+      const now=performance.now(),dt=clamp((now-last)/1000,0,.25);last=now;if(done)return;
+      if(paused())return;
+      elapsed+=dt;if(!assisted){left=Math.max(0,left-dt);if(!left)assist();}
+      if(api.onStep)api.onStep(dt);
+    },100);
+    const hint=body.querySelector('[data-assist]');hint.addEventListener('click',assist);
+    g.onCleanup(()=>{api.dispose();hint.removeEventListener('click',assist);});
+    return api;
+  }
+  function shell(body,title,tip,markup) {
+    body.innerHTML='<section class="cq13-game"><h2>'+ZH.esc(title)+'</h2><p>'+ZH.esc(tip)+'</p>'+markup+
+      '<p class="cq13-message" data-message role="status" aria-live="polite"></p><p class="cq13-note" data-guide hidden></p><button type="button" class="zh-btn zh-btn--quiet" data-assist>提示與無時限練習</button></section>';
+  }
+  const MUSIC=[
+    {name:'周南、召南',clue:'兩組國風，王化初基。',quote:'美哉！始基之矣，猶未也，然勤而不怨矣。'},
+    {name:'邶、鄘、衛',clue:'季札想到衛康叔、武公的德行。',quote:'美哉！淵乎！憂而不困者也。'},
+    {name:'王',clue:'周王室東遷之後的聲音。',quote:'美哉！思而不懼，其周之東乎！'},
+    {name:'鄭',clue:'政令苛細，民眾難以承受。',quote:'美哉！其細已甚，民弗堪也，是其先亡乎！'},
+    {name:'齊',clue:'東海之濱，季札想到太公。',quote:'美哉！泱泱乎！大風也哉！表東海者，其大公乎！國未可量也。'},
+    {name:'陳',clue:'朝政缺乏能主持國事的人。',quote:'國無主，其能久乎！'},
+    {name:'大武',clue:'舞者演出周武王的功業。',quote:'美哉！周之盛也，其若此乎！'},
+    {name:'韶箾',clue:'季札以天地覆載比擬舜的德行。',quote:'觀止矣！若有他樂，吾不敢請已。'}
+  ];
+  function guanyue(body,g) {
+    return new Promise(resolve=>{
+      const order=shuffle(MUSIC,g.rng),missed=[],answers=[];let cursor=0,hits=0,streak=0,best=0,mistakes=0,roundLeft=7,waiting=0,phase='answer',choices=[];
+      shell(body,'聽歌知國','讀樂章篇名與線索，點選季札的評語。後四章判斷時間縮短。音效只提示節奏，不是古樂復原。',
+        '<div class="cq13-scroll"><b data-piece></b><p data-clue></p><div class="cq13-roundbar"><i data-roundbar></i></div></div><div class="cq13-answers" data-answers></div>');
+      const judge=()=>({score:clamp(Math.floor(hits+ (best>=6?1:0)+(cursor>=8&&mistakes===0&&s.left>=15?1:0)),0,10),passed:hits>=5,correct:hits,mistakes,bestCombo:best});
+      const s=session(body,g,50,judge,resolve);
+      const current=()=>phase==='repair'?missed[0]:order[cursor];
+      const draw=()=>{
+        const q=current();if(!q){s.finish({responses:answers,repaired:missed.length===0});return;}
+        roundLeft=cursor<4?7:4.5;
+        body.querySelector('[data-piece]').textContent='〈'+q.name+'〉'+(phase==='repair'?'・補讀':'');
+        body.querySelector('[data-clue]').textContent=q.clue;
+        choices=shuffle([q,...shuffle(MUSIC.filter(x=>x!==q),g.rng).slice(0,3)],g.rng);
+        body.querySelector('[data-answers]').innerHTML=choices.map((x,i)=>'<button type="button" data-pick="'+i+'">'+g.esc(x.quote)+'</button>').join('');
+        body.querySelector('[data-roundbar]').style.width='100%';
+        g.setStatus(phase==='repair'?'親自補讀錯配的樂章':'第 '+(cursor+1)+'／8 樂章');g.sfx('bell');
+        if(s.assisted)s.message('提示：'+q.quote);
+      };
+      const advance=()=>{if(cursor>=8){phase='repair';if(missed.length)s.assist();}else phase='answer';draw();};
+      const answer=(i,timeout)=>{
+        if(s.done||paused()||!['answer','repair'].includes(phase))return;
+        const q=current(),ok=!timeout&&choices[i]===q,repair=phase==='repair';
+        if(repair&&!ok){s.message('再讀線索，這一則評語仍須親自配對。',true);s.feedback(false,0);return;}
+        answers.push({piece:q.name,choice:timeout?'逾時':choices[i].name,correct:ok,assisted:s.assisted,repair});
+        if(!repair){if(ok){hits++;streak++;best=Math.max(best,streak);}else{mistakes++;streak=0;missed.push(q);}cursor++;}else missed.shift();
+        s.feedback(ok,streak);s.message(ok?'篇名與評語相合。':'這章評語是「'+q.quote+'」；結束後要親自補讀。',!ok);
+        phase='feedback';waiting=.7;body.querySelectorAll('[data-pick]').forEach(b=>b.disabled=true);
+      };
+      const tap=e=>{const b=e.target.closest('[data-pick]');if(b){e.preventDefault();answer(Number(b.dataset.pick),false);}};
+      body.addEventListener('click',tap);g.onCleanup(()=>body.removeEventListener('click',tap));
+      s.onAssist=()=>{if(phase!=='feedback')s.message('提示：'+current().quote);};
+      s.onStep=dt=>{if(phase==='feedback'){waiting-=dt;if(waiting<=0)advance();return;}if(!s.assisted&&phase==='answer'){roundLeft-=dt;body.querySelector('[data-roundbar]').style.width=clamp(roundLeft/(cursor<4?7:4.5)*100,0,100)+'%';if(roundLeft<=0)answer(0,true);}};
+      draw();
+    });
+  }
+  function fengxu(body,g) {
+    return new Promise(resolve=>{
+      const spine=1+Math.floor(g.rng()*4),source=spine,cells=Array.from({length:36},()=>({kind:'empty',owner:-1})),disputes=new Map();
+      cells[source].kind='canal';let tool='canal',repairs=0,issued=0,errors=0,actions=0;
+      shell(body,'田有封洫・廬井有伍','先修相連水溝，再選戶甲至戶戊劃田界；每戶至少三格田，每塊田都要臨接有水的洫。紅框表示田界被挪動，要親自復界。',
+        '<p class="cq13-note">6×6 方格是教學推演，不是古代田制的考古復原。水源在頂列「源」。</p><div class="cq13-tools" data-tools></div><div class="cq13-legend" data-legend></div><div class="cq13-farm" data-farm aria-label="田地與水路規劃"></div><div class="cq13-tools"><button type="button" data-patrol>巡田查界</button><button type="button" data-check>核驗田冊</button></div>');
+      const race=g.race?g.race({me:'封洫完成度',rival:'貴族的抱怨',rivalColor:'#b76a63',goal:'五戶得田、水路相通，修回兩次被挪的田界'}):null;
+      function nearby(i){const x=i%6,y=Math.floor(i/6);return [x>0?i-1:-1,x<5?i+1:-1,y>0?i-6:-1,y<5?i+6:-1].filter(k=>k>=0);}
+      function inspect(){
+        const wet=new Set([source]),queue=[source];while(queue.length){const i=queue.shift();nearby(i).forEach(j=>{if(cells[j].kind==='canal'&&!wet.has(j)){wet.add(j);queue.push(j);}});}
+        const counts=[0,0,0,0,0];let fields=0,irrigated=0,empty=0,canals=0;
+        cells.forEach((c,i)=>{if(c.kind==='field'){fields++;counts[c.owner]++;if(nearby(i).some(j=>wet.has(j)))irrigated++;}else if(c.kind==='empty')empty++;else canals++;});
+        const households=counts.filter(n=>n>=3).length;
+        const valid=empty===0&&households===5&&fields===irrigated&&canals===wet.size&&repairs>=2&&disputes.size===0;
+        return {wet,counts,fields,irrigated,empty,households,valid};
+      }
+      const judge=()=>{const v=inspect();return {score:clamp(Math.floor(v.households/5*3+(v.fields?v.irrigated/v.fields*3:0)+Math.min(2,repairs)+(v.valid&&s.left>=20?2:v.valid?1:0)-errors*.5),0,10),passed:v.valid,households:v.households,fields:v.fields,irrigated:v.irrigated,repairs,errors};};
+      const s=session(body,g,70,judge,resolve);
+      function sabotage(){
+        if(issued>=2||disputes.size)return false;
+        const available=cells.map((c,i)=>c.kind==='field'?i:-1).filter(i=>i>=0&&!disputes.has(i));if(!available.length)return false;
+        const i=available[Math.floor(g.rng()*available.length)];disputes.set(i,cells[i].owner);cells[i].owner=(cells[i].owner+1)%5;issued++;
+        s.message('第 '+issued+' 次異議：紅框田界被挪動。選「復界」，點紅框查田冊。',true);g.sfx('ng');return true;
+      }
+      function paint(){
+        const v=inspect();
+        body.querySelector('[data-tools]').innerHTML=[['canal','疏洫'],['0','戶甲'],['1','戶乙'],['2','戶丙'],['3','戶丁'],['4','戶戊'],['repair','復界'],['erase','重劃']].map(([k,t])=>'<button type="button" data-tool="'+k+'" aria-pressed="'+(tool===k)+'">'+t+'</button>').join('');
+        body.querySelector('[data-legend]').innerHTML=v.counts.map((n,i)=>'<span style="border-color:'+tones[i]+'">'+g.esc('甲乙丙丁戊'[i])+' '+n+'／至少3田</span>').join('')+'<span>有水 '+v.irrigated+'／'+v.fields+'田</span><span>復界 '+repairs+'／2</span>';
+        body.querySelector('[data-farm]').innerHTML=cells.map((c,i)=>{
+          const hint=s.assisted&&(i%6===spine||Math.floor(i/6)%2===1)&&c.kind==='empty';
+          const cls=[c.kind==='canal'?'is-canal':'',c.kind==='canal'&&!v.wet.has(i)?'is-dry':'',disputes.has(i)?'is-dispute':'',hint?'is-hint':''].join(' ');
+          const label=i===source?'源':c.kind==='canal'?'洫':c.kind==='field'?'甲乙丙丁戊'[c.owner]:'田';
+          return '<button type="button" data-cell="'+i+'" class="'+cls+'"'+(c.kind==='field'?' style="background:'+tones[c.owner]+'"':'')+' aria-label="'+g.esc('第'+(Math.floor(i/6)+1)+'列第'+(i%6+1)+'格，'+label+(disputes.has(i)?'，田界爭議':''))+'">'+label+'</button>';
+        }).join('');
+        if(race){race.me((v.households/5+ (v.fields?v.irrigated/v.fields:0)+repairs/2)/3);race.rival(clamp((1-s.left/70)*.8+errors*.04,0,1));}
+        g.setStatus('空格 '+v.empty+'・工具 '+(tool==='canal'?'疏洫':tool==='repair'?'復界':tool==='erase'?'重劃':'戶'+'甲乙丙丁戊'[Number(tool)]));
+      }
+      function tap(e){
+        if(s.done||paused())return;const b=e.target.closest('button');if(!b)return;
+        if(b.hasAttribute('data-tool')){tool=b.dataset.tool;paint();return;}
+        if(b.hasAttribute('data-patrol')){if(!sabotage())s.message(disputes.size?'請先修回紅框田界。':issued>=2?'兩次異議都已查核。':'先為一戶劃田，再巡田。');paint();return;}
+        if(b.hasAttribute('data-check')){const v=inspect();if(v.valid){s.finish({layout:cells.map(c=>c.kind==='canal'?'水':'甲乙丙丁戊'[c.owner]),actions});return;}errors++;s.message(v.empty?'仍有 '+v.empty+' 格未規劃。':v.households<5?'每戶都要至少三格田。':v.irrigated<v.fields?'乾田旁需要接上連通水源的洫。':disputes.size?'紅框田界仍需復界。':repairs<2?'再巡田一次，完成兩次田冊查核。':'有水溝還沒連到源頭。',true);s.feedback(false,0);paint();return;}
+        if(!b.hasAttribute('data-cell'))return;const i=Number(b.dataset.cell);if(i===source){s.message('源頭不能改成田。');return;}
+        if(disputes.has(i)&&tool!=='repair'){s.message('這格須用「復界」查田冊，不能直接重劃。',true);return;}
+        if(tool==='repair'){if(disputes.has(i)){cells[i].owner=disputes.get(i);disputes.delete(i);repairs++;s.feedback(true,repairs);s.message('依田冊修回原界。');}else s.message('這格沒有田界爭議。');}
+        else if(tool==='canal')cells[i]={kind:'canal',owner:-1};
+        else if(tool==='erase')cells[i]={kind:'empty',owner:-1};
+        else cells[i]={kind:'field',owner:Number(tool)};
+        actions++;if(tool!=='repair')g.sfx('click');paint();
+      }
+      let nextDispute=22,lastPaint=0;
+      s.onStep=()=>{if(!s.assisted&&s.elapsed>=nextDispute&&issued<2){if(sabotage())nextDispute=s.elapsed+16;paint();}if(s.elapsed-lastPaint>=1){lastPaint=s.elapsed;const v=inspect();if(race)race.rival(clamp((1-s.left/70)*.8+errors*.04,0,1));g.setStatus('空格 '+v.empty+'・復界 '+repairs+'／2');}};
+      s.onAssist=()=>{s.message('提示：沿標「洫」的格子修水溝，剩餘十五格田每戶分三格。完成後巡田、復界、核驗。');paint();};
+      body.addEventListener('click',tap);g.onCleanup(()=>body.removeEventListener('click',tap));paint();
+    });
+  }
+  const VOICES=[
+    {text:'水溝按時疏通，今年田水充足，這個辦法好。',kind:'keep',why:'意見肯定了有效的施政，應維持。'},
+    {text:'公示田冊後，鄰戶能核對田界，爭執少了。',kind:'keep',why:'有具體成效的制度值得繼續。'},
+    {text:'官吏按相同標準辦事，沒有替貴族另開方便。',kind:'keep',why:'公平執行已有正面成效。'},
+    {text:'孩子有人教導，農事也有人指點，請保持。',kind:'keep',why:'肯定教養與農政，歸入吾則行之。'},
+    {text:'南邊的水溝堵住了，田乾了，請派人疏通。',kind:'change',why:'指出具體問題，應查明並改善。'},
+    {text:'田界劃過住家通路，老人走不過去。',kind:'change',why:'實際生活受影響，應調整田界配置。'},
+    {text:'徵役正逢農忙，沒人收成，請調整日期。',kind:'change',why:'批評時機不當，應改善徵役安排。'},
+    {text:'官吏多收了一次稅，收據可以核對。',kind:'change',why:'有可核對的指控，應調查並改正。'},
+    {text:'聽說明天要把所有田送給外國，但沒人見過命令。',kind:'verify',why:'只有傳聞，先查證，不能當成既定事實。'},
+    {text:'有人說鄉校的每個人都是奸細，卻提不出證據。',kind:'verify',why:'沒有證據的全面指控不能拿來封閉鄉校。'},
+    {text:'據說子產私藏所有糧食，消息只來自路邊傳言。',kind:'verify',why:'具體指控仍需帳冊和證據。'},
+    {text:'有人傳今年完全不必繳稅，問他依據卻說不知道。',kind:'verify',why:'未經證實的政策消息應查公告。'}
+  ];
+  function xiangxiao(body,g) {
+    return new Promise(resolve=>{
+      const order=shuffle(VOICES,g.rng),repair=[],responses=[];let cursor=0,hits=0,streak=0,best=0,mistakes=0,anger=30,roundLeft=5,phase='answer',waiting=0;
+      shell(body,'鄉校議政','依議論內容點「吾則行之」「吾則改之」或「查證」。後半段加快；批評不等於謠言，稱讚也要看具體內容。',
+        '<div class="cq13-scroll"><b data-count></b><blockquote data-voice></blockquote><div class="cq13-roundbar"><i data-roundbar></i></div></div><div class="cq13-tools"><button type="button" data-kind="keep">吾則行之</button><button type="button" data-kind="change">吾則改之</button><button type="button" data-kind="verify">查證</button></div><p class="cq13-note">議論與分類節奏為教學情境；三分法不冒充《左傳》原文制度。</p>');
+      const race=g.race?g.race({me:'聽取與處理',rival:'怨氣',rivalColor:'#bd5a45',goal:'十二則議論都須處理，批評不封口'}):null;
+      const judge=()=>({score:clamp(Math.floor(hits/12*8+(best>=8?1:0)+(cursor>=12&&anger<=10?1:0)),0,10),passed:hits>=8,correct:hits,mistakes,bestCombo:best,anger});
+      const s=session(body,g,50,judge,resolve),current=()=>phase==='repair'?repair[0]:order[cursor];
+      function draw(){const q=current();if(!q){s.finish({responses,remainingAnger:anger,repaired:true});return;}
+        roundLeft=cursor<6?5:3;body.querySelector('[data-count]').textContent=phase==='repair'?'親自補作':('第 '+(cursor+1)+'／12 則議論');body.querySelector('[data-voice]').textContent=q.text;body.querySelector('[data-roundbar]').style.width='100%';body.querySelectorAll('[data-kind]').forEach(b=>b.disabled=false);g.setStatus('怨氣 '+anger+'／100');if(s.assisted)s.message('提示：'+q.why);}
+      function advance(){phase=cursor>=12?'repair':'answer';if(repair.length&&cursor>=12)s.assist();draw();}
+      function answer(kind){if(s.done||paused()||!['answer','repair'].includes(phase))return;const q=current(),ok=kind===q.kind,isRepair=phase==='repair';
+        if(isRepair&&!ok){s.feedback(false,0);s.message(q.why,true);return;}
+        responses.push({voice:q.text,choice:kind,correct:ok,assisted:s.assisted,repair:isRepair});
+        if(!isRepair){if(ok){hits++;streak++;best=Math.max(best,streak);anger=clamp(anger-4,0,100);}else{mistakes++;streak=0;anger=clamp(anger+12,0,100);repair.push(q);}cursor++;}else repair.shift();
+        s.feedback(ok,streak);s.message(q.why,!ok);if(race){race.me(hits/12);race.rival(anger/100);}phase='feedback';waiting=.6;body.querySelectorAll('[data-kind]').forEach(b=>b.disabled=true);
+      }
+      const tap=e=>{const b=e.target.closest('[data-kind]');if(b)answer(b.dataset.kind);};body.addEventListener('click',tap);g.onCleanup(()=>body.removeEventListener('click',tap));
+      s.onAssist=()=>{if(phase!=='feedback')s.message('提示：'+current().why);};s.onStep=dt=>{if(phase==='feedback'){waiting-=dt;if(waiting<=0)advance();return;}if(!s.assisted&&phase==='answer'){roundLeft-=dt;body.querySelector('[data-roundbar]').style.width=clamp(roundLeft/(cursor<6?5:3)*100,0,100)+'%';if(roundLeft<=0)answer('timeout');}};
+      draw();
+    });
+  }
+  ZH.games_cq13={guanyue,fengxu,xiangxiao};
+})(window.ZH);
+</script>

@@ -1,0 +1,1761 @@
+<!-- 本話任務：虞虢屏障相依；各國待遇與從者的判斷共同推動返國。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：S_cq04_chonger.html
+ 版本：v0.1.0（2026-10-07）
+ 依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story（v0.2.0）
+       伺服器 Code.gs v0.1.5（自動帶入 Art_kit v0.1.1、Arena_js）、Rank.gs、Save.gs、Log.gs、AnchorBank.gs v0.1.5
+       劇本資料檔 S_cq04_chonger_data.gs（錨點 ce_01～ce_14、圖鑑 14 項）
+ 說明：第一卷 第 4 話「重耳流亡」（約 35 分鐘）。原典〈宮之奇諫假道〉（《左傳・僖公五年》）、
+       〈介之推不言祿〉（《左傳・僖公二十四年》），主線取材《左傳・僖公四年、五年、二十三年、二十四年》。
+       序：驪姬之亂、蒲城之難。
+       第一幕：宮之奇諫假道。挑戰賽「諫假道」：在虞公被璧和馬迷住以前，接上宮之奇的原句（代碼 wen_ 開頭，算入文辭）。
+       第二幕：流亡十九年（狄、衛、五鹿、齊、曹、宋、鄭、楚、秦）。
+               挑戰賽「醉載出齊」：三線道閃避，在公子醒來以前把車趕出齊境。
+               挑戰賽「流亡十九年」：竹簡燒完以前，點出每件事發生在哪一國。
+       第三幕：河上之誓、寺人披見文公、頭須。
+       尾聲：介之推不言祿。
+ 網址：?page=S_cq04_chonger（需要學校帳號）
+============================================================
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題頁 ───────── */
+  .ep-title {
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 520px at 70% 0%, var(--ep-glow, rgba(79, 127, 176, .22)), transparent 65%),
+      radial-gradient(700px 600px at 0% 100%, rgba(224, 180, 76, .12), transparent 60%);
+  }
+  .ep-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width: min(1040px, 100%); margin: 0 auto; padding: 8px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 22px; align-content: start; }
+  .ep-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .ep-h1 { margin-top: 4px; font-size: clamp(46px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .ep-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ep-note { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, auto); gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: rgba(20, 26, 46, .82); box-shadow: var(--shadow);
+  }
+  .ep-seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--ep-color, #4f7fb0); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--ep-color, #4f7fb0);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--ep-color, #4f7fb0); background: rgba(11, 14, 29, .6);
+  }
+  .ep-seal.has-art { width: 96px; height: 124px; padding: 0; overflow: hidden; background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); }
+  .ep-seal.has-art .ck { width: 100%; height: 100%; }
+  .ep-start__name { font-family: var(--f-display); font-size: 22px; }
+  .ep-start__lead { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start__act { display: grid; gap: 8px; }
+  .ep-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .ep-point { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .7); }
+  .ep-point b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; color: var(--gilt); }
+  .ep-point span { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  @media (max-width: 860px) {
+    .ep-start { grid-template-columns: auto minmax(0, 1fr); }
+    .ep-start__act { grid-column: 1 / -1; }
+    .ep-seal.has-art { width: 72px; height: 94px; }
+  }
+
+  /* ───────── 地圖場景 ───────── */
+  .sty-bg svg.ce-map { top: 58px; bottom: auto; height: calc(100% - 58px - 200px); }
+  .ce-map text { font-family: var(--f-display); fill: #2b2418; }
+  .ce-map .m-city { font-size: 28px; font-weight: 700; text-anchor: middle; }
+  .ce-map .m-sub { font-size: 18px; text-anchor: middle; fill: #6b5a3a; }
+  .ce-map .m-small { font-size: 21px; text-anchor: middle; fill: #4a3d28; }
+  .ce-map .m-big { font-size: 78px; font-weight: 700; text-anchor: middle; fill: #5c4d33; opacity: .26; }
+  .ce-map .m-river { font-size: 22px; fill: #3f5f86; }
+  .ce-map .m-note { font-size: 25px; font-weight: 700; text-anchor: middle; paint-order: stroke; stroke: #ecdfb8; stroke-width: 6px; }
+  .ce-map .m-gift { font-size: 18px; text-anchor: middle; fill: #7a5a2a; }
+  @media (max-width: 860px) {
+    .sty-bg svg.ce-map { top: 52px; height: calc(100% - 52px - 170px); }
+  }
+
+  /* ───────── 小遊戲共用 ───────── */
+  @keyframes ce-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes ce-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .ce-fuse { height: 8px; margin-top: 10px; border-radius: 999px; background: rgba(107, 90, 58, .25); overflow: hidden; }
+  .ce-fuse i { display: block; height: 100%; width: var(--p, 100%); background: linear-gradient(90deg, #a3362c, #e0b44c); }
+  .ce-fuse.is-warn i { background: #c0392b; }
+  .ce-face { display: block; width: 88px; height: 110px; border-radius: 12px; overflow: hidden; border: 2px solid var(--line); background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); }
+  .ce-face .ck { width: 100%; height: 100%; }
+  .ce-face__seal { display: grid; place-items: center; width: 100%; height: 100%; font-family: var(--f-display); font-size: 40px; font-weight: 700; }
+
+  /* ───────── 小遊戲一：諫假道 ───────── */
+  .ce-jian { display: grid; gap: 10px; align-content: start; width: min(860px, 100%); margin: 0 auto; padding: 12px; }
+  .ce-jian__duel { display: grid; grid-template-columns: 96px minmax(0, 1fr) 96px; gap: 10px; align-items: end; }
+  .ce-jian__p { position: relative; display: grid; justify-items: center; gap: 3px; font-family: var(--f-display); font-size: 14px; }
+  .ce-face--me { border-color: #6f6a9a; }
+  .ce-face--yu { border-color: #c9a24a; }
+  .ce-gift { position: absolute; right: -8px; bottom: 18px; width: 40px; height: 40px; transition: filter .3s ease, transform .3s ease; }
+  .ce-gift.is-glow { filter: drop-shadow(0 0 8px #ffd77a) drop-shadow(0 0 3px #fff3c4); transform: scale(1.15); }
+  .ce-jian__say { align-self: center; min-height: 60px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .88); font-family: var(--f-display); font-size: 17px; line-height: 1.6; text-align: center; }
+  .ce-jian__say b { color: #ffd98a; }
+  .ce-jian__slip { padding: 14px 16px 10px; border-radius: 12px; background: var(--slip); color: var(--slip-ink); }
+  .ce-jian__head { min-height: 3.4em; font-family: var(--f-display); font-size: 20px; line-height: 1.7; }
+  .ce-blank { color: #a3362c; letter-spacing: .08em; }
+  .ce-fill { color: #2f6f5a; font-weight: 700; animation: ce-in .25s ease both; }
+  .ce-fill.is-fix { color: #a3362c; }
+  .ce-jian__opts { display: grid; gap: 8px; }
+  .ce-opt {
+    display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--gilt);
+    background: linear-gradient(160deg, rgba(224, 180, 76, .12), rgba(20, 26, 46, .96) 60%); color: var(--text);
+    font: inherit; font-family: var(--f-display); font-size: 18px; line-height: 1.5; text-align: left; cursor: pointer; touch-action: manipulation;
+  }
+  .ce-opt small { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); font-family: var(--f-body); font-size: 13px; color: var(--text-dim); }
+  .ce-opt:hover:not(:disabled) { box-shadow: 0 0 0 2px rgba(224, 180, 76, .5); }
+  .ce-opt:disabled { cursor: default; opacity: .75; }
+  .ce-opt.is-ok { opacity: 1; border-color: #6fb0a0; background: rgba(111, 176, 160, .26); }
+  .ce-opt.is-bad { opacity: 1; border-color: #d9483b; background: rgba(217, 72, 59, .22); animation: ce-shake .35s ease; }
+  .ce-opt.is-answer { opacity: 1; border-color: #6fb0a0; box-shadow: 0 0 0 2px rgba(111, 176, 160, .65); }
+  .ce-jian__fb { min-height: 1.6em; font-size: 15px; line-height: 1.6; text-align: center; color: var(--text-dim); }
+  .ce-jian__fb.is-bad { color: #ffb4aa; }
+  @media (max-width: 719px) {
+    .ce-jian { padding: 8px; gap: 8px; }
+    .ce-jian__duel { grid-template-columns: 68px minmax(0, 1fr) 68px; gap: 6px; }
+    .ce-face { width: 64px; height: 80px; }
+    .ce-gift { width: 30px; height: 30px; right: -6px; bottom: 16px; }
+    .ce-jian__p { font-size: 12.5px; }
+    .ce-jian__say { min-height: 52px; padding: 8px 10px; font-size: 15.5px; }
+    .ce-jian__head { font-size: 18px; }
+    .ce-opt { min-height: 52px; font-size: 16.5px; padding: 8px 12px; }
+  }
+
+  /* ───────── 小遊戲二：醉載出齊 ───────── */
+  .ce-run { display: grid; gap: 10px; justify-items: center; align-content: start; padding: 10px; }
+  .ce-run__wrap { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); touch-action: none; user-select: none; -webkit-user-select: none; }
+  .ce-run__wrap canvas { display: block; }
+  .ce-run__tip { position: absolute; left: 8px; right: 8px; top: 10px; text-align: center; font-family: var(--f-display); font-size: 17px; color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, .95); pointer-events: none; }
+  .ce-run__tip:empty { display: none; }
+  .ce-run__pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ce-run__pad .zh-btn { min-height: 58px; font-size: 18px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+
+  /* ───────── 小遊戲三：流亡十九年 ───────── */
+  .ce-lw { display: grid; gap: 12px; align-content: start; width: min(760px, 100%); margin: 0 auto; padding: 12px; }
+  .ce-lw__card { display: grid; align-content: center; min-height: 128px; padding: 14px 18px 12px; border-radius: 12px; background: var(--slip); color: var(--slip-ink); }
+  .ce-lw__card.is-in { animation: ce-in .25s ease both; }
+  .ce-lw__no { font-size: 13px; color: #6b5a3a; }
+  .ce-lw__text { margin-top: 4px; font-family: var(--f-display); font-size: 22px; line-height: 1.6; }
+  .ce-lw__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .ce-stop {
+    display: flex; align-items: center; gap: 10px; min-height: 68px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line);
+    background: rgba(20, 26, 46, .94); color: var(--text); font: inherit; text-align: left; cursor: pointer; touch-action: manipulation;
+  }
+  .ce-stop i { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 8px; background: var(--c); color: #fff; font-style: normal; font-family: var(--f-body); font-size: 17px; font-weight: 700; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .35); }
+  .ce-stop b { font-family: var(--f-display); font-size: 21px; }
+  .ce-stop:hover:not(:disabled) { border-color: var(--gilt); }
+  .ce-stop:disabled { cursor: default; color: var(--text); }
+  .ce-stop.is-ok { border-color: #6fb0a0; box-shadow: 0 0 0 3px rgba(111, 176, 160, .55); }
+  .ce-stop.is-bad { border-color: #d9483b; animation: ce-shake .35s ease; }
+  .ce-stop.is-answer { border-color: #e0b44c; box-shadow: 0 0 0 3px rgba(224, 180, 76, .75); }
+  .ce-lw__fb { min-height: 1.6em; font-size: 15px; line-height: 1.6; text-align: center; color: var(--text-dim); }
+  .ce-lw__fb.is-bad { color: #ffb4aa; }
+  @media (max-width: 719px) {
+    .ce-lw { padding: 8px; gap: 10px; }
+    .ce-lw__card { min-height: 112px; padding: 12px 14px 10px; }
+    .ce-lw__text { font-size: 19px; }
+    .ce-lw__grid { gap: 8px; }
+    .ce-stop { min-height: 60px; gap: 6px; padding: 6px 8px; }
+    .ce-stop i { width: 30px; height: 30px; font-size: 14px; }
+    .ce-stop b { font-size: 19px; }
+  }
+  /* 小遊戲進行中，圖鑑提示卡移到畫面下方、不擋點擊 */
+  body:has(.sty-game) .zc-pop { top: auto; bottom: calc(14px + var(--safe-b)); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .ce-opt.is-bad, .ce-stop.is-bad, .ce-lw__card.is-in, .ce-fill { animation: none; } }
+</style>
+</head>
+<body>
+<div id="ep-root"></div>
+
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+
+  // ═════════════════════════ 1. 基本設定 ═════════════════════════
+
+  const SID = 'S_cq04_chonger';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['ce_01', 'ce_02', 'ce_03', 'ce_04', 'ce_05', 'ce_06', 'ce_07', 'ce_08', 'ce_09', 'ce_10', 'ce_11', 'ce_12', 'ce_13', 'ce_14'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => []);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const FONT = '"LXGW WenKai TC", "Noto Serif TC", serif';
+  // 打開「說明」或圖鑑內容時，即時的小遊戲暫停
+  const paused = () => !!document.querySelector('.zh-modal, .zc-detail, .zc[role="dialog"]');
+  // 自動試玩的提示（答案標記）只在本機測試伺服器出現；正式網址加 &test=1 也不會有，排行榜才公平
+  const TEST = !!params.test && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  const META = ZH.findScenario(SID) || {
+    id: SID, vol: 'cq', ep: 4, name: '重耳流亡', episode: '流亡十九年的公子，在路上收到一塊土', year: 655,
+    genre: '角色扮演冒險', source: '〈宮之奇諫假道〉、〈介之推不言祿〉', guest: false, status: 'ready'
+  };
+
+  const ROLE = {
+    who: 'chonger', name: '重耳', glyph: '耳', color: '#4f7fb0',
+    title: '晉公子・流亡者',
+    lead: '父親寵愛驪姬，哥哥申生死了，你被迫逃出晉國。從狄到齊、從曹到楚，再到秦——一路上有人給你一塊土，有人送你二十乘馬，也有人趁你洗澡偷看。這一話，你要走完十九年的流亡路。'
+  };
+
+  const POINTS = [
+    { title: '原典：宮之奇諫假道', text: '「輔車相依，脣亡齒寒。」在虞公被晉國的璧和馬迷住以前，把宮之奇的諫言一句一句接上。' },
+    { title: '挑戰賽：醉載出齊', text: '公子醉倒在車上。左閃右避，在他醒來以前把車趕出齊國。' },
+    { title: '挑戰賽：流亡十九年', text: '從狄到秦，走過八個國家。竹簡燒完以前，說出每件事發生在哪裡。' },
+    { title: '原典：介之推不言祿', text: '大家都在領賞，只有一個人一句話也沒說。' }
+  ];
+
+
+  // ═════════════════════════ 2. 人物 ═════════════════════════
+  // 外型來自 Art_kit 的內建名冊（v0.1.1 起收錄本話全部人物）；代碼與名冊相同時優先用代碼查。
+
+  const CHARACTERS = [
+    { id: 'chonger', name: '重耳', glyph: '耳', color: '#4f7fb0', title: '你・晉公子' },
+    { id: 'wengong', name: '晉文公', glyph: '文', color: '#4f7fb0', title: '晉侯・重耳' },
+    { id: 'zifan', name: '子犯', glyph: '犯', color: '#3f7a5a', title: '重耳的舅舅・狐偃' },
+    { id: 'zhaocui', name: '趙衰', glyph: '衰', color: '#3f7f86', title: '從亡之臣' },
+    { id: 'jiezhitui', name: '介之推', glyph: '推', color: '#8a7350', title: '從亡之臣' },
+    { id: 'jiemu', name: '介之推的母親', glyph: '母', color: '#7a6a50', title: '介之推之母' },
+    { id: 'jinxian', name: '晉獻公', glyph: '獻', color: '#4f7fb0', title: '晉侯・重耳的父親' },
+    { id: 'liji', name: '驪姬', glyph: '驪', color: '#9a3f5f', title: '晉獻公的夫人' },
+    { id: 'shensheng', name: '申生', glyph: '申', color: '#5a86b8', title: '晉國太子' },
+    { id: 'sirenpi', name: '寺人披', glyph: '披', color: '#6a6480', title: '晉國宦官・勃鞮' },
+    { id: 'xunxi', name: '荀息', glyph: '荀', color: '#4f7fb0', title: '晉國大夫' },
+    { id: 'gongzhiqi', name: '宮之奇', glyph: '奇', color: '#6f6a9a', title: '虞國大夫' },
+    { id: 'yugong', name: '虞公', glyph: '虞', color: '#6f6a9a', title: '虞國國君' },
+    { id: 'jikui', name: '季隗', glyph: '隗', color: '#a0703a', title: '重耳之妻・狄女' },
+    { id: 'yeren', name: '五鹿野人', glyph: '野', color: '#86704e', title: '衛國五鹿的農人' },
+    { id: 'qijiang', name: '姜氏', glyph: '姜', color: '#8a5aa0', title: '重耳之妻・齊國宗室之女' },
+    { id: 'caogong', name: '曹共公', glyph: '曹', color: '#9a5a6a', title: '曹國國君' },
+    { id: 'xifuji', name: '僖負羈', glyph: '僖', color: '#9a5a6a', title: '曹國大夫' },
+    { id: 'xifujiqi', name: '僖負羈之妻', glyph: '妻', color: '#8a6a8a', title: '曹國大夫僖負羈的妻子' },
+    { id: 'songxiang', name: '宋襄公', glyph: '宋', color: '#8a6a4a', title: '宋國國君' },
+    { id: 'shuzhan', name: '叔詹', glyph: '詹', color: '#2f8a72', title: '鄭國大夫' },
+    { id: 'chucheng', name: '楚成王', glyph: '楚', color: '#a83a2c', title: '楚君' },
+    { id: 'ziyu', name: '子玉', glyph: '玉', color: '#b8352b', title: '楚國令尹・成得臣' },
+    { id: 'mugong', name: '秦穆公', glyph: '穆', color: '#7a8096', title: '秦伯' },
+    { id: 'huaiying', name: '懷嬴', glyph: '嬴', color: '#8a6aa0', title: '秦穆公之女' },
+    { id: 'toux', name: '頭須', glyph: '須', color: '#7a6a52', title: '重耳的小臣・管倉庫' },
+    { id: 'shiguan', name: '史官', glyph: '史', color: '#8a7350' }
+  ];
+
+
+  // ═════════════════════════ 3. 數值 ═════════════════════════
+
+  const METERS = [
+    { id: 'zhi', label: '志氣', icon: 'flame', max: 100, start: 50, danger: 30 },
+    { id: 'xin', label: '人心', icon: 'people', max: 100, start: 40 }
+  ];
+
+
+  // ═════════════════════════ 4. 說明 ═════════════════════════
+
+  const HELP =
+    '<p><b>好幾個視角</b>：你主要扮演公子重耳；第一幕換成虞國大夫宮之奇，醉載出齊時是子犯，最後是介之推。</p>' +
+    '<p style="margin-top:10px"><b>諫假道</b>：虞公一句一句找藉口，你要在時限內接上宮之奇的原句。接錯或太慢，虞公就更捨不得晉國的璧和馬。</p>' +
+    '<p style="margin-top:10px"><b>醉載出齊</b>：左右閃避石頭、坑洞和巡卒，在公子醒來以前把車趕出齊國。</p>' +
+    '<p style="margin-top:10px"><b>流亡十九年</b>：秦穆公問起一路的遭遇。每片竹簡寫著一件事，在它燒完以前，點出這件事發生在哪裡。</p>' +
+    '<p style="margin-top:10px"><b>志氣、人心</b>：志氣是回國的決心，人心是從者與諸侯對你的信任。兩者都高、挑戰賽成績也好，結局最好。</p>' +
+    '<p style="margin-top:10px"><b>史實錨點</b>：本話 14 題，其中 6 題是「如果你是他，你怎麼做」。選錯會先看到歧路，再回到史書。</p>' +
+    '<p style="margin-top:10px"><b>挑戰賽</b>：每個小遊戲最多挑戰三次，劇情採計最好的一次，成績會列入全班排行。</p>' +
+    '<p style="margin-top:10px"><b>中途離開</b>：會自動存檔，下次從這一段的開頭接著玩。</p>';
+
+
+  // ═════════════════════════ 5. 場景 ═════════════════════════
+
+  // 流亡路線地圖（座標在 1000×620 的羊皮紙上，和第 7 話的地圖同一套）
+  function mapSvg(stage) {
+    const BLUE = '#3d6fa8';
+    const RED = '#a3362c';
+    const PAST = '#7d93ad';
+    const head = color => '<marker id="ce-ah-' + color.slice(1) + '" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="' + color + '"/></marker>';
+    const arrow = (d, color, dash) => '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="6" stroke-linecap="round"' + (dash ? ' stroke-dasharray="4 12"' : '') + ' marker-end="url(#ce-ah-' + color.slice(1) + ')"/>';
+    const faded = d => '<path d="' + d + '" fill="none" stroke="' + PAST + '" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 9" opacity=".75"/>';
+    const city = (x, y, name, sub) =>
+      '<rect x="' + (x - 8) + '" y="' + (y - 8) + '" width="16" height="16" rx="2" fill="#2b2418"/>' +
+      '<text class="m-city" x="' + x + '" y="' + (y - 16) + '">' + name + '</text>' +
+      (sub ? '<text class="m-sub" x="' + x + '" y="' + (y + 30) + '">' + sub + '</text>' : '');
+    const dot = (x, y, name, dy, dx) =>
+      '<circle cx="' + x + '" cy="' + y + '" r="6" fill="#2b2418"/>' +
+      '<text class="m-small" x="' + (x + (dx || 0)) + '" y="' + (y + (dy || -14)) + '">' + name + '</text>';
+    // 絳：國都的小字放右邊，免得被路線蓋住
+    const jiang = '<rect x="267" y="167" width="16" height="16" rx="2" fill="#2b2418"/><text class="m-city" x="275" y="159">絳</text>' +
+      '<text class="m-sub" x="314" y="182">晉都</text>';
+    const note = (text, x, y, color) => '<text class="m-note" x="' + x + '" y="' + y + '" style="fill:' + color + '">' + text + '</text>';
+
+    const LEGS = {
+      di: ['M225 98 C300 64 420 62 512 92'],
+      qi: ['M520 100 C560 150 585 195 598 228', 'M606 230 C625 200 645 178 664 166', 'M680 162 C740 150 810 166 866 190'],
+      chu: ['M870 206 C820 260 760 300 708 326', 'M698 340 C690 380 672 410 656 432', 'M642 442 C600 444 552 432 510 420', 'M496 426 C440 462 382 500 340 532'],
+      qin: ['M320 540 C210 540 118 440 98 302', 'M106 288 C150 252 196 228 236 220', 'M248 214 C256 202 264 192 270 184']
+    };
+    const NOTES = {
+      di: [['奔狄', 372, 52, BLUE]],
+      qi: [['過衛', 520, 214, BLUE], ['五鹿乞食', 640, 116, BLUE], ['醉而遣之', 790, 132, BLUE]],
+      chu: [['受飧反璧', 822, 318, BLUE], ['宋贈馬', 752, 470, BLUE], ['鄭不禮', 548, 396, BLUE], ['許辟三舍', 470, 520, RED]],
+      qin: [['秦伯納之', 168, 470, BLUE], ['河上之誓', 150, 196, BLUE]]
+    };
+    const ORDER = ['di', 'qi', 'chu', 'qin'];
+    let route = '';
+    if (stage === 'jia') {
+      route =
+        arrow('M280 190 C292 222 300 248 302 268', RED) + arrow('M303 298 C305 314 306 326 306 340', RED) +
+        note('假道於虞', 396, 246, RED) + note('伐虢', 236, 336, RED) +
+        '<text class="m-gift" x="150" y="228">屈產之乘</text><text class="m-gift" x="150" y="252">垂棘之璧</text>' +
+        '<path d="M196 238 C222 238 238 240 256 252" fill="none" stroke="#7a5a2a" stroke-width="3" stroke-dasharray="3 6"/>';
+    } else {
+      const idx = ORDER.indexOf(stage);
+      ORDER.forEach((st, n) => {
+        if (n < idx) route += LEGS[st].map(faded).join('');
+        else if (n === idx) route += LEGS[st].map(d => arrow(d, BLUE, true)).join('');
+      });
+      route += (NOTES[stage] || []).map(x => note(x[0], x[1], x[2], x[3])).join('');
+    }
+    const places = stage === 'jia'
+      ? dot(302, 284, '虞', 7, -24) + dot(306, 352, '上陽（虢）', 32) + city(440, 384, '王城', '周')
+      : dot(225, 98, '蒲', -14) + (stage === 'di' ? dot(330, 110, '屈', 30) : '') + dot(520, 96, '狄', -14) +
+        city(600, 238, '衛') + dot(672, 160, '五鹿', -14) + city(875, 196, '齊') + '<text class="m-sub" x="920" y="203">臨淄</text>' +
+        city(700, 330, '曹') + city(650, 440, '宋') + dot(503, 422, '鄭', 30) + city(330, 540, '郢', '楚都') +
+        city(98, 292, '雍', '秦都') + (stage === 'qin' ? dot(242, 218, '令狐', 30) : '');
+    return '<svg class="ce-map" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+      '<defs>' + head(BLUE) + head(RED) + '</defs>' +
+      '<rect x="16" y="16" width="968" height="588" rx="18" fill="#e7d9b0" stroke="#8a7350" stroke-width="3"/>' +
+      '<g opacity=".45">' +
+      '<path d="M186 24 L480 24 L470 304 C420 314 360 320 300 320 C262 316 236 310 222 300 C205 210 192 110 186 24 Z" fill="#c5cfd8"/>' +
+      '<path d="M24 24 L178 24 C190 120 202 220 214 300 L206 470 L24 470 Z" fill="#cdc6d4"/>' +
+      '<path d="M760 24 L976 24 L976 318 C900 300 830 262 770 232 Z" fill="#d8c5a6"/>' +
+      '<path d="M200 486 C360 466 560 492 760 530 L760 598 L200 598 Z" fill="#d6b8a2"/>' +
+      '</g>' +
+      '<path d="M180 20 C192 110 205 210 222 300 C300 322 380 318 450 304 C520 290 590 262 650 220 C710 178 790 110 900 40" fill="none" stroke="#6a8bb0" stroke-width="8" stroke-linecap="round"/>' +
+      '<text class="m-big" x="372" y="190">晉</text><text class="m-big" x="96" y="430">秦</text><text class="m-big" x="612" y="92">狄</text>' +
+      '<text class="m-big" x="905" y="112">齊</text><text class="m-big" x="560" y="582">楚</text>' +
+      '<text class="m-river" x="148" y="150">黃河</text><text class="m-river" x="520" y="318">黃河</text>' +
+      route + places + jiang +
+      '</svg>';
+  }
+
+  const MAP_SKY = 'radial-gradient(120% 90% at 50% 30%, #2b2f46 0%, #121628 75%)';
+  const SCENES = {
+    map_jia: { sky: MAP_SKY, art: mapSvg('jia') },
+    map_di: { sky: MAP_SKY, art: mapSvg('di') },
+    map_qi: { sky: MAP_SKY, art: mapSvg('qi') },
+    map_chu: { sky: MAP_SKY, art: mapSvg('chu') },
+    map_qin: { sky: MAP_SKY, art: mapSvg('qin') },
+    jin_court: { base: 'palace', tod: 'dusk', banner: '#4f7fb0', glyph: '晉' },
+    jin_night: { base: 'palace', tod: 'night', banner: '#4f7fb0', glyph: '晉' },
+    jin_fire: { base: 'palace', tod: 'night', weather: 'embers', banner: '#4f7fb0', glyph: '晉' },
+    jin_hall: { base: 'hall', tod: 'day' },
+    pu_night: { base: 'night', tod: 'night' },
+    yu_hall: { base: 'hall', tod: 'day' },
+    yu_road: { base: 'road', tod: 'dusk', weather: 'leaves' },
+    di_field: { base: 'field', tod: 'dusk', weather: 'fireflies' },
+    wulu: { base: 'village', tod: 'day' },
+    qi_garden: { base: 'garden', tod: 'day', weather: 'petals' },
+    qi_sang: { base: 'forest', tod: 'dusk', weather: 'leaves' },
+    qi_room: { base: 'room', tod: 'night' },
+    qi_border: { base: 'road', tod: 'dawn', weather: 'mist' },
+    cao_room: { base: 'room', tod: 'day' },
+    cao_night: { base: 'room', tod: 'night' },
+    song_gate: { base: 'city', tod: 'day', banner: '#8a6a4a', glyph: '宋' },
+    zheng_gate: { base: 'city', tod: 'dusk', banner: '#2f8a72', glyph: '鄭' },
+    chu_feast: { base: 'banquet', tod: 'night' },
+    qin_palace: { base: 'palace', tod: 'day', banner: '#3d4352', glyph: '秦' },
+    qin_feast: { base: 'banquet', tod: 'night' },
+    he_ferry: { base: 'river', tod: 'dusk' },
+    jie_home: { base: 'room', tod: 'dusk' },
+    mian_shan: { base: 'mountain', tod: 'dusk', weather: 'mist' }
+  };
+
+
+  // ═════════════════════════ 6. 劇情節點 ═════════════════════════
+
+  const NODES = {
+
+    // ───── 序：驪姬之亂 ─────
+
+    n_intro: async ctx => {
+      await ctx.chapter('序　驪姬之亂', '前 656 年・晉');
+      await ctx.scene('jin_court', { place: '晉・絳', time: '前 656 年冬' });
+      ctx.cast(['jinxian', 'liji']);
+      await ctx.say([
+        { text: '晉獻公晚年寵愛驪姬。驪姬生了兒子奚齊，一心想讓他當太子。' },
+        { text: '擋在奚齊前面的，是太子申生，還有兩位賢能的公子——重耳和夷吾。' }
+      ]);
+      ctx.cast(['liji', 'shensheng']);
+      await ctx.say([
+        { who: 'liji', text: '君夢齊姜，必速祭之。', expr: 'smirk' },
+        { text: '——國君夢見您的母親齊姜了，您得趕快去祭拜她。（申生的母親齊姜，和後來重耳在齊國娶的姜氏，是不同的人。）' },
+        { text: '申生到曲沃祭祀母親，把祭肉送回宮裡。國君正好出外打獵，驪姬把肉在宮中放了六天。' },
+        { text: '國君回來，驪姬在肉裡下了毒才獻上。國君把肉灑在地上祭地，地面鼓了起來；拿給狗吃，狗死了。' },
+        { who: 'liji', text: '賊由大子。', expr: 'sad' }
+      ]);
+      ctx.cast(['shensheng']);
+      await ctx.say([
+        { text: '有人勸申生去向國君說明。申生不肯：' },
+        { who: 'shensheng', text: '君非姬氏，居不安，食不飽。我辭，姬必有罪。君老矣，吾又不樂。', expr: 'sad' },
+        { text: '——國君沒有驪姬，睡不安穩、吃不下飯。我一辯白，她就有罪；國君老了，我不忍心讓他不快樂。' },
+        { text: '又有人勸他逃走。申生說：國君不明白我沒有罪，我背著這樣的罪名出去，誰肯收留我？' },
+        { text: '十二月，申生死在新城。' },
+        { text: '驪姬接著對國君說：兩位公子都知道這件事。重耳逃到蒲城，夷吾逃到屈。' }
+      ]);
+      ctx.log('驪姬譖大子申生，申生死於新城。姬遂譖二公子，重耳奔蒲，夷吾奔屈。');
+      return 'n_pu';
+    },
+
+    n_pu: async ctx => {
+      await ctx.scene('pu_night', { place: '晉・蒲城', time: '前 655 年・夜' });
+      ctx.cast(['chonger', 'zifan']);
+      await ctx.say([
+        { text: '（你是公子重耳）' },
+        { text: '父親的命令到了：宦官寺人披帶兵來蒲城抓你。城外火把一片通明。' },
+        { who: 'zifan', text: '公子，蒲城的人都拿起了武器，願意替您守城一戰！', expr: 'serious' }
+      ]);
+      const a = await ctx.anchor('ce_01');
+      ctx.add('xin', a && a.correct ? 6 : 3);
+      await ctx.say([
+        { who: 'chonger', text: '君父之命不校。', expr: 'serious' },
+        { text: '重耳還通告眾人：「校者吾讎也。」——誰抵抗，誰就是我的仇人。' },
+        { text: '他翻過城牆逃走。寺人披追上來，一劍砍斷了他的袖口（袪）。' },
+        { text: '重耳沒有回頭，一路逃到了狄。' }
+      ]);
+      ctx.log('公使寺人披伐蒲。重耳曰：「君父之命不校。」踰垣而走，披斬其袪，遂奔狄。');
+      return 'n_jia';
+    },
+
+    // ───── 第一幕：宮之奇諫假道 ─────
+
+    n_jia: async ctx => {
+      await ctx.chapter('第一幕　宮之奇諫假道', '前 655 年・虞');
+      await ctx.scene('map_jia', { place: '假道伐虢', time: '前 658 — 前 655 年' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '重耳逃亡的這一年，晉國的軍隊正忙著另一件事。' },
+        { text: '晉國南邊，隔著小小的虞國，是虢國。要打虢國，得先向虞國借路。' }
+      ]);
+      await ctx.scene('jin_court', { place: '晉・絳', time: '三年前・前 658 年' });
+      ctx.cast(['jinxian', 'xunxi']);
+      await ctx.say([
+        { text: '三年前，大夫荀息出了個主意：拿屈地出產的良馬、垂棘出產的美玉，送給虞公，向他借路。' },
+        { who: 'jinxian', text: '是吾寶也。', expr: 'worried' },
+        { who: 'xunxi', text: '若得道於虞，猶外府也。', expr: 'smirk' },
+        { text: '——只要借到了路，這些寶物就像放在宮外的庫房裡，早晚還是您的。' },
+        { who: 'jinxian', text: '宮之奇存焉。' },
+        { who: 'xunxi', text: '宮之奇之為人也，懦而不能強諫，且少長於君，君暱之；雖諫，將不聽。' },
+        { text: '——宮之奇性子軟，不會硬諫；又從小和虞公一起長大，虞公跟他太親近，就算勸，也聽不進去。' }
+      ]);
+      ctx.unlock('treasure:chuijibi');
+      await ctx.say([{ text: '虞公收下了璧和馬，答應借路，還自願先出兵。晉、虞兩軍一起滅了虢國的下陽。' }]);
+      ctx.log('荀息以屈產之乘、垂棘之璧假道於虞以伐虢，滅下陽。');
+      return 'n_yu';
+    },
+
+    n_yu: async ctx => {
+      await ctx.scene('yu_hall', { place: '虞・朝堂', time: '前 655 年秋' });
+      ctx.cast(['gongzhiqi', 'yugong']);
+      await ctx.say([
+        { text: '（視角轉換）你是虞國大夫宮之奇。' },
+        { text: '三年過去，晉國的使者又來了，說的還是那句話：借路，伐虢。殿上擺著晉國送來的禮物。' },
+        { who: 'gongzhiqi', text: '虢，虞之表也；虢亡，虞必從之。晉不可啟，寇不可翫。一之謂甚，其可再乎？', expr: 'serious' },
+        { who: 'gongzhiqi', text: '諺所謂「輔車相依，脣亡齒寒」者，其虞、虢之謂也。' }
+      ]);
+      await ctx.anchor('ce_02');
+      await ctx.say([
+        { who: 'yugong', text: '晉，吾宗也，豈害我哉？', expr: 'happy' },
+        { text: '——晉國和我們同宗，怎麼會害我們呢？虞公說著，眼睛還離不開那塊璧。' },
+        { text: '虞公還有一肚子理由。你得一句一句頂回去——趕在他被璧和馬迷住以前。' }
+      ]);
+      ctx.cast([]);
+      const r = await ctx.minigame({
+        id: 'wen_ce_jian', title: '諫假道：脣亡齒寒', skip: true,
+        goal: '在虞公被璧和馬迷住以前，接上宮之奇的十一句原文。',
+        help: '<p>竹簡上是宮之奇說到一半的話，從下面三片竹簡裡選出原文的下半句（電腦可以按 1、2、3）。</p>' +
+          '<p style="margin-top:8px">每一句都有時限，越後面越短。上方的競速條：上面是你的諫言進度，下面是虞公被璧和馬吸引的程度——接錯或太慢，它就往前衝；它先到底，虞公就收下禮物了。</p>' +
+          '<p style="margin-top:8px">答得越快、連續答對越多，分數越高。</p>'
+      }, (body, g) => jianGame(body, g));
+      ctx.flag('jianScore', r.skipped ? 0 : (r.score || 0));
+      ctx.flag('jianLost', !r.skipped && !!r.lost);
+      // 圖鑑的提示卡放在小遊戲之後，免得蓋住遊戲畫面
+      ctx.unlock('idiom:fucheyangyi');
+      ctx.unlock('idiom:jiadaofaguo');
+      await ctx.scene('yu_hall', { place: '虞・朝堂', time: '前 655 年秋' });
+      ctx.cast(['gongzhiqi', 'yugong']);
+      await ctx.say([
+        { text: r.skipped ? '宮之奇回答：' : r.passed ? '你一句接一句，說得虞公一時答不上話。完整的諫言是這樣的：' : '你說得有些吃力。史書上，宮之奇是這樣說的：' },
+        { who: 'gongzhiqi', text: '大伯、虞仲，大王之昭也。大伯不從，是以不嗣。虢仲、虢叔，王季之穆也，為文王卿士，勳在王室，藏於盟府。將虢是滅，何愛於虞？', expr: 'serious' },
+        { who: 'gongzhiqi', text: '且虞能親於桓、莊乎？其愛之也，桓、莊之族何罪，而以為戮？不唯偪乎？親以寵偪，猶尚害之，況以國乎？' }
+      ]);
+      await ctx.anchor('ce_03');
+      ctx.unlock('person:cq_gongzhiqi');
+      ctx.log(r.skipped ? '宮之奇諫（略過）。' : '宮之奇諫：' + (r.passed ? '言辭鋒利，' : '辭有不達，') + '虞公猶不聽。');
+      return 'n_yu2';
+    },
+
+    n_yu2: async ctx => {
+      await ctx.scene('yu_hall', { place: '虞・朝堂', time: '前 655 年秋' });
+      ctx.cast(['gongzhiqi', 'yugong']);
+      await ctx.say([
+        { who: 'yugong', text: '吾享祀豐絜，神必據我。', expr: 'smirk' },
+        { text: '——我祭祀的供品又豐盛又潔淨，神一定會保佑我。' },
+        { who: 'gongzhiqi', text: '臣聞之：鬼神非人實親，惟德是依。故《周書》曰：「皇天無親，惟德是輔。」又曰：「黍稷非馨，明德惟馨。」', expr: 'serious' },
+        { who: 'gongzhiqi', text: '又曰：「民不易物，惟德繄物。」如是，則非德民不和，神不享矣。神所馮依，將在德矣。若晉取虞，而明德以薦馨香，神其吐之乎？' }
+      ]);
+      await ctx.anchor('ce_04');
+      await ctx.say([{ text: '弗聽，許晉使。——虞公不聽，答應了晉國的使者。' }]);
+      await ctx.scene('yu_road', { place: '虞・城外', time: '前 655 年秋・黃昏' });
+      ctx.cast(['gongzhiqi']);
+      await ctx.say([
+        { text: '宮之奇帶著全族的人，離開了虞國。走之前，他回頭望了一眼。' },
+        { who: 'gongzhiqi', text: '虞不臘矣。在此行也，晉不更舉矣。', expr: 'sad' }
+      ]);
+      await ctx.anchor('ce_05');
+      await ctx.scene('map_jia', { place: '晉滅虢、虞', time: '前 655 年冬' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '八月，晉軍包圍虢國的上陽。冬十二月初一，晉滅虢，虢公醜逃到京師。' },
+        { text: '晉軍回師，住在虞國——趁虞國毫無防備，發動襲擊，把虞國也滅了。虞公和大夫井伯都成了俘虜。' },
+        { who: 'shiguan', text: '《穀梁傳》說，荀息牽著馬、捧著璧回來見晉獻公：「璧則猶是也，而馬齒加長矣。」——璧還是原來的璧，只是馬老了幾歲。' },
+        { who: 'shiguan', text: '據《史記》，被俘的虞國大夫裡有一位百里奚，後來被當作陪嫁的臣僕送到秦國——他成了秦穆公的賢相。' }
+      ]);
+      ctx.unlock('text:gongzhiqijian');
+      ctx.log('晉復假道於虞以伐虢，宮之奇諫，弗聽，以其族行。冬，晉滅虢，師還，館于虞，遂襲虞，滅之。');
+      return 'n_di';
+    },
+
+    // ───── 第二幕：流亡十九年 ─────
+
+    n_di: async ctx => {
+      await ctx.chapter('第二幕　流亡十九年', '前 655 — 前 637 年');
+      await ctx.scene('map_di', { place: '奔狄', time: '前 655 年' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '回到重耳。他逃到了北方的狄。' },
+        { text: '跟著他的，有舅舅狐偃（子犯）、趙衰、顛頡、魏武子、司空季子（胥臣）……還有一個不太說話的人，叫介之推。' }
+      ]);
+      ctx.unlock('person:cq_zifan');
+      await ctx.scene('di_field', { place: '狄', time: '前 655 — 前 644 年' });
+      ctx.cast(['chonger', 'jikui', 'zhaocui']);
+      await ctx.say([
+        { text: '狄人送來兩位女子：叔隗、季隗。公子娶了季隗，生下伯鯈、叔劉；把叔隗嫁給趙衰，生下趙盾。' },
+        { text: '幾年後，晉獻公去世，晉國大亂。弟弟夷吾靠著秦國幫忙回國即位，就是晉惠公——他是第 5 話〈韓原之戰〉的主角。' },
+        { text: '晉惠公又派寺人披來行刺。那時公子正陪著狄君在渭水邊打獵；國君給寺人披三天的期限，他第二天就趕到了。公子又一次逃過。' },
+        { text: '在狄住了十二年，公子決定動身，到東方的大國齊國去。' }
+      ]);
+      const pick = await ctx.choose({
+        title: '臨別', text: '要走了。季隗站在帳篷外。你對她說：',
+        options: [
+          { label: '「等我二十五年。我不回來，你再改嫁。」', value: 'wait' },
+          { label: '「跟我一起走吧。」', desc: '前路未卜，帶著家小，從者會為難。', value: 'take' },
+          { label: '「你不必等我。」', value: 'free' }
+        ]
+      });
+      ctx.flag('kui', pick);
+      if (pick === 'wait') { ctx.add('zhi', 5); ctx.add('xin', 3); }
+      else if (pick === 'take') ctx.add('xin', -3);
+      else ctx.add('zhi', 5);
+      const lines = [];
+      if (pick === 'take') lines.push({ text: '季隗搖搖頭，看了看兩個孩子。史書上，公子說的是：「待我二十五年，不來而後嫁。」' });
+      else if (pick === 'free') lines.push({ text: '季隗笑了。史書上，公子說的是：「待我二十五年，不來而後嫁。」' });
+      else lines.push({ who: 'chonger', text: '待我二十五年，不來而後嫁。', expr: 'serious' });
+      lines.push({ who: 'jikui', text: '我二十五年矣，又如是而嫁，則就木焉。請待子。', expr: 'happy' });
+      lines.push({ text: '——我已經二十五歲了，再等二十五年才改嫁，那時都要進棺材了。我等你就是。' });
+      lines.push({ text: '處狄十二年而行。' });
+      await ctx.say(lines);
+      ctx.log('處狄十二年而行。謂季隗曰：「待我二十五年，不來而後嫁。」');
+      return 'n_wulu';
+    },
+
+    n_wulu: async ctx => {
+      await ctx.scene('map_qi', { place: '東行', time: '前 644 年' });
+      ctx.cast([]);
+      await ctx.say([{ text: '一行人向東走，經過衛國。衛文公不以禮相待。' }]);
+      await ctx.scene('wulu', { place: '衛・五鹿', time: '前 644 年' });
+      ctx.cast(['chonger', 'zifan', 'yeren']);
+      await ctx.say([
+        { text: '走出五鹿的時候，糧食已經吃光了。田邊有個農人正在歇息。' },
+        { who: 'chonger', text: '這位老鄉，能不能分一點吃的給我們？', expr: 'worried' },
+        { who: 'yeren', text: '吃的？嘿嘿——這個給你。', expr: 'happy' },
+        { text: '農人遞過來的，是一塊泥土。' }
+      ]);
+      const a = await ctx.anchor('ce_06');
+      ctx.add('zhi', a && a.correct ? 10 : 5);
+      ctx.add('xin', 3);
+      await ctx.say([
+        { who: 'zifan', text: '天賜也。', expr: 'happy' },
+        { text: '——這是上天賜給公子的土地啊！公子叩頭拜謝，把土塊恭恭敬敬地放上了車。' }
+      ]);
+      ctx.unlock('treasure:kuai');
+      ctx.log('過衛，衛文公不禮焉。出於五鹿，乞食於野人，野人與之塊。稽首受而載之。');
+      return 'n_qi';
+    },
+
+    n_qi: async ctx => {
+      await ctx.scene('qi_garden', { place: '齊・臨淄', time: '前 644 年起' });
+      ctx.cast(['chonger', 'qijiang']);
+      await ctx.say([
+        { text: '到了齊國，霸主齊桓公以禮相待，把宗室的女兒姜氏嫁給公子，還送了馬二十乘——八十匹馬。' },
+        { text: '公子安之。——公子住得很舒服，不想再走了。' },
+        { text: '不久齊桓公去世，齊國陷入內亂，再也沒有人能送公子回國。可是公子，好像也不急了。' }
+      ]);
+      const pick = await ctx.choose({
+        title: '齊國的日子', text: '在臨淄的日子，你最常做什麼？',
+        options: [
+          { label: '陪姜氏在園中賞花飲酒', value: 'wine' },
+          { label: '騎著齊侯送的馬出城打獵', value: 'hunt' },
+          { label: '讀書，打聽晉國的消息', value: 'news' }
+        ]
+      });
+      ctx.flag('qiLife', pick);
+      ctx.add('zhi', pick === 'wine' ? -15 : pick === 'hunt' ? -10 : -5);
+      await ctx.say([{ text: pick === 'news' ? '你偶爾也會打聽晉國的消息。可是日子一天比一天安穩，回國的念頭越來越淡。' : '日子一天比一天安穩。晉國，好像越來越遠了。' }]);
+      await ctx.scene('qi_sang', { place: '齊・城外桑林', time: '某日黃昏' });
+      ctx.cast(['zifan', 'zhaocui']);
+      await ctx.say([
+        { text: '從者以為不可。——跟隨公子的人都覺得，不能再這樣下去了。' },
+        { who: 'zifan', text: '再待下去，公子就要在齊國終老了。得想個辦法讓他走。', expr: 'worried' },
+        { who: 'zhaocui', text: '可是公子不會答應的……', expr: 'worried' },
+        { text: '他們在桑樹下商量離開的計畫。沒想到樹上有個採桑的侍女，全聽見了。她跑回去告訴了姜氏。' }
+      ]);
+      return 'n_jiang';
+    },
+
+    n_jiang: async ctx => {
+      await ctx.scene('qi_room', { place: '齊・公子府', time: '當夜' });
+      ctx.cast(['qijiang', 'chonger']);
+      await ctx.say([
+        { text: '姜氏沒有讓消息傳出去，反而來找公子。' },
+        { who: 'qijiang', text: '子有四方之志。', expr: 'serious' },
+        { who: 'chonger', text: '無之。', expr: 'surprised' },
+        { who: 'qijiang', text: '行也！懷與安，實敗名。', expr: 'angry' }
+      ]);
+      await ctx.anchor('ce_07');
+      await ctx.say([
+        { who: 'chonger', text: '……我不走。', expr: 'sad' },
+        { text: '公子不可。姜氏只好和子犯商量了一個辦法——醉而遣之：把公子灌醉，抬上車，送出齊國。' }
+      ]);
+      return 'n_zuiche';
+    },
+
+    n_zuiche: async ctx => {
+      await ctx.scene('qi_border', { place: '齊・臨淄城外', time: '夜將盡' });
+      ctx.cast(['zifan']);
+      await ctx.say([
+        { text: '（視角轉換）你是子犯。公子已經醉倒在車上，鼾聲如雷。' },
+        { who: 'zifan', text: '天亮以前，一定要出齊境。路上一顛，公子醒過來，可就前功盡棄了！', expr: 'serious' }
+      ]);
+      ctx.cast([]);
+      const r = await ctx.minigame({
+        id: 'ce_zuiche', title: '醉載出齊', skip: true,
+        goal: '左右閃開石頭、坑洞和巡卒，在公子醒來以前把車趕出齊境。',
+        help: '<p>馬車會一直往前跑。按畫面左半邊（或 ← 鍵、「往左」按鈕）換到左邊一道，按右半邊（或 → 鍵、「往右」按鈕）換到右邊一道。</p>' +
+          '<p style="margin-top:8px">撞上石頭、坑洞或齊國的巡卒，車子一顛，公子就醒一點。上方的競速條：上面是出齊的路程，下面是公子醒酒的程度。</p>' +
+          '<p style="margin-top:8px">連續平穩地閃過，公子會睡得更沉。越往後車越快，巡卒還會突然換道（頭上的箭頭是提示）。</p>'
+      }, (body, g) => zuicheGame(body, g));
+      ctx.flag('zuiScore', r.skipped ? 0 : (r.score || 0));
+      ctx.add('zhi', r.skipped ? 10 : r.passed ? 15 : 8);
+      ctx.unlock('person:cq_qijiang');
+      await ctx.scene('qi_border', { place: '齊境外', time: '黎明' });
+      ctx.cast(['chonger', 'zifan']);
+      await ctx.say([
+        { text: r.skipped ? '馬車搖搖晃晃，出了齊境。' : r.passed ? '車子出了齊境，天也亮了。公子這才醒過來。' : '還沒出齊境，公子就醒了——好在車子已經走得太遠，回不去了。' },
+        { who: 'chonger', text: '……這是哪裡？子犯！你——', expr: 'angry' },
+        { text: '醒，以戈逐子犯。——公子抓起戈，追著子犯就打。' },
+        { who: 'zifan', text: '公子息怒！晉國在西邊等著您哪！', expr: 'worried' },
+        { text: '追了一陣，公子停下來，喘著氣回頭望。臨淄的城牆，已經看不見了。' }
+      ]);
+      ctx.log(r.skipped ? '姜與子犯謀，醉而遣之（略過）。' : '姜與子犯謀，醉而遣之。' + (r.passed ? '車出齊境，公子乃醒。' : '公子中道而醒。') + '醒，以戈逐子犯。');
+      return 'n_cao';
+    },
+
+    n_cao: async ctx => {
+      await ctx.scene('map_chu', { place: '南下', time: '前 638 年前後' });
+      ctx.cast([]);
+      await ctx.say([{ text: '離開齊國，公子一行向南走：曹、宋、鄭，再到南方的楚國。' }]);
+      await ctx.scene('cao_room', { place: '曹・館舍', time: '前 638 年前後' });
+      ctx.cast(['chonger', 'caogong']);
+      await ctx.say([
+        { text: '曹共公聽說公子的肋骨長得連成一片（駢脅），很想看看是什麼樣子。' },
+        { text: '公子洗澡的時候，曹共公竟然湊到簾子外偷看。' },
+        { who: 'caogong', text: '嘿嘿，果然是連在一起的！', expr: 'smirk' },
+        { who: 'chonger', text: '……！', expr: 'angry' }
+      ]);
+      await ctx.scene('cao_night', { place: '曹・僖負羈家', time: '當晚' });
+      ctx.cast(['xifujiqi', 'xifuji']);
+      await ctx.say([
+        { text: '曹國大夫僖負羈回到家，妻子對他說：' },
+        { who: 'xifujiqi', text: '吾觀晉公子之從者，皆足以相國。若以相，夫子必反其國。', expr: 'serious' },
+        { who: 'xifujiqi', text: '反其國，必得志於諸侯。得志於諸侯而誅無禮，曹其首也。子盍蚤自貳焉？' },
+        { who: 'xifuji', text: '……夫人說得是。', expr: 'worried' },
+        { text: '僖負羈派人給公子送去一盤飯菜。飯底下，藏著一塊璧。' }
+      ]);
+      ctx.cast(['chonger', 'zifan']);
+      const a = await ctx.anchor('ce_08');
+      ctx.add('xin', a && a.correct ? 6 : 2);
+      ctx.unlock('person:cq_xifujiqi');
+      await ctx.say([
+        { text: '公子受飧反璧。——飯菜收下了，璧玉原封不動地送了回去。' },
+        { who: 'shiguan', text: '六年後晉軍攻入曹國，晉文公下令：不准進入僖負羈的家。報施也。' }
+      ]);
+      ctx.log('及曹，曹共公觀其駢脅。僖負羈饋盤飧，寘璧焉，公子受飧反璧。');
+      return 'n_songzheng';
+    },
+
+    n_songzheng: async ctx => {
+      await ctx.scene('song_gate', { place: '宋・商丘', time: '前 638 年前後' });
+      ctx.cast(['chonger', 'songxiang']);
+      await ctx.say([
+        { text: '到了宋國。宋襄公剛在泓水被楚軍打敗，腿上還帶著傷，仍然以國禮招待公子，送他馬二十乘。' },
+        { who: 'songxiang', text: '宋國小，幫不上大忙。這些馬，請公子收下。', expr: 'sad' },
+        { who: 'shiguan', text: '宋襄公為什麼會在泓水大敗？那是第 6 話〈宋襄圖霸〉的故事。' }
+      ]);
+      await ctx.scene('zheng_gate', { place: '鄭・新鄭', time: '前 637 年' });
+      ctx.cast(['shuzhan']);
+      await ctx.say([
+        { text: '到了鄭國，鄭文公同樣不以禮相待。大夫叔詹勸他：' },
+        { who: 'shuzhan', text: '臣聞天之所啟，人弗及也。晉公子有三焉，天其或者將建諸，君其禮焉！', expr: 'worried' },
+        { text: '——上天要扶持的人，凡人比不上。晉公子有三件難得的事，也許上天要立他為君，您還是以禮相待吧！' },
+        { text: '鄭文公不聽。' },
+        { who: 'shiguan', text: '七年後，秦、晉兩國大軍包圍鄭國，理由之一就是「以其無禮於晉」——那是第 8 話〈秦晉圍鄭〉。' }
+      ]);
+      ctx.log('及宋，宋襄公贈之以馬二十乘。及鄭，鄭文公亦不禮焉，叔詹諫，弗聽。');
+      return 'n_chu';
+    },
+
+    n_chu: async ctx => {
+      await ctx.scene('chu_feast', { place: '楚・郢都', time: '前 637 年・夜宴' });
+      ctx.cast(['chucheng', 'chonger', 'ziyu']);
+      await ctx.say([
+        { text: '楚成王用招待國君的禮節款待公子。酒過三巡——' },
+        { who: 'chucheng', text: '公子若反晉國，則何以報不穀？', expr: 'smirk' },
+        { who: 'chonger', text: '子女玉帛，則君有之；羽毛齒革，則君地生焉。其波及晉國者，君之餘也，其何以報君？', expr: 'serious' },
+        { who: 'chucheng', text: '雖然，何以報我？', expr: 'happy' }
+      ]);
+      const a = await ctx.anchor('ce_09');
+      ctx.add('xin', a && a.correct ? 6 : 2);
+      ctx.add('zhi', 5);
+      await ctx.say([
+        { who: 'chonger', text: '若以君之靈，得反晉國，晉、楚治兵，遇於中原，其辟君三舍。若不獲命，其左執鞭弭，右屬櫜鞬，以與君周旋。', expr: 'serious' },
+        { text: '席間一片安靜。令尹子玉按捺不住，私下請楚成王殺了公子。' },
+        { who: 'ziyu', text: '此人留不得！', expr: 'angry' },
+        { who: 'chucheng', text: '晉公子廣而儉，文而有禮。其從者肅而寬，忠而能力。', expr: 'serious' },
+        { who: 'chucheng', text: '天將興之，誰能廢之？違天必有大咎。' },
+        { text: '楚成王沒有殺公子，反而把他送到了秦國。' },
+        { who: 'shiguan', text: '「退避三舍」的承諾，五年後在城濮兌現——第 7 話〈城濮爭霸〉。' }
+      ]);
+      ctx.log('及楚，楚子饗之。公子曰：「晉、楚治兵，遇於中原，其辟君三舍。」子玉請殺之，楚子弗許，乃送諸秦。');
+      return 'n_qin';
+    },
+
+    n_qin: async ctx => {
+      await ctx.scene('map_qin', { place: '入秦', time: '前 637 年' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '晉惠公的太子圉在秦國當人質，偷偷逃回了晉國。不久惠公去世，子圉即位，就是晉懷公。' },
+        { text: '秦穆公很不高興——他決定改為扶持公子重耳。' }
+      ]);
+      await ctx.scene('qin_palace', { place: '秦・雍都', time: '前 637 年' });
+      ctx.cast(['chonger', 'huaiying']);
+      await ctx.say([
+        { text: '秦穆公把五位宗室女子嫁給公子，懷嬴也在其中——她原本是子圉的妻子，子圉逃回晉國時，把她留在了秦國。' },
+        { text: '懷嬴捧著匜，替公子澆水洗手。公子洗完，甩了甩手上的水，揮手要她退下。' },
+        { who: 'huaiying', text: '秦、晉匹也，何以卑我？', expr: 'angry' }
+      ]);
+      await ctx.anchor('ce_10');
+      ctx.add('xin', 3);
+      await ctx.say([
+        { who: 'chonger', text: '……是重耳失禮了。', expr: 'worried' },
+        { text: '公子懼，降服而囚。——公子嚇壞了，脫去上衣，把自己當成囚犯一樣請罪。' }
+      ]);
+      ctx.unlock('idiom:qinjinzhihao');
+      ctx.log('秦伯納女五人，懷嬴與焉。奉匜沃盥，既而揮之。公子懼，降服而囚。');
+      return 'n_fu';
+    },
+
+    n_fu: async ctx => {
+      await ctx.scene('qin_feast', { place: '秦・宮中夜宴', time: '他日・夜' });
+      ctx.cast(['mugong', 'chonger', 'zhaocui']);
+      await ctx.say([
+        { text: '過了幾天，秦穆公設宴款待公子。' },
+        { who: 'zifan', text: '吾不如衰之文也，請使衰從。' },
+        { text: '——論文采辭令，我比不上趙衰，請讓趙衰陪公子赴宴。' },
+        { text: '席上，公子賦〈河水〉（以河水流向大海，比喻自己歸向秦國）；秦穆公賦〈六月〉——那是讚美尹吉甫輔佐周宣王出征的詩。' },
+        { who: 'zhaocui', text: '重耳拜賜！', expr: 'serious' },
+        { text: '公子走下台階，跪拜叩頭。秦穆公也走下一級台階辭謝。' },
+        { who: 'zhaocui', text: '君稱所以佐天子者命重耳，重耳敢不拜？' },
+        { text: '——您用輔佐天子的大業期許重耳，重耳怎敢不拜？' }
+      ]);
+      await ctx.say([
+        { who: 'mugong', text: '公子在外漂泊這麼多年，一路上都遇到了些什麼？說給寡人聽聽。', expr: 'happy' },
+        { text: '（你是重耳）一路上的人和事，一件一件浮上心頭——' }
+      ]);
+      ctx.cast([]);
+      const r = await ctx.minigame({
+        id: 'ce_liuwang', title: '流亡十九年', skip: true,
+        goal: '沿訪國路線親走、聽各方回應，理解拒絕、厚待與從者判斷如何改變旅程。',
+        help: '<p>上方的竹簡寫著流亡路上的一件事；下面九個地方照流亡的順序排列：狄、衛、五鹿、齊、曹、宋、鄭、楚、秦（電腦可以按 1～9）。</p>' +
+          '<p style="margin-top:8px">竹簡下面的火線燒完就算答錯，而且一片比一片燒得快。答得越快、連續答對越多，分數越高。</p>' +
+          '<p style="margin-top:8px">小心長得很像的事：送馬二十乘的有兩國，不以禮相待的也不只一國。</p>'
+      }, (body, g) => liuwangGame(body, g));
+      ctx.flag('lwScore', r.skipped ? 0 : (r.score || 0));
+      ctx.add('xin', r.skipped ? 4 : Math.round((r.score || 0) * 0.8));
+      ctx.unlock('person:cq_zhaocui');
+      ctx.unlock('person:cq_qinmugong');
+      await ctx.scene('qin_feast', { place: '秦・宮中夜宴', time: '他日・夜' });
+      ctx.cast(['mugong', 'chonger']);
+      await ctx.say([
+        { text: r.skipped ? '公子把一路的遭遇，從狄說到了楚。' : r.passed ? '公子從狄說到楚，一件也沒有記錯。秦穆公聽得連連點頭。' : '公子說得有些零亂，秦穆公還是聽得很專注。' },
+        { who: 'mugong', text: '好！開春以後，寡人送公子回國。', expr: 'happy' }
+      ]);
+      ctx.log('秦伯享之，公子賦〈河水〉，公賦〈六月〉。趙衰曰：「重耳拜賜！」');
+      return 'n_he';
+    },
+
+    // ───── 第三幕：河上之誓 ─────
+
+    n_he: async ctx => {
+      await ctx.chapter('第三幕　河上之誓', '前 636 年春');
+      await ctx.scene('he_ferry', { place: '黃河・渡口', time: '前 636 年正月・黃昏' });
+      ctx.cast(['chonger', 'zifan']);
+      await ctx.say([
+        { text: '前 636 年正月，秦穆公派兵護送公子回國。大軍來到黃河邊——對岸，就是晉國。' },
+        { text: '子犯捧著一塊璧，走到公子面前。' },
+        { who: 'zifan', text: '臣負羈絏從君巡於天下，臣之罪甚多矣，臣猶知之，而況君乎？請由此亡。', expr: 'sad' }
+      ]);
+      const a = await ctx.anchor('ce_11');
+      ctx.add('xin', a && a.correct ? 8 : 4);
+      await ctx.say([
+        { who: 'chonger', text: '所不與舅氏同心者，有如白水！', expr: 'serious' },
+        { text: '公子把璧投進了黃河。' }
+      ]);
+      await ctx.scene('map_qin', { place: '濟河入晉', time: '前 636 年二月' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '濟河，圍令狐，入桑泉，取臼衰。晉懷公的軍隊駐在廬柳；秦穆公派公子縶去見晉軍，晉軍退到郇。' },
+        { text: '狐偃和秦、晉的大夫在郇結盟。公子進入晉軍，到曲沃，在祖廟武宮朝拜——十九年後，重耳成了晉國的國君，就是晉文公。' },
+        { text: '晉懷公逃到高梁，不久被殺。' }
+      ]);
+      ctx.unlock('person:cq_jinwengong');
+      ctx.log('秦伯納之。及河，子犯以璧授公子，公子投其璧于河。入于曲沃，朝于武宮。');
+      return 'n_pi';
+    },
+
+    n_pi: async ctx => {
+      await ctx.scene('jin_night', { place: '晉・絳', time: '前 636 年三月・夜' });
+      ctx.cast(['wengong', 'sirenpi']);
+      await ctx.say([
+        { text: '（你是晉文公）呂甥、郤芮是晉惠公、懷公的舊臣，怕新君清算，暗中計畫放火燒宮，殺死國君。' },
+        { text: '就在這時，有人求見——是當年追殺你的寺人披。' },
+        { who: 'wengong', text: '蒲城之役，君命一宿，女即至。其後余從狄君以田渭濱，女為惠公來求殺余，命女三宿，女中宿至。', expr: 'angry' },
+        { who: 'wengong', text: '雖有君命，何其速也？夫袪猶在，女其行乎！' },
+        { text: '——你砍下的那截袖子，我還留著呢。走吧！' },
+        { who: 'sirenpi', text: '臣謂君之入也，其知之矣；若猶未也，又將及難。君命無二，古之制也。除君之惡，唯力是視。', expr: 'serious' },
+        { who: 'sirenpi', text: '蒲人、狄人，余何有焉？今君即位，其無蒲、狄乎！齊桓公置射鉤，而使管仲相，君若易之，何辱命焉？行者甚眾，豈唯刑臣？' }
+      ]);
+      const a = await ctx.anchor('ce_12');
+      ctx.add('xin', a && a.correct ? 6 : 3);
+      ctx.unlock('person:cq_sirenpi');
+      await ctx.say([
+        { text: '公見之，以難告。——晉文公接見了他，寺人披把呂、郤的陰謀全說了出來。' },
+        { text: '三月，晉文公祕密離開國都，到秦國的王城去見秦穆公。' }
+      ]);
+      await ctx.scene('jin_fire', { place: '晉・公宮', time: '三月晦日・夜' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '己丑晦，公宮火。——月底那天夜裡，宮殿燒起了大火。' },
+        { text: '呂甥、郤芮找不到國君，逃到黃河邊，被秦穆公誘捕處死。晉文公平安回到國都。' }
+      ]);
+      ctx.log('呂、郤將焚公宮而弒晉侯。寺人披請見，以難告。公潛會秦伯于王城，乃免。');
+      return 'n_toux';
+    },
+
+    n_toux: async ctx => {
+      await ctx.scene('jin_hall', { place: '晉・宮中', time: '前 636 年' });
+      ctx.cast(['toux']);
+      await ctx.say([
+        { text: '還有一個人求見：頭須。他本來替公子管倉庫，公子出逃時，他捲走了財物——後來把錢全花在設法讓公子回國上。' },
+        { text: '晉文公推說正在洗頭，不見。頭須對傳話的僕人說：' },
+        { who: 'toux', text: '沐則心覆，心覆則圖反，宜吾不得見也。', expr: 'smirk' },
+        { text: '——洗頭要低頭，心就倒過來了，想法也跟著顛倒，難怪不肯見我。' },
+        { who: 'toux', text: '居者為社稷之守，行者為羈絏之僕，其亦可也，何必罪居者？國君而讎匹夫，懼者甚眾矣。', expr: 'serious' },
+        { text: '僕人把話傳了進去。晉文公一聽，立刻出來見他。' },
+        { who: 'shiguan', text: '國君連一個小人物都記仇，那些曾經站錯邊的人，誰還敢安心？晉文公聽懂了。' }
+      ]);
+      ctx.add('xin', 3);
+      ctx.log('豎頭須求見，公辭焉以沐。頭須曰：「國君而讎匹夫，懼者甚眾矣。」公遽見之。');
+      return 'n_jie';
+    },
+
+    // ───── 尾聲：介之推不言祿 ─────
+
+    n_jie: async ctx => {
+      await ctx.chapter('尾聲　介之推不言祿', '前 636 年');
+      await ctx.scene('jin_hall', { place: '晉・朝堂', time: '前 636 年' });
+      ctx.cast(['wengong', 'zifan', 'zhaocui']);
+      await ctx.say([
+        { text: '晉文公賞賜跟隨他流亡的人。子犯、趙衰……一個接一個上前謝恩。' },
+        { text: '有一個人，從頭到尾沒有開口。賞賜，也就沒有輪到他。' },
+        { text: '介之推不言祿，祿亦弗及。' }
+      ]);
+      await ctx.scene('jie_home', { place: '介之推的家', time: '黃昏' });
+      ctx.cast(['jiezhitui', 'jiemu']);
+      await ctx.say([
+        { who: 'jiezhitui', text: '獻公之子九人，唯君在矣。惠、懷無親，外內棄之。天未絕晉，必將有主。主晉祀者，非君而誰？', expr: 'serious' },
+        { who: 'jiezhitui', text: '天實置之，而二三子以為己力，不亦誣乎？竊人之財，猶謂之盜，況貪天之功以為己力乎？' },
+        { who: 'jiezhitui', text: '下義其罪，上賞其姦，上下相蒙，難與處矣。', expr: 'sad' }
+      ]);
+      await ctx.anchor('ce_13');
+      ctx.unlock('person:cq_jiezhitui');
+      ctx.unlock('idiom:tantianzhigong');
+      return 'n_jie2';
+    },
+
+    n_jie2: async ctx => {
+      await ctx.scene('jie_home', { place: '介之推的家', time: '黃昏' });
+      ctx.cast(['jiezhitui', 'jiemu']);
+      await ctx.say([
+        { who: 'jiemu', text: '盍亦求之？以死，誰懟？', expr: 'worried' },
+        { who: 'jiezhitui', text: '尤而效之，罪又甚焉。且出怨言，不食其食。', expr: 'serious' },
+        { who: 'jiemu', text: '亦使知之，若何？' },
+        { text: '（視角轉換）你是介之推。母親看著你，等你回答。' }
+      ]);
+      await ctx.anchor('ce_14');
+      await ctx.say([
+        { who: 'jiezhitui', text: '言，身之文也。身將隱，焉用文之？是求顯也。', expr: 'serious' },
+        { who: 'jiemu', text: '能如是乎？與女偕隱。', expr: 'happy' },
+        { text: '遂隱而死。——母子二人一起隱居，再也沒有出來。' }
+      ]);
+      await ctx.scene('mian_shan', { place: '緜上', time: '晉文公元年' });
+      ctx.cast(['wengong']);
+      await ctx.say([
+        { text: '晉文公派人四處尋找，始終找不到。他把緜上的田地封給介之推，作為祭田。' },
+        { who: 'wengong', text: '以志吾過，且旌善人。', expr: 'sad' }
+      ]);
+      ctx.unlock('text:jiezhitui');
+      ctx.unlock('idiom:hanshi');
+      ctx.add('zhi', 5);
+      ctx.log('晉侯賞從亡者，介之推不言祿，與其母偕隱而死。晉侯以緜上為之田，曰：「以志吾過，且旌善人。」');
+      return 'n_end';
+    },
+
+    n_end: async ctx => {
+      const jian = Number(ctx.flag('jianScore')) || 0;
+      const zui = Number(ctx.flag('zuiScore')) || 0;
+      const lw = Number(ctx.flag('lwScore')) || 0;
+      const total = jian * 0.3 + zui * 0.35 + lw * 0.35;
+      const key = total >= 7 && ctx.meter('zhi') >= 70 && ctx.meter('xin') >= 70 ? 'great' : total >= 4 ? 'good' : 'bad';
+      return ctx.end({ type: 'final', key: key, total: Math.round(total * 10) / 10 });
+    }
+  };
+
+
+  // ═════════════════════════ 7. 小遊戲 ═════════════════════════
+  // 每次挑戰都會重新呼叫小遊戲函式：所有狀態都寫在函式裡面。
+  // 本機測試伺服器加上 &test=1 時，會在畫面元素上標出答案（自動試玩用）；正式網址不會。
+
+  function shuffle(list, rng) {
+    const a = list.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+
+  function face(id, expr) {
+    const c = CHARACTERS.find(x => x.id === id) || { id: id, name: id, glyph: '' };
+    if (window.ART && ART.portrait) return ART.portrait(c, { bust: true, expr: expr || null });
+    return '<span class="ce-face__seal" style="color:' + esc(c.color || '#e0b44c') + '">' + esc(c.glyph || '') + '</span>';
+  }
+
+  // ───── 小遊戲一：諫假道（接上原句） ─────
+
+  const JIAN = [
+    { head: '虢，虞之表也；', ans: '虢亡，虞必從之。', bad: ['虢存，虞必亡之。', '虢亡，晉必從之。'] },
+    { head: '晉不可啟，', ans: '寇不可翫。', bad: ['寇不可敵。', '寇不足畏。'] },
+    { head: '一之謂甚，', ans: '其可再乎？', bad: ['其可三乎？', '何患再乎？'] },
+    { head: '諺所謂「輔車相依，', ans: '脣亡齒寒」者，其虞、虢之謂也。', bad: ['皮之不存」者，其虞、虢之謂也。', '同舟共濟」者，其虞、虢之謂也。'] },
+    { yu: '晉，吾宗也，豈害我哉？', head: '大伯、虞仲，大王之昭也……虢仲、虢叔，王季之穆也……', ans: '將虢是滅，何愛於虞？', bad: ['虢與晉同宗，晉必不滅。', '虞、虢同宗，必能相救。'] },
+    { head: '且虞能親於桓、莊乎？其愛之也，', ans: '桓、莊之族何罪，而以為戮？', bad: ['桓、莊之族有罪，是以為戮。', '桓、莊之族遠矣，何足道哉？'] },
+    { head: '親以寵偪，猶尚害之，', ans: '況以國乎？', bad: ['況以親乎？', '何況於神乎？'] },
+    { yu: '吾享祀豐絜，神必據我。', head: '臣聞之：鬼神非人實親，', ans: '惟德是依。', bad: ['惟祀是依。', '惟親是依。'] },
+    { head: '故《周書》曰：「皇天無親，', ans: '惟德是輔。」', bad: ['惟祀是輔。」', '惟強是輔。」'] },
+    { head: '又曰：「黍稷非馨，', ans: '明德惟馨。」', bad: ['豐絜惟馨。」', '犧牲惟馨。」'] },
+    { head: '若晉取虞，而明德以薦馨香，', ans: '神其吐之乎？', bad: ['神必棄晉矣。', '虞祀必永矣。'] }
+  ];
+  const GIFT_SVG = '<svg class="ce-gift" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="#8fd0b0" stroke="#2f6f5a" stroke-width="3"/>' +
+    '<circle cx="24" cy="24" r="6" fill="#1b2238" stroke="#2f6f5a" stroke-width="2"/><path d="M13 19 q4 -5 9 -4" stroke="#e8fff4" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
+
+  function jianGame(body, g) {
+    return new Promise(resolve => {
+      const N = JIAN.length;
+      let i = 0, correct = 0, wrong = 0, streak = 0, bonus = 0;
+      let rival = 0, fuse = 1, fuseMax = 1, locked = true, over = false, raf = 0, timer = 0;
+      let opts = [];
+      body.innerHTML =
+        '<div class="ce-jian">' +
+        '<div class="ce-jian__duel">' +
+        '<div class="ce-jian__p"><span class="ce-face ce-face--me"></span><b>宮之奇（你）</b></div>' +
+        '<div class="ce-jian__say" aria-live="polite"></div>' +
+        '<div class="ce-jian__p"><span class="ce-face ce-face--yu"></span><b>虞公</b>' + GIFT_SVG + '</div>' +
+        '</div>' +
+        '<div class="ce-jian__slip"><p class="ce-jian__head"></p><div class="ce-fuse"><i></i></div></div>' +
+        '<div class="ce-jian__opts"></div>' +
+        '<p class="ce-jian__fb" aria-live="polite"></p>' +
+        '</div>';
+      const $ = s => body.querySelector(s);
+      const sayEl = $('.ce-jian__say');
+      const headEl = $('.ce-jian__head');
+      const fuseEl = $('.ce-fuse');
+      const optsEl = $('.ce-jian__opts');
+      const fbEl = $('.ce-jian__fb');
+      const gift = $('.ce-gift');
+      const meFace = $('.ce-face--me');
+      const yuFace = $('.ce-face--yu');
+      let meExpr = '', yuExpr = '';
+      const setFaces = (me, yu) => {
+        if (me !== meExpr) { meExpr = me; meFace.innerHTML = face('gongzhiqi', me); }
+        if (yu !== yuExpr) { yuExpr = yu; yuFace.innerHTML = face('yugong', yu); }
+      };
+      const race = g.race ? g.race({ me: '宮之奇的諫言', rival: '璧與馬（虞公動心）', rivalColor: '#d9a43a', goal: '在虞公被璧和馬迷住以前，把諫言說完' }) : null;
+
+      const paint = () => {
+        if (race) { race.me(i / N); race.rival(rival); }
+        gift.classList.toggle('is-glow', rival > 0.6);
+        fuseEl.querySelector('i').style.setProperty('--p', Math.max(0, 100 * fuse / fuseMax).toFixed(1) + '%');
+        fuseEl.classList.toggle('is-warn', !locked && fuse < 2.5);
+      };
+      const finalScore = lost => {
+        const s = 6 * correct / N + Math.min(3, bonus) + (lost ? 0 : 1);
+        return clamp(Math.round(s), 0, 10);
+      };
+      const end = lost => {
+        if (over) return;
+        over = true;
+        locked = true;
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+        optsEl.querySelectorAll('button').forEach(b => { b.disabled = true; });
+        if (lost) {
+          setFaces('worried', 'happy');
+          sayEl.innerHTML = '<b>虞公：</b>「好了好了，寡人意已決。」';
+          if (g.pop) g.pop('虞公收下了璧和馬', 'bad');
+          g.sfx('ng');
+        } else {
+          setFaces('serious', 'worried');
+          sayEl.textContent = '虞公一時答不上話……';
+          if (g.pop) g.pop(correct >= N - 1 ? '字字有據！' : '諫言說完了', correct >= N - 1 ? 'gold' : 'ok');
+          g.sfx('ok');
+        }
+        const result = { passed: !lost && correct >= 7, score: finalScore(lost), max: 10, correct: correct, wrong: wrong, lost: !!lost };
+        timer = setTimeout(() => resolve(result), 1300);
+      };
+      const round = () => {
+        if (over) return;
+        if (i >= N) { end(false); return; }
+        const r = JIAN[i];
+        opts = shuffle([r.ans].concat(r.bad), g.rng);
+        fuseMax = 10 - 0.45 * i;
+        fuse = fuseMax;
+        sayEl.innerHTML = r.yu ? '<b>虞公：</b>「' + esc(r.yu) + '」' : i === 0 ? '晉國的使者又來借路了。你開口——' : '（你接著說）';
+        headEl.innerHTML = esc(r.head) + '<span class="ce-blank">＿＿＿＿</span>';
+        optsEl.innerHTML = opts.map((t, k) => '<button type="button" class="ce-opt" data-k="' + k + '"><small>' + (k + 1) + '</small><span>' + esc(t) + '</span></button>').join('');
+        optsEl.querySelectorAll('.ce-opt').forEach((b, k) => b.addEventListener('click', () => pick(k)));
+        fbEl.className = 'ce-jian__fb';
+        fbEl.textContent = '';
+        if (TEST) body.dataset.answer = String(opts.indexOf(r.ans));
+        setFaces('normal', r.yu ? 'smirk' : 'normal');
+        g.setStatus('第 ' + (i + 1) + ' / ' + N + ' 句');
+        locked = false;
+        paint();
+      };
+      const pick = k => {
+        if (locked || over || paused()) return;
+        locked = true;
+        const r = JIAN[i];
+        const ok = k >= 0 && opts[k] === r.ans;
+        const btns = optsEl.querySelectorAll('.ce-opt');
+        btns.forEach(b => { b.disabled = true; });
+        headEl.innerHTML = esc(r.head) + '<span class="ce-fill' + (ok ? '' : ' is-fix') + '">' + esc(r.ans) + '</span>';
+        if (ok) {
+          const frac = fuse / fuseMax;
+          correct += 1;
+          streak += 1;
+          bonus += 0.3 * frac;
+          if (frac > 0.6) rival = Math.max(0, rival - 0.03);
+          if (g.combo) g.combo(streak);
+          btns[k].classList.add('is-ok');
+          g.sfx('ok');
+          if (g.pop) g.pop(frac > 0.7 ? '一針見血！' : '說得好！', frac > 0.7 ? 'gold' : 'ok');
+          setFaces('serious', 'surprised');
+        } else {
+          wrong += 1;
+          streak = 0;
+          rival = Math.min(1, rival + 0.09);
+          if (g.combo) g.combo(0);
+          if (k >= 0) btns[k].classList.add('is-bad');
+          const right = opts.indexOf(r.ans);
+          if (btns[right]) btns[right].classList.add('is-answer');
+          g.sfx('ng');
+          if (g.shake) g.shake();
+          if (g.flash) g.flash('bad');
+          fbEl.className = 'ce-jian__fb is-bad';
+          fbEl.textContent = k < 0 ? '時間到！虞公又看了一眼那塊璧。' : '說錯了。虞公的眼睛又飄向那塊璧。';
+          setFaces('worried', 'happy');
+        }
+        i += 1;
+        paint();
+        if (rival >= 1) { end(true); return; }
+        timer = setTimeout(round, ok ? 700 : 1600);
+      };
+      const onKey = e => {
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= 3 && !locked) { e.preventDefault(); pick(n - 1); }
+      };
+      document.addEventListener('keydown', onKey);
+      let last = performance.now();
+      const loop = now => {
+        const dt = Math.min(0.1, (now - last) / 1000);
+        last = now;
+        if (!over && !locked && !paused()) {
+          fuse -= dt;
+          rival = Math.min(1, rival + dt * (1 + i * 0.07) / 115);
+          paint();
+          if (rival >= 1) { end(true); return; }
+          if (fuse <= 0) { fuse = 0; pick(-1); }
+        }
+        if (!over) raf = requestAnimationFrame(loop);
+      };
+      g.onCleanup(() => { over = true; cancelAnimationFrame(raf); clearTimeout(timer); document.removeEventListener('keydown', onKey); });
+      round();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+  // ───── 小遊戲二：醉載出齊（三線道閃避） ─────
+
+  function zuicheGame(body, g) {
+    return new Promise(resolve => {
+      body.innerHTML =
+        '<div class="ce-run">' +
+        '<div class="ce-run__wrap"><canvas role="img" aria-label="醉載出齊：三條車道上的馬車"></canvas><p class="ce-run__tip">按左半邊往左、右半邊往右</p></div>' +
+        '<div class="ce-run__pad"><button type="button" class="zh-btn" data-d="-1">◀ 往左</button><button type="button" class="zh-btn" data-d="1">往右 ▶</button></div>' +
+        '</div>';
+      // 先放上競速條（競技列變高以後再量畫面大小）
+      const race = g.race ? g.race({ me: '出齊的路程', rival: '公子醒酒', rivalColor: '#d9a43a', goal: '公子醒來以前，把車趕出齊境' }) : null;
+      const wrap = body.querySelector('.ce-run__wrap');
+      const cv = wrap.querySelector('canvas');
+      const tip = wrap.querySelector('.ce-run__tip');
+      const pad = body.querySelector('.ce-run__pad');
+      const availW = Math.max(260, (body.clientWidth || 360) - 20);
+      const availH = Math.max(280, (body.clientHeight || 560) - pad.offsetHeight - 40);
+      const W = Math.round(Math.min(560, availW));
+      const H = Math.round(Math.max(280, Math.min(availH, W * 1.3, 620)));
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      cv.width = Math.round(W * dpr);
+      cv.height = Math.round(H * dpr);
+      cv.style.width = W + 'px';
+      cv.style.height = H + 'px';
+      pad.style.width = W + 'px';
+      const c = cv.getContext('2d');
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const ROAD_X = W * 0.09;
+      const ROAD_W = W * 0.82;
+      const LANE_W = ROAD_W / 3;
+      const laneX = k => ROAD_X + LANE_W * (k + 0.5);
+      const S = Math.min(1.3, LANE_W / 100);              // 圖形縮放
+      const CART_Y = H - Math.max(64, H * 0.15);
+      const CART_TOP = CART_Y - 62 * S;
+      const CART_BOT = CART_Y + 26 * S;
+      const OBJ = Math.min(LANE_W * 0.6, 62);
+      const GOAL = H * 24;
+      let lane = 1, cartX = laneX(1);
+      let dist = 0, t = 0, wake = 0, hits = 0, streak = 0, inv = 0, slow = 0, lastLi = -1;
+      let obs = [], nextSpawn = H * 0.7, over = false, raf = 0;
+
+      const speed = () => H * (0.5 + 0.55 * Math.min(1, t / 40)) * (slow > 0 ? 0.55 : 1);
+      const mk = k => {
+        const kinds = t < 6 ? ['rock', 'pit'] : t < 15 ? ['rock', 'pit', 'rock', 'guard'] : ['rock', 'pit', 'guard'];
+        return { lane: k, x: laneX(k), y: -OBJ, type: kinds[Math.floor(g.rng() * kinds.length)], done: false, hit: false, shift: 0, shifted: false, shiftAt: 0 };
+      };
+      const spawnRow = () => {
+        const level = Math.min(1, t / 30);
+        if (t > 9 && g.rng() < 0.15 + 0.2 * level) {
+          const gap = Math.floor(g.rng() * 3);
+          [0, 1, 2].filter(k => k !== gap).forEach(k => obs.push(mk(k)));
+        } else {
+          const k = Math.floor(g.rng() * 3);
+          const o = mk(k);
+          if (t > 15 && g.rng() < 0.35) {
+            o.type = 'guard';
+            o.shift = k === 0 ? 1 : k === 2 ? -1 : (g.rng() < 0.5 ? -1 : 1);
+            o.shiftAt = CART_TOP - H * (0.28 + 0.08 * g.rng());
+          }
+          obs.push(o);
+        }
+      };
+      const finish = success => {
+        if (over) return;
+        over = true;
+        cancelAnimationFrame(raf);
+        draw();
+        const quality = clamp(1 - wake, 0, 1);
+        const sc = success ? Math.round(4 + 6 * quality) : Math.round(4 * Math.min(1, dist / GOAL));
+        if (success) {
+          g.sfx('ok');
+          if (g.pop) g.pop('出了齊境！', 'gold');
+          tip.textContent = '……公子翻了個身，還在睡。';
+        } else {
+          g.sfx('ng');
+          if (g.pop) g.pop('公子醒了！', 'bad');
+          tip.textContent = '「這是哪裡？子犯！」';
+        }
+        const result = { passed: success, score: clamp(sc, 0, 10), max: 10, hits: hits, woke: !success };
+        setTimeout(() => resolve(result), 1400);
+      };
+      const step = dt => {
+        t += dt;
+        inv = Math.max(0, inv - dt);
+        slow = Math.max(0, slow - dt);
+        const v = speed();
+        dist += v * dt;
+        cartX += (laneX(lane) - cartX) * Math.min(1, dt * 16);
+        if (dist >= nextSpawn && dist < GOAL - H * 1.1) {
+          spawnRow();
+          nextSpawn = dist + H * (0.8 - 0.25 * Math.min(1, t / 35)) * (0.85 + 0.3 * g.rng());
+        }
+        obs.forEach(o => {
+          o.y += v * dt;
+          if (o.shift && !o.shifted && o.y >= o.shiftAt) { o.shifted = true; o.lane = clamp(o.lane + o.shift, 0, 2); }
+          o.x += (laneX(o.lane) - o.x) * Math.min(1, dt * 7);
+          if (!o.done && !o.hit && inv <= 0 && o.y + OBJ * 0.4 > CART_TOP && o.y - OBJ * 0.4 < CART_BOT && Math.abs(o.x - cartX) < LANE_W * 0.52) {
+            o.hit = true;
+            hits += 1;
+            streak = 0;
+            wake = Math.min(1, wake + 0.2);
+            inv = 0.9;
+            slow = 0.8;
+            if (g.combo) g.combo(0);
+            if (g.shake) g.shake();
+            if (g.flash) g.flash('bad');
+            g.sfx('ng');
+            if (g.pop) g.pop(['顛！', '咚！', '哎喲！'][hits % 3], 'bad');
+          }
+          if (!o.done && o.y - OBJ * 0.4 > CART_BOT) {
+            o.done = true;
+            if (!o.hit) {
+              streak += 1;
+              if (g.combo) g.combo(streak);
+              if (streak % 8 === 0) { wake = Math.max(0, wake - 0.04); if (g.pop) g.pop('穩！公子睡得更沉了', 'ok'); }
+            }
+          }
+        });
+        obs = obs.filter(o => o.y < H + OBJ);
+        wake = Math.min(1, wake + dt * 0.008);
+        if (race) { race.me(dist / GOAL); race.rival(wake); }
+        const li = Math.max(0, Math.ceil((GOAL - dist) / GOAL * 30));
+        if (li !== lastLi) { lastLi = li; g.setStatus('距齊境 ' + li + ' 里'); }
+        if (t > 3 && tip.textContent && !over) tip.textContent = '';
+        if (TEST) {
+          // 每一道最近的障礙物還有多遠（以畫面高度為單位；已經過去的不算）
+          const near = [9, 9, 9];
+          obs.forEach(o => {
+            if (o.done || o.hit || o.y - OBJ * 0.4 > CART_BOT) return;
+            const d = Math.max(0, (CART_TOP - (o.y + OBJ * 0.4)) / H);
+            near[o.lane] = Math.min(near[o.lane], d);
+            if (o.shift && !o.shifted) { const k2 = clamp(o.lane + o.shift, 0, 2); near[k2] = Math.min(near[k2], d); }
+          });
+          wrap.dataset.lane = String(lane);
+          wrap.dataset.near = near.map(x => x.toFixed(2)).join(',');
+          wrap.dataset.hits = String(hits);
+          wrap.dataset.t = t.toFixed(1);
+        }
+        if (wake >= 1) finish(false);
+        else if (dist >= GOAL) finish(true);
+      };
+
+      // ── 畫面 ──
+      const tree = (x, y) => {
+        c.fillStyle = 'rgba(0,0,0,.18)';
+        c.beginPath(); c.ellipse(x + 4, y + 6, 20 * S, 16 * S, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#3f6b33';
+        c.beginPath(); c.arc(x, y, 18 * S, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#5a8a45';
+        c.beginPath(); c.arc(x - 5 * S, y - 5 * S, 10 * S, 0, Math.PI * 2); c.fill();
+      };
+      const glyph = (text, x, y, color, size) => {
+        c.fillStyle = color;
+        c.font = '700 ' + Math.round(size) + 'px ' + FONT;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.fillText(text, x, y + 1);
+      };
+      const drawObs = o => {
+        const r = OBJ * 0.42;
+        if (o.type === 'rock') {
+          c.fillStyle = '#7d7a72';
+          c.beginPath();
+          c.moveTo(o.x - r, o.y + r * 0.5); c.lineTo(o.x - r * 0.7, o.y - r * 0.6); c.lineTo(o.x + r * 0.1, o.y - r);
+          c.lineTo(o.x + r, o.y - r * 0.3); c.lineTo(o.x + r * 0.8, o.y + r * 0.7); c.lineTo(o.x - r * 0.2, o.y + r);
+          c.closePath(); c.fill();
+          c.strokeStyle = '#3a3830'; c.lineWidth = 2.5; c.stroke();
+          c.fillStyle = 'rgba(255,255,255,.22)';
+          c.beginPath(); c.ellipse(o.x - r * 0.25, o.y - r * 0.35, r * 0.35, r * 0.18, -0.4, 0, Math.PI * 2); c.fill();
+          glyph('石', o.x + r * 0.05, o.y + r * 0.12, '#2b2418', r * 0.85);
+        } else if (o.type === 'pit') {
+          c.fillStyle = '#8a6a44';
+          c.beginPath(); c.ellipse(o.x, o.y, r * 1.12, r * 0.78, 0, 0, Math.PI * 2); c.fill();
+          c.fillStyle = '#3a2818';
+          c.beginPath(); c.ellipse(o.x, o.y + 2, r * 0.9, r * 0.58, 0, 0, Math.PI * 2); c.fill();
+          glyph('坑', o.x, o.y + 2, '#e8d6a6', r * 0.8);
+        } else {
+          c.strokeStyle = '#4a3020'; c.lineWidth = 4;
+          c.beginPath(); c.moveTo(o.x - r * 1.15, o.y - r * 0.9); c.lineTo(o.x + r * 1.15, o.y + r * 0.9); c.stroke();
+          c.fillStyle = '#c9c4b8';
+          c.beginPath(); c.moveTo(o.x + r * 1.15, o.y + r * 0.9); c.lineTo(o.x + r * 0.7, o.y + r * 1.15); c.lineTo(o.x + r * 0.95, o.y + r * 0.55); c.closePath(); c.fill();
+          c.fillStyle = '#7f5598';
+          c.beginPath(); c.arc(o.x, o.y, r * 0.95, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#3a2448'; c.lineWidth = 2.5; c.stroke();
+          glyph('卒', o.x, o.y, '#fff', r * 0.95);
+          if (o.shift && !o.shifted && o.y > o.shiftAt - H * 0.3) {
+            const ax = o.x + o.shift * r * 1.5;
+            c.fillStyle = '#ffd24a';
+            c.beginPath(); c.moveTo(ax + o.shift * 12, o.y); c.lineTo(ax - o.shift * 4, o.y - 11); c.lineTo(ax - o.shift * 4, o.y + 11); c.closePath(); c.fill();
+            c.strokeStyle = '#5a3a00'; c.lineWidth = 1.5; c.stroke();
+          }
+        }
+      };
+      const drawCart = () => {
+        const x = cartX, y = CART_Y;
+        c.save();
+        if (inv > 0 && Math.floor(inv * 12) % 2 === 0) c.globalAlpha = 0.5;
+        // 馬
+        [-11, 11].forEach(dx => {
+          c.fillStyle = '#6e4326';
+          c.beginPath(); c.ellipse(x + dx * S, y - 44 * S, 8 * S, 17 * S, 0, 0, Math.PI * 2); c.fill();
+          c.beginPath(); c.ellipse(x + dx * S, y - 62 * S, 5 * S, 7 * S, 0, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#2a1a10'; c.lineWidth = 1.5;
+          c.beginPath(); c.ellipse(x + dx * S, y - 44 * S, 8 * S, 17 * S, 0, 0, Math.PI * 2); c.stroke();
+        });
+        c.strokeStyle = '#4a3020'; c.lineWidth = 3 * S;
+        c.beginPath(); c.moveTo(x, y - 10 * S); c.lineTo(x, y - 54 * S); c.stroke();
+        c.beginPath(); c.moveTo(x - 18 * S, y - 32 * S); c.lineTo(x + 18 * S, y - 32 * S); c.stroke();
+        // 車輪、車軸
+        c.lineWidth = 3 * S;
+        c.beginPath(); c.moveTo(x - 30 * S, y + 8 * S); c.lineTo(x + 30 * S, y + 8 * S); c.stroke();
+        c.fillStyle = '#2b2418';
+        c.fillRect(x - 34 * S, y - 6 * S, 7 * S, 28 * S);
+        c.fillRect(x + 27 * S, y - 6 * S, 7 * S, 28 * S);
+        // 車廂
+        c.fillStyle = '#8a5a32';
+        c.fillRect(x - 20 * S, y - 14 * S, 40 * S, 32 * S);
+        c.strokeStyle = '#3a2414'; c.lineWidth = 2;
+        c.strokeRect(x - 20 * S, y - 14 * S, 40 * S, 32 * S);
+        // 車蓋
+        const wob = wake > 0.6 ? Math.sin(t * 9) * 2 : 0;
+        c.fillStyle = '#4f7fb0';
+        c.beginPath(); c.arc(x + wob, y, 24 * S, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.5;
+        for (let k = 0; k < 8; k++) {
+          const a = k * Math.PI / 4;
+          c.beginPath(); c.moveTo(x + wob, y); c.lineTo(x + wob + Math.cos(a) * 24 * S, y + Math.sin(a) * 24 * S); c.stroke();
+        }
+        c.strokeStyle = '#26405e'; c.lineWidth = 2;
+        c.beginPath(); c.arc(x + wob, y, 24 * S, 0, Math.PI * 2); c.stroke();
+        c.fillStyle = '#e0b44c';
+        c.beginPath(); c.arc(x + wob, y, 4 * S, 0, Math.PI * 2); c.fill();
+        c.restore();
+        // 鼾聲
+        if (!over || wake < 1) {
+          const ph = (t * 0.8) % 1;
+          c.globalAlpha = 1 - ph;
+          glyph(wake > 0.6 ? '嗯…' : 'z', x + 26 * S + ph * 10, y - 24 * S - ph * 26, wake > 0.6 ? '#ffb4aa' : '#fff', (wake > 0.6 ? 15 : 14 + ph * 8) * S);
+          c.globalAlpha = 1;
+        }
+      };
+      const draw = () => {
+        c.fillStyle = '#6f8a45';
+        c.fillRect(0, 0, W, H);
+        const off = dist % 80;
+        c.fillStyle = 'rgba(255,255,255,.05)';
+        for (let y = -80 + off; y < H; y += 80) c.fillRect(0, y, W, 40);
+        const rg = c.createLinearGradient(ROAD_X, 0, ROAD_X + ROAD_W, 0);
+        rg.addColorStop(0, '#b38d57'); rg.addColorStop(0.5, '#cdaa70'); rg.addColorStop(1, '#b38d57');
+        c.fillStyle = rg;
+        c.fillRect(ROAD_X, 0, ROAD_W, H);
+        c.fillStyle = 'rgba(90,60,30,.22)';
+        c.fillRect(ROAD_X - 3, 0, 4, H);
+        c.fillRect(ROAD_X + ROAD_W - 1, 0, 4, H);
+        c.strokeStyle = 'rgba(255,240,200,.55)';
+        c.lineWidth = 3;
+        c.setLineDash([22, 26]);
+        c.lineDashOffset = -(dist % 48);
+        for (let k = 1; k < 3; k++) {
+          const lx = ROAD_X + LANE_W * k;
+          c.beginPath(); c.moveTo(lx, 0); c.lineTo(lx, H); c.stroke();
+        }
+        c.setLineDash([]);
+        const tOff = dist % 160;
+        for (let y = tOff - 160; y < H + 60; y += 160) { tree(ROAD_X * 0.5, y); tree(W - ROAD_X * 0.5, y + 80); }
+        // 齊境的界門
+        const toGoal = GOAL - dist;
+        const gy = CART_TOP - toGoal;
+        if (gy > -70) {
+          c.fillStyle = '#5a3a20';
+          c.fillRect(ROAD_X - 10, gy - 6, 12, 40);
+          c.fillRect(ROAD_X + ROAD_W - 2, gy - 6, 12, 40);
+          c.fillStyle = '#7f5598';
+          c.fillRect(ROAD_X - 10, gy - 14, ROAD_W + 20, 14);
+          glyph('齊　境', W / 2, gy - 7, '#fff', 13);
+        }
+        obs.forEach(drawObs);
+        drawCart();
+      };
+
+      const move = d => {
+        if (over || paused()) return;
+        const nl = clamp(lane + d, 0, 2);
+        if (nl !== lane) { lane = nl; g.sfx('click'); }
+      };
+      cv.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        const rect = cv.getBoundingClientRect();
+        move(e.clientX - rect.left < rect.width / 2 ? -1 : 1);
+      });
+      pad.querySelectorAll('[data-d]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); move(Number(b.dataset.d)); }));
+      const onKey = e => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { e.preventDefault(); move(-1); }
+        else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { e.preventDefault(); move(1); }
+      };
+      document.addEventListener('keydown', onKey);
+      let last = performance.now();
+      const loop = now => {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        if (!over && !paused()) step(dt);
+        if (!over) { draw(); raf = requestAnimationFrame(loop); }
+      };
+      g.onCleanup(() => { over = true; cancelAnimationFrame(raf); document.removeEventListener('keydown', onKey); });
+      g.setStatus('距齊境 30 里');
+      draw();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+  // ───── 小遊戲三：流亡十九年（這件事發生在哪裡） ─────
+
+  const STOPS = [
+    { id: 'di', name: '狄', color: '#a0703a' },
+    { id: 'wei', name: '衛', color: '#4f8070' },
+    { id: 'wulu', name: '五鹿', color: '#6f8a4a' },
+    { id: 'qi', name: '齊', color: '#7f5598' },
+    { id: 'cao', name: '曹', color: '#9a5a6a' },
+    { id: 'song', name: '宋', color: '#8a6a4a' },
+    { id: 'zheng', name: '鄭', color: '#2f8a72' },
+    { id: 'chu', name: '楚', color: '#a83a2c' },
+    { id: 'qin', name: '秦', color: '#55607a' }
+  ];
+  const DEEDS = [
+    ['di', '娶了季隗，生下伯鯈、叔劉'],
+    ['di', '「我二十五年矣……請待子。」'],
+    ['di', '一住就是十二年'],
+    ['di', '把叔隗嫁給趙衰，生下趙盾'],
+    ['di', '陪國君在渭水邊打獵時，寺人披又來行刺'],
+    ['wei', '國君不以禮相待，一行人只好繼續向東走'],
+    ['wulu', '向農人討飯，農人給了一塊土'],
+    ['wulu', '子犯說：「天賜也。」'],
+    ['qi', '國君把宗室之女嫁給公子，還有馬二十乘'],
+    ['qi', '從者在桑樹下密謀離開'],
+    ['qi', '「懷與安，實敗名。」'],
+    ['qi', '被灌醉送上車，醒來拿著戈追子犯'],
+    ['cao', '國君想看公子連成一片的肋骨'],
+    ['cao', '大夫之妻說：「從者皆足以相國。」'],
+    ['cao', '收下飯菜，退還璧玉'],
+    ['song', '國君剛打了敗仗，仍然送公子馬二十乘'],
+    ['zheng', '大夫叔詹勸國君以禮相待，國君不聽'],
+    ['zheng', '「天之所啟，人弗及也。」'],
+    ['chu', '國君設宴問：「何以報不穀？」'],
+    ['chu', '答應將來兩軍相遇，退避三舍'],
+    ['chu', '令尹子玉請求殺掉公子'],
+    ['qin', '國君把五位宗室女子嫁給公子，懷嬴也在其中'],
+    ['qin', '洗完手甩一甩，要懷嬴退下'],
+    ['qin', '脫去上衣，自囚請罪'],
+    ['qin', '宴席上賦〈河水〉，國君賦〈六月〉']
+  ];
+
+  function liuwangGame(body, g) {
+    return new Promise(resolve => {
+      const byStop = {};
+      DEEDS.forEach((d, n) => { (byStop[d[0]] = byStop[d[0]] || []).push(n); });
+      const must = STOPS.map(s => byStop[s.id][Math.floor(g.rng() * byStop[s.id].length)]);
+      const rest = shuffle(DEEDS.map((d, n) => n).filter(n => must.indexOf(n) === -1), g.rng);
+      const cards = shuffle(must.concat(rest.slice(0, 3)), g.rng);
+      const N = cards.length;
+      let k = 0, correct = 0, streak = 0, bonus = 0;
+      let fuse = 1, fuseMax = 1, locked = true, over = false, raf = 0, timer = 0;
+      body.innerHTML =
+        '<div class="ce-lw">' +
+        '<div class="ce-lw__card"><small class="ce-lw__no"></small><p class="ce-lw__text"></p><div class="ce-fuse"><i></i></div></div>' +
+        '<div class="ce-lw__grid">' + STOPS.map((s, n) =>
+          '<button type="button" class="ce-stop" data-s="' + s.id + '" style="--c:' + s.color + '"><i>' + (n + 1) + '</i><b>' + esc(s.name) + '</b></button>').join('') + '</div>' +
+        '<p class="ce-lw__fb" aria-live="polite"></p>' +
+        '</div>';
+      const card = body.querySelector('.ce-lw__card');
+      const noEl = body.querySelector('.ce-lw__no');
+      const textEl = body.querySelector('.ce-lw__text');
+      const fuseEl = body.querySelector('.ce-fuse');
+      const fbEl = body.querySelector('.ce-lw__fb');
+      const btns = Array.from(body.querySelectorAll('.ce-stop'));
+      const nameOf = id => (STOPS.find(s => s.id === id) || { name: id }).name;
+      const paint = () => {
+        fuseEl.querySelector('i').style.setProperty('--p', Math.max(0, 100 * fuse / fuseMax).toFixed(1) + '%');
+        fuseEl.classList.toggle('is-warn', !locked && fuse < 2);
+      };
+      const end = () => {
+        if (over) return;
+        over = true;
+        locked = true;
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+        btns.forEach(b => { b.disabled = true; });
+        const sc = clamp(Math.round(7 * correct / N + Math.min(3, bonus)), 0, 10);
+        noEl.textContent = '答對 ' + correct + ' / ' + N;
+        textEl.textContent = correct >= N - 1 ? '十九年的路，一步也沒有忘。' : correct >= 8 ? '一路的人和事，大致都說清楚了。' : '有些事，記得有點模糊了。';
+        fuse = 0;
+        paint();
+        if (g.pop) g.pop('答對 ' + correct + ' 片', correct >= 10 ? 'gold' : 'ok');
+        g.sfx(correct >= 8 ? 'ok' : 'ng');
+        const result = { passed: correct >= 8, score: sc, max: 10, correct: correct };
+        timer = setTimeout(() => resolve(result), 1300);
+      };
+      const next = () => {
+        if (over) return;
+        if (k >= N) { end(); return; }
+        const d = DEEDS[cards[k]];
+        fuseMax = 8 - 4 * k / (N - 1);
+        fuse = fuseMax;
+        noEl.textContent = '第 ' + (k + 1) + ' / ' + N + ' 片竹簡・這件事發生在哪裡？';
+        textEl.textContent = d[1];
+        card.classList.remove('is-in');
+        void card.offsetWidth;
+        card.classList.add('is-in');
+        btns.forEach(b => { b.classList.remove('is-ok', 'is-bad', 'is-answer'); b.disabled = false; });
+        fbEl.className = 'ce-lw__fb';
+        fbEl.textContent = '';
+        if (TEST) body.dataset.answer = d[0];
+        g.setStatus('第 ' + (k + 1) + ' / ' + N + ' 片');
+        locked = false;
+        paint();
+      };
+      const pick = sid => {
+        if (locked || over || paused()) return;
+        locked = true;
+        const d = DEEDS[cards[k]];
+        const ok = sid === d[0];
+        const btn = sid ? btns.find(b => b.dataset.s === sid) : null;
+        btns.forEach(b => { b.disabled = true; });
+        if (ok) {
+          const frac = fuse / fuseMax;
+          correct += 1;
+          streak += 1;
+          bonus += 0.25 * frac;
+          if (g.combo) g.combo(streak);
+          btn.classList.add('is-ok');
+          g.sfx('ok');
+          if (g.pop) g.pop(frac > 0.65 ? '記得清清楚楚！' : '沒錯！', frac > 0.65 ? 'gold' : 'ok');
+        } else {
+          streak = 0;
+          if (g.combo) g.combo(0);
+          if (btn) btn.classList.add('is-bad');
+          const right = btns.find(b => b.dataset.s === d[0]);
+          if (right) right.classList.add('is-answer');
+          g.sfx('ng');
+          if (g.shake) g.shake();
+          fbEl.className = 'ce-lw__fb is-bad';
+          fbEl.textContent = (sid ? '不對。' : '竹簡燒完了！') + '這件事發生在「' + nameOf(d[0]) + '」。';
+        }
+        k += 1;
+        paint();
+        timer = setTimeout(next, ok ? 550 : 1500);
+      };
+      btns.forEach(b => b.addEventListener('click', () => pick(b.dataset.s)));
+      const onKey = e => {
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= STOPS.length && !locked) { e.preventDefault(); pick(STOPS[n - 1].id); }
+      };
+      document.addEventListener('keydown', onKey);
+      let last = performance.now();
+      const loop = now => {
+        const dt = Math.min(0.1, (now - last) / 1000);
+        last = now;
+        if (!over && !locked && !paused()) {
+          fuse -= dt;
+          paint();
+          if (fuse <= 0) { fuse = 0; pick(null); }
+        }
+        if (!over) raf = requestAnimationFrame(loop);
+      };
+      g.onCleanup(() => { over = true; cancelAnimationFrame(raf); clearTimeout(timer); document.removeEventListener('keydown', onKey); });
+      next();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+
+  // ═════════════════════════ 8. 結局與結算 ═════════════════════════
+
+  const ENDINGS = {
+    great: { id: 'great', title: '天將興之', good: true, text: '晉公子廣而儉，文而有禮；其從者肅而寬，忠而能力' },
+    good: { id: 'good', title: '十九年而反國', good: true, text: '秦伯納之，公子入于晉師，朝于武宮' },
+    bad: { id: 'bad', title: '歸途多艱', good: false, text: '公子雖得反國，而志氣未振，從者未附' }
+  };
+
+  function onEnd(result, ctx) {
+    const s = ctx.state;
+    const e = ENDINGS[(result && result.key) || 'good'] || ENDINGS.good;
+    ZH.sfx('seal');
+    return ctx.banner(e.title, '重耳流亡・終')
+      .then(() => ctx.say([{ who: 'shiguan', text: '十九年的流亡路，走過八個國家。四年後，他在城濮一戰而霸——那是第 7 話〈城濮爭霸〉的故事。' }]))
+      .then(() => ZH.deleteSave(SID, MODE).catch(() => null))
+      .then(() => ZH.finishScenario(payload(s, e)));
+  }
+
+  function payload(s, ending) {
+    const f = s.flags;
+    const jian = Number(f.jianScore) || 0;
+    const zui = Number(f.zuiScore) || 0;
+    const lw = Number(f.lwScore) || 0;
+    const played = id => (s.games || []).some(x => x.gameId === id && !x.skipped);
+    const strategy = clamp(Math.round(jian * 3 + zui * 3.5 + lw * 3.5), 0, 100);
+    const virtue = clamp(Math.round((s.meters.xin || 0) * 0.6 + (s.meters.zhi || 0) * 0.4), 0, 100);
+
+    const deeds = ['晉獻公嬖驪姬，大子申生死於新城。姬譖二公子，重耳奔蒲，夷吾奔屈。'];
+    deeds.push('公使寺人披伐蒲，重耳曰：「君父之命不校。」踰垣而走，披斬其袪，遂奔狄。');
+    deeds.push('是歲，晉復假道於虞以伐虢。宮之奇諫，虞公弗聽，宮之奇以其族行。冬，晉滅虢，師還，襲虞，滅之。');
+    deeds.push('處狄十二年而行。過衛，衛文公不禮焉。乞食於五鹿，野人與之塊，子犯曰：「天賜也。」稽首受而載之。');
+    deeds.push('及齊，齊桓公妻之，公子安之。姜與子犯謀，醉而遣之' + (played('ce_zuiche') && zui >= 8 ? '，車出齊境，公子乃醒。' : '。'));
+    deeds.push('及曹，曹共公觀其駢脅。僖負羈饋盤飧，寘璧焉，公子受飧反璧。及宋，宋襄公贈馬二十乘。及鄭，鄭文公亦不禮焉。');
+    deeds.push('及楚，楚子饗之，公子許以辟君三舍；子玉請殺之，楚子弗許，乃送諸秦。秦伯納女五人，懷嬴與焉。');
+    deeds.push('秦伯納之。及河，子犯授璧，公子曰：「所不與舅氏同心者，有如白水！」投其璧于河。入于曲沃，朝于武宮。');
+    deeds.push('寺人披求見，告呂、郤之難，公潛會秦伯于王城，乃免。豎頭須求見，公遽見之。');
+    deeds.push('晉侯賞從亡者，介之推不言祿，與其母偕隱而死。晉侯以緜上為之田，曰：「以志吾過，且旌善人。」' +
+      (ending.id === 'great' ? '天將興之，誰能廢之。' : ending.id === 'bad' ? '然國人猶未盡附。' : ''));
+
+    return {
+      scenarioId: SID, mode: MODE, faction: '晉',
+      role: '晉文公', roleKind: 'shijia', country: '晉',
+      bioTitle: '晉世家・重耳之亡', bioOpening: '晉文公重耳，晉獻公之子也。',
+      ending: ending,
+      scoreStrategy: strategy, scoreVirtue: virtue,
+      turns: s.steps || 1,
+      durationSec: Math.min(5400, Math.round((Date.now() - (s.startedAt || Date.now())) / 1000)),
+      deeds: deeds,
+      anchors: s.anchors,
+      games: s.games,
+      codex: s.codex,
+      opener: '余讀《左氏》，至「野人與之塊」，子犯曰「天賜也」，未嘗不歎從亡之士能轉辱為榮也。',
+      prompts: [
+        '宮之奇說「輔車相依，脣亡齒寒」，虞公卻相信「晉，吾宗也」「神必據我」。你覺得虞公錯在哪裡？生活中有沒有只看眼前好處、忽略長遠危險的例子？',
+        '農人給了重耳一塊土，子犯說「天賜也」。同一件事換個角度看，意義就完全不同。你有沒有這樣的經驗？',
+        '介之推認為爭功的從亡者是「貪天之功」，寧可隱居也不求賞。你同意他的做法嗎？如果你是晉文公，你會怎麼對待他？'
+      ]
+    };
+  }
+
+
+  // ═════════════════════════ 9. 開始 ═════════════════════════
+
+  const saveState = state => ZH.save(SID, MODE, { engine: state }).catch(() => null);
+
+  function startGame(saved) {
+    ROOT.innerHTML = '';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_intro',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP, scenes: SCENES,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd: onEnd, save: saveState
+    });
+    if (params.test) window.__ep = game;
+    game.start(saved || null);
+  }
+
+  function roleFace() {
+    const c = CHARACTERS.find(x => x.id === ROLE.who);
+    if (c && window.ART && ART.portrait) return '<span class="ep-seal has-art" aria-hidden="true">' + ART.portrait(c, { bust: true }) + '</span>';
+    return '<span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>';
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip">原典' + esc(META.source) + '</span><span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header>' +
+      '<section class="ep-start">' + roleFace() +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話寫前 656 年到前 636 年重耳出亡與返國的經過。中間登場的晉惠公，是第 5 話〈韓原之戰〉的主角；重耳回國後的霸業，在第 7 話〈城濮爭霸〉。共 ' + ANCHOR_ORDER.length + ' 個史實錨點，約 35 分鐘。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave = () => ZH.load(SID, MODE).then(r => (r && r.ok && r.state && r.state.engine ? r.state : null)).catch(() => null);
+
+  ZH.ready(() => {
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), Promise.race([anchorsReady, ZH.sleep(8000)])]).then(([saved]) => {
+      ZH.loading(false);
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+</script>
+<script>ZH.ready(function(){ZH.textplay?.install("S_cq04_chonger",null);});</script>
+</body>
+</html>

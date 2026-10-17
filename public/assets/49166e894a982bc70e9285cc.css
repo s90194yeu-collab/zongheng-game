@@ -1,0 +1,1 @@
+html,body{height:100%;overflow:hidden;background:var(--night, #0e1222)}.wd-boot{position:fixed;inset:0;display:grid;place-items:center;color:var(--text-dim, #aaa);font-family:var(--f-display, serif);font-size:18px;letter-spacing:.2em}

@@ -1,0 +1,1614 @@
+<!-- Core_js.html — v0.3.8（2026-10-16）
+完整替換 Apps Script 的 Core_js HTML 內容，不是追加段。
+結算改用原分頁原生連結；保留所有既有平台、紙娃娃、技能、收藏與配樂功能。
+保留平台 v0.3.0 功能，整合配樂 v0.1.3（沿用 v0.1.2 播放與快取）；沿用 MusicApi.gs。
+紙娃娃設定與技能模組完整內嵌；3D展示由 Profile／Gallery 直接 include Studio3D；現用 Code 需有 profile、gallery 路由。
+-->
+<script>
+(function (global) {
+  'use strict';
+
+  const ZH = global.ZH || {};
+  const BOOT = global.ZH_BOOT || {};
+
+  ZH.VERSION = 'v0.3.8';
+  ZH.boot = BOOT;
+  ZH.user = Object.assign({ email: '', isSchool: false, isGuest: true, isTeacher: false, loginUrl: '' }, BOOT.user || {});
+  ZH.guestScenarios = Array.isArray(BOOT.guestScenarios) ? BOOT.guestScenarios : [];
+
+
+  // ───────────────────────── 小工具 ─────────────────────────
+
+  ZH.esc = function (value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  };
+  ZH.qs = (sel, root) => (root || document).querySelector(sel);
+  ZH.qsa = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  ZH.sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  ZH.clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+  /** 用 HTML 字串建立元素 */
+  ZH.html = function (markup) {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = String(markup).trim();
+    return tpl.content.firstElementChild;
+  };
+
+  /** DOM 準備好後執行 */
+  ZH.ready = function (fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
+    else fn();
+  };
+
+  ZH.isGuest = () => !ZH.user.isSchool;
+  ZH.isSchool = () => !!ZH.user.isSchool;
+  ZH.isGuestPlayable = id => ZH.guestScenarios.indexOf(id) > -1;
+  /** 這個劇本目前能不能玩：學校帳號全部可玩，訪客只能玩開放的關卡 */
+  ZH.canPlay = id => ZH.isSchool() || ZH.isGuestPlayable(id);
+
+
+  // ───────────────────────── 瀏覽器儲存（失敗時改存記憶體） ─────────────────────────
+
+  const memoryStore = {};
+  function makeStore(kind) {
+    return {
+      get(key, fallback) {
+        try {
+          const raw = global[kind].getItem('zh:' + key);
+          return raw === null ? fallback : JSON.parse(raw);
+        } catch (err) {
+          return Object.prototype.hasOwnProperty.call(memoryStore, kind + key) ? memoryStore[kind + key] : fallback;
+        }
+      },
+      set(key, value) {
+        try {
+          global[kind].setItem('zh:' + key, JSON.stringify(value));
+        } catch (err) {
+          memoryStore[kind + key] = value;
+        }
+      },
+      remove(key) {
+        try { global[kind].removeItem('zh:' + key); } catch (err) { delete memoryStore[kind + key]; }
+      }
+    };
+  }
+  ZH.local = makeStore('localStorage');     // 個人設定（留在這台裝置）
+  ZH.session = makeStore('sessionStorage'); // 訪客進度（關閉分頁就消失）
+
+
+  // ───────────────────────── 呼叫伺服器 ─────────────────────────
+
+  /**
+   * 呼叫伺服器函式，回傳 Promise。
+   * 例：ZH.call('api_saveGame', 'S_cq08_weizheng', 'history', state, ZH.VERSION)
+   */
+  ZH.call = function (fnName) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    return new Promise((resolve, reject) => {
+      if (!(global.google && google.script && google.script.run)) {
+        reject(new Error('目前不在遊戲網址中，無法連線伺服器。'));
+        return;
+      }
+      let done = false;
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        reject(new Error('伺服器回應逾時，請檢查網路後再試一次。'));
+      }, 30000);
+      const runner = google.script.run
+        .withSuccessHandler(result => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          resolve(result);
+        })
+        .withFailureHandler(error => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          reject(error instanceof Error ? error : new Error(String((error && error.message) || error)));
+        });
+      runner[fnName].apply(runner, args);
+    });
+  };
+
+
+  // ───────────────────────── 頁面切換與登入 ─────────────────────────
+
+  /** 組出某頁的網址 */
+  ZH.url = function (page, params) {
+    const base = BOOT.appUrl || '';
+    const query = Object.assign({ page: page }, params || {});
+    const parts = Object.keys(query)
+      .filter(k => query[k] !== undefined && query[k] !== null && query[k] !== '')
+      .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]));
+    return base + (parts.length ? '?' + parts.join('&') : '');
+  };
+
+  /** 直接更新最外層目前分頁；遇到 iframe 限制時交給使用者點選原生連結。 */
+  function openTop(href) {
+    try {
+      if (global.top === global) global.location.assign(href);
+      else global.top.location.href = href;
+      return true;
+    } catch (err) { return false; }
+  }
+
+  // 非同步儲存會讓瀏覽器的使用者啟用狀態過期；過期後用原生連結接續，不模擬點擊。
+  let lastGesture = 0, navigationSeq = 0;
+  ['pointerdown', 'keydown', 'click', 'touchend'].forEach(type => {
+    document.addEventListener(type, e => { if (e.isTrusted) lastGesture = Date.now(); }, true);
+  });
+  function canNavigate() {
+    const ua = global.navigator && global.navigator.userActivation;
+    if (ua && typeof ua.isActive === 'boolean') return ua.isActive && Date.now() - lastGesture < 4000;
+    return Date.now() - lastGesture < 1000;
+  }
+
+  // 原專案若仍有 target=_blank 的遊戲內連結，按下時統一導向目前分頁。
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a || !BOOT.appUrl || a.hasAttribute('download')) return;
+    try {
+      const app = new URL(BOOT.appUrl, global.location.href), destination = new URL(a.href, global.location.href);
+      if (destination.origin === app.origin && destination.pathname === app.pathname) a.target = '_top';
+    } catch (err) { /* 無法解析的外部連結沿用本身行為。 */ }
+  }, true);
+
+  const GATE_TEXT = {
+    result: { title: '這一話結束了', body: '本局結算已留在這個分頁。按下面的連結，查看本局成績與列傳。', label: '前往結算頁' },
+    hub: { title: '回到首頁', body: '這次操作已完成。按下面的連結回到首頁。', label: '回首頁' },
+    login: { title: '登入學校帳號', body: '按下面的連結，在這個分頁登入學校帳號。', label: '登入學校帳號' }
+  };
+  /** 真正的連結由使用者直接啟用，讓 Apps Script iframe 在原分頁切換。 */
+  function gate(href, page) {
+    const t = GATE_TEXT[page] || { title: '準備好了', body: '按下面的連結繼續。', label: '繼續' };
+    const old = document.querySelector('.zh-gate');
+    if (old) old.remove();
+    const el = ZH.html(
+      '<div class="zh-modal zh-gate" role="dialog" aria-modal="true" aria-labelledby="zh-gate-t">' +
+      '<div class="zh-modal__dialog"><h2 class="zh-modal__title" id="zh-gate-t">' + ZH.esc(t.title) + '</h2>' +
+      '<div class="zh-modal__body"><p>' + ZH.esc(t.body) + '</p></div>' +
+      '<div class="zh-modal__actions"><a class="zh-btn zh-btn--primary" data-gate="go" href="' + ZH.esc(href) + '" target="_top">' + ZH.esc(t.label) + '</a></div></div></div>'
+    );
+    document.body.appendChild(el);
+    const link = el.querySelector('[data-gate="go"]');
+    link.addEventListener('click', e => {
+      if (e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      if (link.getAttribute('aria-disabled') === 'true') { e.preventDefault(); return; }
+      link.setAttribute('aria-disabled', 'true');
+      ZH.loading(true, '前往中');
+      // 預設連結行為直接換頁；若瀏覽器限制了導覽，三秒後仍可再按一次。
+      setTimeout(() => { if (el.isConnected) { link.removeAttribute('aria-disabled'); ZH.loading(false); } }, 3000);
+    });
+    link.focus();
+  }
+
+  /** 紀錄先送出；結算及等待後的導覽，都以目前分頁的原生連結接續。 */
+  const GO_WAIT = 8000;
+  ZH.go = function (page, params) {
+    const href = ZH.url(page, params), seq = ++navigationSeq;
+    if (page !== 'result' && !ZH.pendingCount() && canNavigate()) {
+      ZH.loading(true, '前往中');
+      if (openTop(href)) return;
+      ZH.loading(false); gate(href, page); return;
+    }
+    ZH.loading(true, ZH.pendingCount() ? '保存紀錄中' : '準備中');
+    Promise.race([Promise.resolve().then(() => ZH.flushAll()).catch(() => null), ZH.sleep(GO_WAIT)]).then(() => {
+      if (seq !== navigationSeq) return;
+      ZH.loading(false);
+      gate(href, page);
+    });
+  };
+
+  /** 前往 Google 帳號登入，沿用目前分頁。 */
+  ZH.login = function () {
+    ZH.flush();
+    const href = ZH.user.loginUrl || BOOT.appUrl || '/';
+    if (!canNavigate() || !openTop(href)) gate(href, 'login');
+  };
+
+
+  // ───────────────────────── 存檔 ─────────────────────────
+
+  const guestSaveKey = (id, mode) => 'save:' + id + ':' + mode;
+
+  /** 存檔：學校帳號存伺服器，訪客存在這個分頁 */
+  ZH.save = function (scenarioId, mode, state) {
+    if (ZH.isGuest()) {
+      ZH.session.set(guestSaveKey(scenarioId, mode), { state: state, savedAt: new Date().toISOString() });
+      return Promise.resolve({ ok: true, guest: true });
+    }
+    return ZH.call('api_saveGame', scenarioId, mode, state, ZH.VERSION);
+  };
+
+  /** 讀檔：沒有存檔時 state 為 null */
+  ZH.load = function (scenarioId, mode) {
+    if (ZH.isGuest()) {
+      const saved = ZH.session.get(guestSaveKey(scenarioId, mode), null);
+      return Promise.resolve({ ok: true, guest: true, state: saved ? saved.state : null });
+    }
+    return ZH.call('api_loadGame', scenarioId, mode);
+  };
+
+  /** 列出存檔（首頁「繼續遊戲」） */
+  ZH.listSaves = function () {
+    if (ZH.isGuest()) return Promise.resolve({ ok: true, guest: true, saves: [] });
+    return ZH.call('api_listSaves');
+  };
+
+  /** 刪除存檔（重新開始） */
+  ZH.deleteSave = function (scenarioId, mode) {
+    if (ZH.isGuest()) {
+      ZH.session.remove(guestSaveKey(scenarioId, mode));
+      return Promise.resolve({ ok: true, guest: true });
+    }
+    return ZH.call('api_deleteSave', scenarioId, mode);
+  };
+
+
+  // ───────────────────────── 紀錄佇列 ─────────────────────────
+
+  const queue = [];
+  const QUEUE_LIMIT = 200;   // 斷線時最多暫存的事件數
+  const FLUSH_SIZE = 10;     // 累積到這個數量就送出
+  const FLUSH_DELAY = 12000; // 或者每 12 秒送一次
+  const PENDING_KEY = 'pendingLog'; // 換頁時暫存未送出紀錄的鍵名
+  let flushing = null;
+  let flushTimer = null;
+  let leaving = false;
+
+  /** 還沒送出（含送出中）的紀錄數 */
+  ZH.pendingCount = () => queue.length + (flushing ? 1 : 0);
+
+  /**
+   * 記錄一個事件。訪客不記錄。
+   * type：scenario｜anchor｜minigame｜codex｜reflection（欄位見 Log.gs）
+   */
+  ZH.track = function (type, data) {
+    if (ZH.isGuest()) return;
+    queue.push({ type: type, data: data || {} });
+    if (queue.length > QUEUE_LIMIT) queue.splice(0, queue.length - QUEUE_LIMIT);
+    if (queue.length >= FLUSH_SIZE) ZH.flush();
+    else if (!flushTimer) flushTimer = setTimeout(() => ZH.flush(), FLUSH_DELAY);
+  };
+
+  /** 把佇列全部送完（分批送出）；任何一批失敗就停下，留待下次 */
+  ZH.flushAll = function () {
+    return ZH.flush().then(result => {
+      if (queue.length && result && result.ok !== false) return ZH.flushAll();
+      return result;
+    });
+  };
+
+  /** 立即送出佇列中的事件；失敗時保留在佇列下次再送 */
+  ZH.flush = function () {
+    if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+    if (flushing) return flushing;
+    if (!queue.length || ZH.isGuest()) return Promise.resolve({ ok: true, recorded: 0 });
+
+    const batch = queue.splice(0, 60);
+    flushing = ZH.call('api_logBatch', batch)
+      .then(result => {
+        if (!result || !result.ok) queue.unshift.apply(queue, batch);
+        return result;
+      })
+      .catch(err => {
+        queue.unshift.apply(queue, batch);
+        return { ok: false, msg: err.message };
+      })
+      .then(result => {
+        flushing = null;
+        if (queue.length && !flushTimer) flushTimer = setTimeout(() => ZH.flush(), FLUSH_DELAY);
+        return result;
+      });
+    return flushing;
+  };
+
+  // 分頁被切到背景時先送出；離開這一頁時，把還沒送出的紀錄暫存到分頁裡
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && !leaving) ZH.flush();
+  });
+  global.addEventListener('pagehide', () => {
+    leaving = true;
+    if (queue.length && !ZH.isGuest()) {
+      ZH.session.set(PENDING_KEY, { email: ZH.user.email, events: queue.slice(-QUEUE_LIMIT) });
+    } else {
+      ZH.session.remove(PENDING_KEY);
+    }
+  });
+  // 按「上一頁」從快取回到這一頁時，佇列還在記憶體裡，暫存的那份就不需要了
+  global.addEventListener('pageshow', e => {
+    if (!e.persisted) return;
+    leaving = false;
+    ZH.session.remove(PENDING_KEY);
+  });
+
+  // 上一頁沒送完的紀錄：同一個帳號才補送
+  (function restorePending() {
+    const saved = ZH.session.get(PENDING_KEY, null);
+    ZH.session.remove(PENDING_KEY);
+    if (!saved || !Array.isArray(saved.events) || !saved.events.length) return;
+    if (ZH.isGuest() || saved.email !== ZH.user.email) return;
+    queue.unshift.apply(queue, saved.events.slice(-QUEUE_LIMIT));
+    flushTimer = setTimeout(() => ZH.flush(), 600);
+  })();
+
+
+  // ───────────────────────── 一話結束 ─────────────────────────
+
+  /**
+   * 劇本頁在一話結束時呼叫：寫入每局結果、把結算資料交給結算頁，然後換頁。
+   * result 欄位（* 為必填）：
+   *   scenarioId*   劇本代碼
+   *   mode          history 正史｜romance 演義（預設 history）
+   *   faction       陣營，例如 鄭（寫入紀錄）
+   *   role          扮演的人物，例如 燭之武
+   *   roleKind      liezhuan 列傳（遊士、臣子）｜shijia 世家（國君）｜benji 本紀（天子）
+   *   country       人物所屬國家，例如 鄭
+   *   ending        { id, title: '小國存續', text: '結局的一兩句文言敘述', good: true }
+   *   scoreStrategy 謀略 0–100；scoreVirtue 德望 0–100
+   *   turns、durationSec
+   *   deeds         列傳正文：依玩家實際作為組成的文言句子陣列
+   *   anchors       ZH.anchor.runAll 的回傳結果
+   *   games         [{ gameId, score, maxScore }] 這一局的小遊戲成績
+   *   codex         這一局新解鎖的圖鑑（類型:代碼）；用 ZH.codex.unlock 解鎖的會自動加入，
+   *                 這一話授予的諸子、六經（ZH.CODEX_GRANTS）也會在這裡自動收入
+   *   opener        「太史公曰」的第一句（劇本專屬）
+   *   prompts       反思題目（2–3 題）
+   */
+  ZH.finishScenario = function (result) {
+    const r = Object.assign({ mode: 'history', deeds: [], anchors: [], games: [], codex: [], prompts: [] }, result || {});
+    if (!r.scenarioId) throw new Error('ZH.finishScenario 需要 scenarioId。');
+    r.finishedAt = new Date().toISOString();
+    r.bioLogged = false;
+    ZH.codex.grantFor(r.scenarioId);
+    ZH.codex.fresh().forEach(k => { if (r.codex.indexOf(k) === -1) r.codex.push(k); });
+    const ending = r.ending && typeof r.ending === 'object' ? r.ending : { title: String(r.ending || '') };
+    r.ending = ending;
+    ZH.track('scenario', {
+      scenarioId: r.scenarioId,
+      mode: r.mode,
+      faction: r.faction || '',
+      ending: ending.title || '',
+      scoreStrategy: r.scoreStrategy,
+      scoreVirtue: r.scoreVirtue,
+      turns: r.turns,
+      durationSec: r.durationSec,
+      clientVersion: ZH.VERSION
+    });
+    ZH.session.set('result:' + r.scenarioId, r);
+    ZH.go('result', { s: r.scenarioId });
+  };
+
+
+  // ───────────────────────── 史冊圖鑑 ─────────────────────────
+
+  const codexSet = {};
+  const codexFresh = [];   // 這一頁新解鎖的項目（一話結束時交給結算頁）
+  let codexLoaded = null;
+
+  ZH.codex = {
+    /** 載入已解鎖清單（頁面開始時呼叫一次） */
+    init() {
+      if (codexLoaded) return codexLoaded;
+      if (ZH.isGuest()) {
+        ZH.session.get('codex', []).forEach(k => { codexSet[k] = true; });
+        codexLoaded = Promise.resolve(Object.keys(codexSet));
+      } else {
+        codexLoaded = ZH.access.read()
+          .then(() => Object.keys(codexSet))
+          .catch(() => Object.keys(codexSet));
+      }
+      return codexLoaded;
+    },
+    has(itemType, itemId) {
+      return !!codexSet[itemType + ':' + itemId];
+    },
+    count(itemType) {
+      return Object.keys(codexSet).filter(k => !itemType || k.indexOf(itemType + ':') === 0).length;
+    },
+    /** 已解鎖的全部項目（類型:代碼） */
+    keys() {
+      return Object.keys(codexSet);
+    },
+    /** 這一頁新解鎖的項目 */
+    fresh() {
+      return codexFresh.slice();
+    },
+    /**
+     * 解鎖一個圖鑑項目；第一次解鎖時顯示提示並寫入紀錄。
+     * itemType：person 人物｜idiom 成語｜treasure 寶物｜text 原文｜school 諸子｜classic 六經
+     */
+    unlock(itemType, itemId, scenarioId, label, options) {
+      const key = itemType + ':' + itemId;
+      if (codexSet[key]) return false;
+      codexSet[key] = true;
+      codexFresh.push(key);
+      if (ZH.isGuest()) ZH.session.set('codex', Object.keys(codexSet));
+      else if (!(ZH.cutinIsItem && ZH.cutinIsItem(key))) ZH.track('codex', { itemType: itemType, itemId: itemId, scenarioId: scenarioId || '' }); // 名場面由伺服器依通關紀錄計算，重播不寫入授予。
+      if (options && options.quiet) return true; // 不跳卡片（例如一話結束、馬上要換頁時）
+      if (ZH.codexBook && ZH.codexBook.announce) {
+        ZH.codexBook.announce(key); // 有載入 Codex_js 時顯示解鎖卡片
+      } else {
+        if (label) ZH.toast('史冊解鎖：' + label, 'ok');
+        ZH.sfx('seal');
+      }
+      return true;
+    },
+    /**
+     * 收入這一話授予的跨劇本項目（諸子、六經；Data_codex 的 ZH.CODEX_GRANTS）。
+     * ZH.finishScenario 會自動呼叫；回傳這次新收入的鍵。
+     */
+    grantFor(scenarioId) {
+      const map = ZH.CODEX_GRANTS || {};
+      const got = [];
+      Object.keys(map).forEach(key => {
+        const list = Array.isArray(map[key]) ? map[key] : [];
+        if (!list.some(g => g && g.s === scenarioId)) return;
+        const i = key.indexOf(':');
+        if (i < 1) return;
+        if (ZH.codex.unlock(key.slice(0, i), key.slice(i + 1), scenarioId, '', { quiet: true })) got.push(key);
+      });
+      return got;
+    }
+  };
+
+
+  // 帳號蒐集設定與紀錄管理：一次載入，對話切換不增加伺服器請求。
+  let accessPromise = null;
+  ZH.access = {
+    state: null,
+    apply(res, preserveFresh) {
+      if (!res || res.ok === false) throw new Error(res && res.msg || '讀取蒐集設定失敗。');
+      this.state = Object.assign({}, this.state || {}, res);
+      if (typeof res.isTeacher === 'boolean') ZH.user.isTeacher = res.isTeacher;
+      const pending = preserveFresh ? codexFresh.slice() : [];
+      Object.keys(codexSet).forEach(k => { delete codexSet[k]; });
+      (res.items || []).forEach(k => { codexSet[k] = true; });
+      pending.forEach(k => { codexSet[k] = true; });
+      if (!preserveFresh) codexFresh.length = 0;
+      codexLoaded = Promise.resolve(Object.keys(codexSet));
+      document.dispatchEvent(new CustomEvent('zh:collection-change', { detail: res }));
+      return res;
+    },
+    read(force) {
+      if (accessPromise && !force) return accessPromise;
+      accessPromise = ZH.call('api_getProgressAccess').then(res => this.apply(res, !force)).catch(err => { accessPromise = null; throw err; });
+      return accessPromise;
+    },
+    async set(action) {
+      if (action === 'reset') {
+        const ok = await ZH.modal({ title: '改回未解鎖？', body: '<p>會清空你的實際蒐集與教師授予，並關閉全蒐集展示。遊玩成績和存檔保留；之後可以重新蒐集。</p>', actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '清空並改回未解鎖', value: true, kind: 'seal' }] });
+        if (!ok) return null;
+      }
+      const flushed = await ZH.flushAll();
+      if (flushed && flushed.ok === false) throw new Error('尚有紀錄未送出，請稍後再設定。');
+      const res = await ZH.call('api_setMyCollectionMode', action);
+      this.apply(res);
+      if (action === 'reset') clearRecordLocal('collections');
+      accessPromise = Promise.resolve(res);
+      ZH.toast(action === 'all' ? '已開啟全蒐集展示。' : action === 'reset' ? '已改回未解鎖。' : '已切回實際遊玩蒐集。', 'ok');
+      return res;
+    }
+  };
+  function clearRecordLocal(scope, sid, mode) {
+    const matches = key => {
+      if (!key.startsWith('zh:')) return false;
+      const bare = key.slice(3);
+      if (scope === 'collections') return bare === 'codex' || bare.startsWith('result:');
+      if (scope === 'all') return /^(save:|result:|world:|codex$|pendingLog$)/.test(bare);
+      if (scope === 'save') return bare === guestSaveKey(sid, mode) || (sid === 'campaign' && bare === 'world:' + String(mode).split(':')[1]);
+      return bare.startsWith('save:' + sid + ':') || bare === 'result:' + sid;
+    };
+    ['localStorage', 'sessionStorage'].forEach(kind => {
+      try { const storage = global[kind], keys = []; for (let i = 0; i < storage.length; i++) keys.push(storage.key(i)); keys.filter(matches).forEach(k => storage.removeItem(k)); } catch (e) { /* 儲存由記憶體備援 */ }
+      Object.keys(memoryStore).forEach(k => { if (k.startsWith(kind) && matches('zh:' + k.slice(kind.length))) delete memoryStore[k]; });
+    });
+    const ticket = ZH.session.get('world:return', null);
+    if (scope === 'all' || scope === 'save' && ticket && sid === 'campaign' && ticket.w === String(mode).split(':')[1] || scope === 'chapter' && ticket && ticket.sid === sid) ZH.session.remove('world:return');
+  }
+  function localSummary() {
+    const saves = [], seen = new Set();
+    function add(key) {
+      const m = /^zh:save:(S_(?:cq|zg|ch)\d{2}_[a-z0-9]+|campaign):(.+)$/.exec(key);
+      if (!m || seen.has(key)) return; seen.add(key);
+      const value = ZH.session.get(key.slice(3), {});
+      saves.push({ scenarioId: m[1], mode: m[2], savedAt: value.savedAt || '' });
+    }
+    try { for (let i = 0; i < global.sessionStorage.length; i++) add(global.sessionStorage.key(i)); } catch (e) { /* 記憶體備援 */ }
+    Object.keys(memoryStore).filter(k => k.startsWith('sessionStorage')).forEach(k => add('zh:' + k.slice('sessionStorage'.length)));
+    return { ok: true, guest: true, saves, chapters: (ZH.CATALOG || []).filter(s => s.status === 'ready'), collection: { items: ZH.codex.keys() } };
+  }
+  ZH.records = {
+    summary() { return ZH.isGuest() ? Promise.resolve(localSummary()) : ZH.call('api_getMyRecordSummary'); },
+    async remove(scope, sid, mode) {
+      if (!ZH.isGuest()) {
+        const flushed = await ZH.flushAll();
+        if (flushed && flushed.ok === false) throw new Error('尚有紀錄未送出，請稍後再刪除。');
+      }
+      const res = ZH.isGuest() ? { ok: true } : await ZH.call('api_deleteMyRecords', scope, sid || '', mode || '');
+      if (!res || !res.ok) throw new Error(res && res.msg || '刪除失敗。');
+      clearRecordLocal(scope, sid, mode);
+      if (scope !== 'save' && ZH.isGuest()) {
+        const kept = scope === 'all' ? [] : ZH.codex.keys().filter(k => { const it = ZH.codexItem(k); return !it || it.scenarioId !== sid; });
+        ZH.session.set('codex', kept); res.collection = { items: kept, mode: 'earned' };
+      }
+      if (res.collection) { ZH.access.apply(res.collection); accessPromise = ZH.isGuest() ? null : Promise.resolve(res.collection); }
+      document.dispatchEvent(new CustomEvent('zh:records-change', { detail: { scope, sid, mode } }));
+      ZH.toast('已刪除選定紀錄。', 'ok');
+      return res;
+    },
+    async confirm(scope, sid, mode) {
+      const s = ZH.findScenario(sid), names = { cq: '春秋爭盟', zg: '戰國縱橫', ch: '楚漢逐鹿' };
+      const label = sid === 'campaign' ? names[String(mode).split(':')[1]] || '天下大地圖' : s ? s.name : sid;
+      const body = scope === 'all' ? '<p>刪除你的全部劇本與三篇大地圖存檔、作答、成績、反思、列傳及蒐集，並取消全蒐集展示與教師授予。班級座號、暱稱和音樂設定保留。</p>' : scope === 'save' ? '<p>刪除「' + ZH.esc(label) + '」這筆存檔，保留成績與蒐集。</p>' : '<p>刪除「' + ZH.esc(label) + '」的全部模式存檔、作答、成績、反思、列傳及由此話首次收錄的蒐集，並取消本話教師授予。</p><p>由其他章節收錄的共享項目保留；全蒐集展示如仍開啟，會繼續顯示全部項目。</p>';
+      const ok = await ZH.modal({ title: '確認刪除紀錄', body: body + '<p class="zh-dim">刪除後無法復原。</p>', actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '確認刪除', value: true, kind: 'seal' }] });
+      if (!ok) return null;
+      ZH.loading(true, '刪除紀錄');
+      try { return await this.remove(scope, sid, mode); } finally { ZH.loading(false); }
+    },
+    async open() {
+      ZH.loading(true, '讀取自己的紀錄');
+      let data;
+      try { data = await this.summary(); if (!data || !data.ok) throw new Error(data && data.msg || '讀取失敗。'); }
+      finally { ZH.loading(false); }
+      const label = s => { const vol = (ZH.VOLUMES || []).find(v => v.key === s.vol); return (vol ? vol.name + '・' : '') + ZH.episodeLabel(s) + ' ' + s.name; };
+      const worlds = { cq: '春秋爭盟', zg: '戰國縱橫', ch: '楚漢逐鹿' };
+      const saveName = s => s.scenarioId === 'campaign' ? '天下大地圖・' + (worlds[String(s.mode).split(':')[1]] || s.mode) : (ZH.findScenario(s.scenarioId) || {}).name || s.scenarioId;
+      const h = '<div class="zh-field"><label for="record-scope">刪除範圍</label><select class="zh-input zh-select" id="record-scope"><option value="save">只刪除單筆存檔</option><option value="chapter">指定章節的紀錄與蒐集</option><option value="all">全部遊玩紀錄與蒐集</option></select></div>' +
+        '<div class="zh-field" id="record-save-field"><label for="record-save">存檔</label><select class="zh-input zh-select" id="record-save">' + (data.saves.length ? data.saves.map((s, i) => '<option value="' + i + '">' + ZH.esc(saveName(s) + '・' + s.mode + '・' + s.savedAt) + '</option>').join('') : '<option value="">沒有存檔</option>') + '</select></div>' +
+        '<div class="zh-field" id="record-chapter-field" hidden><label for="record-chapter">章節</label><select class="zh-input zh-select" id="record-chapter">' + data.chapters.map(s => '<option value="' + ZH.esc(s.id) + '">' + ZH.esc(label(s)) + '</option>').join('') + '</select></div>' +
+        '<p class="zh-dim zh-small" style="margin-top:16px">' + (ZH.isGuest() ? '管理本分頁的訪客進度。' : '只管理目前登入帳號的紀錄。') + '下一步會列出刪除內容供你確認。</p>';
+      const done = ZH.modal({ title: '我的紀錄', body: h, actions: [{ label: '收起', value: false, kind: 'quiet' }, { label: '下一步', value: true, kind: 'primary' }] });
+      const scopeEl = document.getElementById('record-scope'), chapterEl = document.getElementById('record-chapter'), saveEl = document.getElementById('record-save');
+      scopeEl.addEventListener('change', () => { document.getElementById('record-save-field').hidden = scopeEl.value !== 'save'; document.getElementById('record-chapter-field').hidden = scopeEl.value !== 'chapter'; });
+      if (!await done) return;
+      const scope = scopeEl.value, save = data.saves[Number(saveEl.value)];
+      if (scope === 'save' && (!save || saveEl.value === '')) { ZH.toast('目前沒有可刪除的存檔。'); return; }
+      return this.confirm(scope, scope === 'save' ? save.scenarioId : scope === 'chapter' ? chapterEl.value : '', scope === 'save' ? save.mode : '');
+    }
+  };
+
+
+  // ───────────────────────── 個人設定 ─────────────────────────
+
+  const DEFAULT_SETTINGS = { sound: true, volume: 0.7, textSpeed: 'normal' };
+  ZH.settings = Object.assign({}, DEFAULT_SETTINGS, ZH.local.get('settings', {}));
+  ZH.setSetting = function (key, value) {
+    ZH.settings[key] = value;
+    ZH.local.set('settings', ZH.settings);
+    if (key === 'volume' || key === 'sound') applyVolume();
+  };
+
+
+  // ───────────────────────── 介面元件 ─────────────────────────
+
+  function ensureLayer(className) {
+    let el = document.querySelector('.' + className);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = className;
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  /** 底部提示訊息。kind：ok｜bad｜不填 */
+  ZH.toast = function (message, kind, ms) {
+    const layer = ensureLayer('zh-toasts');
+    layer.setAttribute('role', 'status');
+    layer.setAttribute('aria-live', 'polite');
+    const item = document.createElement('div');
+    item.className = 'zh-toast' + (kind ? ' zh-toast--' + kind : '');
+    item.textContent = message;
+    layer.appendChild(item);
+    setTimeout(() => {
+      item.classList.add('is-leaving');
+      setTimeout(() => item.remove(), 320);
+    }, ms || 2600);
+  };
+
+  /**
+   * 彈出視窗，回傳 Promise，值為使用者按下的按鈕 value。
+   * ZH.modal({ title, body, actions: [{ label, value, kind: 'primary'|'quiet'|'seal' }], dismissible })
+   * body 為 HTML 字串，請先用 ZH.esc 處理使用者輸入。
+   */
+  ZH.modal = function (options) {
+    const opts = Object.assign({ title: '', body: '', actions: [{ label: '確定', value: true, kind: 'primary' }], dismissible: true }, options || {});
+    return new Promise(resolve => {
+      const previous = document.activeElement;
+      const wrap = ZH.html(
+        '<div class="zh-modal" role="dialog" aria-modal="true">' +
+        '<div class="zh-modal__dialog">' +
+        (opts.title ? '<h2 class="zh-modal__title">' + ZH.esc(opts.title) + '</h2>' : '') +
+        '<div class="zh-modal__body">' + opts.body + '</div>' +
+        '<div class="zh-modal__actions"></div>' +
+        '</div></div>'
+      );
+      const actions = wrap.querySelector('.zh-modal__actions');
+      const close = value => {
+        document.removeEventListener('keydown', onKey);
+        wrap.remove();
+        if (previous && previous.focus) previous.focus();
+        resolve(value);
+      };
+      const onKey = e => {
+        if (e.key === 'Escape' && opts.dismissible) close(null);
+      };
+      opts.actions.forEach(action => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'zh-btn' + (action.kind ? ' zh-btn--' + action.kind : '');
+        btn.textContent = action.label;
+        btn.addEventListener('click', () => {
+          ZH.sfx('click');
+          close(action.value);
+        });
+        actions.appendChild(btn);
+      });
+      wrap.addEventListener('click', e => {
+        if (e.target === wrap && opts.dismissible) close(null);
+      });
+      document.addEventListener('keydown', onKey);
+      document.body.appendChild(wrap);
+      const firstButton = actions.querySelector('button:last-child');
+      if (firstButton) firstButton.focus();
+    });
+  };
+
+  /** 全畫面讀取中。ZH.loading(true, '讀取存檔') / ZH.loading(false) */
+  ZH.loading = function (on, text) {
+    let el = document.querySelector('.zh-loading');
+    if (!on) {
+      if (el) el.remove();
+      return;
+    }
+    if (!el) {
+      el = ZH.html('<div class="zh-loading" role="status" aria-live="polite"><div class="zh-loading__ring"></div><div class="zh-loading__text"></div></div>');
+      document.body.appendChild(el);
+    }
+    el.querySelector('.zh-loading__text').textContent = text || '讀取中';
+  };
+
+
+  // ───────────────────────── 音效合成 ─────────────────────────
+
+  let audioCtx = null;
+  let master = null;
+  const sounds = {};
+
+  function getAudio() {
+    if (!audioCtx) {
+      const Ctx = global.AudioContext || global.webkitAudioContext;
+      if (!Ctx) return null;
+      audioCtx = new Ctx();
+      master = audioCtx.createGain();
+      master.connect(audioCtx.destination);
+      applyVolume();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function applyVolume() {
+    if (master) master.gain.value = ZH.settings.sound ? ZH.clamp(Number(ZH.settings.volume) || 0, 0, 1) : 0;
+  }
+
+  // 瀏覽器規定：使用者第一次點擊後才能發聲
+  document.addEventListener('pointerdown', () => getAudio(), { once: true, capture: true });
+
+  /** 一個衰減的正弦泛音 */
+  function partial(ctx, dest, freq, start, duration, peak) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(peak, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(gain).connect(dest);
+    osc.start(start);
+    osc.stop(start + duration + 0.05);
+  }
+
+  /** 一段濾波後的噪音 */
+  function noise(ctx, dest, start, duration, filterType, freq, peak) {
+    const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = filterType;
+    filter.frequency.value = freq;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(peak, start);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    src.connect(filter).connect(gain).connect(dest);
+    src.start(start);
+    src.stop(start + duration);
+  }
+
+  /** 編鐘：非整數倍泛音、長衰減 */
+  function bell(ctx, dest, t, base) {
+    [[1, 0.5, 2.2], [2.76, 0.22, 1.4], [5.4, 0.12, 0.8], [8.93, 0.06, 0.5]]
+      .forEach(p => partial(ctx, dest, base * p[0], t, p[2], p[1]));
+  }
+
+  /** 磬：高頻泛音、短衰減 */
+  function chime(ctx, dest, t, base) {
+    [[1, 0.4, 0.9], [2.32, 0.18, 0.6], [3.9, 0.09, 0.35]]
+      .forEach(p => partial(ctx, dest, base * p[0], t, p[2], p[1]));
+  }
+
+  sounds.bell = (ctx, dest, t) => bell(ctx, dest, t, 392);
+  sounds.chime = (ctx, dest, t) => chime(ctx, dest, t, 880);
+  sounds.ok = (ctx, dest, t) => { bell(ctx, dest, t, 523); bell(ctx, dest, t + 0.12, 784); };
+  sounds.ng = (ctx, dest, t) => chime(ctx, dest, t, 220);
+  sounds.drum = (ctx, dest, t) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.setValueAtTime(130, t);
+    osc.frequency.exponentialRampToValueAtTime(45, t + 0.35);
+    gain.gain.setValueAtTime(0.9, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    osc.connect(gain).connect(dest);
+    osc.start(t);
+    osc.stop(t + 0.5);
+    noise(ctx, dest, t, 0.08, 'lowpass', 900, 0.35);
+  };
+  sounds.click = (ctx, dest, t) => noise(ctx, dest, t, 0.035, 'bandpass', 2200, 0.35);  // 竹簡相碰
+  sounds.seal = (ctx, dest, t) => {
+    partial(ctx, dest, 95, t, 0.25, 0.6);
+    noise(ctx, dest, t, 0.06, 'lowpass', 600, 0.4);
+  };
+
+  /** 播放音效：ZH.sfx('bell') */
+  ZH.sfx = function (name) {
+    if (!ZH.settings.sound || !sounds[name]) return;
+    const ctx = getAudio();
+    if (!ctx) return;
+    try {
+      sounds[name](ctx, master, ctx.currentTime + 0.01);
+    } catch (err) {
+      // 音效失敗不影響遊戲
+    }
+  };
+
+  /** 其他模組可以註冊新音效：ZH.sfx.register('arrows', (ctx, dest, t) => {...}) */
+  ZH.sfx.register = function (name, fn) {
+    sounds[name] = fn;
+  };
+  ZH.sfx.tools = { partial: partial, noise: noise, bell: bell, chime: chime };
+
+
+  // ───────────────────────── 錯誤處理 ─────────────────────────
+
+  let errorShown = false;
+  global.addEventListener('error', event => {
+    if (errorShown) return;
+    errorShown = true;
+    console.error(event.error || event.message);
+    ZH.toast('畫面發生錯誤，請重新整理頁面。', 'bad', 5000);
+  });
+  global.addEventListener('unhandledrejection', event => {
+    console.error(event.reason);
+  });
+
+  global.ZH = ZH;
+})(window);
+</script>
+<script>
+// 程式繪製道具，快取共用；不載入圖片、字型或額外動畫。
+(function (ZH) {
+  'use strict';
+  const shapes = {
+    wall:'<path d="M12 28H68V62H12Z" fill="#b2a188"/><path d="M12 28V20H23V28H34V20H46V28H57V20H68V28M12 40H68M12 52H68M28 29V40M50 29V40M20 40V52M40 40V52M59 40V52M29 52V62M51 52V62" fill="none"/><path d="M30 62V47Q40 32 50 47V62" fill="#31384b"/>',
+    tower:'<path d="M23 30H57L61 67H19Z" fill="#a59379"/><path d="M22 31V23H29V31H37V23H44V31H52V23H58V31M22 45H59M31 31V45M45 45V66" fill="none"/><path d="M36 23Q22 13 37 3Q37 12 47 15Q56 25 40 26" fill="#e8b24c"/>',
+    city:'<path d="M11 46H69V67H11Z" fill="#b2a58c"/><path d="M25 44V27H55V44" fill="#ab4839"/><path d="M18 27L40 12L62 27Z" fill="#28354a"/><path d="M11 46V40H19V46H28V40H36V46H45V40H53V46H61V40H69V46M11 57H69" fill="none"/><path d="M33 67V55Q40 43 47 55V67" fill="#252d3e"/><path d="M31 34H49" stroke="#dfc08a"/>',
+    tunnel:'<path d="M9 67V39Q40 0 71 39V67Z" fill="#91806a"/><path d="M22 67V40Q40 19 58 40V67Z" fill="#272b37"/><path d="M28 68L35 40H45L54 68Z" fill="#b29975"/><path d="M13 39L23 43M18 27L28 35M31 18L35 30M48 20L45 30M60 31L51 38M66 43L56 46" fill="none"/>',
+    cow:'<path d="M15 29L23 22H53L65 30V47L58 50L57 66H49V48H30L29 65H21V47H15Z" fill="#c3aa80"/><path d="M16 31L11 17L21 25M59 30L70 17L67 36M13 33L19 34M14 43L25 43M25 24L31 42M54 24L50 37" fill="none"/><circle cx="22" cy="35" r="2" fill="#282b36"/>',
+    grain:'<path d="M15 43H65L59 62Q40 71 21 62Z" fill="#b89654"/><path d="M20 43Q25 32 33 39Q38 24 47 36Q61 31 62 43" fill="#ead6a0"/><path d="M27 34L20 9M22 19L12 15M24 25L33 19M25 31L15 26M54 34L59 11M56 22L48 16M57 19L67 15" fill="none" stroke="#c7a257" stroke-width="3"/>',
+    bells:'<path d="M13 66V12H67V66M10 24H70M10 39H70" fill="none" stroke="#a46f3f" stroke-width="5"/><path d="M24 26V31M40 26V31M56 26V31M24 41V47M40 41V47M56 41V47"/><path d="M19 31H29V43H19ZM35 31H45V43H35ZM51 31H61V43H51ZM16 48H32V64H16ZM32 48H48V64H32ZM48 48H64V64H48Z" fill="#91a081"/><path d="M23 34V39M39 34V39M55 34V39M22 52V60M38 52V60M54 52V60" stroke="#ddc087"/>',
+    river:'<path d="M13 26L27 12L39 28L56 14L68 26V65H13Z" fill="#728d74"/><path d="M49 17Q18 29 45 41Q67 50 30 70H13Q51 49 28 43Q9 31 36 19" fill="#74b3bf"/><path d="M34 31L42 30M41 47L51 48M26 60L36 60" stroke="#d0e7d4"/>',
+    leather:'<path d="M24 14L34 20H46L56 14L66 26L56 34L59 62L47 68L40 61L33 68L21 62L24 34L14 26Z" fill="#ac8053"/><path d="M29 28Q41 19 51 29M27 48Q40 39 53 48M34 23L30 59M47 23L52 59" fill="none" stroke="#dab888" stroke-dasharray="4 4"/>',
+    robe:'<path d="M26 15L40 23L54 15L70 35L61 49L53 43L58 68H22L27 43L19 49L10 35Z" fill="#52697a"/><path d="M26 15L44 40L36 49M54 15L36 49M26 49H55" fill="none" stroke="#d3c59f" stroke-width="4"/><path d="M37 50L34 64M42 50L46 64" stroke="#a04436" stroke-width="3"/>',
+    chariot:'<circle cx="25" cy="59" r="13" fill="#a88f5c"/><circle cx="59" cy="59" r="13" fill="#a88f5c"/><path d="M25 46V72M12 59H38M16 50L34 68M34 50L16 68M59 46V72M46 59H72M50 50L68 68M68 50L50 68M25 59H59" fill="none"/><path d="M18 39L24 22H60L66 39L61 49H25Z" fill="#964b37"/><path d="M30 24V36M42 24V36M54 24V36M20 39H64" stroke="#ddbd7a"/>',
+    drum:'<ellipse cx="40" cy="22" rx="25" ry="10" fill="#eed5a1"/><path d="M15 22V48Q40 68 65 48V22Q40 42 15 22Z" fill="#a44836"/><ellipse cx="40" cy="22" rx="25" ry="10" fill="#eed5a1"/><path d="M21 28V51M32 31V56M48 31V56M59 28V51M29 58L23 69M51 58L57 69" stroke="#c6a658" stroke-width="3"/><path d="M12 7L28 17M65 7L51 17" stroke="#b89662" stroke-width="4"/>',
+    coins:'<circle cx="32" cy="36" r="23" fill="#b9a96b"/><circle cx="53" cy="49" r="22" fill="#d4b763"/><path d="M27 30H37V40H27ZM48 44H58V54H48Z" fill="#1f293b"/><path d="M17 26Q20 17 32 18M39 41Q43 32 54 33" fill="none" stroke="#edd498" stroke-width="3"/>',
+    measure:'<path d="M12 32L43 22L68 34L39 46Z" fill="#b5bc91"/><path d="M12 32V58L39 70L68 59V34L39 46Z" fill="#719183"/><path d="M20 34L42 27L58 34L39 41Z" fill="#30403f"/><path d="M19 47L30 52M19 54L30 59M47 54L59 49" stroke="#d9cd9e"/>',
+    academy:'<path d="M16 31H64V65H16Z" fill="#cbb084"/><path d="M10 31L40 11L70 31Z" fill="#31374a"/><path d="M23 33V65M56 33V65M27 43H52M27 56H52M32 34V61M40 34V61M48 34V61" stroke="#8b5937"/><path d="M13 66H67" stroke="#b0a189" stroke-width="6"/>',
+    armor:'<path d="M23 12L32 19H48L57 12L68 31L58 43L55 66H25L22 43L12 31Z" fill="#7f6850"/><path d="M25 24H55M24 34H56M25 44H55M26 54H54M26 62H54M33 24V62M46 24V62M14 31L24 32M57 32L66 31" stroke="#c3a771"/><path d="M31 16L40 28L49 16" fill="#233c47"/>',
+    boat:'<path d="M10 52H70L60 67H22Z" fill="#a0784d"/><path d="M40 52V11L60 46H40Z" fill="#e8d6a8"/><path d="M40 16L25 46H40" fill="#a64736"/><path d="M8 71Q17 65 26 71T44 71T62 71T75 71" fill="none" stroke="#74aab2"/>',
+    platform:'<path d="M13 56H67V68H13ZM21 43H59V56H21ZM28 31H52V43H28Z" fill="#b09873"/><path d="M30 21L40 12L50 21L45 31H35Z" fill="#e0bb63"/><path d="M35 68V57H44V48H40V40" fill="none" stroke="#e1cf9e"/>',
+    book:'<path d="M13 17Q28 10 40 18Q52 10 67 17V60Q52 54 40 62Q28 54 13 60Z" fill="#ead3a0"/><path d="M40 18V62M20 25L32 24M20 32L32 31M20 39L32 38M48 25L60 24M48 32L60 31M48 39L60 38" fill="none"/><path d="M14 59V65Q28 59 40 66Q52 59 67 65V59" fill="#9c5a36"/>',
+    bamboo:'<path d="M13 17L66 13L68 61L15 65Z" fill="#d3ae67"/><path d="M22 17L24 64M32 16L34 63M42 15L44 62M52 14L54 61M62 14L64 60" fill="none" stroke="#8a5a31"/><path d="M13 29L67 25M14 52L68 48" stroke="#a2392d" stroke-width="4"/><path d="M26 22L28 46M36 22L38 43M47 21L49 44M57 20L59 42" stroke-width="1"/>',
+    jade:'<circle cx="40" cy="37" r="24" fill="#62ac91"/><circle cx="40" cy="37" r="10" fill="#192238"/><path d="M23 26Q31 15 45 19M55 44Q49 58 36 56" stroke="#b9dfbc" fill="none" stroke-width="4"/><path d="M22 39Q17 31 25 33Q34 35 28 43M51 28Q60 26 59 35M34 56L36 68L43 68L44 56" fill="none"/><path d="M39 64V72" stroke="#a83d32" stroke-width="5"/>',
+    jewel:'<path d="M17 58L25 50H55L63 58L59 64H21Z" fill="#b99949"/><circle cx="40" cy="35" r="22" fill="#9dcfb6"/><path d="M22 30Q27 14 43 17" fill="none" stroke="#e8f6d7" stroke-width="5"/><circle cx="47" cy="45" r="5" fill="#72a38f" stroke="none"/><path d="M10 22L14 18M65 20L69 24M62 8L61 15" stroke="#e0b44c"/>',
+    seal:'<path d="M18 45L54 38L66 49L30 60Z" fill="#87b7a1"/><path d="M18 45V56L30 68L66 57V49L30 60Z" fill="#4d897b"/><path d="M32 43V34Q25 30 31 23Q33 19 43 22L49 15L58 20L52 29Q48 36 42 37V41" fill="#b5d4ad"/><path d="M26 52L31 56L58 48M34 63L57 57" fill="none" stroke="#d4e4bc"/>',
+    tiger:'<path d="M13 45L20 31L30 27L32 20L42 26L60 27L68 37L65 48L55 50L53 62H45L43 49H29L26 61H18L19 47L13 45Z" fill="#b99b59"/><path d="M16 43Q7 40 10 30M28 31L33 40M39 29L45 41M53 30L57 43M45 50L49 57" fill="none" stroke="#4e4434" stroke-width="3"/><circle cx="27" cy="32" r="2" fill="#1b2235" stroke="none"/><path d="M38 28V49" stroke="#ebd891" stroke-dasharray="3 2"/>',
+    token:'<path d="M27 10H49L54 63L42 72L24 63Z" fill="#6da08e"/><path d="M29 16H48L50 58L41 65L28 59Z" fill="none" stroke="#d0d1a1"/><path d="M34 25L44 23M35 33L45 31M35 40L45 38M35 48L45 46" stroke="#e9da9c"/><path d="M40 10V5M40 64V74M35 72L43 76L48 70" stroke="#a84132" stroke-width="4" fill="none"/>',
+    banner:'<path d="M27 10V68M27 15H62L55 35L62 52H27" fill="#a84335"/><path d="M27 10L22 17H32Z" fill="#d7b057"/><path d="M37 23H51M37 31H48M37 39H51" stroke="#e6d195"/><path d="M16 69H38" stroke="#aa8a55" stroke-width="5"/>',
+    sword:'<path d="M29 47L55 9L62 6L64 15L37 52Z" fill="#c3d7d4"/><path d="M34 47L59 11" stroke="#f4ecd1"/><path d="M23 41L43 56L39 61L19 46Z" fill="#c6a456"/><path d="M26 51L18 64L23 68L32 56Z" fill="#934535"/><path d="M15 63L22 69" stroke="#ddbb67" stroke-width="5"/>',
+    horse:'<path d="M20 35L26 22L23 11L35 20L42 14L49 23L59 28L62 40L51 44L39 39L35 50H27L24 42L20 35Z" fill="#574d49"/><path d="M29 26L33 32L29 49L33 64M40 45L46 64M19 36L13 44L12 60" fill="none" stroke="#3e3839" stroke-width="6"/><path d="M25 21L22 32L31 37L35 22" fill="#242b37"/><path d="M36 35L51 39" stroke="#ba6a43" stroke-width="4"/><circle cx="45" cy="28" r="2" fill="#f3da99" stroke="none"/>',
+    bow:'<path d="M32 12Q68 40 32 68" fill="none" stroke="#b48748" stroke-width="7"/><path d="M32 12L32 68M18 40H65M59 35L67 40L59 45" fill="none" stroke="#d3d6c4"/><path d="M48 35V45" stroke="#8a3d2d" stroke-width="6"/>',
+    crossbow:'<path d="M21 57L58 21" stroke="#b88248" stroke-width="10"/><path d="M18 22Q32 41 61 64" fill="none" stroke="#786349" stroke-width="6"/><path d="M18 22L61 64M17 58L63 15L64 25M54 16L63 15" stroke="#c3d4cb" fill="none"/><path d="M28 43L39 53L44 45" fill="#895039"/>',
+    map:'<path d="M15 20L33 14L48 21L65 14V60L48 66L33 59L15 65Z" fill="#ead4a4"/><path d="M33 14V59M48 21V66" stroke="#baa371"/><path d="M20 30Q48 48 58 24M25 52L38 40L57 53" stroke="#4f8a9c" fill="none"/><circle cx="38" cy="40" r="4" fill="#b54935"/>',
+    vessel:'<path d="M20 33Q40 27 60 33L57 50Q40 63 23 50Z" fill="#699481"/><path d="M24 31L19 16L12 19L13 39M56 31L61 16L68 19L67 39M29 56L26 69M51 56L54 69" fill="none" stroke="#799b7c" stroke-width="6"/><path d="M25 38H55M31 44H49" stroke="#cab770"/>',
+    lamp:'<path d="M38 42V64M25 66H55M20 43Q40 52 60 43L64 36H16Z" fill="#a88b54"/><path d="M41 34Q23 22 40 9Q40 20 48 26Q54 34 41 34Z" fill="#e8b84e"/><path d="M41 30Q35 24 41 18" stroke="#f3dda1"/>',
+    rope:'<path d="M23 21Q50 3 59 28Q64 52 35 56Q13 63 17 41Q20 23 41 28Q60 38 43 48Q26 59 26 41Q31 28 43 36Q53 45 43 52L32 70" fill="none" stroke="#c2a467" stroke-width="6"/><path d="M26 70L37 73" stroke="#816536"/>',
+    general:'<path d="M19 29L40 15L61 29V62H19Z" fill="#aa7542"/><path d="M17 31H63M24 37H56M24 44H56M24 51H56" stroke="#d7b471"/><circle cx="40" cy="59" r="4" fill="#70a98c"/>'
+  };
+  const cache = new Map();
+  ZH.itemArt = function (item) {
+    item = item || {}; const n=String(item.name||'')+' '+String(item.kind||'');
+    let key=item.icon;
+    if (!shapes[key]) key=/編鐘|磬/.test(n)?'bells':/烽燧|觀(?:\s|$)/.test(n)?'tower':/隧/.test(n)?'tunnel':/牲|牛/.test(n)?'cow':/粢盛|糧/.test(n)?'grain':/旗鼓|鼓/.test(n)?'drum':/左右廣|車|戰車/.test(n)?'chariot':/方升|量器/.test(n)?'measure':/渠|泓水|西河|江/.test(n)?'river':/臺/.test(n)?'platform':/學宮|學舍/.test(n)?'academy':/城|鎬京|咸陽|商丘/.test(n)?'city':/裘|衰絰|冠|袍/.test(n)?'robe':/乘韋/.test(n)?'leather':/武卒|甲/.test(n)?'armor':/端午|舟/.test(n)?'boat':/幣|黃金/.test(n)?'coins':/盟約|簿/.test(n)?'book':/築牆/.test(n)?'wall':/印|璽/.test(n)?'seal':/虎符/.test(n)?'tiger':/珠/.test(n)?'jewel':/玉|璧|玦/.test(n)?'jade':/弩/.test(n)?'crossbow':/弓/.test(n)?'bow':/劍|刀|匕|鋏/.test(n)?'sword':/道|图|圖|輿/.test(n)?'map':/馬|騅/.test(n)?'horse':/竹|簡/.test(n)?'bamboo':/書|兵法|律令/.test(n)?'book':/節|旗|幡/.test(n)?'banner':/符/.test(n)?'token':/鼎|爵|杯|酒|斗|甗/.test(n)?'vessel':/燈|炬|火/.test(n)?'lamp':/繩|縋/.test(n)?'rope':'general';
+    if(!cache.has(key))cache.set(key,'<svg class="zh-item-art" data-icon="'+key+'" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><ellipse cx="40" cy="72" rx="26" ry="4" fill="#081120" opacity=".25"/><g stroke="#443727" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+shapes[key]+'</g></svg>');
+    return cache.get(key);
+  };
+})(window.ZH);
+
+</script>
+
+<script>
+window.ZH.LEARNING_TEXTS={"S_cq00_dongqian":{"titles":["《史記・周本紀》","《史記・秦本紀》"]},"S_cq01_zhengzhuang":{"titles":["《左傳・隱公元年》","《左傳・隱公三年》","《左傳・桓公五年》","〈鄭伯克段于鄢〉"]},"S_cq02_handong":{"titles":["《左傳・桓公六年》","《左傳・桓公八年》","〈季梁諫追楚師〉"]},"S_cq03_qihuan":{"titles":["〈曹劌論戰〉","〈管晏列傳〉"]},"S_cq04_chonger":{"titles":["〈宮之奇諫假道〉","〈介之推不言祿〉"]},"S_cq05_hanyuan":{"titles":["〈陰飴甥對秦伯〉"]},"S_cq06_songxiang":{"titles":["《公羊傳・僖公二十二年》","《左傳・僖公二十一年》","《左傳・僖公二十三年》","〈子魚論戰〉"]},"S_cq07_chengpu":{"titles":["《左傳・僖公二十五年》","《左傳・僖公二十七年》","《左傳・僖公二十八年》","〈襄王不許請隧〉","〈展喜犒師〉"]},"S_cq08_weizheng":{"titles":["〈燭之武退秦師〉"]},"S_cq09_xiao":{"titles":["《左傳・僖公三十二年》","《左傳・僖公三十三年》","〈蹇叔哭師〉"]},"S_cq10_wending":{"titles":["《左傳・宣公十一年》","《左傳・宣公十二年》","《左傳・宣公三年》","〈王孫滿對楚子〉","《史記・楚世家》"]},"S_cq11_jinba":{"titles":["《左傳・成公十三年》","《左傳・成公十六年》","《左傳・成公二年》","〈呂相絕秦〉"]},"S_cq12_jinchu":{"titles":["《左傳・襄公二十四年》","《左傳・襄公二十七年》","〈子產告范宣子輕幣〉","《左傳・襄公十四年》","〈駒支不屈于晉〉"]},"S_cq13_zichan":{"titles":["〈子產論政寬猛〉","〈季札觀周樂〉"]},"S_cq14_wushi":{"titles":["〈伍子胥列傳〉","〈刺客列傳〉"]},"S_cq15_kongzi":{"titles":["《史記・老子韓非列傳》","《史記・孔子世家》","《論語・衛靈公》","〈孔子世家贊〉","《論語・子罕》","《論語・述而》","《論語・微子》","《論語》"]},"S_cq16_datong":{"titles":["〈大同與小康〉","《禮記・禮運》","《論語・陽貨》"]},"S_cq17_wuyue":{"titles":["〈申胥諫許越成〉","〈吳許越成〉"]},"S_zg01_sanjia":{"titles":["《資治通鑑・周紀一》","《史記・刺客列傳》","《戰國策・趙策》"]},"S_zg02_weiwen":{"titles":["《史記・孫子吳起列傳》","《戰國策・魏策一》","《史記・滑稽列傳》","《史記・魏世家》"]},"S_zg03_shangyang":{"titles":["《史記・商君列傳》"]},"S_zg04_jixia":{"titles":["《史記・田敬仲完世家》","〈鄒忌諷齊王納諫〉","《戰國策・齊策一》","《史記・滑稽列傳》","《孟子・公孫丑下》","《孟子・告子上》","《孟子》"]},"S_zg05_maling":{"titles":["《史記・孫子吳起列傳》"]},"S_zg06_hezong":{"titles":["〈蘇秦以連橫說秦〉","《戰國策・秦策一》","《史記・蘇秦列傳》","《史記・張儀列傳》","〈司馬錯論伐蜀〉"]},"S_zg07_quyuan":{"titles":["《史記・屈原賈生列傳》","《楚辭・漁父》","〈屈原列傳〉"]},"S_zg08_hufu":{"titles":["《戰國策・燕策二・樂毅報燕王書》","《戰國策・燕策一》","《史記・樂毅列傳》","《史記・田單列傳》","《史記・趙世家》"]},"S_zg09_mengchang":{"titles":["《史記・孟嘗君列傳》","《戰國策・齊策四》","〈馮諼客孟嘗君〉","〈讀孟嘗君傳〉"]},"S_zg10_changping":{"titles":["《史記・廉頗藺相如列傳》","《戰國策・趙策四》","〈觸讋說趙太后〉"]},"S_zg11_zhuke":{"titles":["《史記・呂不韋列傳》","《史記・李斯列傳》","《史記・河渠書》","〈諫逐客書〉"]},"S_zg12_handan":{"titles":["《史記・平原君虞卿列傳》","《史記・魯仲連鄒陽列傳》","《史記・魏公子列傳》","〈魯仲連義不帝秦〉"]},"S_zg13_tongyi":{"titles":["《史記・秦始皇本紀》","《戰國策・魏策四》","《史記・刺客列傳》","〈唐雎不辱使命〉"]},"S_ch01_shaqiu":{"titles":["《史記・秦始皇本紀》","《史記・留侯世家》","《史記・李斯列傳》"]},"S_ch02_dazexiang":{"titles":["《史記・陳涉世家》","〈過秦論〉"]},"S_ch03_julu":{"titles":["《史記・項羽本紀》","《史記・高祖本紀》"]},"S_ch04_hongmen":{"titles":["《史記・項羽本紀》","〈鴻門宴〉"]},"S_ch05_sanqin":{"titles":["《史記・蕭相國世家》","《史記・淮陰侯列傳》","《史記・項羽本紀》","《史記・留侯世家》","《史記・高祖本紀》"]},"S_ch06_xingyang":{"titles":["《史記・陳丞相世家》","《史記・項羽本紀》"]},"S_ch07_hanxin":{"titles":["《史記・淮陰侯列傳》"]},"S_ch08_gaixia":{"titles":["《史記・項羽本紀》","〈項羽本紀贊〉"]},"S_ch09_dafeng":{"titles":["《史記・高祖功臣侯者年表》","《史記・蕭相國世家》","《史記・淮陰侯列傳》","〈高祖功臣侯年表〉","《史記・高祖本紀》"]}};
+window.ZH.learningTexts=id=>(window.ZH.LEARNING_TEXTS[id]||{}).titles||((window.ZH.findScenario(id)||{}).source||'').match(/《[^》]+》|〈[^〉]+〉/g)||[];
+(function(ZH){
+ 'use strict';
+ const scope=ZH.user.email||'guest',legacy={S_ch01_shaqiu:'shaqiu',S_ch02_dazexiang:'dazexiang',S_ch03_julu:'julu',S_ch04_hongmen:'hongmen',S_ch05_sanqin:'sanqin',S_ch06_xingyang:'xingyang',S_ch07_hanxin:'hanxin',S_ch08_gaixia:'gaixia',S_ch09_dafeng:'dafeng'};
+ const journals=new Set(), flights=new Set(), blocked=new Set();
+ const slots=(id,mode)=>id+':'+(mode||'history');
+ ZH.isEndedSave=s=>!!(s&&(s.ended||s.engine&&s.engine.ended||s.state&&s.state.ended||s.runtime&&s.runtime.ended));
+ const rawLocalGet=ZH.local.get.bind(ZH.local),rawLocalSet=ZH.local.set.bind(ZH.local);
+ ZH.local.get=function(k,f){const v=rawLocalGet(k,f);if(/:save$/.test(k)&&ZH.isEndedSave(v)){ZH.local.remove(k);return f;}return v;};
+ ZH.local.set=function(k,v){const sid=Object.keys(legacy).find(id=>k.indexOf(legacy[id]+'-platform-v1:'+scope+':save')===0);if(sid&&blocked.has(slots(sid,'history')))return;return rawLocalSet(k,v);};
+ ZH.registerJournal=j=>{journals.add(j);return j;};
+ ZH.flushJournals=async function(id,mode){for(const j of journals){let k;try{k=JSON.parse(j.key);}catch(e){}if(k&&k[1]===id&&k[2]===mode){const r=await j.flush();if(r&&r.ok===false)throw Error('雲端存檔尚未完成，請稍後再試。');}}};
+ ZH.clearDeviceSave=async function(id,mode){
+   ZH.session.remove('save:'+id+':'+mode);
+   if(id==='campaign'&&/^romance:(cq|zg|ch)$/.test(mode))ZH.session.remove('world:'+mode.split(':')[1]);
+   if(legacy[id])ZH.local.remove(legacy[id]+'-platform-v1:'+scope+':save');
+   for(const j of journals) {let key;try{key=JSON.parse(j.key);}catch(e){}if(key&&key[1]===id&&key[2]===mode)await j.clear(true);}
+   const key=JSON.stringify([scope,id,mode]);try{localStorage.removeItem('zhgame:'+key);}catch(e){}
+   // 已離開的頁面可能只留下Dexie備份；以相同帳號/章節/模式精確刪除。
+   try{if(window.ZHGameLibs&&ZHGameLibs.Dexie){const db=new ZHGameLibs.Dexie('ZH_Game_Journal_v3');db.version(1).stores({saves:'key,updatedAt'});await db.saves.delete(key);db.close();}}catch(e){}
+ };
+ const oldSave=ZH.save,oldLoad=ZH.load,oldDelete=ZH.deleteSave;
+ ZH.save=function(id,mode,state){if(blocked.has(slots(id,mode)))return Promise.resolve({ok:true,closed:true});
+   // 自動備份保留舊介面語意，不在點選素質時等待網路。
+   const p=oldSave(id,mode,state);flights.add(p);p.then(()=>flights.delete(p),()=>flights.delete(p));return p;
+ };
+ ZH.load=async function(id,mode){const r=await oldLoad(id,mode);if(r&&ZH.isEndedSave(r.state)){await ZH.clearDeviceSave(id,mode);return Object.assign({},r,{state:null,completed:true});}return r;};
+ ZH.deleteSave=async function(id,mode){const r=await oldDelete(id,mode);if(r&&r.ok)await ZH.clearDeviceSave(id,mode);return r;};
+ const savedRuns=()=>ZH.session.get('learning-runs:'+scope,[]);
+ function storeRuns(runs){ZH.session.set('learning-runs:'+scope,runs.slice(-60));}
+ function newId(){const n=new Uint32Array(2);crypto.getRandomValues(n);return 'run_'+Date.now().toString(36)+'_'+Array.from(n,x=>x.toString(36)).join('_');}
+ let current=null;
+ ZH.runs={
+   begin(id,state,mode){blocked.delete(slots(id,mode||state&&state.mode));if(!state._playRunId)state._playRunId=newId();current={id,runId:state._playRunId};},
+   async restart(id,mode){mode=mode||'history';blocked.add(slots(id,mode));await Promise.allSettled(Array.from(flights));let r;try{r=await oldDelete(id,mode);if(!r||r.ok===false)throw Error(r&&r.msg||'舊存檔尚未清除，請重試。');}catch(e){blocked.delete(slots(id,mode));throw e;}await ZH.clearDeviceSave(id,mode);blocked.delete(slots(id,mode));ZH.session.set('replay:'+id,true);ZH.go(id,{mode:mode||'history'});},
+   async history(id){if(ZH.isGuest())return {ok:true,runs:savedRuns().filter(r=>r.scenarioId===id)};
+     const r=await ZH.call('api_getPlaythroughs',id);if(!r||!r.ok)throw Error(r&&r.msg||'通關紀錄讀取失敗。');return r;},
+   async choose(id,runId,choice){if(ZH.isGuest()){let r=savedRuns();const row=r.find(x=>x.runId===runId&&x.scenarioId===id);if(!row)throw Error('找不到這局紀錄。');if(row.status==='pending'){if(choice==='replace')r.forEach(x=>{if(x.scenarioId===id&&x.status==='kept')x.status='replaced';});row.status='kept';storeRuns(r);}return {ok:true,runs:r.filter(x=>x.scenarioId===id)};}
+     const r=await ZH.call('api_choosePlaythrough',id,runId,choice);if(!r||!r.ok)throw Error(r&&r.msg||'無法保存選擇。');return r;},
+   async progress(){if(ZH.isSchool()){const r=await ZH.call('api_getLearningProgress');if(!r||!r.ok)throw Error(r&&r.msg||'讀取進度失敗。');return r;}
+     const completed={};savedRuns().forEach(r=>{completed[r.scenarioId]=completed[r.scenarioId]||{count:0};if(r.status==='kept')completed[r.scenarioId].count++;completed[r.scenarioId].runId=r.runId;});return {ok:true,completed,saves:(await ZH.records.summary()).saves};},
+   async record(p){if(ZH.isGuest()){const r=savedRuns();if(!r.some(x=>x.runId===p.runId)){r.push({scenarioId:p.scenarioId,runId:p.runId,status:r.some(x=>x.scenarioId===p.scenarioId&&x.status==='kept')?'pending':'kept',finishedAt:p.finishedAt,payload:p});storeRuns(r);}return {ok:true,runs:r.filter(x=>x.scenarioId===p.scenarioId)};}
+     const r=await ZH.call('api_recordPlaythrough',p);if(!r||!r.ok)throw Error(r&&r.msg||'通關紀錄尚未保存，請重試。');return r;},
+   async ensure(p){if(!p||!p.runId)return null;const r=await this.record(p);return r;}
+ };
+ const oldFinish=ZH.finishScenario;
+ ZH.finishScenario=async function(result){const p=Object.assign({},result);if(p.runId&&!/^run_[a-z0-9_-]{8,90}$/i.test(p.runId))p.chapterRunId=p.runId;p.runId=/^run_[a-z0-9_-]{8,90}$/i.test(p.runId||'')?p.runId:current&&current.id===p.scenarioId&&current.runId||newId();p.finishedAt=new Date().toISOString();
+   p.codex=Array.isArray(p.codex)?p.codex.slice():[];ZH.codex.grantFor(p.scenarioId);ZH.codex.fresh().forEach(k=>{if(!p.codex.includes(k))p.codex.push(k);});
+   p.learning=ZH.session.get('learning:'+p.scenarioId,[]);p.textTitles=ZH.learningTexts?ZH.learningTexts(p.scenarioId):[];
+   // 重送同一runId具冪等性；不讓延遲存檔把完成槽寫回去。
+   blocked.add(slots(p.scenarioId,p.mode));await Promise.allSettled(Array.from(flights));await ZH.clearDeviceSave(p.scenarioId,p.mode||'history');
+   ZH.session.set('result:'+p.scenarioId,p);
+   try{await ZH.runs.record(p);}catch(e){p.pendingRun=true;ZH.session.set('result:'+p.scenarioId,p);ZH.toast('結算已留在此分頁，雲端將在結算頁重試。','bad');}
+   oldFinish(p);
+ };
+ ZH.discardAndLeave=async function(id,mode){blocked.add(slots(id,mode));await Promise.allSettled(Array.from(flights));try{const r=await oldDelete(id,mode);if(!r||r.ok===false)throw Error(r&&r.msg||'存檔未能清除，請重試。');}catch(e){blocked.delete(slots(id,mode));throw e;}await ZH.clearDeviceSave(id,mode);ZH.go('hub');};
+ const oldRemove=ZH.records.remove.bind(ZH.records);
+ ZH.records.remove=async function(type,id,mode){const r=await oldRemove(type,id,mode);if(type==='all'||type==='chapter')storeRuns(savedRuns().filter(x=>type!=='all'&&x.scenarioId!==id));if(type==='save')await ZH.clearDeviceSave(id,mode||'history');if(type==='chapter')for(const m of ['history','romance'])await ZH.clearDeviceSave(id,m);if(type==='all'){for(const x of ZH.CATALOG)for(const m of ['history','romance'])await ZH.clearDeviceSave(x.id,m);for(const w of ['cq','zg','ch'])ZH.session.remove('world:'+w);}return r;};
+ ZH.unlockDialog=async function(){if(ZH.isGuest()){ZH.toast('請先登入學校帳號，再輸入解鎖密碼。');return;}
+   const done=ZH.modal({title:'開啟全解鎖',body:'<p>開啟全部章節蒐集供展示；實際作答、成績與通關進度另行保存。</p><label for="pl-unlock">解鎖密碼</label><input id="pl-unlock" class="zh-input" type="password" autocomplete="off">',actions:[{label:'取消',value:false,kind:'quiet'},{label:'解鎖',value:true,kind:'primary'}]});
+   const input=document.getElementById('pl-unlock');input.focus();let password='';input.closest('.zh-modal').addEventListener('click',()=>{password=input.value;},true);
+   if(!await done)return;const r=await ZH.call('api_unlockMyCollections',password);password='';if(!r||!r.ok)throw Error(r&&r.msg||'解鎖失敗。');ZH.access.apply(r);ZH.toast('已開啟全蒐集展示。','ok');
+ };
+ ZH.rememberStudentProfile=p=>ZH.session.set('student-profile:'+scope,p);
+ ZH.requireStudentProfile=async function(){
+  if(ZH.isGuest()||ZH.user.isTeacher)return true;
+  let p=ZH.session.get('student-profile:'+scope,null);
+  if(p&&/^\d{4,12}$/.test(p.studentId))return true;
+  let r;try{r=await ZH.call('api_getStudentProfile');if(!r||!r.ok)throw Error(r&&r.msg||'學號資料讀取失敗。');}catch(e){const retry=await ZH.modal({title:'帳號資料尚未讀取',body:'<p>'+ZH.esc(e.message||'學號資料讀取失敗。')+'</p><p>請重試，或回首頁稍後再進入。</p>',actions:[{label:'回首頁',value:false,kind:'quiet'},{label:'重試',value:true,kind:'primary'}]});if(retry)return ZH.requireStudentProfile();ZH.go('hub');return false;}
+  if(r.isTeacher){ZH.user.isTeacher=true;return true;}p=r.profile;ZH.rememberStudentProfile(p);
+  if(p&&/^\d{4,12}$/.test(p.studentId))return true;
+  await ZH.modal({title:'先填學號',body:'<p>請在「我的策士」個人頁面填寫學號，通常為六位數字；班級代碼可留空。儲存後即可進入劇本與大地圖。</p>',actions:[{label:'前往個人頁面填寫',value:true,kind:'primary'}]});ZH.go('profile',{tab:'identity',returnPage:ZH.boot.page,w:ZH.boot.params&&ZH.boot.params.w||'',mode:ZH.boot.params&&ZH.boot.params.mode||''});return false;
+ };
+ ZH.copyrightHtml='<p>© 2026 新北市南山高級中學國文科 闕宏宇老師｜《縱橫鼎業》</p><p>教學企劃、文本編選與內容審校：闕宏宇。以 Claude、ChatGPT、Gemini 協作製作劇本、程式與視覺設計。</p><p>本作供古文閱讀、歷史理解與遊戲化體驗學習使用。古典文本、引文及史料的作者與篇名依各話標示；現代整理、字型、音樂與第三方套件仍依其原授權，權利歸各權利人。遊戲數值與演義推演不作為史實。</p><p>未經許可，請勿將本作的原創教學設計、程式、音樂或美術整包轉售、冒名發布或作商業使用；教學引用請註明作品與作者。</p><p>國名篆書：敬峰中山王篆（Jingfeng Liu），依 SIL OFL 1.1 使用網頁子集；缺字依裝置隸書字型顯示。<a href="https://github.com/SuperMate-Ai/JFZSKSealScript" target="_top">字型來源與授權</a></p>';
+ ZH.showCredits=()=>ZH.modal({title:'製作與使用說明',body:ZH.copyrightHtml,actions:[{label:'收起',value:true,kind:'primary'}]});
+ ZH.ready(()=>{if(document.querySelector('.zh-app')){const box=ZH.html('<footer class="pl-credit"><span>新北市南山高級中學國文科 闕宏宇老師</span><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm">版權與製作</button></footer>');document.querySelector('.zh-app').appendChild(box);box.querySelector('button').onclick=ZH.showCredits;}});
+})(window.ZH);
+
+</script>
+
+<!-- ZH_MUSIC_BEGIN — v0.1.3（2026-10-13）
+配樂已整合於本檔；更換音樂或規則只改下方 TRACKS／EPISODES。
+相容新版非同步學號檢查與劇情開場，配樂按鈕隨舞台建立移入頂欄。
+浮動配樂按鈕高於大地圖開局頁，低於事件與存檔對話框，避免被開局畫面遮住。
+預設開啟、音量 75%、依篇章配置、同曲接續、原生循環；保留玩家音量設定。
+正式頁面由既有 MusicApi.gs 供應音訊；快取位元組、重建 Blob 並修復失敗快取。
+有聲播放若被瀏覽器攔截，第一次點擊或按 Enter／空白鍵後嘗試播放。
+整頁換頁仍有短暫中斷；下一頁依記錄進度接續，無常駐動畫或輪詢。
+-->
+<style>
+  .zh-bgm-btn { font: inherit; color: var(--text, #f1e6c3); background: var(--panel, #171d30); border: 1px solid var(--line, #665536); border-radius: 8px; padding: 5px 10px; min-height: 34px; cursor: pointer; white-space: nowrap; }
+  .zh-bgm-btn:hover, .zh-bgm-btn:focus-visible { border-color: var(--gold, #e4bb58); outline: 2px solid transparent; }
+  .zh-bgm-btn[data-status="error"] { border-color: #c08265; }
+  .zh-bgm-floating { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 35; box-shadow: 0 2px 8px #0005; }
+  .sty-menu.zh-bgm-host { flex-wrap: wrap; }
+  .wd-top > .zh-bgm-btn { min-height: 28px; padding: 3px 7px; font-size: 12px; }
+  .zh-bgm-dialog { box-sizing: border-box; width: min(420px, calc(100vw - 28px)); max-height: calc(100dvh - 32px); padding: 22px; overflow: auto; color: var(--text, #f1e6c3); background: var(--panel, #171d30); border: 1px solid var(--gold, #e4bb58); border-radius: 12px; font-family: inherit; line-height: 1.7; box-shadow: 0 12px 40px #0008; }
+  .zh-bgm-dialog::backdrop { background: #050813ba; }
+  .zh-bgm-dialog h2 { margin: 0 0 4px; font: 600 24px var(--f-display, serif); color: var(--gold, #e4bb58); letter-spacing: .12em; }
+  .zh-bgm-dialog p { margin: 6px 0 14px; }
+  .zh-bgm-dialog label { display: block; margin: 14px 0 5px; }
+  .zh-bgm-dialog select { box-sizing: border-box; width: 100%; padding: 8px; color: inherit; background: #11182a; border: 1px solid #665536; border-radius: 6px; font: inherit; }
+  .zh-bgm-dialog input[type="range"] { width: 100%; accent-color: #e4bb58; }
+  .zh-bgm-dialog .zh-bgm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .zh-bgm-note { color: var(--text-dim, #b9b5aa); font-size: 13px; }
+  .zh-bgm-state { min-height: 3.4em; }
+  .zh-bgm-dialog:focus { outline: none; }
+  @media (max-width: 600px) { .zh-bgm-btn { padding: 4px 8px; font-size: 13px; } .zh-bgm-dialog { padding: 18px; } }
+</style>
+<script>
+(function (global) {
+  'use strict';
+  const ZH = global.ZH;
+  if (!ZH || ZH.music) return;
+
+  // 所有網址與配樂規則都集中在本段。更換音樂只改這裡，不改各話。
+  const TRACKS = {
+    menu:  { name: '主選單', fileId: '1F8_YbyZInt6Y0TnVfEVrTZPJLdv_YW30' },
+    world: { name: '天下大地圖', fileId: '15rReIL4DwlSNjsmwiqr8muOFR3brhVjk' },
+    BGM01: { name: '謀略篇', fileId: '1NU1aNqZco8uZ4DNEAJIGeI94dSRVRsHQ' },
+    BGM02: { name: '征伐篇', fileId: '12ATsiNvvDHOpNg3-DWsq7lFSC6nUC5Mi' },
+    BGM03: { name: '哲思篇', fileId: '1ODtvngeh7YdvLYSM3AnnkgFP63nhafkx' },
+    BGM04: { name: '高光・刺殺', fileId: '1or9FnNd11Us-TK_rhCFfTX9uIh2MpAsO' },
+    BGM05: { name: '高光・輓歌', fileId: '1WrSOzRcDCQIzNl2cvhahkTKsVrTZOz8x' }
+  };
+  const TYPES = { intrigue: 'BGM01', battle: 'BGM02', philosophy: 'BGM03', tension: 'BGM04', tragedy: 'BGM05', travel: 'world' };
+  // 依卷別、話數匹配，不依賴檔名最後的拼字；例如 weiwen 與 weiba 均適用。
+  const EPISODES = {
+    cq: ['BGM03','BGM01','BGM02','BGM02','BGM03','BGM02','BGM02','BGM02','BGM01','BGM01','BGM01','BGM01','BGM01','BGM03','BGM04','BGM03','BGM03','BGM02'],
+    zg: ['BGM03','BGM04','BGM03','BGM03','BGM03','BGM02','BGM01','BGM05','BGM02','BGM01','BGM04','BGM01','BGM01','BGM04'],
+    ch: ['BGM03','BGM04','BGM02','BGM02','BGM04','BGM01','BGM01','BGM02','BGM05','BGM03']
+  };
+  // 同一個 Drive 檔案代碼更換了音檔內容時，改這個值即可讓裝置重新取得歌曲。
+  const CACHE_REVISION = '20261011-2';
+  const CACHE_FORMAT = 2;
+  const PREF_KEY = 'music:preferences:v2';
+  const POS_KEY = 'music:positions:v1';
+  const stored = readStore('local', PREF_KEY, {});
+  const prefs = { enabled: stored.enabled !== false, volume: limit(stored.volume === undefined ? .75 : stored.volume), selection: valid(stored.selection) || 'auto' };
+  const positions = readStore('session', POS_KEY, {});
+  const page = String((ZH.boot || global.ZH_BOOT || {}).page || 'Hub');
+  const audio = new Audio();
+  // 正式遊戲使用本頁建立的 Blob URL，無需啟用跨站音訊模式。
+  audio.preload = 'auto';
+  audio.loop = true;
+  audio.volume = prefs.volume;
+
+  let scenario = /^S_/i.test(page) ? page : '';
+  let pageCue = pageTrack(page), sceneCue = pageCue;
+  let gameCues = [], cueSerial = 0;
+  let current = '', pendingKey = '', failedKey = '', status = 'waiting';
+  let autoplayBlocked = false, departing = false, generation = 0, frame = 0, loadTimer = 0;
+  let fadeDone = null, fadeTarget = null;
+  let toggle = null, panel = null, volumeDraft = null, restore = null, playPending = false, objectURL = '';
+  let activeBlob = null, activeSource = '', activeCached = false, lastError = null;
+  let database = null;
+  const requests = new Map();
+  const reduceMotion = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function limit(n) { const v = Number(n); return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : .75; }
+  function readStore(kind, key, fallback) { try { const r = ZH[kind] && ZH[kind].get(key, fallback); return r && typeof r === 'object' ? r : fallback; } catch (_) { return fallback; } }
+  function writeStore(kind, key, value) { try { if (ZH[kind]) ZH[kind].set(key, value); } catch (_) {} }
+  function savePrefs() { writeStore('local', PREF_KEY, prefs); }
+  function valid(key) { return Object.prototype.hasOwnProperty.call(TRACKS, key) ? key : Object.prototype.hasOwnProperty.call(TYPES, key) ? TYPES[key] : ''; }
+  function episodeOf(id) { const m = /^S_(cq|zg|ch)(\d{2})_/i.exec(String(id || '')); return m ? { vol: m[1].toLowerCase(), ep: Number(m[2]) } : null; }
+  function pageTrack(id) {
+    const ep = episodeOf(id);
+    if (ep) return EPISODES[ep.vol][ep.ep] || 'BGM03';
+    if (/^(map|world)$/i.test(id)) return 'world';
+    if (/^(teacher|lab3d)$/i.test(id)) return '';
+    return 'menu';
+  }
+  function effective() { return prefs.selection !== 'auto' ? prefs.selection : gameCues.length ? gameCues[gameCues.length - 1].key : sceneCue; }
+  function source(key) { const t = TRACKS[key]; return t.url || 'https://drive.usercontent.google.com/download?id=' + encodeURIComponent(t.fileId) + '&export=download'; }
+  // 資料庫只在第一次要播放時開啟。不能使用 IndexedDB 時照樣可播放。
+  function openCache() {
+    if (database) return database;
+    database = new Promise(resolve => {
+      let request, ended = false;
+      const timer = setTimeout(() => { ended = true; resolve(null); }, 1000);
+      const finish = value => { clearTimeout(timer); if (ended) { if (value) value.close(); return; } ended = true; resolve(value); };
+      try {
+        request = global.indexedDB.open('ZH_Music_Cache_v1', 1);
+        request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('tracks')) request.result.createObjectStore('tracks', { keyPath: 'fileId' }); };
+        request.onsuccess = () => { request.result.onversionchange = () => request.result.close(); finish(request.result); };
+        request.onerror = () => finish(null);
+        request.onblocked = () => finish(null);
+      } catch (_) { finish(null); }
+    });
+    return database;
+  }
+  async function getCached(key) {
+    const db = await openCache(); if (!db) return null;
+    const value = await new Promise(resolve => {
+      let request;
+      const timer = setTimeout(() => resolve(null), 1000);
+      const finish = value => { clearTimeout(timer); resolve(value); };
+      try {
+        request = db.transaction('tracks', 'readonly').objectStore('tracks').get(TRACKS[key].fileId);
+        request.onsuccess = () => {
+          finish(request.result || null);
+        };
+        request.onerror = () => finish(null);
+      } catch (_) { finish(null); }
+    });
+    if (!value) return null;
+    const mime = inspectBytes(value.bytes);
+    if (value.format !== CACHE_FORMAT || value.revision !== CACHE_REVISION || !Number.isFinite(value.cachedAt) || Date.now() - value.cachedAt >= 7 * 86400000 || !mime || value.size !== value.bytes.byteLength || value.mime !== mime) {
+      await deleteCached(key); return null;
+    }
+    // 不把資料庫取出的舊 Blob 直接交給播放器；從獨立位元組建立新的音訊。
+    return new Blob([value.bytes], { type: mime });
+  }
+  function inspectBytes(buffer) {
+    if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 16 || buffer.byteLength > 12 * 1024 * 1024) return '';
+    const b = new Uint8Array(buffer, 0, 8);
+    if (b[4] === 102 && b[5] === 116 && b[6] === 121 && b[7] === 112) return 'audio/mp4';
+    if ((b[0] === 73 && b[1] === 68 && b[2] === 51) || (b[0] === 255 && (b[1] & 224) === 224)) return 'audio/mpeg';
+    return '';
+  }
+  async function deleteCached(key) {
+    const db = await openCache(); if (!db) return;
+    await new Promise(resolve => {
+      const timer = setTimeout(resolve, 1000);
+      const done = () => { clearTimeout(timer); resolve(); };
+      try {
+        const tx = db.transaction('tracks', 'readwrite');
+        tx.objectStore('tracks').delete(TRACKS[key].fileId);
+        tx.oncomplete = done; tx.onerror = done; tx.onabort = done;
+      } catch (_) { done(); }
+    });
+  }
+  async function cacheBlob(key, blob) {
+    const bytes = await blob.arrayBuffer(), mime = inspectBytes(bytes);
+    if (!mime || mime !== blob.type) return;
+    const db = await openCache(); if (!db) return;
+    try {
+      const tx = db.transaction('tracks', 'readwrite');
+      tx.onerror = () => {}; tx.onabort = () => {};
+      tx.objectStore('tracks').put({ fileId: TRACKS[key].fileId, bytes: bytes, mime: mime, size: bytes.byteLength, format: CACHE_FORMAT, cachedAt: Date.now(), revision: CACHE_REVISION });
+    } catch (_) {}
+  }
+  async function decodeBlob(data) {
+    const parts = [], encoded = data.base64;
+    // 分小段轉換，段落間讓瀏覽器處理畫面與操作，避免一次長迴圈卡住主執行緒。
+    for (let i = 0; i < encoded.length; i += 262144) {
+      const raw = global.atob(encoded.slice(i, i + 262144)), bytes = new Uint8Array(raw.length);
+      for (let n = 0; n < raw.length; n++) bytes[n] = raw.charCodeAt(n);
+      parts.push(bytes);
+      if (i + 262144 < encoded.length) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    return new Blob(parts, { type: data.mime });
+  }
+  function getBlob(key, bypassCache) {
+    const requestKey = key + (bypassCache ? ':fresh' : ':normal');
+    if (requests.has(requestKey)) return requests.get(requestKey);
+    const task = (async () => {
+      if (bypassCache) await deleteCached(key);
+      const cached = bypassCache ? null : await getCached(key);
+      if (cached) return { blob: cached, source: 'cache' };
+      const data = await ZH.call('api_musicTrack', key);
+      if (!data || !data.ok || data.fileId !== TRACKS[key].fileId || !/^audio\/(mp4|mpeg)$/.test(data.mime) || typeof data.base64 !== 'string' || data.base64.length > 17 * 1024 * 1024) throw new Error('配樂讀取未完成');
+      const blob = await decodeBlob(data);
+      if (blob.size !== data.size) throw new Error('配樂傳送未完成');
+      const mime = inspectBytes(await blob.arrayBuffer());
+      if (!mime || mime !== data.mime) throw new Error('音檔格式無法辨識');
+      return { blob: blob, source: 'server' };
+    })();
+    requests.set(requestKey, task);
+    task.then(() => requests.delete(requestKey), () => requests.delete(requestKey));
+    return task;
+  }
+  function cancelFade() { if (frame) global.cancelAnimationFrame(frame); frame = 0; fadeDone = null; fadeTarget = null; }
+  function finishFade() {
+    const done = fadeDone, target = fadeTarget;
+    cancelFade();
+    if (target !== null) audio.volume = target;
+    if (done) done();
+  }
+  function clearLoadTimer() { if (loadTimer) clearTimeout(loadTimer); loadTimer = 0; }
+  // 只有淡入淡出的短時間使用動畫；播放中沒有常駐 requestAnimationFrame。
+  function fadeTo(value, ms, done) {
+    cancelFade();
+    const target = limit(value), from = audio.volume, start = performance.now();
+    if (!ms || reduceMotion || document.hidden || Math.abs(target - from) < .001) { audio.volume = target; if (done) done(); return; }
+    fadeDone = done || null; fadeTarget = target;
+    const tick = now => {
+      const t = Math.min(1, (now - start) / ms);
+      audio.volume = from + (target - from) * t;
+      if (t < 1) frame = global.requestAnimationFrame(tick);
+      else finishFade();
+    };
+    frame = global.requestAnimationFrame(tick);
+  }
+  function rememberPosition() {
+    if (current && !audio.error && Number.isFinite(audio.currentTime) && audio.currentTime > 0) {
+      positions[current] = audio.currentTime;
+      writeStore('session', POS_KEY, positions);
+    }
+  }
+  function stopTransport(nextStatus) {
+    generation++;
+    cancelFade(); clearLoadTimer();
+    playPending = false; pendingKey = '';
+    rememberPosition(); audio.pause();
+    status = nextStatus; updateUI();
+  }
+  function fail(err) {
+    if (err) lastError = { name: String(err.name || 'Error'), message: String(err.message || '音訊播放失敗'), code: audio.error ? audio.error.code : 0, source: activeSource };
+    failedKey = pendingKey || current || effective();
+    stopTransport('error');
+  }
+  function playbackFailed(err, epoch, key) {
+    if (epoch !== generation || departing || !prefs.enabled || key !== effective()) return;
+    lastError = { name: String(err && err.name || 'MediaError'), message: String(err && err.message || '音訊播放失敗'), code: audio.error ? audio.error.code : 0, source: activeSource };
+    // 快取播放失敗只修復這一首。下一次取得來源為 server，失敗就停，不會無限重抓。
+    if (activeSource === 'cache') {
+      delete positions[key]; writeStore('session', POS_KEY, positions);
+      restore = null; failedKey = ''; reconcile(true);
+    } else { deleteCached(key).catch(() => {}); fail(); }
+  }
+  function beginPlay(epoch, key) {
+    if (playPending) return;
+    if (autoplayBlocked) { status = 'blocked'; updateUI(); return; }
+    // 用實際設定音量嘗試有聲播放；不以靜音播放繞過瀏覽器政策。
+    cancelFade(); audio.volume = volumeDraft === null ? prefs.volume : volumeDraft;
+    playPending = true;
+    status = 'loading'; updateUI();
+    clearLoadTimer();
+    loadTimer = setTimeout(() => playbackFailed(new Error('音樂載入逾時'), epoch, key), 25000);
+    let attempt;
+    try { attempt = audio.play(); }
+    catch (err) { attempt = Promise.reject(err); }
+    Promise.resolve(attempt).then(() => {
+      if (epoch !== generation) return;
+      clearLoadTimer(); playPending = false; pendingKey = ''; failedKey = '';
+      autoplayBlocked = false; lastError = null; status = 'playing'; updateUI();
+      // 先確認能播放再快取，避免將無法解碼的檔案保存成下一次仍會失敗的資料。
+      if (activeSource === 'server' && activeBlob && !activeCached) {
+        activeCached = true; cacheBlob(key, activeBlob).catch(() => {});
+      }
+    }, err => {
+      if (epoch !== generation) return;
+      clearLoadTimer(); playPending = false; pendingKey = '';
+      if (err && err.name === 'NotAllowedError') { autoplayBlocked = true; status = 'blocked'; updateUI(); }
+      else if (err && err.name === 'AbortError') { status = 'waiting'; updateUI(); }
+      else playbackFailed(err, epoch, key);
+    });
+  }
+  function reconcile(force) {
+    const key = effective();
+    if (!prefs.enabled) { stopTransport('off'); return; }
+    if (!key) { stopTransport('silent'); return; }
+    if (departing) { stopTransport('paused'); return; }
+    if (!force && failedKey === key) { status = 'error'; updateUI(); return; }
+    if (!force && pendingKey === key) return;
+    if (key === current && audio.src && !force) {
+      if (pendingKey && pendingKey !== key) { generation++; pendingKey = ''; playPending = false; cancelFade(); clearLoadTimer(); fadeTo(prefs.volume, 160); }
+      if (audio.paused && !playPending) beginPlay(generation, key);
+      else if (!playPending) { status = 'playing'; updateUI(); }
+      return;
+    }
+    const epoch = ++generation;
+    playPending = false; clearLoadTimer(); pendingKey = key; status = 'loading'; updateUI();
+    fadeTo(0, audio.paused ? 0 : 180, () => {
+      if (epoch !== generation || key !== effective()) return;
+      rememberPosition(); audio.pause();
+      const applySource = (url, isBlob) => {
+        if (epoch !== generation || key !== effective()) { if (isBlob) URL.revokeObjectURL(url); return; }
+        // 先讓同一個播放器解除舊來源並重設載入狀態，再回收網址。
+        // 不把快取的 blob: 網址重用為下一首，也不在播放器仍使用它時回收。
+        const previousURL = objectURL;
+        audio.pause(); audio.removeAttribute('src'); audio.load();
+        objectURL = isBlob ? url : '';
+        if (previousURL) URL.revokeObjectURL(previousURL);
+        current = key; restore = { epoch: epoch, key: key, url: url };
+        audio.src = url; audio.load();
+        if (autoplayBlocked) pendingKey = '';
+        beginPlay(epoch, key);
+      };
+      if (global.google && google.script && google.script.run && !TRACKS[key].url) {
+        getBlob(key, !!force).then(data => {
+          if (epoch !== generation || key !== effective()) return;
+          activeBlob = data.blob; activeSource = data.source; activeCached = data.source === 'cache';
+          applySource(URL.createObjectURL(data.blob), true);
+        }, err => { if (epoch === generation) fail(err); });
+      } else {
+        activeBlob = null; activeSource = 'url'; activeCached = false;
+        applySource(source(key), false);
+      }
+    });
+  }
+  audio.addEventListener('canplay', () => {
+    if (!restore || restore.epoch !== generation || restore.key !== current || audio.currentSrc !== restore.url) return;
+    restore = null;
+    const position = Number(positions[current]);
+    if (Number.isFinite(position) && position > 0 && Number.isFinite(audio.duration) && position < audio.duration - 1) {
+      try { audio.currentTime = position; } catch (_) {}
+    }
+  });
+  audio.addEventListener('error', () => {
+    // 切換來源時排入佇列的舊 error 可能在新來源已重設後才抵達；null 不視為新曲失敗。
+    if (audio.error && audio.error.code !== 1) playbackFailed(new Error(audio.error.message || '音訊無法播放'), generation, current);
+  });
+
+  function enable(value) {
+    prefs.enabled = !!value; savePrefs();
+    if (prefs.enabled) { autoplayBlocked = false; failedKey = ''; reconcile(status === 'error'); }
+    else reconcile();
+  }
+  function select(key) {
+    prefs.selection = key === 'auto' ? 'auto' : valid(key) || 'auto'; savePrefs();
+    const retry = status === 'error' && failedKey === effective();
+    autoplayBlocked = false; failedKey = ''; reconcile(retry);
+  }
+  function setVolume(value, persist) {
+    volumeDraft = limit(value);
+    // 若正在淡出換曲，先完成換曲動作，避免拖動音量中止待載入的曲目。
+    if (frame) finishFade();
+    audio.volume = volumeDraft;
+    if (persist !== false) { prefs.volume = volumeDraft; volumeDraft = null; savePrefs(); }
+    if (panel) panel.querySelector('[data-music="level"]').textContent = Math.round((volumeDraft === null ? prefs.volume : volumeDraft) * 100) + '%';
+  }
+  function setContext(id, node) {
+    scenario = String(id || ''); pageCue = pageTrack(scenario || page); sceneCue = pageCue;
+    gameCues = []; reconcile();
+  }
+  function scene(id, spec, node) {
+    scenario = String(id || scenario || page);
+    pageCue = pageTrack(scenario);
+    sceneCue = valid(spec && (spec.music || spec.scene_type)) || pageCue;
+    reconcile();
+  }
+  function pushGame(id, opts, node) {
+    const o = opts || {}, token = ++cueSerial;
+    // 預設沿用該話配置，不因小遊戲名稱或段落號碼猜測換曲。
+    // 有明確 music／scene_type 時才暫時換曲，完成後回到當前場景。
+    const key = valid(o.music || o.scene_type) || sceneCue || pageTrack(id || scenario || page);
+    gameCues.push({ token: token, key: key }); reconcile(); return token;
+  }
+  function popGame(token) { gameCues = gameCues.filter(c => c.token !== token); reconcile(); }
+  function safe(fn) { try { return fn(); } catch (err) { if (global.console) console.warn('[配樂]', err); return null; } }
+
+  // 包住共用引擎的公開方法，沿用原本 ctx 與回傳值，不碰劇情或存檔。
+  function installStoryHook() {
+    const engine = ZH.story;
+    if (!engine || typeof engine.create !== 'function' || engine.create.zhMusicHook) return;
+    const create = engine.create;
+    function wrappedCreate(root, config) {
+      const game = create.apply(this, arguments), c = config || {};
+      if (!game || !game.ctx) return game;
+      const ctx = game.ctx, originalScene = ctx.scene, originalGame = ctx.minigame, originalStart = game.start;
+      if (typeof originalScene === 'function') ctx.scene = function (key, extra) {
+        const result = originalScene.apply(this, arguments);
+        safe(() => {
+          const sc = typeof key === 'object' && key ? key : Object.assign({ key: key }, extra || {});
+          const def = (c.scenes || {})[sc.key] || {};
+          scene(c.id, Object.assign({}, def, sc), ctx.state && ctx.state.node);
+          mountControl();
+        });
+        return result;
+      };
+      if (typeof originalGame === 'function') ctx.minigame = function (opts, fn) {
+        safe(mountControl);
+        const token = safe(() => pushGame(c.id, opts, ctx.state && ctx.state.node));
+        let promise;
+        try { promise = originalGame.apply(this, arguments); }
+        catch (err) { safe(() => popGame(token)); throw err; }
+        return Promise.resolve(promise).then(result => { safe(() => popGame(token)); return result; }, err => { safe(() => popGame(token)); throw err; });
+      };
+      if (typeof originalStart === 'function') game.start = function (saved) {
+        safe(() => setContext(c.id, saved && saved.node || c.start));
+        const result = originalStart.apply(this, arguments);
+        safe(mountControl);
+        // 新版 start 先等待帳號資料；在其首個微任務後再找頂欄，場景 hook 亦會補掛。
+        Promise.resolve().then(() => safe(mountControl));
+        return result;
+      };
+      return game;
+    }
+    wrappedCreate.zhMusicHook = true;
+    engine.create = wrappedCreate;
+  }
+
+  function label() {
+    const key = effective(), track = TRACKS[key];
+    const phrase = { waiting: '準備播放', blocked: '點一下遊戲或按「播放配樂」開始', loading: '音樂載入中', playing: '正在循環播放', off: '配樂已關閉', paused: '等待換頁接續', silent: '此頁保持安靜', error: '音樂暫時無法播放，可按重試；遊戲可照常操作' }[status] || '';
+    return (track ? track.name + '｜' : '') + phrase;
+  }
+  function updateUI() {
+    if (toggle) { toggle.dataset.status = status; toggle.title = label(); toggle.setAttribute('aria-label', '配樂設定：' + label()); }
+    if (panel) {
+      panel.querySelector('[data-music="status"]').textContent = label();
+      const play = panel.querySelector('[data-music="play"]');
+      play.textContent = status === 'playing' || status === 'loading' ? '暫停配樂' : status === 'error' ? '重試配樂' : '播放配樂';
+      panel.querySelector('[data-music="selection"]').value = prefs.selection;
+    }
+  }
+  function mountControl() {
+    if (!document.body) return;
+    if (toggle && toggle.isConnected && !toggle.classList.contains('zh-bgm-floating')) return;
+    if (!toggle) {
+      toggle = document.createElement('button'); toggle.type = 'button'; toggle.textContent = '配樂';
+      toggle.id = 'zh-music-control'; toggle.className = 'zh-bgm-btn zh-bgm-floating';
+      toggle.setAttribute('aria-haspopup', 'dialog'); toggle.setAttribute('aria-controls', 'zh-music-dialog');
+      toggle.addEventListener('click', openPanel);
+    }
+    const host = document.querySelector('.sty-menu') || document.querySelector('.wd-top') || document.querySelector('.zh-topbar');
+    if (host) {
+      if (toggle.parentElement !== host) host.appendChild(toggle);
+      host.classList.add('zh-bgm-host'); toggle.classList.remove('zh-bgm-floating');
+      const top = document.querySelector('.sty-top');
+      if (top) document.documentElement.style.setProperty('--sty-top', top.offsetHeight + 'px');
+    } else { toggle.classList.add('zh-bgm-floating'); if (toggle.parentElement !== document.body) document.body.appendChild(toggle); }
+    updateUI();
+  }
+  function openPanel() {
+    if (!panel) {
+      panel = document.createElement('dialog'); panel.id = 'zh-music-dialog'; panel.className = 'zh-bgm-dialog';
+      panel.setAttribute('aria-labelledby', 'zh-music-title');
+      panel.innerHTML = '<h2 id="zh-music-title">琴聲與鼓聲</h2><p class="zh-bgm-state" data-music="status" role="status"></p>' +
+        '<label for="zh-music-selection">配樂</label><select id="zh-music-selection" data-music="selection"><option value="auto">依篇章配置</option>' +
+        Object.keys(TRACKS).map(key => '<option value="' + key + '">' + TRACKS[key].name + '</option>').join('') + '</select>' +
+        '<label for="zh-music-volume">音量　<span data-music="level"></span></label><input id="zh-music-volume" data-music="volume" type="range" min="0" max="100" step="1">' +
+        '<p class="zh-bgm-note">配樂自動載入並循環播放；同曲在台詞與小遊戲之間接續。音樂與音效分別控制。</p>' +
+        '<div class="zh-bgm-actions"><button type="button" class="zh-bgm-btn" data-music="play">播放配樂</button><button type="button" class="zh-bgm-btn" data-music="close">收起</button></div>';
+      document.body.appendChild(panel);
+      panel.querySelector('[data-music="selection"]').addEventListener('change', e => select(e.target.value));
+      panel.querySelector('[data-music="volume"]').addEventListener('input', e => setVolume(Number(e.target.value) / 100, false));
+      panel.querySelector('[data-music="volume"]').addEventListener('change', e => setVolume(Number(e.target.value) / 100));
+      panel.querySelector('[data-music="play"]').addEventListener('click', () => {
+        if (status === 'playing' || status === 'loading') enable(false);
+        else { const retry = status === 'error'; prefs.enabled = true; savePrefs(); autoplayBlocked = false; failedKey = ''; reconcile(retry); }
+      });
+      panel.querySelector('[data-music="close"]').addEventListener('click', () => panel.close());
+      panel.addEventListener('close', () => { if (volumeDraft !== null) setVolume(volumeDraft); if (toggle && toggle.isConnected) toggle.focus(); });
+      panel.addEventListener('click', e => { if (e.target === panel) { const r = panel.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) panel.close(); } });
+    }
+    const level = Math.round(prefs.volume * 100);
+    panel.querySelector('[data-music="volume"]').value = level;
+    panel.querySelector('[data-music="level"]').textContent = level + '%'; updateUI();
+    if (!panel.open) panel.showModal();
+  }
+
+  function gesture(event) {
+    if (!event.isTrusted || departing || document.hidden) return;
+    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+    safe(installStoryHook); safe(mountControl);
+    if (event.target && event.target.closest && event.target.closest('#zh-music-dialog, #zh-music-control')) return;
+    if (prefs.enabled && (status === 'waiting' || status === 'blocked')) {
+      autoplayBlocked = false; safe(() => reconcile());
+    }
+  }
+  document.addEventListener('click', gesture, true);
+  document.addEventListener('keydown', gesture, true);
+  document.addEventListener('visibilitychange', () => safe(() => {
+    // 背景分頁保持播放，只記錄一次進度，不設常駐輪詢。
+    if (document.hidden) {
+      rememberPosition();
+      if (frame) finishFade();
+    } else reconcile();
+  }));
+  global.addEventListener('pagehide', () => safe(() => { departing = true; stopTransport('paused'); }));
+  global.addEventListener('pageshow', () => safe(() => { departing = false; reconcile(); }));
+
+  // 共用介面，供未來地圖或新引擎使用；既有地圖不需呼叫它也會自動配樂。
+  ZH.music = {
+    version: 'v0.1.3',
+    tracks: TRACKS,
+    enable: enable,
+    select: select,
+    volume: value => setVolume(value),
+    open: openPanel,
+    setContext: setContext,
+    scene: scene,
+    cue: key => { const cue = valid(key); if (cue) { sceneCue = cue; reconcile(); } },
+    get state() { return { page: page, scenario: scenario, selected: prefs.selection, track: effective(), loaded: current, enabled: prefs.enabled, volume: prefs.volume, status: status, time: audio.currentTime, duration: audio.duration, source: activeSource, error: lastError }; }
+  };
+  safe(installStoryHook);
+  ZH.ready(() => safe(() => { installStoryHook(); mountControl(); reconcile(); }));
+})(window);
+</script>
+<!-- ZH_MUSIC_END -->
+
+<!-- 策士資料、技能與紙娃娃 v0.4.0：完整內嵌，不依賴巢狀 include。 -->
+<script>
+(function (ZH) {
+  'use strict';
+  if(ZH.player)return;
+  const esc=ZH.esc,copy=v=>JSON.parse(JSON.stringify(v));
+  const AVATARS=[['ink','墨衣','#47627a',0],['jade','青玉','#46745f',1],['amber','琥珀','#967342',2],['crane','白鶴','#71828b',3],['bamboo','修竹','#5c7959',0],['river','江流','#487d91',1],['cloud','雲影','#737198',2],['plum','梅枝','#986579',3],['pine','松風','#486f68',1],['moon','月華','#73899a',2],['sun','朝陽','#a17a4c',0],['lotus','荷香','#708679',3]];
+  const SKILLS=[
+    {id:'bowen',name:'博聞',need:0,scope:'story',limit:2,desc:'每局兩次，回顧已作答的原文與字詞；首次作答保留。'},
+    {id:'yunchou',name:'運籌',need:0,scope:'world',cooldown:3,desc:'演義地圖比較兩個進軍目標的路程與糧耗；冷卻三個月。'},
+    {id:'zhuanzhu',name:'專注',need:1,scope:'story',limit:1,desc:'第17話關卡凍結首次表現，觀察五秒後無時限親作；每局一次。'},
+    {id:'tongpin',name:'通聘',need:2,scope:'world',cooldown:6,desc:'指定一國，六個月內外交利害係數加0.08；冷卻六個月。'},
+    {id:'anmin',name:'安民',need:3,scope:'world',cooldown:6,desc:'一座我方城池民心加5，最高100；冷卻六個月。'}
+  ];
+  const POLICY='使用者名稱應符合社會善良風俗，不得包含猥褻、歧視、辱罵、威脅或冒用他人身分等不當內容。違反規定時，管理者有權直接更改為系統指定名稱，並鎖定命名功能；使用者不得自行修正或重新命名。';
+  let profile=null,loading=null,activeStory=null,editorRoot=null,editorStamp=0;
+  const empty=()=>({nickname:ZH.isGuest()?'訪客策士':'策士',avatarId:'ink',equipped:['bowen','yunchou'],nameLocked:false,revision:0,completed:0,unlocked:ZH.isGuest()?SKILLS.map(s=>s.id):['bowen','yunchou'],policyVersion:''});
+  function apply(p){if(profile&&Number(p.revision)<Number(profile.revision))return profile;profile=copy(p);document.dispatchEvent(new CustomEvent('zh:player-change',{detail:copy(profile)}));return profile;}
+  async function load(force){if(loading&&!force)return loading;loading=(async()=>{if(ZH.isGuest())return apply(ZH.session.get('player:guest',null)||empty());const r=await ZH.call('api_getPlayerProfile');if(!r||!r.ok)throw Error(r&&r.msg||'策士資料暫時無法讀取。');return apply(r.profile);})();try{return await loading;}finally{loading=null;}}
+  function legacyAvatar(id){const a=AVATARS.find(x=>x[0]===id)||AVATARS[0],hat=a[3],hair=hat===3?'<path d="M30 52Q16 69 22 104L34 111V66Z M70 52Q85 69 79 105L66 112V66Z" fill="#28262e"/>':'',cap=hat===0?'<path d="M25 41L29 21H71L75 41Z" fill="#293241" stroke="#d0b36d"/>':hat===1?'<path d="M25 38Q24 20 50 18Q76 20 75 38L68 45H32Z" fill="'+a[2]+'" stroke="#d0b36d"/>':hat===2?'<path d="M25 42Q20 21 50 18Q80 21 75 42L70 31H30Z" fill="#25242d"/><circle cx="50" cy="19" r="7" fill="'+a[2]+'"/>':'<path d="M25 44Q21 20 50 19Q80 20 75 44L71 34L49 25L29 39Z" fill="#25242d"/>';
+    return '<svg viewBox="0 0 100 130" role="img" aria-label="'+esc(a[1])+'策士頭像"><rect x="3" y="3" width="94" height="124" rx="13" fill="#152638" stroke="'+a[2]+'" stroke-width="4"/>'+hair+'<path d="M20 126V109Q24 88 50 88Q77 88 81 110V126" fill="'+a[2]+'"/><path d="M37 89L50 106L63 89" fill="#efe3c5"/><ellipse cx="50" cy="56" rx="27" ry="32" fill="#edc9a8" stroke="#634733"/>'+cap+'<path d="M33 48Q38 45 43 48M57 48Q62 45 67 48" fill="none" stroke="#40323a" stroke-width="2"/><circle cx="38" cy="55" r="2.5" fill="#302c33"/><circle cx="62" cy="55" r="2.5" fill="#302c33"/><path d="M42 71Q50 77 58 71" fill="none" stroke="#945d55" stroke-width="2"/><path d="M47 61L45 65H51" fill="none" stroke="#b1856d"/><rect x="31" y="109" width="39" height="12" rx="3" fill="#e6d19f" stroke="#947953"/></svg>';}
+  // 外觀值只接受固定選項；SVG 不插入使用者文字、網址或任意顏色。
+  const LOOK_OPTIONS=(window.ZH_DOLL3D&&ZH_DOLL3D.look)||{"body":[["male","男生"],["female","女生"]],"skin":[["porcelain","白瓷","#f4d8c0"],["warm","暖杏","#e8bd98"],["honey","蜜棕","#c99168"],["deep","深褐","#956443"]],"hair":[["bun","束髮"],["short","短髮"],["long","長髮"],["braid","編髮"],["ponytail","馬尾"],["twintail","雙髮髻"],["bob","圓短髮"],["curly","蓬鬆捲髮"]],"hairColor":[["ink","墨黑","#292833"],["chestnut","栗棕","#644330"],["silver","霜白","#c4cbd3"],["rose","玫瑰棕","#aa6f7b"],["honey","蜂蜜金","#b38c50"],["violet","丁香紫","#827393"]],"headwear":[["none","不戴"],["crown","策士冠"],["pin","玉簪"],["ribbon","髮帶"],["flower","桃花簪"],["leaf","嫩葉冠"],["rabbit","兔耳帽"],["star","星星髮夾"]],"outfit":[["robe","交領袍"],["traveler","行旅服"],["armor","輕甲"],["scholar","書院服"],["hanfu","飄逸襦裙"],["festival","花朝禮服"]],"color":[["ink","墨藍","#47627a"],["jade","青玉","#46745f"],["amber","琥珀","#967342"],["crane","白鶴","#84959f"],["plum","梅紅","#986579"],["moon","月紫","#77749d"],["peach","桃粉","#c68e91"],["sky","晴空","#73a2ad"]],"accessory":[["none","空手"],["scroll","竹簡"],["fan","羽扇"],["qin","小琴"],["lantern","小燈籠"],["brush","毛筆"],["parasol","花紙傘"],["rattle","撥浪鼓"]],"backdrop":[["night","星夜"],["peach","桃庭"],["bamboo","竹林"],["cloud","雲間"],["lake","荷塘"],["lantern","燈花庭"]],"expression":[["smile","微笑"],["bright","閃亮眼"],["cool","認真"],["wink","眨眼笑"]],"faceAccessory":[["none","不戴"],["glasses","圓框眼鏡"],["monocle","單片鏡"],["freckles","小雀斑"]],"ornament":[["none","簡單搭配"],["cape","短披風"],["bow","背後蝴蝶結"],["satchel","小書袋"]],"shoes":[["cloth","布鞋"],["boots","短靴"],["cloud","雲紋鞋"],["lotus","花花鞋"]]};
+  const LOOK_LABELS=(window.ZH_DOLL3D&&ZH_DOLL3D.labels)||{"body":"角色造型","skin":"膚色","hair":"髮型","hairColor":"髮色","headwear":"頭飾","outfit":"服裝","color":"衣服配色","accessory":"手持配件","backdrop":"背景","expression":"表情","faceAccessory":"臉部裝飾","ornament":"隨身裝飾","shoes":"鞋子"};
+  const LOOK_GROUPS=(window.ZH_DOLL3D&&ZH_DOLL3D.groups)||{"body":"look","skin":"look","hair":"look","hairColor":"look","expression":"look","faceAccessory":"look","outfit":"dress","color":"dress","shoes":"dress","headwear":"decor","accessory":"decor","ornament":"decor","backdrop":"scene"};
+  const MOTIONS=(window.ZH_DOLL3D&&ZH_DOLL3D.motions)||[["wave","揮手",1.8],["spin","轉一圈",2],["jump","跳躍",1.7],["bow","鞠躬",2.1],["dance","跳舞",3],["cheer","歡呼",2.2],["think","思考",2.8],["salute","敬禮",2]];
+  function defaultLook(id){const a=AVATARS.find(x=>x[0]===id)||AVATARS[0];return {version:1,body:'male',skin:'warm',hair:a[3]===3?'long':'bun',hairColor:'ink',headwear:['crown','pin','none','ribbon'][a[3]],outfit:'robe',color:LOOK_OPTIONS.color.some(x=>x[0]===id)?id:(a[3]===3?'plum':a[3]===2?'amber':'jade'),accessory:'scroll',backdrop:'night',expression:'smile',faceAccessory:'none',ornament:'none',shoes:'cloth',...((window.ZH_DOLL3D||{}).defaults||{})};}
+  function safeLook(raw,id){const d=defaultLook(id),v=raw&&typeof raw==='object'?raw:{};for(const k of Object.keys(LOOK_OPTIONS))if(LOOK_OPTIONS[k].some(x=>x[0]===v[k]))d[k]=v[k];return d;}
+  function lookColor(key,id){return (LOOK_OPTIONS[key].find(x=>x[0]===id)||LOOK_OPTIONS[key][0])[2];}
+  function doll(raw,portrait){
+    const v=safeLook(raw),skin=lookColor('skin',v.skin),hair=lookColor('hairColor',v.hairColor),cloth=lookColor('color',v.color),trim='#ead8ac',female=v.body==='female';
+    const ellipse=(x,y,rx,ry,c)=>'<ellipse cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="'+c+'"/>';
+    const path=(d,c,stroke,width)=>'<path d="'+d+'" fill="'+(c||'none')+'"'+(stroke?' stroke="'+stroke+'" stroke-width="'+(width||2)+'" stroke-linecap="round" stroke-linejoin="round"':'')+'/>';
+    const flower=(x,y,c)=>'<g>'+Array.from({length:5},(_,i)=>{const a=i*Math.PI*2/5;return ellipse(x+Math.sin(a)*5,y+Math.cos(a)*5,4,4,c);}).join('')+ellipse(x,y,3,3,'#f7d68e')+'</g>';
+    let back='<rect width="180" height="270" fill="'+({night:'#182b43',peach:'#594048',bamboo:'#294942',cloud:'#658494',lake:'#426e72',lantern:'#594552'}[v.backdrop])+'"/>';
+    if(v.backdrop==='night')back+=ellipse(142,39,18,18,'#e7d8ab')+ellipse(149,33,16,16,'#182b43')+[[31,41],[27,102],[156,112]].map(([x,y])=>ellipse(x,y,2,2,trim)).join('');
+    if(v.backdrop==='peach')back+=path('M4 210Q18 145 13 33M10 83L56 43',null,'#ae9084',5)+[[16,42],[34,69],[50,43],[8,112]].map(([x,y])=>flower(x,y,'#ecb9bd')).join('');
+    if(v.backdrop==='bamboo')back+=path('M15 266V6M164 266V6M26 266V6',null,'#739785',5)+path('M15 52l25-15M26 95L6 80M164 54l-25-17M164 140l-20-20',null,'#a3bd96',4);
+    if(v.backdrop==='cloud')back+=[[19,47],[35,55],[153,117],[164,125],[22,217]].map(([x,y])=>ellipse(x,y,20,9,'#e6e5df')).join('');
+    if(v.backdrop==='lake')back+=path('M0 215Q45 202 90 217T180 214V270H0Z','#82aba3')+ellipse(26,231,21,6,'#a3c591')+ellipse(150,247,22,6,'#a3c591')+flower(29,220,'#efd0d5');
+    if(v.backdrop==='lantern')back+=path('M0 38Q90 58 180 34',null,trim)+[24,155].map(x=>path('M'+x+' 45V65',null,trim)+ellipse(x,76,12,15,'#edb47e')+path('M'+x+' 90V101',null,'#ebd194',3)).join('');
+    let rear='';
+    if(v.hair==='long')rear=path('M58 55Q41 89 50 151L68 154V70H112V155L130 151Q139 88 122 55Z',hair);
+    if(v.hair==='braid')rear=path('M115 63Q132 79 122 96Q136 112 124 126Q135 138 122 151',null,hair,15)+path('M119 89l11 7M121 117l9 6M121 138l8 6',null,trim,3);
+    if(v.hair==='ponytail')rear=path('M111 44Q146 40 145 72Q146 122 124 150Q136 91 117 64Z',hair)+ellipse(125,53,8,5,cloth);
+    if(v.hair==='twintail')rear=ellipse(51,45,16,15,hair)+ellipse(129,45,16,15,hair)+path('M43 58Q38 82 54 94M137 58Q142 82 126 94',null,hair,10);
+    if(v.hair==='bob')rear=path('M57 52Q42 88 58 116H123Q139 91 123 52Z',hair);
+    if(v.hair==='curly')rear=[[55,48],[49,65],[50,82],[57,98],[126,49],[132,66],[131,84],[124,99]].map(([x,y])=>ellipse(x,y,11,13,hair)).join('');
+    let ornament='';
+    if(v.ornament==='cape')ornament=path('M54 112Q90 100 127 112L143 205Q92 220 38 205Z','#e2c895',trim);
+    if(v.ornament==='bow')ornament=path('M61 121Q20 88 33 144L65 136M119 121Q162 87 148 145L116 137',cloth,trim)+path('M53 134L43 175L62 166M126 136L141 175L120 169',cloth,trim);
+    const skirt=v.outfit==='hanfu'||v.outfit==='festival',robe=skirt?'M63 108H116L145 214Q90 233 36 214Z':female?'M64 108Q55 107 51 125L47 210Q90 229 134 210L128 125Q125 107 115 108Z':'M60 108Q49 107 47 126L53 212Q90 219 127 212L133 126Q129 107 119 108Z';
+    const shoesColor=v.shoes==='cloth'?'#303745':v.shoes==='boots'?'#795541':cloth;
+    const legs=[65,100].map((x,i)=>'<g class="pl-doll-leg pl-doll-leg-'+i+'">'+path('M'+x+' 203V239H'+(x+18)+'V203','#d6c7a8')+path('M'+x+' '+(v.shoes==='boots'?219:232)+'V243Q'+(x+7)+' 250 '+(x+25)+' 243L'+(x+17)+' '+(v.shoes==='boots'?219:232)+'Z',shoesColor,trim)+(v.shoes==='cloud'?path('M'+(x+4)+' 239q5-6 10 0q5-5 9 0',null,trim):v.shoes==='lotus'?flower(x+13,237,'#f2c5ca'):'')+'</g>').join('');
+    let dress=path(robe,cloth,trim)+path('M71 104L96 125L78 144M109 104L79 139L91 148','#f0e4c6','#bfa77c');
+    if(v.outfit==='armor')dress+=path('M66 123H115L121 170H61Z','#a7adb2',trim)+path('M69 133H111M66 143H114M64 154H117M82 124V165M98 124V165',null,'#5a626d');
+    if(v.outfit==='traveler')dress+=path('M61 109L81 133L73 175L59 168L49 124Z M115 109L99 133L111 173L126 164L135 124Z','#dac99f');
+    if(v.outfit==='scholar')dress+=path('M64 115L81 131L76 201H53Z M116 115L99 131L106 201H129Z','#32485b',trim)+path('M55 202H128',null,trim,5);
+    if(skirt)dress+=path('M63 158L50 211M75 158L70 219M105 158L110 219M117 158L130 211',null,trim)+path('M37 213Q90 230 144 213',null,trim,5);
+    if(v.outfit==='festival')dress+=[[61,188],[119,188],[90,207]].map(([x,y])=>flower(x,y,'#f2cbd0')).join('');
+    if(v.pattern==='cloud')dress+=path('M61 153q6-8 12 0q6-6 12 0 M99 187q6-8 12 0q6-6 12 0 M59 204q6-8 12 0',null,trim,1.7);
+    if(v.pattern==='plum')dress+=[[62,149],[112,181],[76,201]].map(([x,y])=>flower(x,y,'#efd8b7')).join('');
+    dress+='<rect x="60" y="167" width="60" height="11" rx="3" fill="'+trim+'"/>'+ellipse(90,172,6,6,'#5f8d7c')+path('M88 178L85 203M92 178L100 197',null,trim,3);
+    if(v.ornament==='satchel')dress+=path('M117 112L51 192',null,trim,4)+'<rect x="35" y="181" width="29" height="32" rx="8" fill="#b78e69" stroke="'+trim+'"/>'+path('M39 192H60',null,trim);
+    let held='';
+    if(v.accessory==='scroll')held='<rect x="102" y="144" width="35" height="30" rx="3" fill="#d9bc79" stroke="#816642"/>'+path('M107 145V173M113 145V173M119 145V173M125 145V173M131 145V173M102 154H137M102 165H137',null,'#866f45',1);
+    if(v.accessory==='fan')held=path('M120 172V153M120 157L101 132Q120 113 145 131Z','#ede3c5','#b6a274')+path('M120 157L115 125M120 157L130 124M120 157L140 131',null,'#b6a274');
+    if(v.accessory==='qin')held='<rect x="106" y="124" width="27" height="64" rx="9" fill="#805447" stroke="'+trim+'"/>'+path('M114 132V177M119 132V177M124 132V177',null,trim,1);
+    if(v.accessory==='lantern')held=path('M120 164L151 158V182',null,trim,3)+ellipse(151,199,16,20,'#eab27f')+path('M151 182V215M139 192H163M140 208H161M151 218V230',null,trim);
+    if(v.accessory==='brush')held=path('M117 176L139 130',null,'#b8966d',5)+path('M137 134L144 114L139 114L135 132Z','#ebe0cb');
+    if(v.accessory==='parasol')held=path('M125 178L148 85',null,'#b59772',3)+path('M110 108Q151 59 178 112L155 116L132 111Z','#edc3bf',trim)+path('M148 86L132 111M148 86L155 116',null,trim);
+    if(v.accessory==='rattle')held=path('M124 174V140',null,trim,5)+ellipse(124,132,12,12,'#d9a18a')+ellipse(124,132,8,8,'#f4dfba')+path('M112 133L102 138M136 133L146 138',null,trim)+ellipse(101,139,3,3,'#c18c7b')+ellipse(147,139,3,3,'#c18c7b');
+    const arms='<g class="pl-doll-arm">'+path('M61 115Q45 113 42 129L33 166L51 173L70 134',cloth,trim)+ellipse(43,173,9,8,skin)+'</g><g class="pl-doll-right-arm">'+path('M118 115Q135 114 137 134L140 164L118 168L107 135',cloth,trim)+ellipse(124,160,9,8,skin)+held+'</g>';
+    let fringe=v.hair==='short'?path('M56 69Q48 32 89 30Q132 32 123 71L111 50L91 62L80 49L60 71Z',hair):path('M55 67Q50 32 90 31Q130 32 125 67L113 53L90 43L65 54Z',hair);
+    if(v.hair==='curly')fringe+=[[61,47],[77,40],[94,39],[110,43],[120,51]].map(([x,y])=>ellipse(x,y,10,8,hair)).join('');
+    if(v.hair==='bun')fringe+=ellipse(90,27,13,13,hair)+path('M79 27H102',null,trim,4);
+    let hat='';
+    if(v.headwear==='crown')hat=path('M67 38L69 15H111L114 38Z','#263343',trim)+path('M75 23H105M82 16V35M98 16V35',null,trim);
+    if(v.headwear==='pin')hat=path('M72 28L110 36',null,'#a8d6bc',4)+ellipse(69,27,5,5,'#cdebd4');
+    if(v.headwear==='ribbon')hat=path('M65 42Q90 34 116 44',null,cloth,7)+path('M119 40l18 6-11 6 6 16-16-15Z',cloth,trim);
+    if(v.headwear==='flower')hat=path('M104 40L126 31',null,trim,3)+flower(124,30,'#f0b8c5');
+    if(v.headwear==='leaf')hat=path('M61 42Q90 18 121 42',null,'#9abe91',5)+[69,83,101,115].map(x=>path('M'+x+' 32q-7-15 7-10q9 10-7 10Z','#b7d1a0')).join('');
+    if(v.headwear==='rabbit')hat=ellipse(75,20,9,18,'#f1e5d6')+ellipse(105,20,9,18,'#f1e5d6')+ellipse(75,20,4,12,'#eabdc1')+ellipse(105,20,4,12,'#eabdc1')+path('M59 46Q90 14 122 46',null,'#f1e5d6',10);
+    if(v.headwear==='star')hat=path('M116 29l4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1Z','#f3d08e',trim);
+    const eye=(x,wink)=>wink?path('M'+(x-5)+' 72q5-6 10 0',null,'#38333d',2.5):ellipse(x,71,v.expression==='bright'?4.4:3.2,v.expression==='bright'?5.5:4.5,LOOK_OPTIONS.eyeColor?lookColor('eyeColor',v.eyeColor):'#282733')+ellipse(x-1,69,1.2,1.5,'#fff8ec');
+    let face=path(v.expression==='cool'?'M67 61L80 64M101 64L114 61':'M67 62Q73 58 79 62M102 62Q108 58 114 62',null,hair,2.5)+'<g class="pl-doll-eyes">'+eye(74,v.expression==='wink')+eye(107,false)+'</g>'+path('M89 77L86 83H93',null,'#ad7b62',1.5)+path(v.expression==='cool'?'M83 91H99':'M81 89Q90 97 101 88',null,'#995d58',2)+ellipse(66,82,5,2.5,'#d88a7d')+ellipse(115,82,5,2.5,'#d88a7d');
+    if(v.faceAccessory==='glasses'||v.faceAccessory==='monocle')face+='<g fill="none" stroke="#b89b6a" stroke-width="2">'+(v.faceAccessory==='glasses'?'<circle cx="74" cy="72" r="10"/><path d="M84 72H97M63 69L57 66M118 69L123 66"/>':'<path d="M115 80L120 100"/>')+'<circle cx="107" cy="72" r="10"/></g>';
+    if(v.faceAccessory==='freckles')face+=[[62,79],[68,77],[72,81],[110,80],[115,77],[120,81]].map(([x,y])=>ellipse(x,y,1.2,1.2,'#aa785e')).join('');
+    if(v.earrings&&v.earrings!=='none')face+=[-1,1].map(side=>path('M'+(90+side*33)+' 85v8',null,trim,1.5)+ellipse(90+side*33,96,3,4,v.earrings==='jade'?'#91c3ac':'#fff0d7')).join('');
+    const head='<g class="pl-doll-head">'+path('M79 91V109Q90 118 103 109V91',skin)+ellipse(90,70,34,37,skin)+fringe+hat+face+'</g>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+(portrait?'30 0 120 135':'0 0 180 270')+'" role="img" aria-label="'+(female?'女生':'男生')+'策士紙娃娃" class="pl-doll-svg">'+back+ellipse(90,248,57,8,'#172535')+'<g class="pl-doll-actor">'+rear+ornament+legs+'<g class="pl-doll-body">'+dress+arms+'</g>'+head+'</g></svg>';
+  }
+  function avatar(id,appearance){return appearance?doll(safeLook(appearance,id),true):legacyAvatar(id);}
+  async function saveProfile(o){let p;if(ZH.isGuest()){o.nickname=o.nickname.normalize('NFKC').trim();if(!o.nickname||Array.from(o.nickname).length>20||/[<>\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/.test(o.nickname)||/^[=+@-]/.test(o.nickname)||((o.nickname!==profile.nickname||profile.policyVersion!=='2026-10-14')&&!o.acceptPolicy))throw Error('請填寫1至20字名稱，並同意命名規則。');p=Object.assign({},profile||empty(),o,{nickname:o.nickname.trim(),unlocked:SKILLS.map(s=>s.id),revision:(profile&&profile.revision||0)+1,policyVersion:'2026-10-14'});ZH.session.set('player:guest',p);}else{const r=await ZH.call('api_savePlayerProfile',o);if(!r||!r.ok)throw Error(r&&r.msg||'儲存失敗。');p=r.profile;}return apply(p);}
+  async function editor(root){if(editorRoot&&editorRoot._studio){editorRoot._studio.dispose();editorRoot._studio=null;}editorStamp++;editorRoot=root;root.innerHTML='<div class="zh-panel"><p>讀取策士資料……</p></div>';try{await load();renderEditor();}catch(e){root.innerHTML='<div class="zh-panel"><p role="alert">'+esc(e.message)+'</p><button class="zh-btn" data-reload>重新讀取</button></div>';root.querySelector('[data-reload]').onclick=()=>editor(root);}}
+  function renderEditor(){if(!editorRoot||!profile)return;if(editorRoot._studio){editorRoot._studio.dispose();editorRoot._studio=null;}const stamp=++editorStamp;const p=copy(profile);editorRoot.dataset.playerName=p.nickname;editorRoot.dataset.playerLocked=String(p.nameLocked);let draft=safeLook(p.appearance,p.avatarId),avatarId=p.avatarId;
+    const options=Object.keys(LOOK_OPTIONS).map(key=>'<fieldset class="pl-look-field" data-look-category="'+LOOK_GROUPS[key]+'"'+(LOOK_GROUPS[key]!=='look'?' hidden':'')+'><legend>'+LOOK_LABELS[key]+'</legend><div class="pl-options">'+LOOK_OPTIONS[key].map(a=>'<button type="button" data-look="'+key+'" data-value="'+a[0]+'" aria-pressed="'+(draft[key]===a[0])+'">'+(a[2]?'<i aria-hidden="true" style="background:'+a[2]+'"></i>':'')+a[1]+'</button>').join('')+'</div></fieldset>').join('');
+    editorRoot.innerHTML='<section class="pl-profile"><div class="pl-editor-top"><p>已完成 '+(p.completed||0)+' 個不同篇章</p>'+(ZH.isGuest()?'<p class="zh-dim">訪客造型只留在此分頁；關閉後即清除。</p>':'')+'</div><div class="pl-editor-layout"><aside class="zh-panel pl-stage"><span class="pl-kicker">我的策士</span><div class="pl-view-switch" aria-label="造型展示方式"><button type="button" data-doll-view="2d" aria-pressed="false">2D</button><button type="button" data-doll-view="3d" aria-pressed="true">3D</button></div><div data-doll-preview class="pl-doll-preview"></div><p data-doll-name>'+esc(p.nickname)+'</p><div class="pl-motion-grid" aria-label="讓策士動一動">'+MOTIONS.map(([k,l])=>'<button type="button" data-motion="'+k+'" aria-pressed="false">'+l+'</button>').join('')+'</div><p class="pl-motion-status" data-motion-status role="status" aria-live="polite">選個動作，陪策士玩一下。</p><div class="pl-play"><button type="button" data-stop>停止動作</button><button type="button" data-photo>3D拍照</button><button type="button" data-export>下載2D造型</button></div><details class="st3-advanced"><summary>鏡頭、走動與畫質</summary><div class="st3-camera" aria-label="3D鏡頭"><button type="button" data-camera="left">向左看</button><button type="button" data-camera="right">向右看</button><button type="button" data-camera="in">拉近</button><button type="button" data-camera="out">拉遠</button><button type="button" data-camera="reset">近看策士</button><button type="button" data-camera="wide">看全景</button></div><div class="st3-walk" aria-label="移動策士"><button type="button" data-walk="0,-1" aria-label="往後走">↑ 往後</button><button type="button" data-walk="-1,0">← 左走</button><button type="button" data-walk="1,0">右走 →</button><button type="button" data-walk="0,1" aria-label="往前走">↓ 往前</button><button type="button" data-position-reset>回到中央</button></div><label class="st3-quality-label">3D畫質 <select data-quality><option value="auto">依裝置調整</option><option value="low">流暢</option><option value="high">精緻</option></select></label></details><p class="zh-small zh-dim">拖曳旋轉、雙指縮放；點方向鍵讓策士走一小步。換裝與環境儲存後同步到收藏館。</p></aside><form data-player-form class="zh-panel pl-settings"><div role="tablist" aria-label="個人化設定" class="pl-editor-tabs">'+[['doll','紙娃娃'],['basic','名稱設定'],['skills','裝備技能']].map(([k,l],i)=>'<button type="button" role="tab" id="pl-tab-'+k+'" aria-controls="pl-panel-'+k+'" aria-selected="'+(!i)+'" tabindex="'+(i?-1:0)+'" data-tab="'+k+'">'+l+'</button>').join('')+'</div><section role="tabpanel" id="pl-panel-doll" aria-labelledby="pl-tab-doll" data-panel="doll"><h2>搭配你的造型</h2><p class="zh-dim">男生、女生都能自由選擇所有服裝與配件。</p><div class="pl-look-groups" aria-label="造型分類">'+[['look','外型'],['dress','穿搭'],['decor','裝飾'],['scene','場景']].map(([k,l],i)=>'<button type="button" data-look-group="'+k+'" aria-pressed="'+(!i)+'">'+l+'</button>').join('')+'</div>'+options+'<div class="zh-row pl-look-tools"><button type="button" class="zh-btn zh-btn--quiet" data-random>隨機搭配</button><button type="button" class="zh-btn zh-btn--quiet" data-reset>還原已存造型</button></div><div class="st3-suit-presets" aria-label="造型與環境搭配">'+((window.ZH_DOLL3D||{}).presets||[]).map(x=>'<button type="button" data-studio-preset="'+esc(x.id)+'">'+esc(x.label)+'</button>').join('')+'</div><details><summary>套用十二組預設搭配</summary><div class="pl-presets">'+AVATARS.map(a=>'<button type="button" data-preset="'+a[0]+'">'+a[1]+'</button>').join('')+'</div></details></section><section role="tabpanel" id="pl-panel-basic" aria-labelledby="pl-tab-basic" data-panel="basic" hidden><h2>策士名稱</h2><label for="pl-nickname">顯示名稱（1至20字）<input class="zh-input" id="pl-nickname" name="nickname" maxlength="40" value="'+esc(p.nickname)+'"'+(p.nameLocked?' disabled':'')+'></label>'+(p.nameLocked?'<p class="pl-lock" role="status">名稱已由管理者鎖定，不能自行修正或重新命名。'+esc(p.reason?' 原因：'+p.reason:'')+'</p>':'')+'<p class="pl-policy">'+POLICY+'</p>'+(!p.nameLocked?'<label class="pl-check"><input type="checkbox" name="policy"'+(p.policyVersion==='2026-10-14'?' checked':'')+'>我已閱讀並同意命名規則</label>':'')+'</section><section role="tabpanel" id="pl-panel-skills" aria-labelledby="pl-tab-skills" data-panel="skills" hidden><h2>裝備技能（最多兩項）</h2><p>新局使用這裡的裝備；續玩保留原局配置。</p><div class="pl-skill-grid">'+SKILLS.map(s=>{const unlocked=p.unlocked.includes(s.id);return '<label class="pl-skill"><input type="checkbox" name="skill" value="'+s.id+'"'+(p.equipped.includes(s.id)?' checked':'')+(!unlocked?' disabled':'')+'><span><b>'+s.name+'</b><small>'+esc(s.desc)+'</small>'+(!unlocked?'<small>完成 '+s.need+' 個不同篇章後解鎖</small>':'')+'</span></label>';}).join('')+'</div></section><div class="pl-save"><p data-player-message role="status" aria-live="polite">尚未變更。造型搭配不影響能力與技能。</p><div class="zh-row"><button type="submit" class="zh-btn zh-btn--primary">儲存策士資料</button><button type="button" class="zh-btn zh-btn--quiet" data-refresh>重新讀取</button></div></div></form></div></section>';
+    const form=editorRoot.querySelector('form'),stage=editorRoot.querySelector('[data-doll-preview]'),msg=form.querySelector('[data-player-message]');let dirty=false,motionTimer,motionName='',view3d=null,opening3d=null,dollMode=ZH.local.get('playerDollView','3d');if(!['2d','3d'].includes(dollMode))dollMode='3d';
+    const quality=editorRoot.querySelector('[data-quality]');quality.value=ZH.local.get('player3dQuality','auto');
+    function switchTab(key,focus){form.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===key;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1;if(active&&focus)b.focus();});form.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==key);}
+    form.querySelectorAll('[data-tab]').forEach(b=>{b.onclick=()=>switchTab(b.dataset.tab);b.onkeydown=e=>{const tabs=[...form.querySelectorAll('[data-tab]')],i=tabs.indexOf(b);let next;if(e.key==='ArrowRight')next=(i+1)%tabs.length;if(e.key==='ArrowLeft')next=(i+tabs.length-1)%tabs.length;if(e.key==='Home')next=0;if(e.key==='End')next=tabs.length-1;if(next!==undefined){e.preventDefault();switchTab(tabs[next].dataset.tab,true);}};});
+    const motionStatus=editorRoot.querySelector('[data-motion-status]');
+    function reveal3d(){const r=stage.getBoundingClientRect();if(r.top<74||r.bottom>innerHeight)stage.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+
+    function motionUI(kind){motionName=kind||'';editorRoot.querySelectorAll('[data-motion]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.motion===motionName)));motionStatus.textContent=kind?(MOTIONS.find(x=>x[0]===kind)||['','動作'])[1]+'中…':'選個動作，陪策士玩一下。';}
+    function stopMotion(){clearTimeout(motionTimer);stage.classList.remove(...MOTIONS.map(x=>'is-'+x[0]));if(view3d)view3d.stop();motionUI('');}
+    stage.addEventListener('zh:motion',e=>motionUI(e.detail.kind));
+    form.querySelectorAll('[data-look-group]').forEach(b=>b.onclick=()=>{form.querySelectorAll('[data-look-group]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));form.querySelectorAll('[data-look-category]').forEach(x=>x.hidden=x.dataset.lookCategory!==b.dataset.lookGroup);});
+    editorRoot.querySelector('[data-stop]').onclick=stopMotion;
+    editorRoot.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>{if(!view3d)return;reveal3d();const k=b.dataset.camera;if(k==='reset')view3d.reset();if(k==='wide')view3d.wide();if(k==='left')view3d.rotate(-.3);if(k==='right')view3d.rotate(.3);if(k==='in')view3d.zoom(-.6);if(k==='out')view3d.zoom(.6);});
+    editorRoot.querySelectorAll('[data-walk]').forEach(b=>b.onclick=()=>{if(!view3d){motionStatus.textContent='切到3D展示，就能在環境中走動。';return;}reveal3d();const [x,z]=b.dataset.walk.split(',').map(Number);if(!view3d.move(x*.6,z*.6))motionStatus.textContent='這個方向已到活動範圍邊緣，換個方向試試。';});
+    editorRoot.querySelector('[data-position-reset]').onclick=()=>{if(view3d){reveal3d();view3d.home();}};
+    quality.onchange=()=>{ZH.local.set('player3dQuality',quality.value);if(view3d)view3d.setQuality(quality.value);};
+    form.querySelectorAll('[data-studio-preset]').forEach(b=>b.onclick=()=>{const preset=((window.ZH_DOLL3D||{}).presets||[]).find(x=>x.id===b.dataset.studioPreset);if(!preset)return;draft=safeLook(Object.assign({},draft,preset.look));preview();changed();});
+
+    function preview(){
+      stopMotion();
+      form.querySelectorAll('[data-look]').forEach(b=>b.setAttribute('aria-pressed',String(draft[b.dataset.look]===b.dataset.value)));
+      editorRoot.querySelectorAll('[data-doll-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.dollView===dollMode)));
+      if(dollMode==='2d'||!ZH.studio3d){if(view3d){view3d.dispose();view3d=null;editorRoot._studio=null;}stage.classList.remove('is-3d');stage.innerHTML=doll(draft);return;}
+      stage.classList.add('is-3d');if(view3d&&view3d.inspect().contextLost){view3d.dispose();view3d=null;editorRoot._studio=null;}if(view3d){view3d.setAppearance(draft);return;}if(opening3d)return;
+      stage.innerHTML='<p class="st3-loading" role="status">正在捏製小小策士……</p>';
+      opening3d=ZH.studio3d.create(stage,{mode:'doll',appearance:draft,quality:quality.value,isCurrent:()=>stamp===editorStamp&&dollMode==='3d'}).then(v=>{if(stamp!==editorStamp||dollMode!=='3d'||!stage.isConnected){v.dispose();return;}view3d=v;editorRoot._studio=v;v.setAppearance(draft);}).catch(e=>{if(stamp!==editorStamp||dollMode!=='3d'||!stage.isConnected)return;dollMode='2d';preview();msg.textContent=e.message+' 已先切回2D造型。';}).finally(()=>opening3d=null);
+    }
+    editorRoot.querySelectorAll('[data-doll-view]').forEach(b=>b.onclick=()=>{dollMode=b.dataset.dollView;ZH.local.set('playerDollView',dollMode);preview();});
+    editorRoot.querySelector('[data-photo]').onclick=()=>{if(!view3d){msg.textContent='先開啟3D造型，再拍照。';return;}try{const a=document.createElement('a');a.href=view3d.snapshot();a.download='我的3D策士.png';a.click();}catch(e){msg.textContent='這次照片未能保存，請再試一次。';}};
+    function changed(){dirty=true;msg.textContent='有尚未儲存的變更。';}
+    form.querySelectorAll('[data-look]').forEach(b=>b.onclick=()=>{draft[b.dataset.look]=b.dataset.value;preview();changed();});
+    form.querySelector('[data-random]').onclick=()=>{const rnd=new Uint32Array(Object.keys(LOOK_OPTIONS).length);crypto.getRandomValues(rnd);Object.keys(LOOK_OPTIONS).forEach((k,i)=>draft[k]=LOOK_OPTIONS[k][rnd[i]%LOOK_OPTIONS[k].length][0]);preview();changed();};
+    form.querySelector('[data-reset]').onclick=()=>{draft=safeLook(p.appearance,p.avatarId);avatarId=p.avatarId;preview();changed();};
+    form.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{const body=draft.body;avatarId=b.dataset.preset;draft=defaultLook(avatarId);draft.body=body;preview();changed();});
+    form.addEventListener('input',e=>{if(e.target.name==='skill'&&form.querySelectorAll('[name=skill]:checked').length>2){e.target.checked=false;msg.textContent='最多裝備兩項技能。';return;}changed();if(e.target.name==='nickname')editorRoot.querySelector('[data-doll-name]').textContent=e.target.value;});
+    editorRoot.querySelectorAll('[data-motion]').forEach(b=>b.onclick=()=>{
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches){motionStatus.textContent='目前使用減少動畫設定，策士保持靜態展示。';return;}
+      stopMotion();reveal3d();const kind=b.dataset.motion;motionUI(kind);
+      if(view3d){view3d.play(kind);return;}
+      void stage.offsetWidth;stage.classList.add('is-'+kind);motionTimer=setTimeout(()=>{stage.classList.remove('is-'+kind);motionUI('');},(MOTIONS.find(x=>x[0]===kind)[2]*1000));
+    });
+    editorRoot.querySelector('[data-export]').onclick=()=>{const blob=new Blob([doll(draft)],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='我的策士造型.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);};
+    form.querySelector('[data-refresh]').onclick=async()=>{if(dirty&&!await ZH.modal({title:'重新讀取資料',body:'<p>尚未儲存的搭配會還原成已保存的資料。</p>',actions:[{label:'繼續搭配',value:false,kind:'quiet'},{label:'重新讀取',value:true,kind:'primary'}]}))return;await editor(editorRoot);};
+    form.addEventListener('submit',async e=>{e.preventDefault();const equipped=[...form.querySelectorAll('[name=skill]:checked')].map(x=>x.value),btn=form.querySelector('[type=submit]');if(equipped.length>2){switchTab('skills');msg.textContent='最多裝備兩項技能。';return;}const nickname=p.nameLocked?p.nickname:form.elements.nickname.value,acceptPolicy=p.nameLocked||form.querySelector('[name=policy]').checked;if(!acceptPolicy&&!p.nameLocked&&(nickname!==p.nickname||p.policyVersion!=='2026-10-14')){switchTab('basic',true);msg.textContent='請先閱讀並同意命名規則。';return;}btn.disabled=true;try{await saveProfile({nickname,avatarId,appearance:draft,equipped,revision:p.revision,acceptPolicy});renderEditor();editorRoot.querySelector('[data-player-message]').textContent='已儲存造型與設定。裝備變更在新局生效。';}catch(err){msg.textContent=err.message;if(/已更新|鎖定/.test(err.message)){await editor(editorRoot);editorRoot.querySelector('[data-player-message]').textContent='資料已重新讀取；請確認最新的名稱與造型。';}}finally{if(btn.isConnected)btn.disabled=false;}});
+    preview();
+  }
+  function mergeUses(p,uses){const map=new Map((p.uses||[]).map(x=>[x.key,x]));(uses||[]).forEach(x=>map.set(x.key,x));p.uses=Array.from(map.values());p.applied=p.applied||[];return p;}
+  async function initRun(state,scope,context){if(scope==='story')activeStory=state;try{await load();const old=state._player;if(ZH.isGuest()){state._player=old||{runId:'guest_'+Date.now().toString(36),scope,context,loadout:profile.equipped.slice(),uses:[],applied:[]};}else{const r=await ZH.call('api_openPlayerSkillRun',{scope,context,runId:old&&old.runId||''});if(!r||!r.ok)throw Error(r&&r.msg||'技能局次讀取失敗。');state._player=mergeUses(Object.assign({},old||{},r.run),r.run.uses);}delete state._playerError;return state._player;}catch(e){state._playerError=e.message;return null;}}
+  function available(p,id,month){const s=SKILLS.find(x=>x.id===id);if(!p||!s||!p.loadout.includes(id))return false;const used=(p.uses||[]).filter(u=>u.id===id);return p.scope===s.scope&&(s.scope==='story'?used.length<s.limit:!used.length||month-used[used.length-1].month>=s.cooldown);}
+  async function consume(state,id,target,month,save){const p=state._player;if(!p||state._playerError)throw Error(state._playerError||'個人技能未啟用。');const pending=p.pending;if(pending&&pending.id!==id)throw Error('請先完成上一項技能操作。');if(!pending&&!available(p,id,month||0))throw Error('未裝備、次數已用完，或技能仍在冷卻。');const req=pending||{key:id+':'+(p.uses||[]).length+':'+String(target).replace(/[^a-z0-9:_-]/ig,'').slice(0,55),id,target,month:month||0};p.pending=req;
+    const sr=await save();if(!ZH.isGuest()&&(!sr||sr.ok===false))throw Error('存檔尚未成功，技能沒有套用，請重試。');
+    let receipt;if(ZH.isGuest()){receipt=(p.uses||[]).find(x=>x.key===req.key)||Object.assign({},req,{at:new Date().toISOString(),assisted:p.scope==='story'});}else{const r=await ZH.call('api_usePlayerSkill',Object.assign({runId:p.runId},req));if(!r||!r.ok){if(r&&r.msg&&!/存檔|月份/.test(r.msg))delete p.pending;throw Error(r&&r.msg||'技能使用失敗。');}receipt=r.receipt;}mergeUses(p,[receipt]);return receipt;
+  }
+  async function applyReceipt(state,receipt,fn,save){const p=state._player;if(!p.applied.includes(receipt.key)){fn();p.applied.push(receipt.key);}delete p.pending;await save();}
+  function skillCard(p,id,month){const s=SKILLS.find(x=>x.id===id),uses=(p.uses||[]).filter(x=>x.id===id),left=s.scope==='story'?s.limit-uses.length:uses.length?Math.max(0,s.cooldown-(month-uses[uses.length-1].month)):0;return '<div class="pl-skill"><span><b>'+s.name+'</b><small>'+esc(s.desc)+'</small><small>'+(s.scope==='story'?'剩餘 '+Math.max(0,left)+' 次':left?'冷卻 '+left+' 個月':'可使用')+'</small></span></div>';}
+  const GLOSSARY=[['行成','派使者求和。'],['生聚','使人民休養生息，積蓄財力。'],['教訓','教養、訓練；須依上下文判讀。'],['而','可作連接詞；某些古文中通「爾」，意為你。'],['女','古文中有時通「汝」，意為你。'],['走','古文常指跑、逃跑。'],['因','可指經由、依靠或趁著；須依上下文判讀。'],['反','古文有時通「返」，意為返回。']];
+  async function storyPanel(state,sid,save){if(document.querySelector('.zh-modal')||document.querySelector('.za'))return;const p=state._player;if(!p||state._playerError){ZH.toast(state._playerError||'技能資料尚未載入。','bad');return;}const last=(state.anchors||[]).slice(-1)[0],item=last&&ZH.anchor&&ZH.anchor.get(sid,last.anchorId);const body='<div class="pl-profile-head"><span class="pl-avatar">'+avatar(profile&&profile.avatarId,profile&&profile.appearance)+'</span><b>'+esc(name())+'</b></div>'+p.loadout.map(id=>skillCard(p,id,0)).join('')+'<p>博聞回顧已作答的原文。專注在第17話關卡內使用，會保留原先的首次分數。</p>';
+    const choice=await ZH.modal({title:'我的策士技能',body,actions:[{label:'關閉',value:'close',kind:'quiet'},...(item&&available(p,'bowen',0)?[{label:'博聞・回顧原文',value:'bowen',kind:'primary'}]:[])]});if(choice!=='bowen')return;
+    try{const r=await consume(state,'bowen',last.anchorId,0,save);await applyReceipt(state,r,()=>{},save);const matches=GLOSSARY.filter(x=>String(item.passage).includes(x[0]));await ZH.modal({title:'博聞・已答原文回顧',body:'<p>'+esc(item.passage)+'</p><p>'+esc(item.sourceRef||item.source||'')+'</p>'+matches.map(x=>'<p><b>'+x[0]+'</b>：'+x[1]+'</p>').join('')+'<p>這是作答後的回顧；原先作答與分數保持原紀錄。</p>',actions:[{label:'回到劇情',value:true,kind:'primary'}]});}catch(e){ZH.toast(e.message,'bad');}
+  }
+  async function teacher(root,token,email){root.innerHTML='<p>讀取個人資料管理……</p>';try{const r=await ZH.call('api_teacherPlayerProfile',token,email);if(!r||!r.ok)throw Error(r&&r.msg||'資料讀取失敗。');const p=r.profile;root.innerHTML='<section class="pl-profile"><h3>策士名稱管理</h3><div class="pl-profile-head"><span class="pl-avatar">'+avatar(p.avatarId,p.appearance)+'</span><div><b>'+esc(p.nickname)+'</b><p>'+(p.nameLocked?'名稱已鎖定':'名稱可由使用者設定')+'</p></div></div><form data-moderate><label>替代名稱<input class="zh-input" name="nickname" value="'+esc(p.nickname)+'" maxlength="40"></label><label>處置原因<textarea class="zh-input" name="reason" maxlength="200" required></textarea></label><p>「改名並鎖定」立即生效，使用者不能自行修正。只有管理者能再次改名或解除限制。</p><div class="zh-row"><button class="zh-btn zh-btn--seal" type="submit">改名並鎖定</button>'+(p.nameLocked?'<button class="zh-btn zh-btn--quiet" type="button" data-unlock>解除命名限制</button>':'')+'</div><p data-message role="status" aria-live="polite"></p></form><details><summary>處置紀錄（'+r.history.length+'）</summary>'+r.history.map(h=>'<p>'+esc(h.at)+' · '+esc({userRename:'使用者改名',renameLock:'管理者改名並鎖定',unlock:'管理者解除限制'}[h.action]||'資料更新')+' · '+esc(h.oldName)+' → '+esc(h.newName)+'<br>'+esc(h.reason)+' · '+esc(h.actor)+'</p>').join('')+'</details><details><summary>技能使用紀錄</summary>'+r.skillRuns.map(x=>'<p>'+esc(x.scope==='world'?({cq:'春秋爭盟',zg:'戰國縱橫',ch:'楚漢逐鹿'}[x.context]||'天下推演'):((ZH.findScenario(x.context)||{}).name||'劇本'))+' · '+esc(x.createdAt)+'<br>'+x.uses.map(u=>esc((SKILLS.find(s=>s.id===u.id)||{}).name||u.id)+'（'+esc(u.id==='bowen'?'已答原文回顧':u.id==='zhuanzhu'?({wy_fujiao:'夫椒水戰',wen_wy_xingcheng:'行成',wy_shengju:'十年生聚'}[u.target]||'關卡練習'):'大地圖操作')+'）').join('、')+'</p>').join('')+'</details></section>';
+    const form=root.querySelector('form');async function act(action){const reason=form.elements.reason.value,msg=form.querySelector('[data-message]'),buttons=Array.from(form.querySelectorAll('button'));buttons.forEach(b=>b.disabled=true);try{const v=await ZH.call('api_teacherModeratePlayer',token,email,{action,nickname:form.elements.nickname.value,reason,revision:p.revision});if(!v||!v.ok)throw Error(v&&v.msg||'處置失敗。');await teacher(root,token,email);document.dispatchEvent(new CustomEvent('zh:player-moderated',{detail:{email,profile:v.profile}}));}catch(e){msg.textContent=e.message;}finally{buttons.forEach(b=>b.disabled=false);}}form.onsubmit=e=>{e.preventDefault();act('renameLock');};const unlock=form.querySelector('[data-unlock]');if(unlock)unlock.onclick=()=>act('unlock');
+  }catch(e){root.innerHTML='<p role="alert">'+esc(e.message)+'</p>';}}
+  function name(){return profile&&profile.nickname|| (ZH.isGuest()?'訪客策士':'策士');}
+  ZH.player={version:'v0.5.0',AVATARS,LOOK_OPTIONS,doll,safeLook,SKILLS,POLICY,load,editor,avatar,name,initRun,available,consume,applyReceipt,skillCard,storyPanel,teacher,get profile(){return profile;},get story(){return activeStory;}};
+  const finish=ZH.finishScenario;ZH.finishScenario=function(result){const r=Object.assign({},result);if(activeStory&&activeStory._player)r.playerSkills=copy(activeStory._player.uses||[]);return finish(r);};
+  document.addEventListener('zh:3d-lost',e=>{if(editorRoot&&editorRoot.contains(e.detail.host)){const m=editorRoot.querySelector('[data-player-message]');if(m)m.textContent='3D畫面暫時中斷，可切回2D，或再次按3D重新開啟。';}});
+  // 從其他頁面返回時，伺服器核定名稱與鎖定狀態立即套回編輯器。
+  document.addEventListener('zh:player-change',()=>{if(editorRoot&&editorRoot.querySelector('[data-player-form]')&&(editorRoot.dataset.playerName!==profile.nickname||editorRoot.dataset.playerLocked!==String(profile.nameLocked))){renderEditor();editorRoot.querySelector('[data-player-message]').textContent='名稱與管理狀態已更新，請確認最新資料。';}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ZH.isSchool())load(true).catch(()=>{});});
+})(window.ZH);
+
+</script>

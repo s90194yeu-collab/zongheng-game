@@ -1,0 +1,1095 @@
+<!-- 本話任務：消息的對象、可信度與差別接待形成疑心；守城與反間分工而互相支撐。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!-- 核心玩法 v2.0.0 接點；原文、錨點、收藏與舊局函式保留。 -->
+<!DOCTYPE html>
+<!--
+ Re:縱橫鼎業・第六話〈滎陽成皋〉
+ 檔名：S_ch06_xingyang.html；版本v1.1.0（2026-10-08）。
+ 依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story，
+       既有Code／Save／Log／AnchorBank及本話S_ch06_xingyang_data.gs。
+ 30節點、12原文錨點、12圖鑑、三局牌組與一次廣武軍議，核心體驗不可略過。
+ 牌組、預算、圍城與一次牽制接續；廣武首答與手動補正分開。
+ 本話接續最新共用核心與天下大地圖。史實原文、教學軍議、遊戲生成世家分別標示。
+ 原典已對讀《史記》卷056、007、008；通行字依原資料包03規則。
+ 網址：?page=S_ch06_xingyang
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題頁（各話共用的版型，通常不用改） ───────── */
+  .ep-title {
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 520px at 70% 0%, var(--ep-glow, rgba(196, 71, 58, .2)), transparent 65%),
+      radial-gradient(700px 600px at 0% 100%, rgba(224, 180, 76, .12), transparent 60%);
+  }
+  .ep-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width: min(1040px, 100%); margin: 0 auto; padding: 8px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 22px; align-content: start; }
+  .ep-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .ep-h1 { margin-top: 4px; font-size: clamp(46px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .ep-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ep-note { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, auto); gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: rgba(20, 26, 46, .82); box-shadow: var(--shadow);
+  }
+  .ep-seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--ep-color, #c4473a); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--ep-color, #c4473a);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--ep-color, #c4473a); background: rgba(11, 14, 29, .6);
+  }
+  .ep-start__name { font-family: var(--f-display); font-size: 22px; }
+  .ep-start__lead { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start__act { display: grid; gap: 8px; }
+  .ep-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .ep-point { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .7); }
+  .ep-point b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; color: var(--gilt); }
+  .ep-point span { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  @media (max-width: 860px) {
+    .ep-start { grid-template-columns: auto minmax(0, 1fr); }
+    .ep-start__act { grid-column: 1 / -1; }
+  }
+
+
+  .ch06-page { overflow-x:hidden; }
+  .ch06-page .ep-kicker, .ch06-page .ep-note, .ch06-page .ep-start__lead, .ch06-page .ep-point span,
+  .ch06-page .zh-chip, .ch06-page .sty-m, .ch06-page .sty-title span, .ch06-page .sty-game__status,
+  .ch06-page .sty-place, .ch06-page .sty-place span, .ch06-page .sty-say__name, .ch06-page .sty-choice__text,
+  .ch06-page .sty-opt__desc, .ch06-page .zh-small { font-size:15px; }
+  .ch06-page .zh-btn, .ch06-page .sty-icon, .ch06-page .sty-opt { min-width:44px; min-height:44px; font-size:16px; }
+  .ch06-page .ep-h1 { font-size:clamp(38px,8vw,80px); letter-spacing:.08em; overflow-wrap:anywhere; }
+  .ch06-page .sty-game__head { flex-wrap:wrap; gap:8px; }
+  .ch06-page:has(.ch06-game) .sty-meters { display:none; }
+  .ch06-page button:focus-visible, .ch06-page summary:focus-visible { outline:3px solid var(--gilt); outline-offset:3px; }
+  .ch06-game { width:min(930px,100%); margin:0 auto; padding:18px; display:grid; gap:14px; align-content:start; font-size:16px; line-height:1.65; }
+  .ch06-game h2 { font-family:var(--f-display); font-size:clamp(21px,3vw,28px); color:var(--gilt); }
+  .ch06-game p, .ch06-game span, .ch06-game b, .ch06-game summary, .ch06-game button { font-size:16px; overflow-wrap:anywhere; }
+  .ch06-live, .ch06-panel { padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--night-2); }
+  .ch06-live { color:var(--gilt); border-color:var(--gilt); font-variant-numeric:tabular-nums; }
+  .ch06-panel b { color:var(--gilt); }
+  .ch06-relation { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .ch06-relation span { padding:10px; border:1px solid var(--patina); border-radius:8px; background:var(--night-2); }
+  .ch06-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  .ch06-card { min-height:132px; display:grid; align-content:start; gap:7px; padding:12px; text-align:left; color:var(--text); background:var(--night-2); border:1px solid var(--line); border-radius:12px; cursor:pointer; }
+  .ch06-card b { font-family:var(--f-display); color:var(--gilt); font-size:20px; }
+  .ch06-card.is-selected { outline:2px solid var(--gilt); outline-offset:-2px; background:var(--night-3); }
+  .ch06-card:disabled { opacity:.62; cursor:default; }
+  .ch06-actions { display:flex; flex-wrap:wrap; gap:10px; }
+  .ch06-actions button { flex:1 1 230px; }
+  .ch06-report { padding:12px; border-left:3px solid var(--patina); background:var(--night-2); }
+  .ch06-rules { border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .ch06-rules summary { min-height:44px; cursor:pointer; color:var(--gilt); }
+  .ch06-gw-options { display:grid; gap:10px; }
+  .ch06-gw-options button { min-height:64px; text-align:left; white-space:normal; }
+  @media(max-width:860px) {
+    .ch06-game { padding:12px; gap:12px; }
+    .ch06-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .ch06-card { min-height:144px; padding:10px; }
+    .ch06-relation { grid-template-columns:1fr; gap:5px; }
+    .ch06-relation span { padding:7px 10px; }
+    .ch06-rewards { grid-template-columns:1fr; }
+    .ch06-rewards .ch06-card { min-height:104px; }
+    .ch06-actions button { flex-basis:100%; }
+  }
+
+
+.hm-title-scene{position:relative;height:320px;overflow:hidden;border:1px solid var(--gilt);border-radius:10px;margin:25px 0;background:#30221b}
+.hm-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}
+.hm-title-cast{position:absolute;inset:30px 8% 0;display:flex;align-items:end;justify-content:center;gap:2%}
+.hm-title-cast>span{width:21%;max-width:150px;filter:drop-shadow(0 8px 6px #0005)}
+.hm-title-cast .ck{display:block;width:100%;height:100%}
+.hm-portrait{display:block!important;width:70px!important;height:90px!important;border:0!important;background:transparent!important;border-radius:0!important;margin:0 auto!important}
+.hm-portrait .ck{height:100%;width:100%;display:block}
+.ch04-observer{position:relative;padding:8px 4px!important;min-height:190px;background:linear-gradient(#322c32,#191b2e)!important;touch-action:manipulation}
+.ch04-observer .hm-portrait{width:100px!important;height:135px!important}
+.ch04-watch-stage{padding:24px 10px 12px;background:linear-gradient(#502e2455,#291c1688);border:1px solid var(--line);border-radius:8px;gap:8px!important}
+.ch04-observer.is-moving .ck{animation:hm-gesture .45s ease-in-out infinite alternate}
+.ch04-observer.is-noticed{box-shadow:0 0 0 2px var(--patina),0 0 20px #4a9c8a44}
+.ch04-motion{min-height:48px;display:grid;justify-content:center;align-content:center;gap:4px;color:var(--slip)}
+.ch04-sign-jade{width:32px;height:32px;display:block;border:7px solid #a9d9bf;border-right-color:transparent;border-radius:50%;filter:drop-shadow(0 0 6px #a9d9bf)}
+.hm-returner{position:absolute;left:5%;bottom:2px;width:55px;height:85px;pointer-events:none}.hm-returner>.ck{height:100%;width:100%}
+.hm-anchor .sty-choice__card{max-height:85dvh;overflow:auto}.hm-anchor h2{font-family:var(--f-display);font-size:23px;line-height:1.5}
+.hm-anchor blockquote{margin:16px 0;padding:14px;color:var(--slip-ink);background:var(--slip);border-left:4px solid var(--gilt);font:21px/1.65 var(--f-display)}
+.hm-follow,.hm-feedback{padding:12px;background:#c9a24a18;line-height:1.7;border:1px solid var(--line);border-radius:6px}
+.hm-book details{border-bottom:1px solid var(--line);padding:12px}.hm-book summary{display:flex;align-items:center;gap:12px;cursor:pointer}.hm-book summary small{display:block;color:var(--text-dim)}.hm-book blockquote{color:var(--gilt);line-height:1.7}.hm-book p{line-height:1.8}.hm-book .is-locked{opacity:.6}.hm-thumb{display:block;width:54px;height:74px}.hm-thumb svg{width:100%;height:100%}
+.hm-small-seal{width:44px!important;height:44px!important;font-size:26px!important}.hm-actions{display:flex;gap:10px;flex-wrap:wrap}.hm-import{display:none}.hm-savebar{font-size:13px;color:var(--text-dim)}
+.ar-clock[hidden]{display:none!important}.ch04-game .zh-btn{min-height:44px}.ch04-hold{touch-action:none}.ch04-game .ch04-bank{margin-bottom:12px}
+.sty-game__stage{min-height:440px}.ar-layer{overflow:auto}.ar-card{max-height:calc(100dvh - var(--sty-top,80px) - 90px);overflow:auto}
+.hm-still *{animation:none!important;transition:none!important}
+@keyframes hm-gesture{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-6px) rotate(2deg)}}
+@media(max-width:700px){.hm-title-scene{height:230px}.hm-title-cast{inset:35px 2% 0}.hm-title-cast>span{width:24%}.ch04-person{padding:6px!important}.ch04-person .hm-portrait{width:42px!important;height:60px!important}.ch04-observer .hm-portrait{width:64px!important;height:96px!important}.ch04-observer{min-height:160px;font-size:13px!important}.ch04-watch-stage{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:8px!important}.ch04-motion{font-size:12px}.ch04-watch-stage .ch04-observer:nth-child(4){grid-column:1 / 2}.hm-anchor .sty-choice__card{padding:16px}.hm-anchor h2{font-size:20px}.hm-anchor blockquote{font-size:19px}.sty-game__body{padding:12px}.sty-game__stage{min-height:480px}.ch04-seat-board{min-height:320px}.ar-card{max-height:calc(100dvh - var(--sty-top,100px) - 70px)}.ch04-wait-scene{height:190px}.ch04-wait p,.ch04-watch p,.ch04-seats p{font-size:15px;line-height:1.6}}
+
+.xy-title-scene{position:relative;aspect-ratio:3.2/1;overflow:hidden;border:1px solid var(--gilt);border-radius:12px;background:#302524}.xy-title-scene>svg{display:block;width:100%;height:100%}.xy-title-cast{position:absolute;inset:10% 10% 0;display:flex;align-items:flex-end;justify-content:center;gap:5%}.xy-title-cast>span{height:90%;width:21%;filter:drop-shadow(0 8px 5px #0004)}.xy-title-cast svg{height:100%;width:100%}.xy-deck-scene{display:block;width:100%;height:auto;aspect-ratio:4/1;border-radius:10px;border:1px solid var(--line);background:#514236}.xy-card-art{display:block;width:100%;height:62px}.ch06-card{position:relative;min-height:185px;border-color:#99805766;background:linear-gradient(160deg,#343243,#171d31);box-shadow:0 5px 10px #0002;gap:5px}.ch06-card b{font-size:21px}.ch06-card span{font-size:14px!important}.ch06-card.is-selected{background:linear-gradient(160deg,#534d37,#282d3b);box-shadow:0 0 15px #b5943433}.ch06-card[disabled]{opacity:.55}.ch06-deck .ch06-cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.ch06-deck .ch06-rewards{grid-template-columns:repeat(3,minmax(0,1fr))}.ch06-deck .ch06-relation{display:none}.xy-meter-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.xy-meter-strip span{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:14px!important}.xy-meter-strip i{display:block;height:7px;background:#ffffff17;border-radius:6px;overflow:hidden}.xy-meter-strip em{height:100%;display:block;background:var(--patina)}.xy-meter-strip [data-meter="siege"] em{background:var(--cinnabar)}.ch06-live{display:flex;flex-wrap:wrap;gap:10px;padding:10px 12px}.xy-resources{flex:1 1 300px}.xy-budget{font-size:12px!important;color:var(--text-dim)}.xy-task-art{display:block;width:100%;height:auto;max-height:220px;border:1px solid var(--gilt);border-radius:9px;margin:10px 0}.xy-task-note{font-size:13px;color:var(--text-dim);margin:6px 0}.xy-gw-panorama{position:relative;overflow:hidden;height:180px;border:1px solid var(--line);border-radius:10px}.xy-gw-panorama>svg{width:100%;height:100%}.xy-gw-cast{position:absolute;inset:12% 18% 0;display:flex;align-items:end;justify-content:space-between}.xy-gw-cast span{width:24%;height:100%}.xy-gw-cast svg{width:100%;height:100%}.ch06-page .sty-choice__card{max-height:92dvh;overflow:auto}.ch06-guangwu .ch06-live{min-height:50px;align-items:center}.xy-time-track{display:block;width:100%;height:9px;background:#151927;border-radius:8px;overflow:hidden}.xy-time-track i{display:block;height:100%;background:var(--gilt)}.xy-route-full svg{width:100%;height:100%}.ch06-page .sty-bg:has(.xy-route-art){display:grid;align-items:center}.ch06-page .sty-bg>.xy-route-art{width:100%;height:auto;max-height:70%}.ch06-report{font-size:14px!important}.ch06-page .ep-point span{font-size:14px}.xy-card-count{align-self:start;color:var(--text-dim)}
+@media(max-width:860px){.xy-title-scene{aspect-ratio:2/1}.xy-title-cast{inset:10% 2% 0;gap:3%}.xy-title-cast>span{width:26%}.ch06-deck .ch06-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.ch06-card{min-height:176px;padding:10px}.ch06-deck .ch06-rewards{grid-template-columns:1fr}.ch06-rewards .ch06-card{grid-template-columns:90px 1fr;min-height:105px}.ch06-rewards .xy-card-art{grid-row:1/5;height:85px}.xy-deck-scene{aspect-ratio:2.7/1;object-fit:cover}.xy-meter-strip{gap:6px}.xy-meter-strip span{gap:5px;font-size:13px!important}.xy-meter-strip span b{font-size:13px}.xy-resources{flex-basis:100%}.xy-gw-panorama{height:150px}.xy-gw-cast{inset:10% 8% 0}.xy-gw-cast span{width:31%}.ch06-game{padding:0;gap:10px}.ch06-game p{font-size:15px}.xy-task-art{max-height:180px}.ch06-actions{gap:8px}.ch06-page .sty-game__head{padding:10px}.ch06-page .sty-game__head>b{flex:1 1 180px}.ch06-page .sty-game__status{font-size:13px}.ch06-live{padding:9px}.ch06-game h2{font-size:22px}.ch06-deck .ch06-panel p{font-size:14px}}
+
+.xy-hand-tip{font-size:13px!important;color:var(--text-dim)}
+@media(max-width:860px){.ch06-deck .ch06-cards:not(.ch06-rewards){grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:157px;overflow-x:auto;overscroll-behavior-x:contain;padding:4px;scroll-snap-type:x proximity}.ch06-deck .ch06-cards:not(.ch06-rewards) .ch06-card{scroll-snap-align:start}.ch06-deck .ch06-cards:not(.ch06-rewards) .ch06-card:focus-visible{outline-offset:-3px}}
+
+.ch06-page .sty-bg>.xy-route-art{position:absolute;top:12%;bottom:auto;left:4%;width:92%;height:62%;max-height:none}@media(max-width:860px){.ch06-page .sty-bg>.xy-route-art{top:10%;height:60%;left:2%;width:96%}}
+</style></head><body class="ch06-page"><div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+  // Chapter helpers use the platform APIs. They do not replace the router,
+  // catalogue, identity, saves, logging, codex or result services.
+  const SID = 'S_ch06_xingyang', E = ZH.esc;
+  const KEY = 'xingyang-platform-v1:' + (ZH.user.email || 'guest') + ':';
+  let run = '', first = {}, progress = {}, latest = null;
+  const clone = v => JSON.parse(JSON.stringify(v));
+  const read = (k, d) => ZH.local.get(KEY + k, d);
+  const write = (k, v) => ZH.local.set(KEY + k, v);
+  const freshId = () => 'xy_' + Date.now().toString(36) + '_' + crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+  const status = text => document.querySelectorAll('[data-xy-save]').forEach(el => { el.textContent = text; });
+  const current = () => window.__ep && window.__ep.state;
+  function meta(state) {
+    state.vars = state.vars || {};
+    state.vars.xyRunId = run;
+    state.vars.xyFirst = clone(first);
+    state.vars.xyProgress = clone(progress);
+  }
+  window.XY = {
+    read, write, runId: () => run,
+    newRun() { run = freshId(); first = {}; progress = {}; latest = null; write('save', null); },
+    useState(state) {
+      const v = state && state.vars || {};
+      run = v.xyRunId || freshId(); first = clone(v.xyFirst || {}); progress = clone(v.xyProgress || {});
+      if (state) {
+        state.progress=state.progress || {};
+        // Preserve old recorded scores on their original scale. Existing runs
+        // carry a legacy marker; do not invent missing first-attempt records.
+        for(const rec of state.anchors || []) if(!first[rec.anchorId])first[rec.anchorId]=Object.assign({},rec,{completed:true,legacy:true});
+        for(const rec of state.games || []) {
+          if(rec.ruleset==='g2'||rec.ruleset==='t3')continue;
+          if(state.progress['arena:'+rec.gameId])continue;
+          const stage=Number(rec.gameId.split('_').at(-1));
+          const recorded=rec.gameId==='wen_xy_guangwu'?state.vars.guangwu:state.vars.campaign?.stages?.[stage-1];
+          const raw=Object.assign({},recorded || {},{score:rec.score,max:rec.maxScore,passed:rec.passed,completed:true,legacy:true,sec:rec.sec || 0});
+          if(rec.gameId.startsWith('xy_deck_'))Object.assign(raw,{deck:state.vars.campaign?.deck || [],gold:state.meters.gold,doubt:state.meters.doubt,siege:state.meters.siege,onceUsed:!!state.vars.campaign?.onceUsed});
+          const normalized=Math.round(raw.score/Math.max(1,raw.max)*10),attempt={r:clone(raw),mine:{score:normalized,sec:raw.sec},stars:normalized>=9?3:normalized>=7?2:normalized>=4?1:0,first:clone(raw)};
+          state.progress['arena:'+rec.gameId]={tries:1,active:false,best:attempt,last:attempt,first:clone(raw)};rec.legacy=true;
+        }
+        const number=Number(String(state.node || '').split('_')[1]);for(const [minimum,key] of [[14,'treasure:ch_taolao'],[20,'text:ch_westgate']])if(number>=minimum && !(state.codex || []).includes(key)){state.codex=state.codex || [];state.codex.push(key);const [t,id]=key.split(':');ZH.codex.unlock(t,id,SID);}
+        meta(state);
+      }
+    },
+    snapshot(snap,live) { meta(snap); if(Number.isFinite(live?.rng))snap.rng=live.rng; },
+    progress(k) { return progress[k] || {}; },
+    saveProgress(k, value) { progress[k] = clone(value); },
+    cacheProgress(state) { meta(state); latest = {engine:clone(state), updatedAt:Date.now(), chapterVersion:'v1.1.0'}; if(ZH.isGuest()) ZH.save(SID,'history',latest); else write('save',latest); },
+    async saveState(state) {
+      meta(state);
+      const value = { engine: clone(state), updatedAt: Date.now(), chapterVersion: 'v1.1.0' };
+      latest = value; write('save', value);
+      status(ZH.isGuest() ? '訪客進度已暫存於此分頁' : '正在保存進度');
+      try {
+        const r = await ZH.save(SID, 'history', value);
+        status(r && r.ok ? (ZH.isGuest() ? '訪客進度已暫存於此分頁' : '進度已保存') : '已存此裝置・雲端尚未保存，請匯出備份');
+        return r;
+      } catch (e) { status('已存此裝置・雲端暫時未連線，請匯出備份'); return { ok: false }; }
+    },
+    async loadState() {
+      const local = read('save', null);
+      try {
+        const r = await ZH.load(SID, 'history');
+        const cloud = r && r.ok && r.state && r.state.engine ? r.state : null;
+        // Guest progress follows Core_js's per-tab lifetime. School backups
+        // cover failed RPCs and are scoped to the authenticated account.
+        const value = ZH.isGuest() ? cloud : local && (!cloud || Number(local.updatedAt) > Number(cloud.updatedAt || 0)) ? local : cloud;
+        latest = value;
+        if (value) write('save', value);
+        return value;
+      } catch (e) { latest = ZH.isGuest() ? null : local; return latest; }
+    },
+    checkpoint() {
+      const state = current();
+      if (state) meta(state);
+      // Commit the first answer before any modal continuation or page reload.
+      if (window.__ep && window.__ep.save) return window.__ep.save().then(()=>ZH.flushAll ? ZH.flushAll() : null);
+      return Promise.resolve();
+    },
+    download(value, name) {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+    async exportSave() {
+      await XY.checkpoint();
+      XY.download({ format: 'xingyang-full', version: 1, save: latest, run, progress, first }, '滎陽成皋_進度.json');
+    },
+    async importSave(data) {
+      if (JSON.stringify(data.save).length > 45000) throw Error('進度檔過大，請使用本話匯出的檔案。');
+      const state = clone(data.save.engine);
+      state.vars = state.vars || {};
+      state.vars.xyRunId = data.run || state.vars.xyRunId || freshId();
+      state.vars.xyFirst = data.first || state.vars.xyFirst || {};
+      state.vars.xyProgress = data.progress || state.vars.xyProgress || {};
+      XY.useState(state); await XY.saveState(state);
+    },
+    teacher() { ZH.go('teacher'); },
+    async finish(payload) {
+      const state=current(),v=state?.vars || {},required=['xy_deck_1','xy_deck_2','xy_deck_3','wen_xy_guangwu'];
+      if(payload.anchors.length!==12 || payload.codex.length!==12 || required.some(id=>!payload.games.some(g=>g.gameId===id&&!g.skipped)) || v.campaign?.stages?.length!==3 || !v.campaign.stages.every(r=>r.completed&&r.rounds?.length===3&&r.rounds.every(t=>t.cards.length>0)&&r.reward) || !v.guangwu?.completed || !v.guangwu.answers?.every(t=>t.completed) || v.guangwu.answers.length!==3 || v.reception?.length!==3 || !v.reception.every(t=>t.completed) || v.routes?.length!==2 || !v.routes.every(t=>t.completed) || ['funded','deck1Done','deck2Done','deck3Done','receptionPrepared','routesPrepared','escaped','debated'].some(k=>!state.flags[k]))throw Error('必要體驗尚未完成，請接續本話。');
+      payload.runId=run;payload.chapterVersion='v1.1.0';
+      payload.experience={campaign:clone(v.campaign),guangwu:clone(v.guangwu),meat:clone(v.meat),reception:clone(v.reception),routes:clone(v.routes),reflection:clone(v.reflection),decisions:clone(progress),firstAnchors:clone(first)};
+      await XY.checkpoint();
+      // Core_js logs the scenario and transfers the complete payload to Result.
+      if(read('finishedRun','')===run){const prior=ZH.session.get('result:'+SID,null);ZH.session.set('result:'+SID,Object.assign({},payload,prior || {}));ZH.go('result',{s:SID});return;}
+      write('finishedRun',run);
+      return ZH.finishScenario(payload);
+    }
+  };
+
+  // Read questions through Anchor_js.load/get so edits made by the teacher in
+  // AnchorBank remain authoritative. This chapter's overlay adds durable
+  // first-answer records while reporting every attempt through Core_js.track.
+  XY.runAnchor = (a,options={}) => new Promise(resolve => {
+    let rec = first[a.id];
+    if (rec && rec.completed) return resolve(clone(rec));
+    let reading = false, finished = false, shownAt = performance.now();
+    const previous = document.activeElement;
+    const order = a.options.slice();
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor((window.__ep ? window.__ep.ctx.rng() : crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const wrap = ZH.html('<div class="sty-choice hm-anchor" role="dialog" aria-modal="true" aria-labelledby="hm-question"><div class="sty-choice__card"><p class="hm-kicker">原文對讀 ' + (options.index || a.seq) + '／12</p><h2 id="hm-question">' + E(a.stem) + '</h2><blockquote>' + E(a.passage) + '</blockquote>' + (a.followUp ? '<p class="hm-follow" data-follow hidden>' + E(a.followUp) + '</p>' : '') + '<div class="zh-choices">' + order.map((o, i) => '<button type="button" class="zh-choice" data-answer="' + E(o.key) + '"><span class="zh-choice__key">' + '甲乙丙丁'[i] + '</span><span class="zh-choice__text">' + E(o.text) + '</span></button>').join('') + '</div><p class="hm-feedback" role="status" hidden></p><button type="button" class="zh-btn zh-btn--primary" data-read-done hidden>讀畢，回到劇情</button><p class="ep-note">首次判斷會保留，答錯後需親自修正。</p></div></div>');
+    document.body.append(wrap);  wrap.querySelector('button').focus();
+    wrap.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const bs = [...wrap.querySelectorAll('button:not([hidden]):not(:disabled)')];
+      if (e.shiftKey && document.activeElement === bs[0]) { e.preventDefault(); bs.at(-1).focus(); }
+      else if (!e.shiftKey && document.activeElement === bs.at(-1)) { e.preventDefault(); bs[0].focus(); }
+    });
+    function complete() {
+      finished = true; rec.completed = true; first[a.id] = rec; XY.checkpoint();
+      wrap.remove();  if (previous?.isConnected) previous.focus({preventScroll:true}); resolve(clone(rec));
+    }
+    function showRead() {
+      reading = true; const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = a.explanation;
+      wrap.querySelectorAll('[data-answer]').forEach(x => { x.disabled = true; });
+      const follow = wrap.querySelector('[data-follow]'); if (follow) follow.hidden = false;
+      const done = wrap.querySelector('[data-read-done]'); done.hidden = false; done.focus();
+    }
+    if (rec?.finalAnswer === a.answer) showRead();
+    wrap.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || b.disabled || finished) return;
+      if (b.hasAttribute('data-read-done') && reading) { complete(); return; }
+      if (!b.dataset.answer || reading) return;
+      const answer = b.dataset.answer, correct = answer === a.answer, seconds = Math.round((performance.now() - shownAt) / 100) / 10;
+      if (!rec) rec = { anchorId: a.id, choice: answer, correct, seconds, attempts: 0, completed: false };
+      rec.attempts++; rec.path = correct ? (rec.attempts === 1 ? 'direct' : 'fork') : rec.attempts === 1 ? 'fork' : 'fail';
+      const op = a.options.find(o => o.key === answer);
+      ZH.track('anchor', { scenarioId: SID, anchorId: a.id, attempt: rec.attempts, choice: answer, correct, firstTry: rec.attempts === 1, path: rec.path, distractorType: correct ? '' : op.type || '', seconds });
+      if (correct) { rec.finalAnswer = answer; showRead(); }
+      else { const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = (op.fork || '請重新對讀原文。') + ' 請再判斷一次。'; shownAt = performance.now(); }
+      first[a.id] = rec; XY.checkpoint();
+    });
+  });
+
+  const who = {ch_chenping:'chenping',ch_jixin:'jixin',ch_zhonglimei:'zhonglimei',ch_weiwuzhi:'weiwuzhi'};
+  XY.book = () => {
+    const items = (ZH.CODEX || []).filter(c => c.scenarioId === SID);
+    const unlocked = new Set(ZH.codex.keys());
+    (current()?.codex || []).forEach(k => unlocked.add(k));
+    ZH.modal({ title: '史冊・' + items.filter(c => unlocked.has(c.type + ':' + c.id)).length + '／' + items.length, body: '<div class="hm-book">' + items.map(c => {
+      const ok = unlocked.has(c.type + ':' + c.id);
+      return '<details' + (ok ? '' : ' class="is-locked"') + '><summary>' + (ok && who[c.id] ? '<span class="hm-thumb">' + ART.portrait({id:who[c.id],name:c.name}) + '</span>' : '<span class="ep-seal hm-small-seal">' + E(ok ? c.glyph : '？') + '</span>') + '<span>' + E(ok ? c.name : '尚待解鎖') + '<small>' + E(ok ? c.title : '隨劇情完成原文對讀') + '</small></span></summary>' + (ok ? '<blockquote>' + E(c.quote) + '</blockquote><p>' + E(c.text) + '</p>' : '') + '</details>';
+    }).join('') + '</div>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+  };
+  XY.saveMenu = () => {
+    ZH.modal({ title: '存檔與設定', body: '<p>進度會自動保存。你也可以下載進度備份，或調整文字速度。</p><p class="hm-savebar" data-xy-save>已保留目前進度</p>', actions: [{label:'回到遊戲',value:'close',kind:'quiet'},{label:'遊玩設定',value:'settings',kind:'quiet'},{label:'下載進度',value:'export',kind:'primary'}] }).then(action => { if(action==='export')XY.exportSave(); if(action==='settings')XY.settings(); });
+  };
+  XY.settings = () => {
+    ZH.modal({ title: '遊玩設定', body: '<label>文字速度 <select id="xy-speed"><option value="normal">逐字</option><option value="instant">立即顯示</option></select></label><label><input type="checkbox" id="xy-still" ' + (read('still', false) ? 'checked' : '') + '>減少場景動態</label><p>關閉或移到其他分頁時，廣武首答倒數會暫停；牌桌隨時可以思考。</p>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+    const s = document.querySelector('#xy-speed'); s.value = ZH.settings.textSpeed; s.addEventListener('change', () => ZH.setSetting('textSpeed', s.value));
+    document.querySelector('#xy-still').addEventListener('change', e => { write('still', e.target.checked); document.documentElement.classList.toggle('hm-still', e.target.checked); });
+  };
+})(window);
+
+</script>
+<script>
+
+(function () {
+  'use strict';
+  // ═════════════════════════ 1. 基本設定 ═════════════════════════
+  const SID = 'S_ch06_xingyang';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['xy_01', 'xy_02', 'xy_03', 'xy_04', 'xy_05', 'xy_06', 'xy_07', 'xy_08', 'xy_09', 'xy_10', 'xy_11', 'xy_12'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => null);
+  const META = ZH.findScenario(SID) || {
+    id: SID, vol: 'ch', ep: 6, name: '滎陽成皋', episode: '要煮我父親？那請分我一杯羹', year: 205,
+    genre: '牌組構築', source: '〈陳丞相世家〉', guest: false, status: 'ready'
+  };
+  const ROLE = { name: '陳平', glyph: '平', color: 'var(--patina)', title: '你・漢王護軍中尉',
+    lead: '從分社肉的志向，走進楚漢圍城。你要親自分配預算、安排計策、籌備接待與出城，並思考每一步的代價。' };
+  const POINTS = [
+    { title: '三局牌組', text: '九回合親自出牌，反間、守城、調度預算；每局選新牌，資源與取捨延續。' },
+    { title: '楚使接待', text: '先判讀原文，再安排食饌與來使身份確認，漢王依史實主持接待。' },
+    { title: '夜出滎陽', text: '親自標示兩座城門的分工，理解漢王脫身與紀信犧牲之間的關係。' },
+    { title: '廣武軍議', text: '三次限時建議，錯選後親自補正。第一次作答與補救分別記錄。' }
+  ];
+  const bounded = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  const resourceKeys = ['gold', 'doubt', 'siege'];
+  const resourceNames = { gold: '金', doubt: '楚疑', siege: '圍城' };
+  const resourcesText = m => resourceKeys.map(k => resourceNames[k] + m[k]).join('、');
+  const endingKey = scores => scores.reduce((sum, n) => sum + n, 0) >= 21 ? 'great' :
+    scores.reduce((sum, n) => sum + n, 0) <= 9 ? 'bad' : 'good';
+  const obsoleteSceneArt = route => '<svg viewBox="0 0 1600 600" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' +
+    '<path fill="var(--night-3)" stroke="var(--patina)" stroke-width="12" d="M350 430V165H1250V430Z"/>' +
+    '<path fill="var(--night)" stroke="var(--gilt)" stroke-width="8" d="M350 330H480V430H350ZM1120 330H1250V430H1120Z"/>' +
+    '<path fill="var(--patina)" d="M310 165V110H390V165H450V110H530V165H1070V110H1150V165H1210V110H1290V165Z"/>' +
+    '<path fill="none" stroke="var(--line)" stroke-width="12" d="M90 440H1510"/>' +
+    (route >= 1 ? '<path fill="none" stroke="var(--gilt)" stroke-width="16" d="M800 370H200"/><path fill="var(--gilt)" d="M150 370L220 330V410Z"/>' : '') +
+    (route >= 2 ? '<path fill="none" stroke="var(--cinnabar)" stroke-width="16" d="M800 410H1390"/><path fill="var(--cinnabar)" d="M1450 410L1380 370V450Z"/>' : '') + '</svg>';
+  const SCENES = {
+    route_empty: { sky: 'linear-gradient(var(--night),var(--night-2))', art: routeArt(0) },
+    route_west: { sky: 'linear-gradient(var(--night),var(--night-2))', art: null },
+    route_both: { sky: 'linear-gradient(var(--night),var(--night-2))', art: null }
+  };
+  // ═════════════════════════ 2. 人物 ═════════════════════════
+  const CHARACTERS = [
+    { id: 'chenping', name: '陳平', glyph: '平', color: 'var(--patina)', title: '你・護軍中尉' },
+    { id: 'liubang', name: '劉邦', glyph: '邦', color: 'var(--gilt)', title: '漢王' },
+    { id: 'xiangyu', name: '項羽', glyph: '羽', color: 'var(--cinnabar)', title: '西楚霸王' },
+    { id: 'weiwuzhi', name: '魏無知', glyph: '知', color: 'var(--patina)', title: '薦陳平者' },
+    { id: 'fanzeng', name: '范增', glyph: '增', color: 'var(--cinnabar)', title: '亞父' },
+    { id: 'jixin', name: '紀信', glyph: '紀', color: 'var(--gilt)', title: '漢將' },
+    { id: 'xiangbo', name: '項伯', glyph: '伯', color: 'var(--cinnabar)', title: '楚臣' },
+    { id: 'zhangliang', name: '張良', glyph: '良', color: 'var(--patina)', title: '漢王謀士' },
+    { id:'envoy',name:'楚使',glyph:'使',title:'項王使者',art:{hat:'guan',robe:'#6b5353',beard:1,prop:'scroll'} },
+    { id: 'clerk', name: '軍吏', glyph: '吏', color: 'var(--patina)', title: '教學情境人物', art:{hat:'guan',robe:'#6c7663',beard:1,prop:'scroll'} },
+    { id: 'shiguan', name: '史官', glyph: '史', color: 'var(--gilt)', title: '原典與教學演出對讀' }
+  ];
+  SCENES.route_west.art=routeArt(1);SCENES.route_both.art=routeArt(2);
+  // ═════════════════════════ 3. 數值 ═════════════════════════
+  const METERS = [
+    { id: 'gold', label: '金', icon: 'star', max: 100, start: 100, danger: 9, show: s => !!s.flags.funded },
+    { id: 'doubt', label: '楚疑', icon: 'eye', max: 100, start: 0, show: s => !!s.flags.funded },
+    { id: 'siege', label: '圍城', icon: 'flame', max: 100, start: 45, danger: 69, invert: true, show: s => !!s.flags.funded }
+  ];
+  // ═════════════════════════ 4. 說明 ═════════════════════════
+  const HELP = '<p><b>你是陳平。</b>序幕回憶分社肉，再從漢二年投漢走到漢三、四年的滎陽、成皋與廣武。對話及軍議是教學演出，原文題依《史記》。</p>' +
+    '<p><b>牌組：</b>三局各三回合。抽五張、行動三點；點選牌，再確認出牌。每回合至少親自出一張合法牌，再按結算。Tab、Enter、空白鍵也能操作。</p>' +
+    '<p><b>接續：</b>牌組、三項資源與牽制使用次數延續。金用零至一百表示四萬斤的預算刻度；回收預算與攻勢是教學模型。</p>' +
+    '<p><b>計分：</b>每局十分，三局首次成績平均決定結局；重試最佳成績用於排行榜與後續資源，首答不改。原文中的大事固定；低分會記入此局評語，仍須完成操作。</p>' +
+    '<p><b>廣武：</b>每題手動開始十秒首答。背景、說明視窗會停鐘；錯選或逾時後，閱讀回饋並親自補正，首答不改。</p>' +
+    '<p><b>存檔：</b>短節點入口與每次操作都會保存；離開後接續手牌、回報、接待與城門分工，已記錄的首次判斷會保留。所有核心體驗必須親自完成。</p>';
+  // ═════════════════════════ 5. 劇情節點 ═════════════════════════
+  const NODES = {
+    n_01: async ctx => {
+      await ctx.chapter('第一幕　分肉的人', '回憶・起兵之前');
+      await ctx.scene('field', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '陽武戶牖鄉・里中社', time: '回憶・起兵之前' });
+      ctx.cast(['chenping', 'clerk', 'shiguan']);
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '這一話你是陳平。先回到里中社祭，看看分配小事如何映出大志。' },
+        { who: 'clerk', expr: 'normal', text: '祭肉已備，請你分給里中四戶。這一局用八份祭肉示意。' },
+        { who: 'chenping', expr: 'serious', text: '每一份交到誰手上，都會有人看著。先把方案列清。' }]);
+      const choice = await chooseOnce(ctx,'meat',{ title: '你如何分這八份祭肉？', text: '分配數量是教學示意，先留下你的第一次選擇。',
+        options: [{ label: '四戶各兩份', desc: '按戶平均，分配公開', value: 'equal' },
+          { label: '富戶先取四份，其餘分剩下四份', desc: '先照顧有勢者', value: 'rich' },
+          { label: '自己先留四份，其餘四份再分', desc: '把自己的份量放在前面', value: 'self' }] });
+      ctx.state.vars.meat = { first: choice, score: choice === 'equal' ? 100 : choice === 'rich' ? 50 : 0 };
+      if (choice !== 'equal' && !XY.progress('meatRepair').done) {
+        await ctx.say([{ text: choice === 'rich' ? '三戶發現份量明顯不均，要求重核分配。' : '你先取一半，其他人等著分剩下的份量，祭肉難以公允交付。' },
+          { who: 'shiguan', expr: 'normal', text: '原典記陳平分肉甚均。先保留初選，再親自重分，銜接史實。' }]);
+        let corrected;
+        do { corrected = await ctx.choose({ title: '親自重分祭肉', text: '四戶、八份。請選出均分方案。',
+          options: [{ label: '四戶各兩份', value: 'equal' }, { label: '仍由一戶或自己先取一半', value: 'unequal' }] });
+          XY.saveProgress('meatRepair',{done:corrected==='equal'});await XY.checkpoint();
+          if (corrected !== 'equal') await ctx.say([{ text: '仍未均分。請按四戶各兩份親自交付。' }]);
+        } while (corrected !== 'equal');
+      }
+      ctx.flag('meatShared', true);
+      await ctx.say([{ text: '四戶各得兩份。此局先前的方案仍記在案，史實接到陳平分肉甚均。' }]);
+      return 'n_02';
+    },
+    n_02: async ctx => {
+      await ctx.say([{ text: '父老稱許他的分配。陳平把眼前的事，連到更遠的志向。' }]);
+      await ctx.anchor('xy_01');
+      return 'n_03';
+    },
+    n_03: async ctx => {
+      await ctx.scene('camp', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '修武・漢營', time: '漢二年・彭城戰前' });
+      ctx.cast(['chenping', 'weiwuzhi', 'liubang']);
+      await ctx.say([{ text: '陳平曾事魏、事楚，後離楚歸漢，透過魏無知求見漢王。' },
+        { who: 'chenping', expr: 'serious', text: '我帶來的是可以談的計畫。請讓我今日就見大王。' },
+        { who: 'liubang', expr: 'serious', text: '你在楚做過什麼？把能辦的事說清楚。' },
+        { text: '漢王與他交談後，任他為都尉，讓他參乘、典護軍。' }]);
+      return 'n_04';
+    },
+    n_04: async ctx => {
+      await ctx.scene('tent', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '滎陽・漢營', time: '彭城敗後，收兵回營' });
+      ctx.cast(['chenping', 'weiwuzhi', 'liubang', 'shiguan']);
+      await ctx.say([{ text: '漢軍在彭城失利，收兵到滎陽。周勃、灌嬰等指陳平盜嫂受金、反覆去就。' },
+        { who: 'shiguan', expr: 'normal', text: '這裡先讀指控與辯護，不把指控直接當成已查證的事實。' },
+        { who: 'liubang', expr: 'serious', text: '魏無知，你薦的人如今受疑，怎麼回答？' }]);
+      await ctx.anchor('xy_02');
+      ctx.unlock('person:ch_weiwuzhi'); ctx.unlock('idiom:daosaoshoujin');
+      await ctx.say([{ who: 'chenping', expr: 'serious', text: '我初來無資，受金作資。若計畫無可採，金還在，願封送官府。' },
+        { text: '漢王謝陳平，厚賜，拜護軍中尉。戰時權衡仍值得追問查證與責任。' }]);
+      return 'n_05';
+    },
+    n_05: async ctx => {
+      await ctx.chapter('第二幕　反間與守城','滎陽圍城');
+      await ctx.scene('tent', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '滎陽・圍城軍議', time: '漢三年・甬道受阻' });
+      ctx.cast(['chenping', 'liubang', 'shiguan']);
+      await ctx.say([{ text: '楚軍侵奪糧道，圍住滎陽。漢王請和未成，問陳平如何定天下。' },
+        { who: 'chenping', expr: 'serious', text: '得先看兩邊怎麼待人、怎麼授爵。長處與短處都要分辨。' }]);
+      await ctx.anchor('xy_03');
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '楚敬人而惜爵，漢少禮卻肯分爵。原文要去短取長，並非把一方全盤否定。' }]);
+      return 'n_06';
+    },
+    n_06: async ctx => {
+      await ctx.say([{ who: 'chenping', expr: 'serious', text: '楚君臣的信任有可動搖之處。若給我資源，我願籌劃。' },
+        { who: 'liubang', expr: 'serious', text: '把目標說明白，資源交給你。' }]);
+      await ctx.anchor('xy_04');
+      ctx.unlock('treasure:ch_huangjin'); ctx.flag('funded', true);
+      ctx.state.vars.campaign = ctx.state.vars.campaign || { deck: STARTER_DECK.slice(), onceUsed: false, scores: [], stages: [],
+        gold: ctx.meter('gold'), doubt: ctx.meter('doubt'), siege: ctx.meter('siege') };
+      await ctx.say([{ text: '四萬斤黃金交付。遊戲用金100表示預算，另以楚疑與圍城觀察局勢。' },
+        { who: 'shiguan', expr: 'normal', text: '卡牌、回合及回收預算是教學模型；每一步由你出牌、確認、結算。' }]);
+      return 'n_07';
+    },
+    n_07: async ctx => { return await playDeck(ctx, 1) ? 'n_08' : 'n_07'; },
+    n_08: async ctx => {
+      ctx.cast(['chenping', 'clerk', 'shiguan']);
+      const r = ctx.state.vars.campaign.stages[0];
+      await ctx.say([{ who: 'clerk', expr: 'normal', text: '第一局回報：' + r.score + '／10。' + resourcesText(ctx.state.meters) + '。' },
+        { text: r.score >= 7 ? '此局兼顧傳言、城防與預算，後續資源照實接續。' : '此局的配置留下缺口。已出的牌與資源照存，下一局仍由你安排。' },
+        { who: 'shiguan', expr: 'normal', text: '接著讀史書如何記反間內容；本局得分不改原典的大事。' }]);
+      return 'n_09';
+    },
+    n_09: async ctx => {
+      await ctx.anchor('xy_05');
+      ctx.unlock('person:ch_zhonglimei'); ctx.unlock('idiom:fanjianji');
+      await ctx.say([{ text: '項王對鍾離眛等起疑。流言破壞信任，並不能證明流言所指為真。' }]);
+      return 'n_10';
+    },
+    n_10: async ctx => {
+      await ctx.scene('camp', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '滎陽・使者將至', time: '圍城持續' });
+      ctx.cast(['chenping', 'clerk']);
+      await ctx.say([{ who: 'clerk', expr: 'normal', text: '楚使將來。營內的預算、情報與防備，要先安排好。' },
+        { who: 'chenping', expr: 'serious', text: '先籌備，再看使者的身份與來意。接待的決定，等人到了再核對。' },
+        { text: '第二局沿用剩餘資源與上一局新牌。每回合仍由你親自出牌。' }]);
+      return 'n_11';
+    },
+    n_11: async ctx => { return await playDeck(ctx, 2) ? 'n_12' : 'n_11'; },
+    n_12: async ctx => {
+      await ctx.scene('banquet', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '漢營・楚使來到', time: '接待前' });
+      ctx.cast(['chenping', 'liubang', 'clerk']);
+      await ctx.say([{ who: 'clerk', expr: 'normal', text: '使者已到。請依他的身份，提出接待安排。' }]);
+      await ctx.anchor('xy_06');
+      return 'n_13';
+    },
+    n_13: async ctx => {
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '剛才原文的說話與換饌主語是漢王。你以陳平身分親自籌備，不替換說話者。' }]);
+      ctx.state.vars.reception = await completeTasks(ctx, RECEPTION_TASKS, null, 'reception');
+      ctx.flag('receptionPrepared', true);ctx.unlock('treasure:ch_taolao');
+      await ctx.say([{ who: 'liubang', expr: 'serious', text: '吾以為亞父使，乃項王使！' },
+        { text: '你安排的撤換落實，漢王依史實主持接待。三步操作均已親自確認。' }]);
+      return 'n_14';
+    },
+    n_14: async ctx => {
+      ctx.cast(['chenping', 'clerk', 'shiguan']);
+      await ctx.say([{ text: '楚使回報差別接待，項王更疑亞父。范增欲急攻滎陽，項王不肯聽。' },
+        { who: 'chenping', expr: 'serious', text: '消息回到對方，後果才會展開。眼前城防與預算，仍要接著顧。' },
+        { who: 'shiguan', expr: 'normal', text: '第三局示意信任動搖中的安排。楚疑上限一百，計分仍看本局實際出牌。' }]);
+      return 'n_15';
+    },
+    n_15: async ctx => { return await playDeck(ctx, 3) ? 'n_16' : 'n_15'; },
+    n_16: async ctx => {
+      await ctx.scene('tent', { tod:'dusk', banner:'#a5412e', glyph:'楚', place: '楚營・亞父見疑', time: '主線原典' });
+      ctx.cast(['fanzeng', 'xiangyu', 'shiguan']);
+      await ctx.say([{ text: '范增知道自己受疑，憤而請退。看他的話如何表達處境。' }]);
+      await ctx.anchor('xy_07');
+      return 'n_17';
+    },
+    n_17: async ctx => {
+      await ctx.scene('road', { tod:'day', banner:'#a5412e', glyph:'楚', place: '歸途', time: '離楚後' });
+      ctx.cast(['shiguan']);
+      await ctx.say([{ text: '范增離去，未到彭城，因病去世。' },
+        { who:'shiguan',text:'受疑而請退，從一句話可以看見君臣信任如何破裂。' },
+        { text: '信任瓦解的史實固定。你的三局成績評的是本局安排，沒有改寫人物生死。' }]);
+      return 'n_18';
+    },
+    n_18: async ctx => {
+      await ctx.chapter('第三幕　城門之外', '滎陽食盡');
+      await ctx.scene('night', { tod:'night', banner:'#ae8e36', glyph:'漢', place: '滎陽', time: '夜・食盡的危局' });
+      ctx.cast(['chenping', 'liubang', 'jixin', 'shiguan']);
+      await ctx.say([{ text: '滎陽食盡。守城遊戲中的數值不是史書糧食量，原典危局仍在眼前。' },
+        { who: 'jixin', expr: 'serious', text: '事已急矣。請看原典所載的獻計，再安排出城。' }]);
+      await ctx.anchor('xy_08');
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '原文記女子二千人從東門出。這項計策使人承擔風險，值得在成功之外追問。' }]);
+      return 'n_19';
+    },
+    n_19: async ctx => {
+      await ctx.scene('route_empty', { tod:'night', banner:'#ae8e36', glyph:'漢', place: '滎陽城門分工圖', time: '左為西門、右為東門・籌備' });
+      ctx.cast([]);
+      await ctx.say([{ who: 'clerk', expr: 'normal', text: '城門圖已展開，左是西、右是東。先安排漢王與從騎，再安排紀信的王車。' },
+        { who: 'chenping', expr: 'serious', text: '兩路要相互配合。每一項都親自核對。' }]);
+      ctx.state.vars.routes = await completeTasks(ctx, ROUTE_TASKS, async i => {
+        await ctx.scene(i === 0 ? 'route_west' : 'route_both', { place: '滎陽城門分工圖', time: i === 0 ? '金線：西門路線已定' : '金線西出、朱線東門・分工已定' });
+      }, 'routes');
+      ctx.flag('routesPrepared', true);ctx.unlock('text:ch_westgate');
+      await ctx.say([{ text: '兩路分工已由你確認。接著看紀信與漢王如何實施。' }]);
+      return 'n_20';
+    },
+    n_20: async ctx => {
+      await ctx.scene('city', { tod:'night', banner:'#ae8e36', glyph:'漢', place: '滎陽東門', time: '夜・紀信出車' });
+      ctx.cast(['jixin', 'shiguan']);
+      await ctx.say([{ text: '紀信乘黃屋車，帶王者車旗出城。楚軍聽到他的話。' }]);
+      await ctx.anchor('xy_09');
+      ctx.unlock('person:ch_jixin');
+      return 'n_21';
+    },
+    n_21: async ctx => {
+      await ctx.scene('road', { tod:'night', banner:'#ae8e36', glyph:'漢', place: '滎陽西門至成皋', time: '夜・出城之後' });
+      ctx.cast(['chenping', 'liubang', 'shiguan']);
+      await ctx.say([{ text: '漢王與少數從騎從西門離開；〈陳丞相世家〉記陳平與王夜出。' },
+        { text: '項羽發現紀信並非漢王，紀信遇害。' },
+        { who: 'shiguan', expr: 'normal', text: '出城成功並不等於所有人安全。人的代價也要記入理解。' }]);
+      ctx.flag('escaped', true);
+      return 'n_22';
+    },
+    n_22: async ctx => {
+      await ctx.scene('city', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '成皋及河內', time: '漢三年至四年・戰局推進' });
+      ctx.cast(['chenping', 'liubang', 'shiguan']);
+      await ctx.say([{ text: '漢王出滎陽後收兵，轉戰宛、葉，再保成皋。楚後來攻下滎陽、圍成皋。' },
+        { text: '漢王與滕公出成皋渡河，至修武收軍。漢軍又復取成皋，軍於廣武。' },
+        { who: 'shiguan', expr: 'normal', text: '這是多次出入與交戰的推進，不是滎陽出城當夜便走到廣武。' }]);
+      return 'n_23';
+    },
+    n_23: async ctx => {
+      await ctx.chapter('第四幕　鬥智與代價', '廣武對峙');
+      await ctx.scene('field', { tod:'dusk', banner:'#ae8e36', glyph:'漢', place: '廣武・兩軍對峙', time: '漢四年・相守數月' });
+      ctx.cast(['chenping', 'liubang', 'xiangyu', 'shiguan']);
+      await ctx.say([{ text: '楚漢對峙。太公此前已被楚軍扣留，項王以他的生命威脅漢王。' }]);
+      await ctx.anchor('xy_10');
+      return 'n_24';
+    },
+    n_24: async ctx => {
+      await ctx.say([{ text: '看漢王如何用與項羽曾約兄弟的關係，回應眼前威脅。' }]);
+      await ctx.anchor('xy_11');
+      ctx.unlock('idiom:fenyibeigeng');
+      return 'n_25';
+    },
+    n_25: async ctx => {
+      ctx.cast(['xiangbo', 'xiangyu', 'shiguan']);
+      await ctx.say([{ who: 'xiangbo', expr: 'normal', text: '即使殺他，也不能改變爭天下的局勢，只會增加禍患。' },
+        { text: '項王聽從項伯，沒有實施威脅。太公仍被扣留，後來和約時才歸漢。' },
+        { who: 'shiguan', expr: 'normal', text: '漢王的反答與項伯的勸止共同構成這段經過，不把反答直接當作孝行典範。' }]);
+      return 'n_26';
+    },
+    n_26: async ctx => {
+      const r = await ctx.minigame({ id: 'wen_xy_guangwu', title: '廣武對陣・軍議演練', skip: false, goal:'親自提出三項建議，錯選或逾時後逐題補正；首答與重試成績分開。',
+        help: '<p>你以陳平身分擬三項軍議建議；原典說話者仍是漢王。每題先按開始，再十秒首答。錯選或逾時後閱讀回饋，親自補正。Tab、Enter、空白鍵可操作。</p>' }, guangwuGame);
+      if (!r.completed || r.skipped) { await ctx.say([{ text: '三項建議尚未完成，請回軍議親自作答。' }]); return 'n_26'; }
+      ctx.state.vars.guangwu = Object.assign({},r.firstResult || r,{completed:true,bestScore:r.score});
+      ctx.flag('debated', true);
+      await ctx.say([{ who: 'chenping', expr: 'serious', text: '三項建議已核定。首次'+percent(ctx.state.vars.guangwu).toFixed(0)+'分，後續補正與重試另記。' }]);
+      return 'n_27';
+    },
+    n_27: async ctx => {
+      await ctx.scene('camp', { tod:'dusk', banner:'#ae8e36', glyph:'漢', place: '廣武至成皋', time: '軍議後・對讀原典' });
+      ctx.cast(['chenping', 'zhangliang', 'liubang', 'shiguan']);
+      await ctx.say([{ text: '〈高祖本紀〉記漢王數項羽之罪，仍拒絕單挑；他後來被伏弩射傷，退入成皋。' },
+        { text: '張良勸漢王起行勞軍，安定士卒。' },
+        { who: 'shiguan', expr: 'normal', text: '剛才是陳平身分的教學軍議。這段史實發言與勞軍建議，仍分別歸漢王、張良。' }]);
+      return 'n_28';
+    },
+    n_28: async ctx => {
+      await ctx.scene('tent', { tod:'day', banner:'#ae8e36', glyph:'漢', place: '漢營・反省軍議', time: '教學演出・回看此局' });
+      ctx.cast(['chenping', 'shiguan']);
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '陳平本好黃帝、老子之術，晚年也反省自己多用陰謀。' },
+        { who: 'chenping', expr: 'serious', text: '計策的效果、理由與代價，都得說。你可以贊成，也可以反對。' }]);
+      const choice = await chooseOnce(ctx,'reflection',{ title: '你如何評這次用計？', text: '這是本局反思；贊成或反對都能提出充分理由，不改已發生史實。',
+        options: [{ label: '認為反間可救急，也承認代價並提出界線', desc: '查證、責任與受影響者都納入判斷', value: 'support' },
+          { label: '反對反間，承認困局並提出守城等替代方案', desc: '說明替代安排的資源與風險', value: 'oppose' },
+          { label: '只看輸贏，不說理由與代價', desc: '結論有了，判斷依據仍缺', value: 'win' },
+          { label: '認為道家就是鼓勵欺詐', desc: '把學派直接等同計策手段', value: 'misread' }] });
+      const score = choice === 'support' || choice === 'oppose' ? 100 : choice === 'win' ? 50 : 0;
+      ctx.state.vars.reflection = { choice, score };
+      await ctx.say([{ text: choice === 'support' ? '你肯定救急用途，也留下查證與責任的界線。' : choice === 'oppose' ? '你提出反對立場與替代方案，代價與可行性都能再討論。' : choice === 'win' ? '只有輸贏還不足以說明判斷。請把受影響者、資源與理由補入反思。' : '道家不能直接等同欺詐；陳平自己的反省，正提醒這層差異。' }]);
+      ctx.unlock('school:daojia');
+      return 'n_29';
+    },
+    n_29: async ctx => {
+      ctx.cast(['chenping', 'shiguan']);
+      await ctx.say([{ text: '最後讀太史公如何評陳平，辨清救難之才與計策代價。' }]);
+      await ctx.anchor('xy_12');
+      ctx.unlock('person:ch_chenping'); ctx.unlock('idiom:liuchuqiji');
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '六出奇計是其後史書統稱，部分計策未詳傳。本話三局只體驗滎陽相關安排。' }]);
+      return 'n_30';
+    },
+    n_30: async ctx => {
+      const scores = ctx.state.vars.campaign.scores;
+      await ctx.say([{ who: 'chenping', expr: 'serious', text: '三局與軍議都完成了。把初次選擇、配置成果與代價，一起留在此局世家。' }]);
+      return ctx.end({ type: 'final', key: endingKey(scores) });
+    }
+  };
+
+  // ═════════════════════════ 6. 本話牌組、任務及軍議 ═════════════════════════
+  const CARDS = {
+    intrigue: { name: '反間', gold: 20, ap: 1, doubt: 15, detail: '楚疑＋15', report: '把消息傳向楚軍將吏，讓項王懷疑臣下的忠誠；須區分消息效果與已查證事實。' },
+    rumor: { name: '宣言', gold: 0, ap: 1, doubt: 8, detail: '楚疑＋8', report: '軍吏回報：言語傳開，對臣下的疑心增加。' },
+    guard: { name: '堅守', gold: 0, ap: 1, siege: 10, detail: '圍城－10', report: '防備重新配置，這一回合的圍城壓力下降。' },
+    supply: { name: '運糧', gold: 5, ap: 1, siege: 8, detail: '圍城－8', report: '預算用於供應，守城壓力下降。' },
+    buy: { name: '收買', gold: 10, ap: 1, draw: 2, detail: '抽兩張', report: '情報網多送來兩個可用方案；出牌仍要行動點。' },
+    funds: { name: '籌金', gold: 0, ap: 1, gain: 10, detail: '金＋10', report: '可回收的軍費重新調度，預算回到可用處。' },
+    scout: { name: '偵察', gold: 0, ap: 1, draw: 1, shield: 5, detail: '抽一張、本回合攻勢－5', report: '得知攻勢方向，多備一個方案，減少本回合壓力。' },
+    envoy: { name: '密使', gold: 10, ap: 1, doubt: 14, detail: '楚疑＋14', report: '密使帶消息往返，項王與臣下的疑慮加深。' },
+    transport: { name: '轉漕', gold: 0, ap: 1, siege: 6, gain: 6, detail: '圍城－6、金＋6', report: '供應路線整頓，壓力減少，部分預算回收。' },
+    feint: { name: '分兵牽制', gold: 0, ap: 2, siege: 20, once: true, detail: '圍城－20、全話限一次', report: '一次牽制已安排，圍城壓力下降；後續不能重複使用。' }
+  };
+  const STARTER_DECK = ['intrigue', 'rumor', 'rumor', 'guard', 'guard', 'supply', 'buy', 'funds', 'funds', 'scout'];
+  const REWARDS = ['envoy', 'transport', 'feint'];
+  const STAGES = [
+    { title: '第一局・反間', aim: '你要在傳播計策、維持城防與留存預算之間安排。', receiver: '楚軍將吏', response: '項王與諸將的信任' },
+    { title: '第二局・楚使將至', aim: '先準備情報、預算與防備，接待細節稍後再由你判斷。', receiver: '軍中與來使之前', response: '使者往返中的局勢' },
+    { title: '第三局・亞父見疑', aim: '信任已動搖，你仍要接續管理城防與預算。', receiver: '楚營回報', response: '項王與亞父的信任' }
+  ];
+  const percent=r=>Number(r.score || 0)/Math.max(1,Number(r.max || 100))*100;
+  function portrait(id,expr='normal',w=140,h=185){return ART.portrait(CHARACTERS.find(c=>c.id===id),{expr}).replace('<svg ','<svg width="'+w+'" height="'+h+'" ');}
+  function cardArt(id){
+    const scroll='<rect x="22" y="15" width="86" height="50" rx="5" fill="#d9c18d" stroke="#88673d" stroke-width="3"/>'+[0,1,2,3,4,5,6,7,8].map(i=>'<path d="M'+(28+i*9)+' 18v44" stroke="#b09662"/>').join('')+'<path d="M23 27h84m-84 24h84" stroke="#765540" stroke-width="3"/>';
+    const city='<path d="M17 64V26h15v-9h13v9h13v-9h14v9h13v-9h13v9h15v38Z" fill="#a99a7a" stroke="#4c493e" stroke-width="3"/><path d="M54 65V43q11-15 23 0v22" fill="#3b3832"/>';
+    const sack=(x,y)=>'<path d="M'+x+' '+y+'q8-6 19 0l-3 8q17 27 3 32q-27 6-25-11l9-21Z" fill="#b68e53" stroke="#695136" stroke-width="2"/>';
+    const flag=(x,c,g)=>'<path d="M'+x+' 67V12" stroke="#604633" stroke-width="4"/><path d="M'+x+' 15h31v33l-9-5-7 6-15-5Z" fill="'+c+'" stroke="#c3a36d"/><text x="'+(x+15)+'" y="36" font-size="19" text-anchor="middle" fill="#f9e7bd">'+g+'</text>';
+    const icons={intrigue:flag(25,'#a34b40','楚')+flag(81,'#a34b40','楚')+'<path d="M54 32l20 9m-20 0l20-9" stroke="#e4c572" stroke-width="4"/>',rumor:scroll+'<text x="65" y="47" font-size="23" text-anchor="middle" fill="#80523c">言</text>',guard:city,supply:sack(31,21)+sack(59,13)+sack(87,26),buy:scroll+'<circle cx="95" cy="54" r="14" fill="#e3bc59" stroke="#886329" stroke-width="2"/><path d="M91 50h8v8h-8Z" fill="#967f50"/>',funds:'<path d="M23 59l11-25h29l12 25Z" fill="#c89c3c" stroke="#7f652b" stroke-width="2"/><path d="M54 42l9-26h31l12 26Z" fill="#e7c66d" stroke="#93703a" stroke-width="2"/><path d="M34 34h29l-6 10H40ZM63 16h31l-6 12H70Z" fill="#f7dda3"/>',scout:'<path d="M25 53q40-41 80 0q-40 30-80 0Z" fill="#eee0b7" stroke="#67583d" stroke-width="3"/><circle cx="65" cy="49" r="14" fill="#688776"/><circle cx="65" cy="49" r="7" fill="#263d36"/><path d="M40 22l7 9m43-9l-7 9" stroke="#c8b681" stroke-width="4"/>',envoy:'<path d="M22 40l38-21 25 19-15 18-30-1Z" fill="#dad4c4" stroke="#757569" stroke-width="2"/><path d="M54 29l21-19-9 27m11 5l20-4-17 12" fill="#eee7cf" stroke="#757569"/><rect x="46" y="53" width="33" height="13" rx="3" fill="#cbb582" stroke="#886c42"/>',transport:sack(51,17)+'<path d="M25 59h75v-9H25Z" fill="#7d5133"/><circle cx="40" cy="64" r="11" fill="#71553d" stroke="#c6ad76"/><circle cx="89" cy="64" r="11" fill="#71553d" stroke="#c6ad76"/>',feint:flag(21,'#b38b33','漢')+flag(83,'#b38b33','漢')+'<path d="M51 51l15-14 16 14m-16-14v32" fill="none" stroke="#e9d392" stroke-width="4"/>'};
+    return '<svg class="xy-card-art" viewBox="0 0 130 80" aria-hidden="true"><ellipse cx="65" cy="69" rx="49" ry="6" fill="#000" opacity=".15"/>'+icons[id]+'</svg>';
+  }
+  function meterStrip(m){return '<div class="xy-meter-strip">'+resourceKeys.map(k=>'<span data-meter="'+k+'"><b>'+resourceNames[k]+'</b><i><em style="width:'+m[k]+'%"></em></i><b>'+m[k]+'</b></span>').join('')+'</div>';}
+  function deckScene(s,stage){
+    return '<svg class="xy-deck-scene" viewBox="0 0 900 220" role="img" aria-label="陳平籌策，楚營信任與滎陽城防">'+
+      '<defs><linearGradient id="xy-dsky" x2="0" y2="1"><stop stop-color="#aaa49b"/><stop offset="1" stop-color="#d4bf94"/></linearGradient></defs><rect width="900" height="220" fill="url(#xy-dsky)"/><path d="M0 90Q100 25 200 95T390 90T600 95T900 70V180H0" fill="#928f7c"/><path d="M0 120q95-40 220 0t235-10t445-3v113H0" fill="#747964"/><rect y="169" width="900" height="51" fill="#726343"/>'+
+      '<path d="M310 177V86h280v91Z" fill="#b3a581" stroke="#655840" stroke-width="3"/>'+Array.from({length:11},(_,i)=>'<rect x="'+(310+i*27)+'" y="71" width="16" height="22" fill="#b3a581" stroke="#655840"/>').join('')+'<path d="M425 177v-36q25-29 50 0v36" fill="#39312b"/><path d="M340 123h220m-220 23h73m72 0h76" stroke="#8f815f" stroke-width="3"/>'+
+      '<path d="M375 177l-48 43h250l-50-43Z" fill="#a99268"/><g transform="translate(25 8)">'+portrait('chenping','serious',130,193)+'</g><g transform="translate(690 10)">'+portrait(stage===3?'fanzeng':'xiangyu',stage===3?'angry':'worried',130,191)+'</g>'+
+      '<path d="M169 78h107m-16-7l16 7-16 7M614 78h60" fill="none" stroke="#dac68d" stroke-width="3" stroke-dasharray="7 5"/><rect x="169" y="33" width="117" height="30" rx="6" fill="#eee0b8"/><text x="228" y="53" font-size="17" text-anchor="middle" fill="#5d4832">漢營・籌策</text><rect x="612" y="33" width="77" height="30" rx="6" fill="#eee0b8"/><text x="650" y="53" font-size="17" text-anchor="middle" fill="#5d4832">楚營</text>'+
+      '<text x="450" y="208" text-anchor="middle" font-size="16" fill="#f1dfb0">滎陽・圍城壓力 '+s.m.siege+'</text></svg>';
+  }
+  function routeArt(route){
+    const piece=(x,y,id)=>'<g transform="translate('+x+' '+y+')">'+portrait(id,'serious',130,165)+'</g>';
+    return '<svg class="xy-route-art" viewBox="0 0 1000 430" role="img" aria-label="滎陽城門分工圖，左西右東">'+
+      '<rect x="4" y="4" width="992" height="422" rx="20" fill="#e7d7aa" stroke="#b09a61" stroke-width="8"/><path d="M10 85q140-80 280-20t300-10t400 10v365H10" fill="#cabc94"/>'+
+      '<path d="M232 244V98h535v146Z" fill="#b3a78b" stroke="#6b624e" stroke-width="4"/>'+Array.from({length:15},(_,i)=>'<rect x="'+(231+i*37)+'" y="85" width="22" height="22" fill="#b3a78b" stroke="#6b624e" stroke-width="2"/>').join('')+
+      '<path d="M267 244v-67q29-32 58 0v67Zm407 0v-67q29-32 58 0v67Z" fill="#55493b"/><path d="M349 133h291m-291 26h292m-291 27h292m-291 27h292" stroke="#9c8e70" stroke-width="3"/>'+
+      '<text x="296" y="66" text-anchor="middle" fill="#5c5035" font-size="29">西門</text><text x="704" y="66" text-anchor="middle" fill="#5c5035" font-size="29">東門</text><text x="500" y="119" text-anchor="middle" fill="#5c5035" font-size="24">滎陽</text><path d="M267 245l-67 165h175l-49-165Zm407 0l-50 165h175l-67-165Z" fill="#b19969"/>'+
+      (route>=1?'<path d="M480 282H133" stroke="#d29e35" stroke-width="12"/><path d="M109 282l31-21v42Z" fill="#d29e35"/>'+piece(30,213,'liubang')+piece(151,213,'chenping'):'')+
+      (route>=2?'<path d="M520 309h326" stroke="#ae4638" stroke-width="12"/><path d="M875 309l-31-21v42Z" fill="#ae4638"/>'+piece(839,213,'jixin')+'<path d="M705 274h100v44H705Z" fill="#bfa363" stroke="#785238" stroke-width="4"/><path d="M695 274l25-26h69l26 26Z" fill="#d8bc5e"/><circle cx="728" cy="325" r="13" fill="#715b3e"/><circle cx="785" cy="325" r="13" fill="#715b3e"/>':'')+
+      '<rect x="357" y="336" width="285" height="57" rx="7" fill="#eee1bd"/><text x="500" y="360" text-anchor="middle" font-size="17" fill="#5d4c35">金線・漢王與陳平西出</text><text x="500" y="384" text-anchor="middle" font-size="17" fill="#873f35">朱線・東門引楚注意，紀信誑楚</text></svg>';
+  }
+  function taskArt(group,index,p){
+    if(group==='routes')return routeArt(index===0?0:1);
+    const food=index===0?'fine':index===2?'rough':'fine';
+    const fine='<ellipse cx="348" cy="149" rx="84" ry="16" fill="#936742"/><path d="M295 142q15-53 63-36q15-25 42 10q17 7 8 30Z" fill="#b87a47" stroke="#725438" stroke-width="3"/><path d="M367 109q10 14 24 24" stroke="#e0b071" stroke-width="4"/><ellipse cx="340" cy="88" rx="34" ry="12" fill="#dccaa0"/><path d="M310 88q5-21 21-14q12-22 32 8Z" fill="#afc783"/>';
+    const rough='<ellipse cx="350" cy="148" rx="59" ry="14" fill="#a78d64"/><path d="M300 120h100q-10 36-50 36t-50-36" fill="#8c9b7b" stroke="#5d634f" stroke-width="3"/><ellipse cx="350" cy="121" rx="50" ry="12" fill="#d9c496"/><path d="M309 118l18 5m17-7l12 9m13-10l11 7" stroke="#aa915f" stroke-width="3"/>';
+    return '<svg class="xy-task-art" viewBox="0 0 720 240" role="img" aria-label="楚使接待籌備圖">'+ART.scene('banquet',{tod:'day',banner:'#ae8e36',glyph:'漢'}).replace('<svg ','<svg width="720" height="240" ')+
+      '<g transform="translate(25 57)">'+portrait('chenping','serious',115,170)+'</g><g transform="translate(550 57)">'+portrait('envoy','normal',115,170)+'</g><path d="M228 154h245l21 53H205Z" fill="#a37e4b" stroke="#6c4a2e" stroke-width="4"/><path d="M228 207v24m244-24v24" stroke="#6c4a2e" stroke-width="10"/>'+(food==='fine'?fine:rough)+
+      '<rect x="227" y="15" width="255" height="39" rx="6" fill="#eee0b7"/><text x="355" y="42" text-anchor="middle" fill="#5b4833" font-size="22">'+(index===1?'來使身份・待核對':food==='fine'?'先備太牢具':'確認撤換為惡草具')+'</text></svg>';
+  }
+  function gwPanorama(){return '<div class="xy-gw-panorama">'+ART.scene('field',{tod:'dusk',banner:'#ae8e36',glyph:'漢'})+'<div class="xy-gw-cast"><span>'+portrait('liubang','serious')+'</span><span>'+portrait('xiangyu','angry')+'</span></div></div>';}
+  function gameBlocked(){return !!(document.hidden || document.querySelector('.zh-modal,.sty-choice,.zc-detail'));}
+
+  function shuffle(items, rng) {
+    const copy = items.slice();
+    for (let i = copy.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; }
+    return copy;
+  }
+  function createDeckModel(input, saved={}) {
+    const rs={value:(saved.rngState ?? input.seed)>>>0};const rng=()=>{rs.value=(Math.imul(rs.value,1664525)+1013904223)>>>0;return rs.value/4294967296;};
+    const deck = input.deck.slice();
+    const m = saved.m || { gold: bounded(input.gold), doubt: bounded(input.doubt), siege: bounded(input.siege) };
+    const state = { phase: 'intro', stage: input.stage, round: 0, m, hand: [], draw: saved.phase ? [] : shuffle(deck, rng), discard: [],
+      ap: 3, onceUsed: !!input.onceUsed, turnPlays: 0, shield: 0, doubtWork: 0, defenseWork: 0,
+      rounds: [], played: [], turnCards: [], pending: -1, reward: null, score: null, before: null };
+    if(saved.phase){Object.assign(state,saved);state.m=m;rs.value=saved.rngState>>>0;}
+    const usable = id => { const c = CARDS[id]; return !!c && c.gold <= m.gold && c.ap <= state.ap && !(c.once && state.onceUsed); };
+    function drawOne() {
+      if (!state.draw.length && state.discard.length) { state.draw = shuffle(state.discard, rng); state.discard = []; }
+      return state.draw.length ? state.draw.pop() : null;
+    }
+    function drawCards(count) { for (let i = 0; i < count; i++) { const id = drawOne(); if (id) state.hand.push(id); } }
+    function ensurePlayable() {
+      if (state.hand.some(usable)) return;
+      for (const pile of [state.draw, state.discard]) {
+        const at = pile.findIndex(usable);
+        if (at >= 0) { const replacement = pile.splice(at, 1)[0]; pile.push(state.hand.pop()); state.hand.push(replacement); return; }
+      }
+      throw new Error('本局牌組缺少可用方案');
+    }
+    function startRound() {
+      state.phase = 'plan'; state.ap = 3; state.turnPlays = 0; state.shield = 0; state.turnCards = []; state.pending = -1;
+      state.before = { ...m }; drawCards(5); ensurePlayable();
+    }
+    function preview(index) {
+      const c = CARDS[state.hand[index]];
+      if (!c) return null;
+      return { gold: bounded(m.gold - c.gold + (c.gain || 0)), doubt: bounded(m.doubt + (c.doubt || 0)), siege: bounded(m.siege - (c.siege || 0)) };
+    }
+    function play(index) {
+      if (state.phase !== 'plan' || !Number.isInteger(index) || !usable(state.hand[index])) return false;
+      const id = state.hand[index], c = CARDS[id], next = preview(index);
+      state.hand.splice(index, 1); state.ap -= c.ap;
+      Object.assign(m, next); state.doubtWork += c.doubt || 0; state.defenseWork += c.siege || 0; state.shield += c.shield || 0;
+      if (c.once) state.onceUsed = true;
+      state.discard.push(id); state.turnPlays++; state.turnCards.push(id); state.played.push(id); state.pending = -1;
+      drawCards(c.draw || 0); return true;
+    }
+    function endRound() {
+      if (state.phase !== 'plan' || !state.turnPlays) return false;
+      const attack = Math.max(0, [8, 10, 12][state.round] - state.shield);
+      m.siege = bounded(m.siege + attack);
+      const checks = { intrigue: state.doubtWork >= 8 * (state.round + 1), defense: m.siege <= 60 };
+      state.rounds.push({ round: state.round + 1, before: { ...state.before }, after: { ...m }, attack, shield: state.shield,
+        cards: state.turnCards.slice(), doubtWork: state.doubtWork, defenseWork: state.defenseWork, checks });
+      state.discard.push(...state.hand); state.hand = []; state.pending = -1; state.phase = 'report';
+      if (state.round === 2) {
+        state.finalChecks = { reserve: m.gold >= 10, pressure: m.siege <= 50, intrigue: state.doubtWork > 0, logistics: state.defenseWork >= 20 };
+        state.score = state.rounds.reduce((s, r) => s + Number(r.checks.intrigue) + Number(r.checks.defense), 0) +
+          Object.values(state.finalChecks).filter(Boolean).length;
+      }
+      return true;
+    }
+    function next() {
+      if (state.phase !== 'report') return false;
+      if (state.round < 2) { state.round++; startRound(); } else state.phase = 'reward';
+      return true;
+    }
+    function chooseReward(id) {
+      if (state.phase !== 'reward' || !REWARDS.includes(id)) return false;
+      state.reward = id; state.phase = 'finish'; return true;
+    }
+    function result() {
+      if (state.phase !== 'finish' || !state.reward || state.rounds.length !== 3) return null;
+      return { completed: true, passed: state.score >= 7, score: state.score, max: 10, deck: [...deck, state.reward],
+        ...m, onceUsed: state.onceUsed, rounds: state.rounds, played: state.played, reward: state.reward };
+    }
+    return { state, usable, startRound, preview, play, endRound, next, chooseReward, result, snapshot:()=>({...state,rngState:rs.value}) };
+  }
+  async function playDeck(ctx, stage) {
+    const campaign = ctx.state.vars.campaign;
+    const key='deckInput:'+stage,known=XY.progress(key);if(!known.input){known.input={stage,deck:campaign.deck.slice(),onceUsed:campaign.onceUsed,gold:ctx.meter('gold'),doubt:ctx.meter('doubt'),siege:ctx.meter('siege'),seed:Math.floor(ctx.rng()*4294967296)};XY.saveProgress(key,known);await XY.checkpoint();}
+    const input=JSON.parse(JSON.stringify(known.input));
+    const r = await ctx.minigame({ id: 'xy_deck_' + stage, title: STAGES[stage - 1].title, skip: false, goal:'親自出牌並結算三回合，每回合至少一張，最後選定新牌；首次取捨保留。',
+      help: '<p>每回合抽五張、三點行動。點牌後確認出牌，至少出一張再手動結算。手牌保證有可用牌。三回合後必須親自選新牌。每局十分，三局平均評結局；牌面成效累計不因楚疑達一百而失效。</p>' },
+      (body, g) => deckGame(body, g, input));
+    if (!r.completed || r.skipped || !Array.isArray(r.rounds) || r.rounds.length !== 3) {
+      await ctx.say([{ text: '本局尚未親自完成，請回計策桌操作三回合並選新牌。' }]); return false;
+    }
+    resourceKeys.forEach(k => ctx.add(k, r[k] - ctx.meter(k)));
+    campaign.deck = r.deck.slice(); campaign.onceUsed = r.onceUsed;
+    resourceKeys.forEach(k => { campaign[k] = r[k]; });
+    const first=r.firstResult || r;campaign.scores[stage-1]=Math.round(percent(first)/10);campaign.bestScores=campaign.bestScores || [];campaign.bestScores[stage-1]=r.score;
+    campaign.stages[stage-1]=Object.assign({},first,{completed:true,bestScore:r.score,bestTotals:{gold:r.gold,doubt:r.doubt,siege:r.siege},nextReward:r.reward});
+    ctx.flag('deck' + stage + 'Done', true);
+    await ctx.say([{ who: 'chenping', expr: 'serious', text: '第' + stage + '局完成，新牌「' + CARDS[r.reward].name + '」入組。剩餘資源照實接續。' }]);
+    return true;
+  }
+  function deckGame(body, g, input) {
+    if(g.ruleset===2&&ZH.gameplay)return ZH.gameplay.nativeCards(body,g,input);
+    return new Promise(resolve => {
+      const old=g.getProgress(),model=createDeckModel(input,old),s=model.state,stage=STAGES[input.stage-1];
+      const persist=()=>g.setProgress({...model.snapshot(),feedback});
+      let alive=true,feedback=old.feedback || '先看目標與費用，再親自開始本局。';
+      const checked = (value, text) => '<p>' + (value ? '✓ ' : '○ ') + g.esc(text) + '</p>';
+      const cardHTML = (id, index, reward) => {
+        const c = CARDS[id], allowed = reward || model.usable(id), selected = !reward && s.pending === index;
+        return '<button type="button" class="ch06-card' + (selected ? ' is-selected' : '') + '" ' +
+          (reward ? 'data-reward="' + id + '"' : 'data-card-index="' + index + '" data-card-id="' + id + '"') +
+          (!allowed ? ' disabled' : '') + ' aria-pressed="' + selected + '">'+cardArt(id)+'<b>' + g.esc(c.name) + '</b><span>金' + c.gold + '・行動' + c.ap +
+          '</span><span>' + g.esc(c.detail) + '</span>' + (!allowed ? '<span>' + (c.once && s.onceUsed ? '全話一次已用' : c.gold > s.m.gold ? '金不足' : '行動不足') + '</span>' : '') + '</button>';
+      };
+      function render() {
+        let content = '';
+        if (s.phase === 'intro') {
+          content = '<p>' + g.esc(stage.aim) + '</p><p>每回合抽五張、三點行動，不限思考時間。手牌至少有一張可用牌；點牌後確認，原生鍵盤Tab、Enter與空白鍵皆可操作。</p>' +
+            '<div class="ch06-panel"><p>初始牌組／本局牌組：' + input.deck.length + '張。</p><p>攻勢依序＋8、＋10、＋12；偵察可折抵。資源與全話一次牽制會延續。</p></div>' +
+            '<details class="ch06-rules"><summary>查看十分計分與全部牌</summary><p>三回合：反間牌效果累計達8／16／24、結算圍城≤60，各得一分。局末金≥10、圍城≤50、有出反間牌、降壓效果累計≥20，各得一分。</p>' +
+            '<p>反間牌：反間、宣言、密使。累計按合法牌面效果計，即使楚疑達一百仍有效；臨時行動與計分不是額外持久資源。</p>' +
+            Object.values(CARDS).map(c => '<p><b>' + g.esc(c.name) + '</b>：金' + c.gold + '／行動' + c.ap + '，' + g.esc(c.detail) + '。</p>').join('') + '</details>' +
+            '<button type="button" class="zh-btn zh-btn--primary" data-deck-action="start">親自開始・第一回合</button>';
+        } else if (s.phase === 'plan') {
+          const pending = s.pending >= 0 ? CARDS[s.hand[s.pending]] : null;
+          content = '<div class="ch06-relation" aria-label="傳播與局勢示意"><span>陳平・派遣</span><span>→ ' + g.esc(stage.receiver) + '</span><span>→ ' + g.esc(stage.response) + '</span></div>' +
+            '<p>本回合行動 ' + s.ap + '／3｜本局反間成效 ' + s.doubtWork + '（此回合目標' + (8 * (s.round + 1)) + '）｜降壓成效 ' + s.defenseWork + '</p>' +
+            '<p>結算攻勢＋' + Math.max(0, [8, 10, 12][s.round] - s.shield) + '；預估圍城' + bounded(s.m.siege + Math.max(0, [8, 10, 12][s.round] - s.shield)) + '。</p>' +
+            '<p class="xy-hand-tip">點牌可先看費用與效果；手機可左右滑動手牌。</p><div class="ch06-cards">' + s.hand.map((id, i) => cardHTML(id, i, false)).join('') + '</div>' +
+            '<div class="ch06-panel" data-deck-preview aria-live="polite">' + (pending ? '<b>確認「' + g.esc(pending.name) + '」</b><p>金－' + pending.gold + '、行動－' + pending.ap + '。出牌後：' + g.esc(resourcesText(model.preview(s.pending))) + '。</p>' : '<p>選一張可用牌，先看實際資源變化。</p>') + '</div>' +
+            '<div class="ch06-actions"><button type="button" class="zh-btn zh-btn--primary" data-deck-action="play"' + (!pending ? ' disabled' : '') + '>確認出牌</button>' +
+            '<button type="button" class="zh-btn zh-btn--quiet" data-deck-action="end"' + (!s.turnPlays ? ' disabled' : '') + '>結算本回合・已出' + s.turnPlays + '張</button></div>';
+        } else if (s.phase === 'report') {
+          const r = s.rounds[s.round];
+          content = '<p>你出：' + g.esc(r.cards.map(id => CARDS[id].name).join('、')) + '。</p><p>期初：' + g.esc(resourcesText(r.before)) + '。</p><p>攻勢＋' + r.attack + '後：' + g.esc(resourcesText(r.after)) + '。</p>' +
+            '<div class="ch06-panel">' + checked(r.checks.intrigue, '本局反間成效達' + (8 * (s.round + 1)) + '：' + Number(r.checks.intrigue) + '分') +
+            checked(r.checks.defense, '結算圍城≤60：' + Number(r.checks.defense) + '分') + '</div>' +
+            (s.round === 2 ? '<div class="ch06-panel"><b>本局首次完成：' + s.score + '／10</b>' +
+              checked(s.finalChecks.reserve, '金≥10') + checked(s.finalChecks.pressure, '圍城≤50') + checked(s.finalChecks.intrigue, '有出反間類牌') + checked(s.finalChecks.logistics, '降壓成效累計≥20') +
+              '<p>' + (s.score >= 7 ? '達七分，過關。' : '未達七分，保留本局得分與資源，後續仍須親自完成。') + '</p></div>' : '') +
+            '<button type="button" class="zh-btn zh-btn--primary" data-deck-action="next">' + (s.round === 2 ? '親自選一張新牌' : '開始下一回合') + '</button>';
+        } else if (s.phase === 'reward') {
+          content = '<p>本局' + s.score + '／10。三選一加入牌組，請看費用與效果，再親自選定。</p><div class="ch06-cards ch06-rewards">' + REWARDS.map(id => cardHTML(id, 0, true)).join('') +
+            '</div><p>分兵牽制不論有幾張，全話只可成功使用一次。' + (input.stage === 3 ? '這次選牌留下你的後續方案。' : '新牌在下一局可抽到。') + '</p>';
+        } else if (s.phase === 'finish') {
+          content = '<p>你選了「' + g.esc(CARDS[s.reward].name) + '」，牌組增為' + (input.deck.length + 1) + '張。</p><p>本局' + s.score + '／10，' + g.esc(resourcesText(s.m)) + '；全話牽制' + (s.onceUsed ? '已用' : '尚未用') + '。</p>' +
+            '<button type="button" class="zh-btn zh-btn--primary" data-deck-action="finish">確認入組・回軍議</button>';
+        }
+        body.innerHTML = '<section class="ch06-game ch06-deck" data-phase="' + s.phase + '"><h2>' + g.esc(stage.title) + (s.phase === 'intro' ? '' : '・第' + (s.round + 1) + '回合／3') + '</h2>' +
+          deckScene(s,input.stage)+'<div class="ch06-live" data-deck-resources aria-live="polite"><div class="xy-resources">'+meterStrip(s.m)+'</div><span class="xy-budget">金100＝四萬斤預算刻度</span></div>'+content+
+          '<p class="ch06-report" data-deck-feedback aria-live="polite">軍中回報（教學演出）：' + g.esc(feedback) + '</p></section>';
+        g.setStatus('第' + input.stage + '局・' + (s.phase === 'plan' ? '行動' + s.ap + '・已出' + s.turnPlays : s.phase === 'intro' ? '請親自開始' : '請親自確認'));persist();
+      }
+      function click(e) {
+        const b = e.target.closest('button'); if (gameBlocked() || !alive || !b || !body.contains(b) || b.disabled) return;
+        const action = b.dataset.deckAction;
+        if (action === 'start' && s.phase === 'intro') { model.startRound(); feedback = '請選牌、確認，再結算本回合。'; render(); body.scrollTop = 0; }
+        else if (b.hasAttribute('data-card-index') && s.phase === 'plan') {
+          const index = Number(b.dataset.cardIndex); if (!model.usable(s.hand[index])) return;
+          s.pending = index; render(); const target = body.querySelector('[data-card-index="' + index + '"]'); if (target) target.focus({ preventScroll: true });
+        } else if (action === 'play' && s.phase === 'plan') {
+          const id = s.hand[s.pending]; if (model.play(s.pending)) { feedback = CARDS[id].report; render(); body.querySelector('[data-deck-action="end"]').focus({ preventScroll: true }); }
+        } else if (action === 'end' && model.endRound()) { feedback = '本回合已結算，請讀回報再繼續。'; render(); body.scrollTop = 0; }
+        else if (action === 'next' && model.next()) { feedback = s.phase === 'reward' ? '請親自挑選新牌。' : '上回合的資源已接續。'; render(); body.scrollTop = 0; }
+        else if (b.dataset.reward && model.chooseReward(b.dataset.reward)) { feedback = '選牌已記錄，請確認入組。'; render(); body.scrollTop = 0; }
+        else if (action === 'finish') { const result = model.result(); if (result) { alive = false; resolve(result); } }
+      }
+      body.addEventListener('click', click); g.onCleanup(() => { alive = false; body.removeEventListener('click', click); }); render();
+    });
+  }
+  const RECEPTION_TASKS = [
+    { title: '備食饌', text: '依答後原文，接待前先備哪種食饌？', right: 'fine', done: '太牢具已備，交由漢王主持接待。', retry: '原文先備太牢具，再撤換。請親自重核先後。',
+      options: [{ label: '先備豐盛的太牢具', value: 'fine' }, { label: '從頭到尾都不備食饌', value: 'none' }] },
+    { title: '確認來使', text: '來到營中的是誰的使者？請先核對身份。', right: 'king', done: '已核對：項王使者，不是亞父使者。', retry: '原文的乃項王使，指出真正身份是項王使者。請親自重核。',
+      options: [{ label: '當成亞父私人使者', value: 'father' }, { label: '核對為項王使者', value: 'king' }] },
+    { title: '撤換食饌', text: '已確認項王使者，安排接下來的食饌。', right: 'rough', done: '豐盛食饌撤下，粗劣飯食送上，差別接待安排完成。', retry: '原文更以惡草具進楚使。請親自安排撤換。',
+      options: [{ label: '撤下太牢具，換上惡草具', value: 'rough' }, { label: '仍維持豐盛食饌不變', value: 'same' }] }
+  ];
+  const ROUTE_TASKS = [
+    { title: '漢王與陳平路線', text: '左為西門、右為東門。漢王、陳平與少數從騎走哪一路？', right: 'west', done: '金線指向西門，漢王與陳平的路線已安排。', retry: '原文記與漢王從城西門夜出去。請親自重核西門。',
+      options: [{ label: '右側東門，與引楚注意一路同行', value: 'east' }, { label: '左側西門，另路夜出', value: 'west' }] },
+    { title: '紀信王車分工', text: '紀信假扮漢王的車旗，安排到哪一側與東門局勢配合？', right: 'east', done: '朱線指向東門，紀信與西出路線的分工已核定。', retry: '〈項羽本紀〉記東門誑楚、漢王西出。請親自核對東門分工。',
+      options: [{ label: '右側東門，與引楚注意的安排配合', value: 'east' }, { label: '左側西門，與漢王一起出車', value: 'west' }] }
+  ];
+  async function chooseOnce(ctx,key,opts){const p=XY.progress('choice:'+key);if(Object.hasOwn(p,'value'))return p.value;p.value=await ctx.choose(opts);XY.saveProgress('choice:'+key,p);await XY.checkpoint();return p.value;}
+  async function completeTasks(ctx,tasks,after,group){
+    const records=[];
+    for(let i=0;i<tasks.length;i++){
+      const t=tasks[i],key=group+':'+i,p=XY.progress(key);
+      const legacy=(ctx.state.vars[group] || [])[i];if(!p.completed&&legacy?.completed)Object.assign(p,legacy,{legacy:true});
+      while(!p.completed){
+        const question=ctx.choose({title:(p.attempts?'親自重核・':'')+t.title,text:t.text,options:t.options});
+        const box=[...document.querySelectorAll('.sty-choice__card')].at(-1);if(box)box.insertAdjacentHTML('afterbegin',taskArt(group,i,p));
+        const value=await question;if(!Object.hasOwn(p,'first')){p.first=value;p.firstCorrect=value===t.right;}
+        p.attempts=(p.attempts || 0)+1;p.last=value;p.completed=value===t.right;p.task=t.title;XY.saveProgress(key,p);await XY.checkpoint();
+        if(!p.completed)await ctx.say([{who:'clerk',expr:'worried',text:t.retry}]);
+      }
+      records.push(JSON.parse(JSON.stringify(p)));if(after)await after(i);await ctx.say([{who:'clerk',expr:'happy',text:t.done}]);
+    }
+    return records;
+  }
+  const GW_QUESTIONS = [
+    { title: '面對單挑', text: '項王邀漢王以個人單挑決勝。你以陳平身分提出哪項建議？', right: 'strategy',
+      options: [{ value: 'strategy', label: '維持鬥智與整體部署，拒絕個人鬥力' }, { value: 'duel', label: '立刻接受單挑，把戰局交給個人武力' },
+        { value: 'surrender', label: '只因對方善戰，就立即交出全部兵力' }, { value: 'boast', label: '宣稱已統一天下，完全不看對峙局勢' }],
+      explanation: '〈項羽本紀〉記漢王選鬥智而不鬥力。軍議應看整體部署，不把國家戰局押在一次單挑。此題為陳平身分的教學建議，原典回話者是漢王。' },
+    { title: '據史料立論', text: '要整理漢王對項羽的指控，哪項能以懷王之約與已讀分封史料說明？', right: 'promise',
+      options: [{ value: 'fiction', label: '說項羽從未參加救趙，全靠陳平作戰' }, { value: 'promise', label: '指出先入關者王之的約定，對照分封落差' },
+        { value: 'father', label: '說太公本來就是項羽親生父親' }, { value: 'all', label: '說三秦一直由漢王直屬統率，從未受阻' }],
+      explanation: '〈高祖本紀〉記漢王以負約為第一項指控；前話與本話均可對讀分封落差。整理政治立論要有史料依據，不能用憑空的人物或戰事說法代替。' },
+    { title: '維持既定策略', text: '漢王數罪後，項王激怒欲戰。你建議如何維持原先的策略？', right: 'hold',
+      options: [{ value: 'charge', label: '為逞一時之氣，立刻答應單挑' }, { value: 'unarmed', label: '讓漢王獨自入楚營，不再安排防備' },
+        { value: 'forget', label: '不問兵力與形勢，放棄所有部署' }, { value: 'hold', label: '不受激將改押鬥力，持續整體部署' }],
+      explanation: '〈高祖本紀〉記漢王數罪後仍拒絕挑戰。這項教學軍議要求前後策略一致，公開指控與接受決鬥是兩回事；結果仍依史實呈現，不因本局選擇改人物生死。' }
+  ];
+  function guangwuGame(body, g) {
+    return new Promise(resolve => {
+      const old=g.getProgress();let alive=true,phase=old.phase || 'ready',index=old.index || 0,elapsed=old.elapsed || 0,last=0,raf=0,focused=true,feedback=old.feedback || '',saveTime=0;
+      const answers=old.answers || [];const persist=()=>g.setProgress({phase,index,elapsed,feedback,answers});
+      function render() {
+        const q = GW_QUESTIONS[index], r = answers[index];
+        let content = '';
+        if (phase === 'ready') content = '<p>背景：' + g.esc(q.text) + '</p><p>先準備操作。按開始後才顯示四個選項並計十秒；Tab、Enter與空白鍵可以選答。</p>' +
+          '<button type="button" class="zh-btn zh-btn--primary" data-gw-action="start">開始十秒首答</button>';
+        else if (phase === 'question' || phase === 'repair') content = '<p>' + g.esc(q.text) + '</p>' +
+          (phase === 'repair' ? '<div class="ch06-panel"><b>首次' + (r.reason === 'timeout' ? '逾時' : '錯選') + '已記錄，親自補正</b><p>' + g.esc(q.explanation) + '</p></div>' : '<p>從四項建議選一項；首次成績會保留。</p>') +
+          '<div class="ch06-gw-options">' + q.options.map(o => '<button type="button" class="zh-btn zh-btn--quiet" data-gw-answer="' + o.value + '">' + g.esc(o.label) + '</button>').join('') + '</div>';
+        else if (phase === 'feedback') content = '<div class="ch06-panel"><b>本題已親自完成・首次' + (r.correct ? '答對' : r.reason === 'timeout' ? '逾時' : '錯選') + '</b><p>' + g.esc(q.explanation) + '</p></div>' +
+          '<p>已完成' + answers.length + '／3題；首答答對' + answers.filter(a => a.correct).length + '題。補正不改首次成績。</p>' +
+          '<button type="button" class="zh-btn zh-btn--primary" data-gw-action="' + (index === 2 ? 'finish' : 'next') + '">' + (index === 2 ? '確認三題完成・回軍議' : '準備下一題') + '</button>';
+        body.innerHTML = '<section class="ch06-game ch06-guangwu" data-phase="' + phase + '">'+gwPanorama()+'<h2>第' + (index + 1) + '題／3・' + g.esc(q.title) + '</h2>' +
+          '<p>陳平軍議・教學演出。原典發言者仍是漢王。</p><div class="ch06-live" data-gw-clock aria-live="polite"></div>' + content +
+          '<p data-gw-feedback aria-live="polite">' + g.esc(feedback) + '</p></section>';
+        clock();persist();body.scrollTop=0;
+      }
+      function clock() {
+        const paused=!focused || gameBlocked();
+        const text = phase === 'question' ? (paused ? '暫停・' : '') + '首答剩 ' + Math.max(0, Math.ceil(10 - elapsed)) + '秒' : phase === 'repair' ? '補正不限時・首次成績固定' : phase === 'ready' ? '按開始才計時' : '本題完成';
+        const el = body.querySelector('[data-gw-clock]'); if(el)el.innerHTML='<span>'+g.esc(text)+'</span>'+(phase==='question'?'<span class="xy-time-track"><i style="width:'+Math.max(0,100-elapsed*10)+'%"></i></span>':'');g.setStatus(text);
+      }
+      function firstAnswer(value, reason) {
+        if (phase !== 'question') return;
+        const correct = value === GW_QUESTIONS[index].right;
+        answers.push({ question: index + 1, first: value, reason, correct, seconds: Math.round(elapsed * 10) / 10, corrected: false, completed: correct });
+        phase = correct ? 'feedback' : 'repair'; feedback = correct ? '建議已依史料確認。' : '請依回饋親自再選合理建議。'; render();
+      }
+      function click(e) {
+        const b = e.target.closest('button'); if (gameBlocked() || !alive || !b || !body.contains(b) || b.disabled) return;
+        if (b.dataset.gwAction === 'start' && phase === 'ready') { phase = 'question'; elapsed = 0; last = 0; feedback = ''; render(); }
+        else if (b.dataset.gwAnswer && phase === 'question') firstAnswer(b.dataset.gwAnswer, 'answer');
+        else if (b.dataset.gwAnswer && phase === 'repair') {
+          if (b.dataset.gwAnswer === GW_QUESTIONS[index].right) { answers[index].corrected = true; answers[index].completed = true; phase = 'feedback'; feedback = '你已親自補正，首次成績保留。'; render(); }
+          else { feedback = '這項建議仍與剛才回饋不合，請再核對史料與策略。'; body.querySelector('[data-gw-feedback]').textContent = feedback;persist(); }
+        } else if (b.dataset.gwAction === 'next' && phase === 'feedback' && index < 2) { index++; phase = 'ready'; last = 0; feedback = ''; render(); }
+        else if (b.dataset.gwAction === 'finish' && phase === 'feedback' && answers.length === 3 && answers.every(a => a.completed)) {
+          const correctFirst = answers.filter(a => a.correct).length; alive = false;
+          resolve({ completed: true, passed: correctFirst >= 2, score: Math.round(correctFirst / 3 * 10), max: 10, correctFirst,
+            assisted: correctFirst < 3, answers });
+        }
+      }
+      function frame(now) {
+        if (!alive) return;
+        const dt = last ? Math.max(0, Math.min(.1, (now - last) / 1000)) : 0; last = now;
+        if (phase === 'question' && focused && !document.hidden && !gameBlocked()) {
+          elapsed+=dt;saveTime+=dt;if(elapsed>=10)firstAnswer(null,'timeout');if(saveTime>=.25){saveTime=0;persist();}
+        }
+        clock(); raf = requestAnimationFrame(frame);
+      }
+      const blur = () => { focused = false; last = 0; clock(); }, focus = () => { focused = true; last = 0; clock(); }, visibility = () => { last = 0; clock(); };
+      body.addEventListener('click', click); window.addEventListener('blur', blur); window.addEventListener('focus', focus); document.addEventListener('visibilitychange', visibility);
+      g.onCleanup(() => { alive = false; cancelAnimationFrame(raf); body.removeEventListener('click', click); window.removeEventListener('blur', blur); window.removeEventListener('focus', focus); document.removeEventListener('visibilitychange', visibility); });
+      render(); raf = requestAnimationFrame(frame);
+    });
+  }
+  // ═════════════════════════ 7. 結局與玩家世家 ═════════════════════════
+  const ENDINGS = {
+    great: { id: 'great', title: '六出奇計', good: true, text: '此局籌策有度，攻守相濟，能解紛糾。' },
+    good: { id: 'good', title: '滎陽脫圍', good: true, text: '此局謀有得失，猶能究其故，辨出圍之計。' },
+    bad: { id: 'bad', title: '險失滎陽', good: false, text: '此局配置失衡，危勢益深，當反求其策。' }
+  };
+  function payload(s, ending) {
+    const c = s.vars.campaign, gw = s.vars.guangwu, meat = s.vars.meat, reflection = s.vars.reflection;
+    const total = c.scores.reduce((sum, n) => sum + n, 0), mean = total / 3;
+    const deeds = [
+      meat.first === 'equal' ? '此局初分社肉，四戶各均；及讀史，知平之志。' : '此局初分未均，既聞其失，親更其配而均之。',
+      '平去楚歸漢，因魏無知得進，王與語而任之。',
+      '諸將有讒，無知辨能與行；平自陳其資，漢王益任之。',
+      '論楚漢之長短，言當去短取長，以定天下。',
+      '漢王予黃金四萬斤，恣其所為，不問出入。',
+      mean >= 7 ? '此局三度籌策，兼顧反間、守城與用金。' : mean <= 3 ? '此局用牌偏失，城危與預算之缺皆存其實。' : '此局籌策有得有失，逐回合察其變而記之。',
+      '此局親備食饌、核來使而更饌；漢王依史主持接待。',
+      '紀信誑楚，平與漢王西出；出圍之效與犧牲之重並記。',
+      percent(gw) >= 67 ? '此局廣武軍議，能據史立論，辨鬥智與鬥力。' : '此局廣武初答有失，親讀回饋而更其議，不掩初績。',
+      reflection.choice === 'support' ? '此局論用計之利，亦承其害而立界。' : reflection.choice === 'oppose' ? '此局不許反間，另議守備，審其資與患。' : reflection.choice === 'win' ? '此局初論惟勝負，尚當深察其故與人之患。' : '此局初誤道家之義，既聞其辨，當詳求其故。'
+    ];
+    return { scenarioId: SID, mode: MODE, faction: '漢', role: '陳平', roleKind: 'shijia', country: '魏',
+      bioTitle: '陳丞相世家', bioOpening: '陳丞相平者，陽武戶牖鄉人也。', ending,
+      scoreStrategy: bounded(mean * 10 * .8 + percent(gw) * .2), scoreVirtue: bounded((meat.score + reflection.score) / 2),
+      turns: s.steps || 1, durationSec: Math.min(5400, Math.max(0, Math.round((Date.now() - (s.startedAt || Date.now())) / 1000))),
+      deeds, anchors: s.anchors, games: s.games, codex: s.codex,
+      opener: '遊戲史官評語（自擬）：余讀陳平分肉、出計之事，歎其察勢之明，亦思用計之代價。',
+      prompts: ['救己方而離間他人，有哪些道德代價與界線？請用本話一項操作說明。',
+        '項羽與范增為何失去信任？今天怎樣分辨有根據的警訊與流言？',
+        '緊急用人時，如何兼顧能與行並查證指控？你會怎樣設計責任與查核？'] };
+  }
+  function onEnd(result, ctx) {
+    const ending = ENDINGS[(result && result.key) || 'good'] || ENDINGS.good, s = ctx.state;
+    const mean = s.vars.campaign.scores.reduce((sum, n) => sum + n, 0) / 3;
+    ZH.sfx('seal');
+    return ctx.banner(ending.title, '陳平・此局世家')
+      .then(() => ctx.say([{ text: '三局分數：' + s.vars.campaign.scores.join('、') + '，平均' + mean.toFixed(2) + '。結局依未取整的平均判斷。' },
+        { text: '廣武首次' + percent(s.vars.guangwu).toFixed(0) + '分；四次遊戲、接待與城門分工都由你親自完成。' },
+        { who: 'shiguan', expr: 'normal', text: '以下標示為遊戲生成世家。大事依史實，自製事蹟與史官評語不當成司馬遷原文。' }]))
+      .then(() => XY.finish(payload(s, ending)));
+  }
+
+
+  // ═════════════════════════ 8. 開始（沿用官方範例） ═════════════════════════
+  const saveState=XY.saveState;
+
+  function startGame(saved) {
+    if(saved)XY.useState(saved);else XY.newRun();document.documentElement.classList.toggle('hm-still',XY.read('still',false));
+    ROOT.innerHTML='';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_01',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP, scenes: SCENES,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd:onEnd,save:saveState,snapshot:XY.snapshot,anchorRunner:XY.runAnchor,onProgress:XY.cacheProgress,actions:[{label:"史冊",run:XY.book},{label:"存檔",run:XY.saveMenu}]
+    });
+    window.__ep=game;
+    game.start(saved || null);
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header><section class="xy-title-scene" aria-label="滎陽營地與本話人物">'+ART.scene('camp',{tod:'dusk',banner:'#ae8e36',glyph:'漢'})+'<div class="xy-title-cast">'+['chenping','liubang','jixin'].map(id=>'<span>'+portrait(id)+'</span>').join('')+'</div></section>'+
+      '<section class="ep-start"><span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>' +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個史實錨點。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave=XY.loadState;
+
+  ZH.ready(() => {
+    if(!ZH.story?.createJournal || !ZH.arena || !window.ART){ROOT.innerHTML='<main class="ep-title__main"><h1>共用核心待更新</h1><p>請先安裝 Eng_Story v0.2.2、Arena_js 與 Art_kit，再開啟第六話。</p><button class="zh-btn zh-btn--primary" data-home>回首頁</button></main>';ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');return;}
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), anchorsReady]).then(([saved]) => {
+      ZH.loading(false);
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+
+</script>
+<script>ZH.ready(function(){ZH.textplay?.install("S_ch06_xingyang",null);});</script>
+</body></html>

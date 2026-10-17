@@ -1,0 +1,1067 @@
+<!-- 春秋場景任務整合 v1.0.0：新增情境必須在競技計時器建立以前完成。 -->
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Eng_Stealth.html
+ 版本：v0.2.0（2026-10-08）
+ 依賴：Core_css.html、Core_js.html（ZH.sfx、ZH.esc、ZH.modal、ZH.settings）
+ 說明：潛行引擎。秦晉圍鄭（夜縋）、吳師入郢、邯鄲之圍、孟嘗君、
+       分封與還定三秦共用。全畫面夜景，兩個階段：
+   一、垂降（選用）：側面看城牆。按住「放繩」慢慢往下；
+       敵方的火光左右掃過城牆，被照到時還在動就會被發現。
+   二、潛行：由上往下看的格子地圖。蘆葦、壕溝可以藏身；
+       巡哨拿著火把，扇形就是他看得到的範圍，被盯住太久就會被發現。
+       雲遮住月亮時，巡哨看得比較近。走到存檔點會記下位置。
+   被發現就回到上一個存檔點；被發現三次後可以選擇放慢巡哨，
+   六次後可以選擇略過這一段（成績會記下）。
+ 操作：點地面就會走過去（自動找路）；也可以用方向鍵或 WASD。
+       垂降時按住按鈕、空白鍵或↓。
+ 用法：
+   ZH.stealth.run(config) → Promise<{ caught, ropeCaught, seconds, assisted, skipped }>
+   ZH.stealth.challenge(config, { scenarioId, gameId, title, goal, help, attempts, score(r), backdrop })
+       → Promise<最好的一局 { caught, …, passed, score, max, sec }>
+       挑戰賽版本（需要 Arena_js）：挑戰卡（排行）→ 3、2、1 → 潛行 → 成績卡，最多挑戰 3 次，
+       每一局都寫進小遊戲紀錄（不必再自己 ZH.track）。score 預設：沒被發現 10 分，被發現一次 −2，
+       用了「放慢巡哨」−1，最低 2 分；略過 0 分。backdrop：{ base, banner, glyph }（挑戰卡後面的場景，預設夜晚城牆）。
+       沒有 Arena_js 時，等同 run，但回傳值多了 passed、score、max。
+ config：
+   title、subtitle、goal（目標說明）、player { name, glyph, color, speed, art }
+   rope { length（秒）, period（火光掃一趟的秒數） } 或 null；ropeHint、groundMsg、winMsg（選用）
+   level {
+     grid: [字串...]   每字一格：
+       W 城牆  . 草地  , 道路  " 蘆葦（可藏身）  x 壕溝（可藏身）
+       T 敵營帳  t 友營帳  F 敵營火  f 友營火  C 車（擋視線）
+       ~ 河水  = 淺灘（可涉水）  S 起點  K 存檔點  E 終點
+     labels: [{ x, y, text, color }]
+   }
+   guards [{ name, kind: 'patrol'|'sweep', path: [[x,y]...], speed, range, fov（度）, pause, warm（秒）,
+             at: [x,y], angle（度）, span（度）, period（秒） }]
+   guardArt   巡哨的外型（Art_kit 的 art 欄位，例如 { state: '晉' }）；player.art 是主角的外型
+   有 Art_kit 時，主角與巡哨畫成 Q 版人物（沒有時照舊用簡單的剪影）。
+   藏身：站在蘆葦或壕溝裡，巡哨離你超過 1.5 格就看不到；貼得更近還是會被發現。
+   moon { bright, dark }（秒）
+   intro（說明文字）、helpHtml
+ 劇情冒險引擎裡使用：在節點中 const r = await ZH.stealth.run({...})，結束後自動回到劇情。
+ v0.1.1：moon、player、guards 給了 null 或缺項時改用預設值，不會當掉。
+ v0.2.0：主角與巡哨改畫 Q 版人物（需要 Art_kit）；新增 ZH.stealth.challenge（挑戰賽版本）。
+============================================================
+-->
+<style>
+  .stl {
+    position: fixed; inset: 0; z-index: 40;
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    background: #070a16; color: var(--text);
+    animation: zh-fade-in .4s ease both;
+  }
+  .stl-top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px;
+    padding: calc(8px + var(--safe-t)) 14px 8px; background: rgba(12, 16, 32, .92); border-bottom: 1px solid var(--line);
+  }
+  .stl-title b { font-family: var(--f-display); font-size: 19px; letter-spacing: .12em; }
+  .stl-title span { margin-left: 8px; font-size: 13px; color: var(--text-dim); }
+  .stl-goal { font-size: 14px; color: var(--gilt); }
+  .stl-stat { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .stl-moon { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .stl-moon i { width: 16px; height: 16px; border-radius: 50%; background: #f3e7c0; box-shadow: 0 0 10px rgba(243, 231, 192, .7); }
+  .stl-moon.is-dark i { background: #59607a; box-shadow: none; }
+  .stl-stage { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; }
+  .stl-canvas { display: block; touch-action: none; border-radius: 6px; box-shadow: 0 0 0 1px rgba(224, 180, 76, .25), 0 20px 60px rgba(0, 0, 0, .6); cursor: pointer; }
+  .stl-msg {
+    position: absolute; left: 0; right: 0; top: 18px; margin: 0 auto; width: fit-content; z-index: 2;
+    max-width: min(560px, 92%); padding: 10px 16px; border-radius: 12px; pointer-events: none;
+    background: rgba(12, 16, 32, .9); border: 1px solid var(--gilt); font-family: var(--f-display); font-size: 17px; text-align: center;
+    animation: zh-rise .25s ease both;
+  }
+  .stl-msg.is-bad { border-color: var(--cinnabar); color: #ffb4aa; }
+  .stl-msg.is-good { border-color: var(--patina); color: #a9e2d4; }
+  .stl-flash { position: absolute; inset: 0; pointer-events: none; background: rgba(217, 72, 59, .35); opacity: 0; transition: opacity .2s ease; }
+  .stl-flash.is-on { opacity: 1; }
+  .stl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px; padding: 10px 14px calc(12px + var(--safe-b)); background: rgba(12, 16, 32, .92); border-top: 1px solid var(--line); }
+  .stl-hint { font-size: 14px; color: var(--text-dim); text-align: center; max-width: 640px; }
+  .stl-hold {
+    min-width: 200px; min-height: 58px; font-size: 19px; font-family: var(--f-display); letter-spacing: .3em;
+    user-select: none; -webkit-user-select: none; touch-action: none;
+  }
+  .stl-hold.is-on { transform: translateY(2px); box-shadow: 0 0 0 4px var(--gilt-glow); }
+  .stl-pad { display: none; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(2, 46px); gap: 6px; }
+  .stl-pad button { border-radius: 10px; border: 1px solid var(--line); background: rgba(39, 49, 79, .9); color: var(--text); font-size: 20px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .stl-pad [data-d="up"] { grid-column: 2; grid-row: 1; }
+  .stl-pad [data-d="left"] { grid-column: 1; grid-row: 2; }
+  .stl-pad [data-d="down"] { grid-column: 2; grid-row: 2; }
+  .stl-pad [data-d="right"] { grid-column: 3; grid-row: 2; }
+  .stl-ask { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 16px; background: rgba(6, 8, 20, .7); }
+  .stl-ask__card { width: min(460px, 100%); padding: 18px 20px; border: 1px solid var(--gilt); border-radius: 14px; background: var(--night-2); text-align: center; }
+  .stl-ask__card h3 { font-size: 20px; margin-bottom: 8px; }
+  .stl-ask__card p { line-height: 1.75; }
+  .stl-ask__card .zh-row { justify-content: center; margin-top: 14px; }
+  body.stl-lock { overflow: hidden; }
+  .stl-arena { position: fixed; inset: 0; z-index: 39; display: grid; grid-template-rows: auto minmax(0, 1fr); background: #070a16; animation: zh-fade-in .3s ease both; }
+  .stl-arena__bg { position: absolute; inset: 0; opacity: .6; pointer-events: none; }
+  .stl-arena__bg svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stl-arena .ar-hud { grid-row: 1; position: relative; z-index: 2; padding-top: calc(6px + var(--safe-t)); }
+  .stl-arena__frame { grid-row: 2; position: relative; z-index: 1; min-height: 0; }
+  .stl-arena__body { position: absolute; inset: 0; }
+  body.stl-lock .zc-pop { top: auto; bottom: calc(110px + var(--safe-b)); pointer-events: none; } /* 圖鑑卡片移到下方，不擋垂降的警覺條 */
+  @media (pointer: coarse), (max-width: 760px) {
+    .stl-phase-ground .stl-pad { display: grid; }
+  }
+  @media (max-width: 560px) {
+    body.stl-lock .zc-pop { bottom: calc(180px + var(--safe-b)); }
+    .stl-title span { display: none; }
+    .stl-goal { width: 100%; order: 5; font-size: 13px; }
+    .stl-hint { font-size: 13px; }
+  }
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+
+  const global = window;
+  const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  const KEYS = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+  const BLOCK = 'WTtFfC~';        // 不能走
+  const SIGHT_BLOCK = 'WTtC';     // 擋住視線
+  const COVER = '"x';             // 可以藏身
+  const BEAM = 0.16;              // 垂降時火光的半寬（占畫面寬度）
+  const esc = s => ZH.esc(s);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const angDiff = (a, b) => { let d = a - b; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+
+  // ───────── Q 版人物（v0.2.0：有 Art_kit 時，把立繪轉成圖片畫在畫布上） ─────────
+  const SPRITES = {};
+  function sprite(key, spec) {
+    const A = global.ART;
+    if (!A || !A.chibi || !A.specOf) return null;
+    const rec = SPRITES[key];
+    if (rec) return rec.ready ? rec.img : null;
+    try {
+      let svg = A.chibi(A.specOf(spec), { expr: 'normal' });
+      svg = svg.replace('<svg ', '<svg width="200" height="300" ').replace(/(<svg[^>]*>)/, '$1<style>.ck-m2{opacity:0}</style>');
+      const img = new Image();
+      const r = { img: img, ready: false };
+      SPRITES[key] = r;
+      img.onload = () => { r.ready = true; };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    } catch (err) {
+      SPRITES[key] = { ready: false };
+    }
+    return null;
+  }
+
+  function run(config) {
+    const C = Object.assign({
+      title: '潛行', subtitle: '', goal: '', player: { name: '你', glyph: '我', color: '#3f9d84', speed: 2.1 },
+      rope: null, guards: [], moon: { bright: 7, dark: 5 }, assistAfter: 3, skipAfter: 6
+    }, config);
+    // 欄位給了 null 或缺項時，補回預設值（v0.1.1）
+    if (!C.moon || !(Number(C.moon.bright) > 0)) C.moon = { bright: 7, dark: 5 };
+    if (!(Number(C.moon.dark) >= 0)) C.moon.dark = 0;
+    C.player = Object.assign({ name: '你', glyph: '我', color: '#3f9d84', speed: 2.1 }, C.player || {});
+    if (!Array.isArray(C.guards)) C.guards = [];
+    const grid = C.level.grid.map(r => r.split(''));
+    const ROWS = grid.length;
+    const COLS = grid[0].length;
+    const at = (x, y) => (y >= 0 && y < ROWS && x >= 0 && x < COLS ? grid[y][x] : 'W');
+    const find = ch => { const out = []; grid.forEach((r, y) => r.forEach((c, x) => { if (c === ch) out.push([x, y]); })); return out; };
+    const start = find('S')[0] || [1, 1];
+    const exits = find('E');
+    const checkpoints = find('K');
+    const fires = find('F').concat(find('f'));
+    const walkable = (x, y) => BLOCK.indexOf(at(x, y)) === -1;
+    const cover = (x, y) => COVER.indexOf(at(x, y)) > -1;
+    // 主角、巡哨的 Q 版圖（先開始載入，垂降時就準備好）
+    const heroKey = 'hero:' + C.player.name + ':' + JSON.stringify(C.player.art || {});
+    const heroSpec = { name: C.player.name, art: C.player.art || {} };
+    const guardKey = 'guard:' + JSON.stringify(C.guardArt || {});
+    const guardSpec = { name: '巡哨兵', title: '兵', art: Object.assign({ hat: 'kui', armor: true, jade: false, prop: 'ji' }, C.guardArt || {}) };
+    sprite(heroKey, heroSpec);
+    sprite(guardKey, guardSpec);
+
+    return new Promise(resolve => {
+      const S = {
+        phase: C.rope ? 'rope' : 'ground', t: 0, caught: 0, ropeCaught: 0, assisted: false, skipped: false,
+        startedAt: Date.now(), done: false, paused: false, freeze: 0,
+        rope: { y: 0, alert: 0, holding: false },
+        player: null, guards: [], held: null, path: [], target: null, check: start.slice(), moonT: 0, dark: false
+      };
+      let T = 32;
+      let raf = 0;
+      let last = 0;
+
+      // ───────── 畫面 ─────────
+      const root = ZH.html(
+        '<div class="stl stl-phase-' + S.phase + '" role="application" aria-label="' + esc(C.title) + '">' +
+        '<header class="stl-top"><div class="stl-title"><b>' + esc(C.title) + '</b><span>' + esc(C.subtitle) + '</span></div>' +
+        '<div class="stl-goal"></div>' +
+        '<div class="stl-stat"><span class="stl-moon" aria-live="polite"><i></i><span></span></span>' +
+        '<span class="zh-chip stl-caught">被發現 0 次</span>' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="help">說明</button></div></header>' +
+        '<div class="stl-stage"><canvas class="stl-canvas"></canvas><div class="stl-flash"></div></div>' +
+        '<footer class="stl-foot"><p class="stl-hint"></p>' +
+        '<button type="button" class="zh-btn zh-btn--primary stl-hold" hidden>放繩</button>' +
+        '<div class="stl-pad" aria-label="移動">' + ['up', 'left', 'down', 'right'].map(d => '<button type="button" data-d="' + d + '" aria-label="' + { up: '上', left: '左', down: '下', right: '右' }[d] + '">' + { up: '▲', left: '◀', down: '▼', right: '▶' }[d] + '</button>').join('') + '</div>' +
+        '</footer></div>'
+      );
+      document.body.appendChild(root);
+      document.body.classList.add('stl-lock');
+      const stage = root.querySelector('.stl-stage');
+      const cvs = root.querySelector('.stl-canvas');
+      const g = cvs.getContext('2d');
+      const hold = root.querySelector('.stl-hold');
+      const hint = root.querySelector('.stl-hint');
+      const goal = root.querySelector('.stl-goal');
+      const flash = root.querySelector('.stl-flash');
+      const moonEl = root.querySelector('.stl-moon');
+      const caughtEl = root.querySelector('.stl-caught');
+      let base = null; // 靜態地形
+      const fog = document.createElement('canvas'); // 夜色（每格重畫，畫布重複使用）
+
+      function message(text, kind, ms) {
+        const old = stage.querySelector('.stl-msg');
+        if (old) old.remove();
+        const m = ZH.html('<div class="stl-msg' + (kind ? ' is-' + kind : '') + '" role="status">' + esc(text) + '</div>');
+        stage.appendChild(m);
+        if (ms !== 0) setTimeout(() => m.remove(), ms || 2200);
+      }
+
+      function setPhase(p) {
+        S.phase = p;
+        root.classList.remove('stl-phase-rope', 'stl-phase-ground');
+        root.classList.add('stl-phase-' + p);
+        hold.hidden = p !== 'rope';
+        if (p === 'rope') {
+          goal.textContent = '先從城牆垂降到地面';
+          hint.textContent = C.ropeHint || '按住「放繩」（或空白鍵）慢慢往下。火光掃過來時就放手，被照到還在動，就會被發現。';
+        } else {
+          goal.textContent = C.goal || '';
+          hint.textContent = C.intro || '點地面就會走過去，也可以用方向鍵。蘆葦和壕溝可以藏身；扇形是巡哨看得到的範圍。';
+        }
+        resize();
+      }
+
+      // ───────── 尺寸 ─────────
+      function resize() {
+        const r = stage.getBoundingClientRect();
+        const pad = 12;
+        let w;
+        let h;
+        if (S.phase === 'rope') {
+          w = Math.max(240, Math.min(r.width - pad * 2, 560));
+          h = Math.max(260, Math.min(r.height - pad * 2, 640));
+          T = 1;
+        } else {
+          T = Math.max(14, Math.floor(Math.min((r.width - pad * 2) / COLS, (r.height - pad * 2) / ROWS)));
+          w = COLS * T;
+          h = ROWS * T;
+        }
+        const dpr = Math.min(2, global.devicePixelRatio || 1);
+        cvs.style.width = w + 'px';
+        cvs.style.height = h + 'px';
+        cvs.width = Math.round(w * dpr);
+        cvs.height = Math.round(h * dpr);
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        S.W = w;
+        S.H = h;
+        S.dpr = dpr;
+        if (S.phase === 'ground') buildBase();
+      }
+
+      // ───────── 地形（靜態） ─────────
+      function noise(x, y) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+      function buildBase() {
+        base = document.createElement('canvas');
+        base.width = cvs.width;
+        base.height = cvs.height;
+        const b = base.getContext('2d');
+        b.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const c = grid[y][x];
+            const px = x * T;
+            const py = y * T;
+            // 底色
+            b.fillStyle = '#26352a';
+            b.fillRect(px, py, T, T);
+            for (let i = 0; i < 4; i++) {
+              b.fillStyle = 'rgba(120,150,110,' + (0.06 + noise(x * 3 + i, y * 5) * 0.08) + ')';
+              b.fillRect(px + noise(x, y + i) * T, py + noise(y, x + i) * T, 2, 2);
+            }
+            if (c === ',' ) { b.fillStyle = '#5c4d36'; b.fillRect(px, py, T, T); b.fillStyle = 'rgba(255,240,200,.06)'; b.fillRect(px + T * .2, py + T * .45, T * .6, T * .1); }
+            if (c === '~' || c === '=') {
+              b.fillStyle = c === '~' ? '#16304a' : '#24506a';
+              b.fillRect(px, py, T, T);
+              if (c === '=') { b.fillStyle = '#6d7f86'; [[.25, .3], [.65, .55], [.35, .78]].forEach(p => { b.beginPath(); b.ellipse(px + p[0] * T, py + p[1] * T, T * .12, T * .08, 0, 0, 7); b.fill(); }); }
+            }
+            if (c === 'x') {
+              b.fillStyle = '#2b2116'; b.fillRect(px + 1, py + 1, T - 2, T - 2);
+              b.strokeStyle = '#6b5638'; b.lineWidth = Math.max(1, T * .05);
+              b.strokeRect(px + 2, py + 2, T - 4, T - 4);
+            }
+            if (c === 'W') {
+              b.fillStyle = '#4a4238'; b.fillRect(px, py, T, T);
+              b.strokeStyle = 'rgba(0,0,0,.35)'; b.lineWidth = 1;
+              for (let k = 0; k < 3; k++) { b.beginPath(); b.moveTo(px, py + k * T / 3); b.lineTo(px + T, py + k * T / 3); b.stroke(); }
+              b.beginPath(); b.moveTo(px + ((y % 2) ? T / 2 : 0), py); b.lineTo(px + ((y % 2) ? T / 2 : 0), py + T); b.stroke();
+            }
+            if (c === 'T' || c === 't') {
+              const col = c === 'T' ? '#9c3328' : '#2c2f38';
+              b.fillStyle = col;
+              b.beginPath(); b.moveTo(px + T * .08, py + T * .9); b.lineTo(px + T * .5, py + T * .1); b.lineTo(px + T * .92, py + T * .9); b.closePath(); b.fill();
+              b.strokeStyle = c === 'T' ? '#2b1410' : '#c9a24a'; b.lineWidth = Math.max(1, T * .05); b.stroke();
+              b.beginPath(); b.moveTo(px + T * .5, py + T * .1); b.lineTo(px + T * .5, py + T * .9); b.stroke();
+            }
+            if (c === 'C') {
+              b.fillStyle = '#5a4128'; b.fillRect(px + T * .12, py + T * .3, T * .76, T * .36);
+              b.fillStyle = '#2b2016'; [.28, .72].forEach(w => { b.beginPath(); b.arc(px + w * T, py + T * .72, T * .12, 0, 7); b.fill(); });
+            }
+            if (c === 'E') {
+              b.fillStyle = '#2c2f38'; b.fillRect(px + T * .1, py + T * .1, T * .12, T * .85); b.fillRect(px + T * .78, py + T * .1, T * .12, T * .85);
+              b.fillStyle = '#c9a24a'; b.fillRect(px + T * .05, py + T * .08, T * .9, T * .14);
+            }
+          }
+        }
+        // 標籤
+        (C.level.labels || []).forEach(l => {
+          b.font = '700 ' + Math.round(T * .52) + 'px "LXGW WenKai TC","Noto Serif CJK TC",serif';
+          b.textAlign = 'center';
+          b.textBaseline = 'middle';
+          b.lineWidth = Math.max(2, T * .12);
+          b.strokeStyle = 'rgba(0,0,0,.75)';
+          b.strokeText(l.text, (l.x + .5) * T, (l.y + .5) * T);
+          b.fillStyle = l.color || '#efe2bf';
+          b.fillText(l.text, (l.x + .5) * T, (l.y + .5) * T);
+        });
+      }
+
+      // ───────── 角色 ─────────
+      function resetActors() {
+        S.player = { x: S.check[0], y: S.check[1], tx: S.check[0], ty: S.check[1], moving: false };
+        S.path = [];
+        S.target = null;
+        const slow = S.assisted ? 0.75 : 1;
+        S.guards = C.guards.map(gd => {
+          const p = gd.kind === 'sweep' ? gd.at : gd.path[0];
+          const ang = (gd.angle || 0) * Math.PI / 180;
+          return {
+            def: gd, x: p[0], y: p[1], i: 1, dir: 1, wait: 0, alert: 0, angle: ang,
+            speed: (gd.speed || 1.4) * slow, range: (gd.range || 4) * (S.assisted ? 0.85 : 1),
+            fov: (gd.fov || 70) * Math.PI / 360
+          };
+        });
+        // warm：開場前先讓巡哨走幾秒，錯開大家的節奏
+        S.guards.forEach(gd => {
+          if (gd.def.kind === 'sweep' || !gd.def.warm) return;
+          for (let w = 0; w < gd.def.warm; w += 0.05) moveGuard(gd, 0.05, w);
+        });
+      }
+
+      // 巡哨移動：sweep 原地左右看；patrol 沿路線來回走，走到端點會停一下
+      function moveGuard(gd, dt, t) {
+        const def = gd.def;
+        if (def.kind === 'sweep') {
+          const base0 = (def.angle || 0) * Math.PI / 180;
+          const span = (def.span || 50) * Math.PI / 180;
+          gd.angle = base0 + span * Math.sin(t * 2 * Math.PI / (def.period || 5));
+        } else if (gd.wait > 0) {
+          gd.wait -= dt;
+          gd.angle += Math.sin(t * 2) * dt * 0.6;
+        } else {
+          const tgt = def.path[gd.i];
+          const dx = tgt[0] - gd.x;
+          const dy = tgt[1] - gd.y;
+          const d = Math.hypot(dx, dy);
+          const want = Math.atan2(dy, dx);
+          gd.angle += clamp(angDiff(want, gd.angle), -4 * dt, 4 * dt);
+          const step = gd.speed * dt;
+          if (d <= step) {
+            gd.x = tgt[0];
+            gd.y = tgt[1];
+            gd.wait = def.pause === undefined ? 0.9 : def.pause;
+            if (gd.i + gd.dir >= def.path.length || gd.i + gd.dir < 0) gd.dir *= -1;
+            gd.i += gd.dir;
+          } else {
+            gd.x += dx / d * step;
+            gd.y += dy / d * step;
+          }
+        }
+      }
+
+      function tileOf(p) { return [Math.round(p.x), Math.round(p.y)]; }
+
+      // 找路（只走能走的格子）
+      function bfs(from, to) {
+        if (!walkable(to[0], to[1])) return null;
+        const key = (x, y) => x + ',' + y;
+        const prev = {};
+        const q = [from];
+        prev[key(from[0], from[1])] = null;
+        while (q.length) {
+          const [x, y] = q.shift();
+          if (x === to[0] && y === to[1]) break;
+          [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+            const nx = x + dx;
+            const ny = y + dy;
+            const k = key(nx, ny);
+            if (k in prev || !walkable(nx, ny)) return;
+            prev[k] = [x, y];
+            q.push([nx, ny]);
+          });
+        }
+        if (!(key(to[0], to[1]) in prev)) return null;
+        const path = [];
+        let cur = to;
+        while (cur && !(cur[0] === from[0] && cur[1] === from[1])) {
+          path.unshift(cur);
+          cur = prev[key(cur[0], cur[1])];
+        }
+        return path;
+      }
+
+      function lineOfSight(x0, y0, x1, y1) {
+        const d = Math.hypot(x1 - x0, y1 - y0);
+        const n = Math.ceil(d / 0.25);
+        for (let i = 1; i < n; i++) {
+          const x = Math.round(x0 + (x1 - x0) * i / n);
+          const y = Math.round(y0 + (y1 - y0) * i / n);
+          if (SIGHT_BLOCK.indexOf(at(x, y)) > -1) return false;
+        }
+        return true;
+      }
+
+      // ───────── 垂降 ─────────
+      function updateRope(dt) {
+        const r = S.rope;
+        const period = C.rope.period || 5;
+        const beamX = 0.5 + 0.42 * Math.sin(S.t * 2 * Math.PI / period);
+        r.beam = beamX;
+        const lit = Math.abs(beamX - 0.5) < BEAM;
+        r.lit = lit;
+        if (r.holding) r.y = Math.min(1, r.y + dt / (C.rope.length || 8));
+        if (lit) r.alert += dt * (r.holding ? 2.6 : 0.25);
+        else r.alert = Math.max(0, r.alert - dt * 0.6);
+        if (r.alert >= 1) {
+          S.ropeCaught += 1;
+          S.caught += 1;
+          caughtEl.textContent = '被發現 ' + S.caught + ' 次';
+          ZH.sfx('ng');
+          flashOn();
+          message('城下有人喊：「牆上有人！」' + (C.player.name || '你') + '趕緊被拉回城頭。', 'bad', 2400);
+          r.alert = 0;
+          r.y = 0;
+          r.holding = false;
+          hold.classList.remove('is-on');
+          S.freeze = 1.6;
+          return;
+        }
+        if (r.y >= 1) {
+          ZH.sfx('ok');
+          message('雙腳踩到地面了。', 'good', 1800);
+          S.freeze = 1.2;
+          S.after = () => { setPhase('ground'); resetActors(); message(C.groundMsg || '避開巡哨，抵達目的地。', '', 2600); };
+        }
+      }
+
+      function drawRope() {
+        const W = S.W;
+        const H = S.H;
+        const r = S.rope;
+        const sky = g.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#0b1230');
+        sky.addColorStop(1, '#1a1f35');
+        g.fillStyle = sky;
+        g.fillRect(0, 0, W, H);
+        for (let i = 0; i < 40; i++) {
+          g.fillStyle = 'rgba(255,248,220,' + (0.3 + noise(i, 3) * 0.6) + ')';
+          g.fillRect(noise(i, 1) * W, noise(i, 2) * H * 0.5, 1.5, 1.5);
+        }
+        g.fillStyle = '#e9dcae';
+        g.beginPath(); g.arc(W * 0.82, H * 0.12, Math.min(W, H) * 0.05, 0, 7); g.fill();
+        // 城牆
+        const wx = W * 0.22;
+        const ww = W * 0.56;
+        const top = H * 0.1;
+        const groundY = H * 0.86;
+        g.fillStyle = '#4a4238';
+        g.fillRect(wx, top, ww, groundY - top);
+        for (let i = 0; i < 9; i++) g.fillRect(wx + i * ww / 8.5, top - H * 0.035, ww / 17, H * 0.035);
+        g.strokeStyle = 'rgba(0,0,0,.35)';
+        g.lineWidth = 1;
+        const rowH = H * 0.045;
+        for (let yy = top; yy < groundY; yy += rowH) {
+          g.beginPath(); g.moveTo(wx, yy); g.lineTo(wx + ww, yy); g.stroke();
+          const off = ((yy - top) / rowH) % 2 ? 0 : ww / 12;
+          for (let xx = wx + off; xx < wx + ww; xx += ww / 6) { g.beginPath(); g.moveTo(xx, yy); g.lineTo(xx, yy + rowH); g.stroke(); }
+        }
+        g.fillStyle = '#1d2a20';
+        g.fillRect(0, groundY, W, H - groundY);
+        // 火光
+        const bx = r.beam * W;
+        const bw = W * (BEAM + 0.02);
+        const beam = g.createLinearGradient(bx - bw, 0, bx + bw, 0);
+        beam.addColorStop(0, 'rgba(255,190,90,0)');
+        beam.addColorStop(0.5, r.lit ? 'rgba(255,170,80,.45)' : 'rgba(255,190,90,.32)');
+        beam.addColorStop(1, 'rgba(255,190,90,0)');
+        g.fillStyle = beam;
+        g.beginPath();
+        g.moveTo(W * 0.06, H * 0.9);
+        g.lineTo(bx - bw, top);
+        g.lineTo(bx + bw, top);
+        g.closePath();
+        g.fill();
+        // 城下巡哨
+        const gImg = sprite(guardKey, guardSpec);
+        if (gImg) {
+          const gh = H * 0.15;
+          g.drawImage(gImg, W * 0.06 - gh / 3, H * 0.95 - gh, gh * 2 / 3, gh);
+        } else {
+          g.fillStyle = '#0b0b10';
+          g.beginPath(); g.arc(W * 0.06, H * 0.84, H * 0.022, 0, 7); g.fill();
+          g.fillRect(W * 0.045, H * 0.86, W * 0.03, H * 0.08);
+        }
+        g.fillStyle = '#ffb347';
+        g.beginPath(); g.arc(W * 0.085, H * 0.85, H * 0.012 + Math.sin(S.t * 20) * 1, 0, 7); g.fill();
+        // 繩子與燭之武
+        const rx = W * 0.5;
+        const py = top + (groundY - top - H * 0.08) * r.y + H * 0.02;
+        g.strokeStyle = '#c9b48a';
+        g.lineWidth = 2;
+        g.beginPath(); g.moveTo(rx, top - H * 0.02); g.lineTo(rx + Math.sin(S.t * 3) * (r.holding ? 2 : 0.5), py); g.stroke();
+        drawElder(rx, py + H * 0.04, Math.min(W, H) * 0.12, false);
+        // 警覺條
+        g.fillStyle = 'rgba(0,0,0,.5)';
+        g.fillRect(W * 0.1, H * 0.035, W * 0.8, 10);
+        g.fillStyle = r.alert > 0.6 ? '#d9483b' : '#e0b44c';
+        g.fillRect(W * 0.1, H * 0.035, W * 0.8 * r.alert, 10);
+        g.font = '13px "Noto Sans TC", sans-serif';
+        g.fillStyle = '#ece6d6';
+        g.textAlign = 'left';
+        g.textBaseline = 'bottom';
+        g.fillText('城下巡哨的警覺', W * 0.1, H * 0.033);
+        g.textAlign = 'right';
+        g.fillText('垂降 ' + Math.round(r.y * 100) + '%', W * 0.9, H * 0.033);
+      }
+
+      // ───────── 潛行 ─────────
+      function updateGround(dt) {
+        // 月色
+        S.moonT += dt;
+        const cyc = C.moon.bright + C.moon.dark;
+        const dark = (S.moonT % cyc) > C.moon.bright;
+        if (dark !== S.dark) {
+          S.dark = dark;
+          moonEl.classList.toggle('is-dark', dark);
+          moonEl.querySelector('span').textContent = dark ? '雲遮月' : '月明';
+        }
+        // 玩家移動
+        const p = S.player;
+        const speed = (C.player.speed || 2.1);
+        if (!p.moving) {
+          let next = null;
+          if (S.path.length) next = S.path.shift();
+          else if (S.held) {
+            const d = DIRS[S.held];
+            const nx = p.tx + d[0];
+            const ny = p.ty + d[1];
+            if (walkable(nx, ny)) next = [nx, ny];
+          }
+          if (next) { p.tx = next[0]; p.ty = next[1]; p.moving = true; }
+          else S.target = null;
+        }
+        if (p.moving) {
+          const dx = p.tx - p.x;
+          const dy = p.ty - p.y;
+          const d = Math.hypot(dx, dy);
+          const step = speed * dt;
+          if (d <= step) {
+            p.x = p.tx;
+            p.y = p.ty;
+            p.moving = false;
+            arrive(p.tx, p.ty);
+            if (S.done || S.freeze) return;
+          } else {
+            p.x += dx / d * step;
+            p.y += dy / d * step;
+          }
+        }
+        // 巡哨
+        const pt = tileOf(p);
+        const hidden = cover(pt[0], pt[1]);
+        S.hidden = hidden;
+        S.guards.forEach(gd => {
+          moveGuard(gd, dt, S.t);
+          // 看到了嗎
+          const ex = p.x - gd.x;
+          const ey = p.y - gd.y;
+          const dist = Math.hypot(ex, ey);
+          const range = gd.range * (S.dark ? 0.72 : 1);
+          let seen = dist <= range && Math.abs(angDiff(Math.atan2(ey, ex), gd.angle)) <= gd.fov && lineOfSight(gd.x, gd.y, p.x, p.y);
+          if (seen && hidden && dist > 1.5) seen = false;
+          if (dist < 0.9) seen = true;
+          gd.seeing = seen;
+          if (seen) {
+            const close = 0.6 + 1.0 * (1 - dist / Math.max(range, 0.1));
+            gd.alert += dt * 1.3 * (p.moving ? 1.25 : 0.6) * close * (S.dark ? 0.8 : 1) * (S.assisted ? 0.7 : 1);
+          } else {
+            gd.alert = Math.max(0, gd.alert - dt * 0.7);
+          }
+        });
+        const spotter = S.guards.find(gd => gd.alert >= 1);
+        if (spotter) caught(spotter);
+      }
+
+      function arrive(x, y) {
+        const c = at(x, y);
+        if (c === 'K' && (S.check[0] !== x || S.check[1] !== y)) {
+          S.check = [x, y];
+          ZH.sfx('chime');
+          message('記下這個位置：被發現時會回到這裡。', 'good', 1800);
+        }
+        if (c === 'E') win();
+      }
+
+      function caught(gd) {
+        S.caught += 1;
+        caughtEl.textContent = '被發現 ' + S.caught + ' 次';
+        ZH.sfx('ng');
+        flashOn();
+        message((gd.def.name || '巡哨') + '大喊：「什麼人！」——只好退回藏身處。', 'bad', 2400);
+        S.freeze = 1.6;
+        S.after = () => {
+          resetActors();
+          maybeAssist();
+        };
+      }
+
+      function maybeAssist() {
+        if (!S.assisted && !S.offeredAssist && S.caught >= C.assistAfter) {
+          S.offeredAssist = true;
+          ask('要放慢巡哨嗎？', '已經被發現 ' + S.caught + ' 次了。可以讓巡哨走慢一點、看得近一點。', [
+            { label: '放慢一點', kind: 'primary', fn: () => { S.assisted = true; resetActors(); } },
+            { label: '維持原樣', kind: 'quiet', fn: () => {} }
+          ]);
+        } else if (S.caught >= (S.nextSkip || C.skipAfter)) {
+          S.nextSkip = S.caught + 3;
+          ask('要略過這一段嗎？', '略過潛行也能繼續劇情，但這一段會記為「略過」。', [
+            { label: '再試一次', kind: 'quiet', fn: () => {} },
+            { label: '略過潛行', kind: 'primary', fn: () => { S.skipped = true; win(); } }
+          ]);
+        }
+      }
+
+      function ask(title, text, opts) {
+        S.paused = true;
+        const box = ZH.html('<div class="stl-ask" role="dialog" aria-modal="true"><div class="stl-ask__card"><h3>' + esc(title) + '</h3><p>' + esc(text) + '</p><div class="zh-row"></div></div></div>');
+        const row = box.querySelector('.zh-row');
+        opts.forEach(o => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'zh-btn zh-btn--' + (o.kind || 'quiet');
+          b.textContent = o.label;
+          b.addEventListener('click', () => { box.remove(); S.paused = false; last = performance.now(); o.fn(); });
+          row.appendChild(b);
+        });
+        stage.appendChild(box);
+        row.querySelector('button:last-child').focus();
+      }
+
+      function flashOn() {
+        flash.classList.add('is-on');
+        setTimeout(() => flash.classList.remove('is-on'), 450);
+      }
+
+      function win() {
+        if (S.done) return;
+        S.done = true;
+        ZH.sfx('seal');
+        message(C.winMsg || '抵達目的地。', 'good', 0);
+        setTimeout(finish, 1500);
+      }
+
+      function drawElder(x, y, size, hidden) {
+        const s = size;
+        const img = sprite(heroKey, heroSpec);
+        if (img) {
+          const h = s * 1.4;
+          const w = h * 2 / 3;
+          g.save();
+          g.fillStyle = 'rgba(0,0,0,.35)';
+          g.beginPath(); g.ellipse(x, y + s * .38, s * .26, s * .08, 0, 0, 7); g.fill();
+          g.globalAlpha = hidden ? 0.55 : 1;
+          g.drawImage(img, x - w / 2, y + s * .42 - h, w, h);
+          if (hidden) {
+            g.globalAlpha = 1;
+            g.strokeStyle = 'rgba(169,226,212,.9)';
+            g.setLineDash([3, 3]);
+            g.lineWidth = 1.5;
+            g.beginPath(); g.arc(x, y + s * .05, s * .5, 0, 7); g.stroke();
+            g.setLineDash([]);
+          }
+          g.restore();
+          return;
+        }
+        g.save();
+        g.globalAlpha = hidden ? 0.6 : 1;
+        g.fillStyle = 'rgba(0,0,0,.35)';
+        g.beginPath(); g.ellipse(x, y + s * .38, s * .26, s * .08, 0, 0, 7); g.fill();
+        g.fillStyle = C.player.color || '#3f9d84';
+        g.strokeStyle = '#0d2b24';
+        g.lineWidth = Math.max(1, s * .05);
+        g.beginPath();
+        g.moveTo(x - s * .22, y + s * .36);
+        g.lineTo(x + s * .22, y + s * .36);
+        g.lineTo(x + s * .12, y - s * .08);
+        g.lineTo(x - s * .12, y - s * .08);
+        g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = '#e9d3b0';
+        g.beginPath(); g.arc(x, y - s * .2, s * .12, 0, 7); g.fill();
+        g.fillStyle = '#1b1712';
+        g.fillRect(x - s * .06, y - s * .36, s * .12, s * .08);
+        g.fillStyle = '#f3efe4';
+        g.beginPath(); g.moveTo(x - s * .05, y - s * .12); g.lineTo(x + s * .05, y - s * .12); g.lineTo(x, y + s * .02); g.closePath(); g.fill();
+        g.strokeStyle = '#8a6d45';
+        g.lineWidth = Math.max(1, s * .045);
+        g.beginPath(); g.moveTo(x + s * .2, y - s * .04); g.lineTo(x + s * .28, y + s * .38); g.stroke();
+        if (hidden) {
+          g.globalAlpha = 1;
+          g.strokeStyle = 'rgba(169,226,212,.9)';
+          g.setLineDash([3, 3]);
+          g.lineWidth = 1.5;
+          g.beginPath(); g.arc(x, y + s * .05, s * .48, 0, 7); g.stroke();
+          g.setLineDash([]);
+        }
+        g.restore();
+      }
+
+      function drawGuard(gd) {
+        const x = (gd.x + .5) * T;
+        const y = (gd.y + .5) * T;
+        const s = T;
+        const img = sprite(guardKey, guardSpec);
+        if (img) {
+          const h = s * 1.35;
+          const w = h * 2 / 3;
+          g.fillStyle = 'rgba(0,0,0,.35)';
+          g.beginPath(); g.ellipse(x, y + s * .34, s * .24, s * .07, 0, 0, 7); g.fill();
+          g.save();
+          if (Math.cos(gd.angle) < -0.2) { g.translate(x, 0); g.scale(-1, 1); g.translate(-x, 0); } // 往左看時翻面
+          g.drawImage(img, x - w / 2, y + s * .38 - h, w, h);
+          g.restore();
+          const fx2 = x + Math.cos(gd.angle + 1.2) * s * .3;
+          const fy2 = y + Math.sin(gd.angle + 1.2) * s * .3;
+          g.fillStyle = '#ffb347';
+          g.beginPath(); g.arc(fx2, fy2, s * (.08 + Math.sin(S.t * 18 + gd.x) * .015), 0, 7); g.fill();
+          if (gd.alert > 0.1) {
+            const r = s * .2;
+            const ay2 = y + s * .38 - h - r * .6;
+            g.fillStyle = 'rgba(0,0,0,.6)';
+            g.beginPath(); g.arc(x, ay2, r, 0, 7); g.fill();
+            g.strokeStyle = gd.alert > 0.7 ? '#ff6b5a' : '#e0b44c';
+            g.lineWidth = Math.max(2, s * .06);
+            g.beginPath(); g.arc(x, ay2, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, gd.alert)); g.stroke();
+            g.fillStyle = gd.alert > 0.7 ? '#ff6b5a' : '#f3e7c0';
+            g.font = '700 ' + Math.round(s * .3) + 'px sans-serif';
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            g.fillText(gd.alert > 0.7 ? '！' : '？', x, ay2 + 1);
+          }
+          return;
+        }
+        g.fillStyle = 'rgba(0,0,0,.35)';
+        g.beginPath(); g.ellipse(x, y + s * .34, s * .24, s * .07, 0, 0, 7); g.fill();
+        g.fillStyle = '#8c2f27';
+        g.strokeStyle = '#2b1410';
+        g.lineWidth = Math.max(1, s * .05);
+        g.beginPath(); g.moveTo(x - s * .2, y + s * .34); g.lineTo(x + s * .2, y + s * .34); g.lineTo(x + s * .13, y - s * .08); g.lineTo(x - s * .13, y - s * .08); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = '#d8b88f';
+        g.beginPath(); g.arc(x, y - s * .2, s * .11, 0, 7); g.fill();
+        g.fillStyle = '#3b2f22';
+        g.beginPath(); g.arc(x, y - s * .24, s * .12, Math.PI, 0); g.fill();
+        // 長戈指向面向的方向
+        const ax = Math.cos(gd.angle);
+        const ay = Math.sin(gd.angle);
+        g.strokeStyle = '#8a6d45';
+        g.lineWidth = Math.max(1, s * .04);
+        g.beginPath(); g.moveTo(x - ax * s * .2, y - ay * s * .2); g.lineTo(x + ax * s * .45, y + ay * s * .45); g.stroke();
+        // 火把
+        const fx = x + Math.cos(gd.angle + 1.2) * s * .28;
+        const fy = y + Math.sin(gd.angle + 1.2) * s * .28;
+        g.fillStyle = '#ffb347';
+        g.beginPath(); g.arc(fx, fy, s * (.08 + Math.sin(S.t * 18 + gd.x) * .015), 0, 7); g.fill();
+        // 警覺
+        if (gd.alert > 0.1) {
+          const r = s * .2;
+          g.fillStyle = 'rgba(0,0,0,.6)';
+          g.beginPath(); g.arc(x, y - s * .62, r, 0, 7); g.fill();
+          g.strokeStyle = gd.alert > 0.7 ? '#ff6b5a' : '#e0b44c';
+          g.lineWidth = Math.max(2, s * .06);
+          g.beginPath(); g.arc(x, y - s * .62, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, gd.alert)); g.stroke();
+          g.fillStyle = gd.alert > 0.7 ? '#ff6b5a' : '#f3e7c0';
+          g.font = '700 ' + Math.round(s * .3) + 'px sans-serif';
+          g.textAlign = 'center';
+          g.textBaseline = 'middle';
+          g.fillText(gd.alert > 0.7 ? '！' : '？', x, y - s * .61);
+        }
+      }
+
+      function drawCone(gd) {
+        const range = gd.range * (S.dark ? 0.72 : 1) * T;
+        const x = (gd.x + .5) * T;
+        const y = (gd.y + .5) * T;
+        const grad = g.createRadialGradient(x, y, T * .3, x, y, range);
+        const hot = gd.seeing || gd.alert > 0.3;
+        grad.addColorStop(0, hot ? 'rgba(255,110,80,.34)' : 'rgba(255,200,100,.26)');
+        grad.addColorStop(1, hot ? 'rgba(255,110,80,.05)' : 'rgba(255,200,100,.03)');
+        g.fillStyle = grad;
+        g.beginPath();
+        g.moveTo(x, y);
+        g.arc(x, y, range, gd.angle - gd.fov, gd.angle + gd.fov);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = hot ? 'rgba(255,120,90,.55)' : 'rgba(255,205,120,.32)';
+        g.lineWidth = 1;
+        g.stroke();
+      }
+
+      function drawGround() {
+        const W = S.W;
+        const H = S.H;
+        g.clearRect(0, 0, W, H);
+        if (base) g.drawImage(base, 0, 0, W, H);
+        // 動態：蘆葦、水波、火
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const c = grid[y][x];
+            const px = x * T;
+            const py = y * T;
+            if (c === '"') {
+              g.strokeStyle = '#6f8a4a';
+              g.lineWidth = Math.max(1, T * .05);
+              for (let i = 0; i < 6; i++) {
+                const bx = px + T * (.12 + i * .15);
+                const sway = Math.sin(S.t * 1.6 + x + i) * T * .05;
+                g.beginPath(); g.moveTo(bx, py + T * .95); g.quadraticCurveTo(bx + sway, py + T * .5, bx + sway * 2, py + T * (.12 + (i % 3) * .08)); g.stroke();
+              }
+            } else if (c === '~') {
+              g.strokeStyle = 'rgba(150,200,230,.18)';
+              g.lineWidth = 1;
+              const o = (S.t * 8 + x * 7) % T;
+              g.beginPath(); g.moveTo(px + o * .5, py + T * .4); g.lineTo(px + o * .5 + T * .3, py + T * .4); g.stroke();
+            } else if (c === 'F' || c === 'f') {
+              const fl = 0.85 + Math.sin(S.t * 14 + x) * 0.15;
+              g.fillStyle = '#3b2a1a';
+              g.fillRect(px + T * .2, py + T * .62, T * .6, T * .14);
+              g.fillStyle = 'rgba(255,140,40,' + fl + ')';
+              g.beginPath(); g.moveTo(px + T * .5, py + T * (.12 + (1 - fl) * .3)); g.quadraticCurveTo(px + T * .85, py + T * .6, px + T * .5, py + T * .66); g.quadraticCurveTo(px + T * .15, py + T * .6, px + T * .5, py + T * .12); g.fill();
+            } else if (c === 'K' && (S.check[0] !== x || S.check[1] !== y)) {
+              g.strokeStyle = 'rgba(224,180,76,.75)';
+              g.lineWidth = 1.5;
+              g.strokeRect(px + T * .3, py + T * .2, T * .4, T * .6);
+            }
+          }
+        }
+        // 黑夜與光
+        if (fog.width !== cvs.width || fog.height !== cvs.height) { fog.width = cvs.width; fog.height = cvs.height; }
+        const d = fog.getContext('2d');
+        d.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+        d.globalCompositeOperation = 'source-over';
+        d.clearRect(0, 0, W, H);
+        d.fillStyle = 'rgba(3,6,18,' + (S.dark ? 0.72 : 0.55) + ')';
+        d.fillRect(0, 0, W, H);
+        d.globalCompositeOperation = 'destination-out';
+        const light = (lx, ly, r) => {
+          const gr = d.createRadialGradient(lx, ly, 0, lx, ly, r);
+          gr.addColorStop(0, 'rgba(0,0,0,.95)');
+          gr.addColorStop(1, 'rgba(0,0,0,0)');
+          d.fillStyle = gr;
+          d.beginPath(); d.arc(lx, ly, r, 0, 7); d.fill();
+        };
+        fires.forEach(([x, y]) => light((x + .5) * T, (y + .5) * T, T * 2.8));
+        exits.forEach(([x, y]) => light((x + .5) * T, (y + .5) * T, T * 1.8));
+        S.guards.forEach(gd => light((gd.x + .5) * T, (gd.y + .5) * T, T * 1.9));
+        light((S.player.x + .5) * T, (S.player.y + .5) * T, T * 1.1);
+        g.drawImage(fog, 0, 0, W, H);
+        // 視線、角色
+        S.guards.forEach(drawCone);
+        if (S.target) {
+          g.strokeStyle = 'rgba(224,180,76,.85)';
+          g.lineWidth = 2;
+          g.setLineDash([4, 4]);
+          g.strokeRect(S.target[0] * T + 3, S.target[1] * T + 3, T - 6, T - 6);
+          g.setLineDash([]);
+        }
+        S.guards.forEach(drawGuard);
+        drawElder((S.player.x + .5) * T, (S.player.y + .45) * T, T * 1.05, S.hidden);
+      }
+
+      // ───────── 迴圈 ─────────
+      function frame(now) {
+        raf = requestAnimationFrame(frame);
+        const dt = Math.min(0.05, (now - (last || now)) / 1000);
+        last = now;
+        if (S.paused || document.hidden) return;
+        S.t += dt;
+        if (S.freeze > 0) {
+          S.freeze -= dt;
+          if (S.freeze <= 0) {
+            S.freeze = 0;
+            const fn = S.after;
+            S.after = null;
+            if (fn) fn();
+          }
+        } else if (!S.done) {
+          if (S.phase === 'rope') updateRope(dt);
+          else updateGround(dt);
+        }
+        if (S.phase === 'rope') drawRope(); else drawGround();
+      }
+
+      // ───────── 操作 ─────────
+      const onKey = e => {
+        if (document.querySelector('.zh-modal')) return;
+        if (S.phase === 'rope' && (e.code === 'Space' || e.code === 'ArrowDown' || e.code === 'KeyS')) {
+          e.preventDefault();
+          setHold(e.type === 'keydown');
+          return;
+        }
+        const d = KEYS[e.code];
+        if (!d || S.phase !== 'ground') return;
+        e.preventDefault();
+        if (e.type === 'keydown') { S.held = d; S.path = []; S.target = null; }
+        else if (S.held === d) S.held = null;
+      };
+      function setHold(on) {
+        if (S.freeze || S.done) on = false;
+        S.rope.holding = !!on;
+        hold.classList.toggle('is-on', !!on);
+      }
+      document.addEventListener('keydown', onKey);
+      document.addEventListener('keyup', onKey);
+      hold.addEventListener('pointerdown', e => { e.preventDefault(); setHold(true); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => hold.addEventListener(t, () => setHold(false)));
+      hold.addEventListener('contextmenu', e => e.preventDefault());
+      cvs.addEventListener('pointerdown', e => {
+        if (S.phase !== 'ground' || S.freeze || S.done || S.paused) return;
+        const r = cvs.getBoundingClientRect();
+        const tx = Math.floor((e.clientX - r.left) / T);
+        const ty = Math.floor((e.clientY - r.top) / T);
+        const from = [S.player.tx, S.player.ty];
+        const path = bfs(from, [tx, ty]);
+        if (!path) { message('那裡過不去。', '', 1200); return; }
+        S.path = path;
+        S.held = null;
+        S.target = [tx, ty];
+        ZH.sfx('click');
+      });
+      root.querySelectorAll('.stl-pad [data-d]').forEach(b => {
+        b.addEventListener('pointerdown', e => { e.preventDefault(); S.held = b.dataset.d; S.path = []; S.target = null; });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { if (S.held === b.dataset.d) S.held = null; }));
+      });
+      root.querySelector('[data-a="help"]').addEventListener('click', () => {
+        S.paused = true;
+        ZH.modal({ title: '潛行說明', body: C.helpHtml || '', actions: [{ label: '繼續', value: true, kind: 'primary' }] })
+          .then(() => { S.paused = false; last = performance.now(); });
+      });
+      const onResize = () => resize();
+      global.addEventListener('resize', onResize);
+
+      function finish() {
+        cancelAnimationFrame(raf);
+        document.removeEventListener('keydown', onKey);
+        document.removeEventListener('keyup', onKey);
+        global.removeEventListener('resize', onResize);
+        root.remove();
+        document.body.classList.remove('stl-lock');
+        resolve({
+          caught: S.caught, ropeCaught: S.ropeCaught,
+          seconds: Math.round((Date.now() - S.startedAt) / 1000),
+          assisted: S.assisted, skipped: S.skipped
+        });
+      }
+
+      // 自動測試用（網址帶 test=1 才會出現）
+      if (ZH.boot && ZH.boot.params && String(ZH.boot.params.test) === '1') {
+        global.__stl = {
+          state: S, bfs: bfs, win: win,
+          skipRope: () => { if (S.phase === 'rope') { S.rope.y = 1; } },
+          teleport: (x, y) => { S.player.x = S.player.tx = x; S.player.y = S.player.ty = y; S.player.moving = false; S.path = []; }
+        };
+      }
+
+      setPhase(S.phase);
+      resetActors();
+      moonEl.querySelector('span').textContent = '月明';
+      raf = requestAnimationFrame(frame);
+    });
+  }
+
+  /** 檢查關卡：起點能不能走到終點、只靠藏身處能走多遠（測試與除錯用） */
+  function inspect(level) {
+    const grid = level.grid.map(r => r.split(''));
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const bad = grid.some(r => r.length !== cols);
+    const at = (x, y) => (y >= 0 && y < rows && x >= 0 && x < cols ? grid[y][x] : 'W');
+    let s = null;
+    const ends = [];
+    grid.forEach((r, y) => r.forEach((c, x) => { if (c === 'S') s = [x, y]; if (c === 'E') ends.push([x, y]); }));
+    const seen = {};
+    const q = s ? [s] : [];
+    if (s) seen[s.join(',')] = true;
+    while (q.length) {
+      const [x, y] = q.shift();
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+        const nx = x + dx;
+        const ny = y + dy;
+        const k = nx + ',' + ny;
+        if (seen[k] || BLOCK.indexOf(at(nx, ny)) > -1) return;
+        seen[k] = true;
+        q.push([nx, ny]);
+      });
+    }
+    return { cols: cols, rows: rows, ragged: bad, start: s, reachable: ends.some(e => seen[e.join(',')]) };
+  }
+
+  // ───────── 挑戰賽（v0.2.0） ─────────
+  function defaultScore(r) {
+    if (!r || r.skipped) return { passed: false, score: 0, max: 10 };
+    return { passed: true, score: Math.max(2, 10 - 2 * (r.caught || 0) - (r.assisted ? 1 : 0)), max: 10 };
+  }
+
+  async function challenge(config, opts) {
+    const o = Object.assign({ attempts: 3 }, opts || {});
+    if (ZH.spring && o.scenarioId) await ZH.spring.before(o.scenarioId);
+    const scoreOf = typeof o.score === 'function' ? o.score : defaultScore;
+    const withScore = r => Object.assign({}, r, scoreOf(r));
+    if (!ZH.arena || !o.scenarioId || !o.gameId) return run(config).then(withScore);
+    return new Promise(resolve => {
+      const bd = Object.assign({ base: 'night', tod: 'night' }, o.backdrop || {});
+      const bg = global.ART && global.ART.scene && global.ART.hasScene && global.ART.hasScene(bd.base)
+        ? global.ART.scene(bd.base, { tod: bd.tod, banner: bd.banner, glyph: bd.glyph }) : '';
+      const wrap = ZH.html('<div class="stl-arena" role="dialog" aria-label="' + esc(o.title || config.title || '潛行') + '">' +
+        '<div class="stl-arena__bg">' + bg + '</div><div class="ar-hud" hidden></div>' +
+        '<div class="stl-arena__frame"><div class="stl-arena__body"></div></div></div>');
+      document.body.appendChild(wrap);
+      const playOnce = () => run(config).then(r => {
+        const rr = withScore(r);
+        if (!r.skipped && ZH.track) {
+          ZH.track('minigame', { scenarioId: o.scenarioId, gameId: String(o.gameId), score: Math.round(rr.score || 0), maxScore: Math.round(rr.max || 0), durationSec: Math.round(r.seconds || 0) });
+        }
+        return rr;
+      });
+      const session = ZH.arena.session({
+        scenarioId: o.scenarioId, gameId: String(o.gameId), title: o.title || config.title, goal: o.goal || config.goal,
+        help: o.help || config.helpHtml, attempts: o.attempts,
+        frame: wrap.querySelector('.stl-arena__frame'), hud: wrap.querySelector('.ar-hud'), body: wrap.querySelector('.stl-arena__body')
+      }, playOnce);
+      session.promise.then(best => {
+        wrap.remove();
+        if (ZH.flush && ZH.isGuest && !ZH.isGuest()) ZH.flush();
+        resolve(best && typeof best === 'object' ? best : { skipped: true, passed: false, score: 0, max: 10 });
+      });
+    });
+  }
+
+  ZH.stealth = { run: run, challenge: challenge, inspect: inspect };
+})(window.ZH);
+</script>

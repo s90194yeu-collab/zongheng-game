@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Result.html
+ 版本：v0.2.2（2026-10-14）
+ 依賴：Core_css.html、Core_js.html、Data_catalog.html、Data_codex.html、
+       Codex_js.html、Anchor_js.html
+       伺服器 Code.gs（樣板變數）、ResultApi.gs（api_getMyResult）、Log.gs、AnchorBank.gs、ProgressApi.gs
+ 說明：一話結束後的結算頁。
+   結局印章與本話成績、依玩家作為生成的列傳（含「太史公曰」）、
+   五維雷達圖（本話與累積）、史筆與名位、史實錨點回顧、
+   本話史冊圖鑑、反思書寫，以及下載與複製全文。
+ 網址：?page=result&s=劇本代碼
+       由劇本頁的 ZH.finishScenario 帶入結算資料（存在這個分頁）；
+       沒有分頁資料時，學校帳號讀取已保留的通關紀錄；舊紀錄可由首次表現重建。
+       加上 &demo=1 為示範模式：使用假資料，不寫入任何紀錄。
+ v0.1.2：從天下大地圖進入的劇本，結算頁多一個「回到天下」（頁首提示條與下方按鈕），
+         成績會帶回大地圖換成計策卡。
+ 紀錄：學校帳號第一次開啟時，列傳寫入 Reflection（biography）；
+       反思送出時寫入 Reflection（reflection）。
+ v0.1.1：結算資料可以自訂列傳的篇名與開頭（bioTitle、bioOpening），
+         例如秦國篇寫成〈秦本紀〉、開頭「秦穆公任好，德公之少子也」。
+============================================================
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  .r-main { display: grid; gap: 22px; }
+  .r-demo { border-color: var(--gilt); font-size: 15px; }
+  .r-demo b { color: var(--gilt); }
+
+  /* ───────── 結局 ───────── */
+  .r-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 32px; align-items: center; }
+  .r-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .08em; }
+  .r-hero h1 { margin-top: 2px; font-size: clamp(38px, 7vw, 62px); letter-spacing: .14em; line-height: 1.15; }
+  .r-episode { margin-top: 6px; font-family: var(--f-display); font-size: clamp(16px, 2.4vw, 20px); color: var(--text-dim); }
+  .r-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .r-ending { display: grid; justify-items: center; gap: 12px; width: min(260px, 38vw); text-align: center; }
+  .r-seal {
+    writing-mode: vertical-rl; display: inline-block;
+    height: calc(var(--n, 2) * 1.12em + 26px); padding: 12px 10px;
+    border: 3px solid var(--cinnabar); border-radius: 6px;
+    box-shadow: inset 0 0 0 3px var(--night), inset 0 0 0 5px var(--cinnabar);
+    color: var(--cinnabar); background: rgba(217, 72, 59, .08);
+    font-family: "LXGW WenKai TC", "Noto Serif CJK TC", "Noto Serif TC", "Source Han Serif TC", "PMingLiU", "Songti TC", serif;
+    font-weight: 700; font-size: 34px; line-height: 1.12; letter-spacing: .04em;
+    transform: rotate(-6deg);
+  }
+  .r-seal.is-bad { border-color: #8e8a9e; color: #b8b4c8; background: rgba(169, 166, 184, .08); box-shadow: inset 0 0 0 3px var(--night), inset 0 0 0 5px #8e8a9e; }
+  .r-ending__text { font-family: var(--f-display); font-size: 15px; line-height: 1.8; }
+
+  /* 摘要數字 */
+  .r-stats {
+    display: flex; flex-wrap: wrap; gap: 1px; margin: 0;
+    background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: 12px; overflow: hidden;
+  }
+  .r-stat { flex: 1 1 130px; background: var(--night-2); padding: 12px 16px; }
+  .r-stat dt { font-size: 13px; color: var(--text-dim); }
+  .r-stat dd { margin: 2px 0 0; font-family: var(--f-display); font-size: 24px; font-variant-numeric: tabular-nums; }
+  .r-stat dd small { margin-left: 4px; font-family: var(--f-body); font-size: 13px; color: var(--text-dim); }
+
+  .r-cols { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); gap: 18px; align-items: start; }
+  .r-cols > *, .r-scroll-wrap { min-width: 0; }
+  .r-side { display: grid; gap: 18px; }
+  .r-block__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 14px; margin-bottom: 12px; }
+  .r-block__head h2 { font-size: 22px; letter-spacing: .08em; }
+  .r-block__head .zh-row { gap: 8px; }
+  .r-note { font-size: 14px; color: var(--text-dim); }
+
+  /* ───────── 列傳 ───────── */
+  .r-scroll-wrap { position: relative; }
+  .r-scroll-wrap::before, .r-scroll-wrap::after {
+    content: ""; position: absolute; left: -6px; right: -6px; height: 3px; z-index: 1;
+    background: var(--cord); border-radius: 2px; opacity: .85; pointer-events: none;
+  }
+  .r-scroll-wrap::before { top: 12px; }
+  .r-scroll-wrap::after { bottom: 12px; }
+  .r-scroll {
+    color: var(--slip-ink); background-color: var(--slip); border-radius: 4px;
+    box-shadow: var(--shadow), inset 0 0 0 1px rgba(107, 74, 42, .25);
+    font-family: "LXGW WenKai TC", "Noto Serif CJK TC", "Noto Serif TC", "Source Han Serif TC", "PMingLiU", "Songti TC", serif;
+  }
+  .r-scroll h2, .r-scroll p { margin: 0; }
+  .r-scroll__title { color: #7a2a1c; font-family: inherit; }
+  .r-scroll__taishi b { color: #7a2a1c; }
+  .r-scroll__sign { color: #6b5a3a; }
+  .r-scroll.is-vertical {
+    writing-mode: vertical-rl; text-orientation: mixed;
+    width: 100%; /* 直排的寬度預設跟著內容長，要固定成容器寬度，多的部分才會變成捲動 */
+    height: calc(var(--chars, 18) * 1.12em + 64px);
+    overflow-x: auto; overflow-y: hidden;
+    padding: 32px 18px;
+    font-size: 19px; line-height: 36px; letter-spacing: .12em;
+    background-image: linear-gradient(to left, transparent 0 35px, var(--slip-line) 35px 36px);
+    background-size: 36px 100%; background-position: right 18px top; background-attachment: local;
+  }
+  .r-scroll.is-vertical .r-scroll__title { font-size: 23px; letter-spacing: .24em; }
+  .r-scroll.is-vertical .r-scroll__taishi,
+  .r-scroll.is-vertical .r-scroll__sign { margin-block-start: 36px; }
+  .r-scroll.is-vertical .r-scroll__sign { font-size: 15px; text-align: end; }
+  .r-scroll.is-horizontal {
+    padding: 28px 26px; font-size: 17.5px; line-height: 1.95;
+    background-image: repeating-linear-gradient(90deg, transparent 0 33px, var(--slip-line) 33px 34px);
+  }
+  .r-scroll.is-horizontal .r-scroll__title { font-size: 25px; text-align: center; letter-spacing: .2em; margin-bottom: .5em; }
+  .r-scroll.is-horizontal p + p { margin-top: .8em; }
+  .r-scroll.is-horizontal .r-scroll__sign { text-align: right; font-size: 14px; }
+  .r-scroll:focus-visible { outline: 2px solid var(--gilt); outline-offset: 4px; }
+  .r-hint { margin-top: 10px; font-size: 13px; color: var(--text-dim); }
+
+  /* ───────── 五維與名位 ───────── */
+  .r-radar { display: block; width: 100%; max-width: 300px; height: auto; margin: 0 auto; overflow: visible; }
+  .r-radar text { font-family: var(--f-display); }
+  .r-dimtab { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 12px; margin-top: 8px; font-size: 14px; }
+  .r-dimtab.is-single { grid-template-columns: auto 1fr; }
+  .r-dimtab .h { color: var(--text-dim); font-size: 12.5px; }
+  .r-dimtab .n { text-align: right; font-variant-numeric: tabular-nums; }
+  .r-dimtab .is-cum { color: #8fd3c2; }
+  .r-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font-size: 13px; color: var(--text-dim); }
+  .r-legend i { display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; background: var(--gilt); }
+  .r-legend i.is-cum { height: 0; background: none; border-top: 2px dashed var(--patina); }
+  .r-rank { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px 18px; align-items: center; }
+  .r-rank .zh-seal { min-width: 66px; height: 66px; font-size: 22px; }
+  .r-rank__brush { font-family: var(--f-display); font-size: 26px; font-variant-numeric: tabular-nums; }
+  .r-rank__brush small { margin-left: 6px; font-family: var(--f-body); font-size: 13px; color: var(--text-dim); }
+  .r-rank__next { margin-top: 6px; font-size: 13px; color: var(--text-dim); }
+  .r-rank details { grid-column: 1 / -1; font-size: 14px; }
+  .r-rank summary { cursor: pointer; color: var(--gilt); }
+  .r-rank ul { margin: 8px 0 0; padding-left: 1.2em; color: var(--text-dim); }
+  .r-ranks { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
+
+  /* ───────── 史實錨點 ───────── */
+  .r-anchors { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .r-anc { border: 1px solid var(--line-soft); border-radius: 10px; background: rgba(20, 26, 46, .55); }
+  .r-anc summary {
+    display: grid; grid-template-columns: 2em auto minmax(0, 1fr); gap: 10px; align-items: center;
+    padding: 10px 14px; cursor: pointer; list-style: none;
+  }
+  .r-anc summary::-webkit-details-marker { display: none; }
+  .r-anc__no { font-family: var(--f-display); color: var(--text-dim); text-align: right; }
+  .r-anc__badge { padding: 2px 10px; border-radius: 999px; border: 1px solid; font-size: 12.5px; white-space: nowrap; }
+  .r-anc.is-direct .r-anc__badge { color: #8fd3c2; border-color: var(--patina); }
+  .r-anc.is-fork .r-anc__badge { color: var(--gilt); border-color: var(--gilt); }
+  .r-anc.is-fail .r-anc__badge { color: #ff9c90; border-color: var(--cinnabar); }
+  .r-anc__stem { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .r-anc[open] .r-anc__stem { white-space: normal; }
+  .r-anc__body { padding: 0 14px 14px calc(2em + 24px); font-size: 14.5px; line-height: 1.85; display: grid; gap: 8px; }
+  .r-anc__body b { color: var(--gilt); font-family: var(--f-display); margin-right: 6px; }
+  .r-anc__passage { padding: 6px 12px; border-radius: 4px; background: var(--slip); color: var(--slip-ink); font-family: var(--f-display); }
+
+  /* ───────── 反思 ───────── */
+  .r-prompts { margin: 0 0 12px; padding-left: 1.4em; display: grid; gap: 4px; font-family: var(--f-display); font-size: 16.5px; }
+  .r-text { width: 100%; min-height: 168px; resize: vertical; line-height: 1.8; }
+  .r-reflect__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-top: 10px; }
+  .r-sent { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; }
+  .r-sent .zh-seal { min-width: 60px; height: 60px; font-size: 18px; border-color: var(--patina); color: #8fd3c2; }
+  .r-sent__text { white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.85; }
+
+  .r-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding-top: 6px; }
+  /* 從天下大地圖來的：回到天下 */
+  .r-world {
+    position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px;
+    padding: 10px 16px; background: linear-gradient(90deg, rgba(224, 180, 76, .22), rgba(14, 18, 34, .96)); border-bottom: 1px solid var(--gilt);
+    font-size: 14.5px; backdrop-filter: blur(6px);
+  }
+  .r-world b { font-family: var(--f-display); color: var(--gilt); letter-spacing: .06em; }
+  .r-empty { text-align: center; padding: 28px 20px; }
+  .r-empty p + p { margin-top: 8px; }
+
+  @media (max-width: 860px) {
+    .r-cols { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .r-hero { gap: 14px 16px; }
+    .r-ending { width: auto; max-width: 132px; }
+    .r-seal { font-size: 24px; padding: 10px 8px; }
+    .r-ending__text { display: none; }
+    .r-ending__text.is-mobile { display: block; }
+    .r-scroll.is-vertical { font-size: 17px; line-height: 34px; padding: 26px 16px; background-image: linear-gradient(to left, transparent 0 33px, var(--slip-line) 33px 34px); background-size: 34px 100%; background-position: right 16px top; }
+    .r-scroll.is-vertical .r-scroll__taishi, .r-scroll.is-vertical .r-scroll__sign { margin-block-start: 34px; }
+    .r-scroll.is-horizontal { padding: 22px 16px; font-size: 16.5px; }
+    .r-anc summary { grid-template-columns: auto minmax(0, 1fr); }
+    .r-anc__no { display: none; }
+    .r-anc__body { padding-left: 14px; }
+  }
+  @media (min-width: 561px) { .r-ending__text.is-mobile { display: none; } }
+</style>
+<style>
+/* 閱讀回顧與整面書卷 */
+.r-mountain,.r-runs{margin-block:20px;min-width:0}
+.r-mountain__shape{display:block;width:100%;height:160px;margin:12px 0}
+.r-mountain__steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.r-mountain__step{padding:15px 12px;background:#151b30;border:1px solid #c5a14f45;border-radius:9px;min-width:0}
+.r-mountain__step h3{margin:0 0 12px;font-size:19px;color:var(--gilt)}
+.r-mountain__step h3 span{display:inline-block;margin-right:6px}
+.r-mountain__scene{font-size:17px;line-height:1.6;margin:12px 0}
+.r-mountain__scene small{display:block;font-size:15px;color:var(--text-dim)}
+.r-mountain details{border-top:1px solid var(--line);padding:10px 0;font-size:17px;line-height:1.7}
+.r-mountain summary{cursor:pointer;overflow-wrap:break-word}
+.r-mountain__reading{background:#f2e6c4;color:#362b24;margin-top:12px;padding:14px;border-radius:6px;font-size:18px;line-height:1.8;word-break:normal}
+.r-mountain__reading blockquote{border-left:3px solid #a98437;margin:10px 0;padding-left:10px;white-space:normal}
+.r-mountain__reading .pl-texts{color:#67523e}
+.r-runs__table{overflow-x:auto;margin-top:16px}.r-runs table{width:100%;border-collapse:collapse;font-size:18px}
+.r-runs th,.r-runs td{padding:12px;text-align:left;border-bottom:1px solid var(--line)}
+.r-runs__decision{margin:16px 0;padding:14px;border:1px solid var(--gilt);border-radius:8px}
+.r-scroll.is-vertical{writing-mode:horizontal-tb;direction:rtl;padding:0;height:auto;font-size:20px;line-height:38px;background:#eee0b5;scrollbar-color:#b79448 #eee0b5}
+.r-scroll.is-vertical .r-scroll__paper{writing-mode:vertical-rl;text-orientation:mixed;direction:ltr;width:max-content;min-width:100%;height:calc(var(--chars,18)*1em + 64px);padding:32px 18px;box-sizing:border-box;background-color:#eee0b5;background-image:linear-gradient(to left,transparent 0 37px,#b79c6755 37px 38px);background-size:38px 100%;background-position:right 18px top}
+.r-scroll.is-horizontal .r-scroll__paper{font-size:19px;line-height:1.9}
+@media(max-width:1100px){.r-mountain__steps{grid-template-columns:1fr}.r-mountain__step{display:block}.r-mountain__shape{height:125px}.r-mountain__reading{font-size:20px}.r-scroll.is-vertical{font-size:20px;padding:0;background:#eee0b5}.r-scroll.is-vertical .r-scroll__paper{height:364px;min-width:100%;padding:26px 16px}}
+
+</style>
+<style>
+.r-mountain__step{cursor:pointer;color:var(--text);text-align:left;font:inherit;min-height:90px;align-self:start}
+.r-mountain__step b{display:block;font-size:18px;color:var(--gilt);margin-bottom:6px}
+.r-mountain__step span{display:block;font-size:17px;line-height:1.55}
+.r-mountain__step[aria-pressed="true"]{border-color:var(--patina);background:#1b3938}
+.r-mountain__panels{margin-top:18px;padding:18px;background:#151b30;border-radius:9px;border:1px solid var(--line)}
+.r-mountain__panels h3{font-size:22px;color:var(--gilt)}
+.r-mountain__reading{font-size:20px;line-height:1.85}
+@media(max-width:1100px){.r-mountain__steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.r-mountain__steps{grid-template-columns:repeat(2,minmax(0,1fr))}.r-mountain__panels{padding:14px}.r-mountain__step b{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="zh-app">
+  <header class="zh-topbar">
+    <a class="zh-mark" href="#" id="r-mark" aria-label="Re:縱橫鼎業 首頁"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>
+    <div class="zh-row" style="gap:8px">
+      <button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="r-book">史冊圖鑑</button>
+      <button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="r-home">回首頁</button>
+    </div>
+  </header>
+
+  <main class="zh-main r-main" id="r-main">
+    <div id="r-demo"></div>
+    <section class="r-hero" id="r-hero" aria-live="polite"></section>
+    <dl class="r-stats" id="r-stats" hidden></dl>
+    <div class="r-cols" id="r-cols" hidden>
+      <section class="zh-panel" id="r-bio" aria-labelledby="r-bio-h"></section>
+      <div class="r-side">
+        <section class="zh-panel" id="r-dims" aria-labelledby="r-dims-h"></section>
+        <section class="zh-panel" id="r-rank" aria-labelledby="r-rank-h"></section>
+      </div>
+    </div>
+    <section class="zh-panel r-mountain" id="r-mountain" hidden></section>
+    <section class="zh-panel r-runs" id="r-runs" hidden></section>
+    <section class="zh-panel" id="r-anchors" aria-labelledby="r-anchors-h" hidden></section>
+    <section class="zh-panel" id="r-codex" aria-labelledby="r-codex-h" hidden></section>
+    <section class="zh-panel" id="r-reflect" aria-labelledby="r-reflect-h" hidden></section>
+    <nav class="r-actions" id="r-actions" aria-label="接下來"></nav>
+  </main>
+</div>
+
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<script>
+(function () {
+  'use strict';
+
+  const DIMS = [['history', '史識'], ['letters', '文辭'], ['strategy', '謀略'], ['virtue', '德望'], ['erudition', '博通']];
+  const MODE_LABELS = { history: '正史', romance: '演義' };
+  const PATH_LABELS = { direct: '直選史實', fork: '歧路回歸', fail: '回歸後仍錯' };
+  const LETTERS_PREFIX = 'wen_';
+  const REFLECT_MIN = 20;
+  const REFLECT_MAX = 2000;
+  const CN_DIGITS = '〇一二三四五六七八九';
+
+  const params = ZH.boot.params || {};
+  const S = {
+    id: String(params.s || ''),
+    demo: String(params.demo || '') === '1',
+    scen: null,
+    payload: null,
+    fallback: false,
+    server: null,
+    serverState: 'idle',       // idle｜loading｜done｜error
+    anchorsMeta: {},
+    reflectionSent: null,
+    layout: ZH.local.get('bioLayout', window.innerWidth >= 700 ? 'vertical' : 'horizontal')
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = ZH.esc;
+
+
+  // ───────────────────────── 小工具 ─────────────────────────
+
+  const num = v => (v === null || v === undefined || v === '' || !isFinite(Number(v)) ? null : Number(v));
+  const fmt = (v, d) => (v === null || v === undefined ? '—' : Number(v).toFixed(d || 0));
+  const avg = arr => (arr.length ? arr.reduce((s, x) => s + x, 0) / arr.length : null);
+
+  function cnNumber(n) {
+    const d = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+    if (n <= 0) return '〇';
+    if (n < 10) return d[n];
+    if (n === 10) return '十';
+    if (n < 20) return '十' + d[n - 10];
+    return d[Math.floor(n / 10)] + '十' + d[n % 10];
+  }
+  const cnDigits = s => String(s).replace(/\d/g, x => CN_DIGITS[Number(x)]);
+  function cnDate(date) {
+    const d = date instanceof Date && !isNaN(date) ? date : new Date();
+    return cnDigits(d.getFullYear()) + '年' + cnNumber(d.getMonth() + 1) + '月' + cnNumber(d.getDate()) + '日';
+  }
+  function ymd(date) {
+    const d = date instanceof Date && !isNaN(date) ? date : new Date();
+    return d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+  }
+  function finishedDate() {
+    const p = S.payload;
+    if (!p || !p.finishedAt) return new Date();
+    const d = new Date(String(p.finishedAt).replace(' ', 'T'));
+    return isNaN(d) ? new Date() : d;
+  }
+  /** 句子結尾補上句號 */
+  const sentence = t => {
+    const s = String(t || '').trim();
+    return !s ? '' : /[。！？」』…]$/.test(s) ? s : s + '。';
+  };
+
+  function volLabel(s) {
+    const vol = ZH.VOLUMES.find(v => v.key === s.vol);
+    return (vol ? vol.no + ' ' + vol.name + '・' : '') + ZH.episodeLabel(s);
+  }
+
+  /** 本話錨點統計 */
+  function anchorStats(list) {
+    const n = list.length;
+    const first = list.filter(a => a.correct).length;
+    const recovered = list.filter(a => !a.correct && a.path === 'fork').length;
+    const fail = list.filter(a => !a.correct && a.path !== 'fork').length;
+    return { n: n, first: first, recovered: recovered, fail: fail, rate: n ? first / n : null };
+  }
+
+  /** 本話已收集的圖鑑（含以前玩這一話時收集的） */
+  function codexProgress() {
+    const items = ZH.codexOf(S.id);
+    const set = ZH.codexBook.unlockedSet();
+    return { total: items.length, got: items.filter(it => set[ZH.codexKey(it)]).length, items: items, set: set };
+  }
+
+  /** 本話表現換算成五維 */
+  function runDims() {
+    const p = S.payload;
+    const a = anchorStats(p.anchors || []);
+    const letters = (p.games || []).filter(g => String(g.gameId || '').indexOf(LETTERS_PREFIX) === 0 && num(g.maxScore) > 0);
+    const c = codexProgress();
+    return {
+      history: a.rate === null ? null : 100 * a.rate,
+      letters: letters.length ? 100 * avg(letters.map(g => Math.min(1, Math.max(0, num(g.score) / num(g.maxScore))))) : null,
+      strategy: num(p.scoreStrategy),
+      virtue: num(p.scoreVirtue),
+      erudition: c.total ? (100 * c.got) / c.total : null
+    };
+  }
+
+  function writerName() {
+    if (S.demo) return '示範策士';
+    if (ZH.isGuest()) return '訪客';
+    const sv = S.server || {};
+    return ZH.player?ZH.player.name():(S.studentProfile||{}).displayName||sv.name||'策士';
+  }
+  document.addEventListener('zh:player-change',()=>{if(S.payload)renderBio();});
+  ZH.ready(()=>{if(ZH.player)ZH.player.load().catch(()=>{});});
+  function writerSeat() {
+    if (S.demo) return '20105';
+    return (S.studentProfile||ZH.session.get('student-profile:'+ZH.user.email,{})).studentId||(S.server&&S.server.classSeat)||'';
+  }
+
+
+  // ───────────────────────── 列傳與太史公曰 ─────────────────────────
+
+  function strategyLine(score, good) {
+    if (score >= 80) return good === false ? '其謀非不深也，而時勢不與，惜哉！' : '其謀深遠，料事如神，可謂善用智者矣。';
+    if (score >= 50) return good === false ? '其謀雖有可觀，而臨事猶有所失。' : '其謀雖未盡善，然審時度勢，亦足以濟事。';
+    return good === true ? '其謀多疏，而事竟成，蓋亦有幸焉。' : '謀之不臧，卒至於此。';
+  }
+  function virtueLine(score) {
+    if (score >= 80) return '且守信重義，不以利易節，君子多之。';
+    if (score >= 50) return '至於義利之間，時有權衡，亦人情之常也。';
+    return '然重利而輕義，智有餘而德不足，君子所不取也。';
+  }
+  function anchorLine(a) {
+    if (!a.n) return '';
+    if (a.first === a.n) return '觀其臨事決斷，皆與史合，非熟讀其書者不能也。';
+    if (a.rate >= 0.8) return '觀其臨事決斷，多與史合；偶入歧路，旋即自返。';
+    const wrong = a.n - a.first;
+    if (a.rate >= 0.5) {
+      if (wrong === 1) return a.recovered ? '其間一入歧路，旋即自返於正。' : '其間一入歧路，終未能返，讀史者宜再三復之。';
+      const times = wrong === 2 ? '再' : '數';
+      if (a.recovered === wrong) return '其間' + times + '入歧路，而皆能自返於正，亦善補過者也。';
+      if (a.recovered > 0) return '其間' + times + '入歧路，而多能自返於正，亦善補過者也。';
+      return '其間' + times + '入歧路，惜未能自返，讀史者宜再三復之。';
+    }
+    return '屢入歧路，然每有所悟。讀史者當反覆其文，以求其所以然。';
+  }
+  function closingLine(mode, good) {
+    if (mode === 'romance') return '演義之言，雖不盡合於史，然觀其所為，亦足以知成敗之理矣。';
+    return good === false ? '成敗之機，間不容髮，可不慎哉！' : '後之覽者，亦將有感於斯文。';
+  }
+
+  /** 依結算資料組成列傳：{ title, body, taishi } */
+  function buildBio() {
+    const p = S.payload;
+    const s = S.scen;
+    const ending = p.ending || {};
+    const good = ending.good === true ? true : ending.good === false ? false : undefined;
+    const role = String(p.role || '').trim();
+    const country = String(p.country || '').trim();
+    const kind = ['liezhuan', 'shijia', 'benji'].indexOf(p.roleKind) > -1 ? p.roleKind : 'liezhuan';
+
+    let title;
+    let opening;
+    if (!role) {
+      title = s.name + '紀事';
+      opening = '此' + s.source + '所載之事也。' + (p.faction ? '策士入其局，從' + p.faction + '。' : '');
+    } else if (kind === 'shijia') {
+      title = (country || role) + '世家';
+      opening = role + '，' + (country ? country + '之君也。' : '一國之君也。');
+    } else {
+      title = role + (kind === 'benji' ? '本紀' : '列傳');
+      opening = role + '者，' + (country ? country + '人也。' : '不知何許人也。');
+    }
+
+    // 劇本可以自訂篇名與開頭（例如〈秦本紀〉不適用「某某者，某國人也」）
+    if (String(p.bioTitle || '').trim()) title = String(p.bioTitle).trim();
+    if (String(p.bioOpening || '').trim()) opening = sentence(p.bioOpening);
+    const deeds = (p.deeds || []).map(sentence).join('');
+    const end = ending.text ? sentence(ending.text) : ending.title ? '終局曰「' + ending.title + '」。' : '';
+    const body = opening + deeds + end;
+
+    const a = anchorStats(p.anchors || []);
+    const parts = [sentence(p.opener) || '余讀其事，未嘗不廢書而歎也。'];
+    const sg = num(p.scoreStrategy);
+    const vg = num(p.scoreVirtue);
+    if (sg !== null) parts.push(strategyLine(sg, good === undefined ? (sg >= 50 ? true : undefined) : good));
+    if (vg !== null) parts.push(virtueLine(vg));
+    const al = anchorLine(a);
+    if (al) parts.push(al);
+    parts.push(closingLine(p.mode, good));
+    return { title: title, body: body, taishi: parts.join('') };
+  }
+
+  function signature() {
+    const seat = writerSeat();
+    return writerName() + (seat ? '（' + cnDigits(seat) + '）' : '') + '　撰於' + cnDate(finishedDate());
+  }
+
+  /** 純文字版（寫入紀錄、複製、下載） */
+  function bioText() {
+
+    const b = buildBio();
+    return '【' + b.title + '】\n' + b.body + '\n太史公曰：' + b.taishi;
+  }
+
+
+  // ───────────────────────── 示範資料 ─────────────────────────
+
+  function demoPayload() {
+    const paths = ['direct', 'direct', 'fork', 'direct', 'direct', 'fork', 'direct', 'direct', 'fail', 'direct', 'direct', 'direct', 'fork', 'direct'];
+    const base = {
+      scenarioId: S.id, mode: 'history', faction: '鄭', role: '燭之武', roleKind: 'liezhuan', country: '鄭',
+      ending: { id: 'survive', title: '小國存續', good: true, text: '秦伯說，與鄭人盟，使杞子、逢孫、楊孫戍之，乃還。晉師亦去之，鄭圍遂解。' },
+      scoreStrategy: 86, scoreVirtue: 72, turns: 12, durationSec: 1680,
+      deeds: [
+        '秦、晉圍鄭，晉軍函陵，秦軍氾南，鄭國危在旦夕',
+        '佚之狐薦之於鄭伯，鄭伯引咎自責，武乃許之',
+        '是夜縋城而出，潛行避晉軍之哨，見秦伯於帳中',
+        '先陳亡鄭陪鄰之害，次許東道主之利，終舉焦、瑕之事，以明晉之無厭'
+      ],
+      anchors: paths.map((path, i) => ({ anchorId: 'wz_' + ('0' + (i + 1)).slice(-2), correct: path === 'direct', path: path, attempts: path === 'direct' ? 1 : 2 })),
+      games: [{ gameId: 'wen_ziyi', score: 8, maxScore: 10 }],
+      codex: ['person:cq_zhuzhiwu', 'person:cq_yizhihu', 'person:cq_qinmugong', 'idiom:dongdaozhu', 'treasure:banzhu'],
+      opener: '余讀《左氏春秋》，至燭之武夜縋而出，未嘗不撫卷而歎也：小國之存亡，繫於一言。',
+      prompts: [
+        '燭之武說服秦伯，靠的是哪一個論點？如果只能留一句話，你會留哪一句？為什麼？',
+        '這一話裡，你在哪一個時刻走進了歧路？當時為什麼會那樣選？',
+        '小國面對大國，除了打與降，還有什麼選擇？'
+      ],
+      finishedAt: new Date().toISOString()
+    };
+    if (S.id === 'S_cq08_weizheng') return base;
+    return Object.assign({}, base, {
+      faction: '', role: '', country: '', deeds: [], anchors: [], games: [], codex: [], opener: '',
+      ending: { title: '示範結局', good: true, text: '' }, prompts: []
+    });
+  }
+
+  function demoServer() {
+    return {
+      ok: true, name: '示範策士', classSeat: '20105',
+      dims: { history: 68.2, letters: 75, strategy: 79, virtue: 66, erudition: 41.7 },
+      brush: 53, rank: '士', rankAt: 40, prevRank: '布衣', rankUp: true,
+      next: { name: '大夫', at: 150 }, played: 1,
+      ranks: [{ name: '布衣', at: 0 }, { name: '士', at: 40 }, { name: '大夫', at: 150 }, { name: '卿', at: 400 }, { name: '相', at: 800 }, { name: '封君', at: 1300 }],
+      brushRules: { scenario: 10, anchorFirst: 3, anchorRecovered: 1, codex: 1, reflection: 5 },
+      scenario: { plays: 1 }, reflected: false
+    };
+  }
+
+  /** 沒有分頁資料時，用伺服器上第一次遊玩的紀錄重建 */
+  function fromServer(res) {
+    const rec = res.scenario;
+    return {
+      scenarioId: S.id, mode: rec.mode || 'history', faction: rec.faction || '',
+      role: '', roleKind: '', country: '',
+      ending: { title: rec.ending || '', text: '' },
+      scoreStrategy: rec.strategy, scoreVirtue: rec.virtue, durationSec: rec.duration,
+      deeds: [], games: [], codex: [], prompts: [], opener: '',
+      anchors: (res.anchors || []).map(a => ({ anchorId: a.anchorId, correct: a.correct, path: a.correct ? 'direct' : a.recovered ? 'fork' : 'fail' })),
+      finishedAt: rec.firstAt
+    };
+  }
+
+  function normalize(p) {
+    if (!p || typeof p !== 'object' || p.scenarioId !== S.id) return null;
+    p.ending = p.ending && typeof p.ending === 'object' ? p.ending : { title: String(p.ending || '') };
+    ['deeds', 'anchors', 'games', 'codex', 'prompts'].forEach(k => { if (!Array.isArray(p[k])) p[k] = []; });
+    return p;
+  }
+
+
+  // ───────────────────────── 畫面：結局與摘要 ─────────────────────────
+
+  function renderDemo() {
+    $('r-demo').innerHTML = S.demo
+      ? '<div class="zh-panel r-demo"><b>示範結算頁</b>　以下是「' + esc(S.scen.name) + '」的假資料，用來預覽版面與列傳，不會寫入任何紀錄。學生玩完一話後，會自動來到這一頁。</div>'
+      : '';
+  }
+
+  function renderHero() {
+    const s = S.scen;
+    const p = S.payload;
+    const head = '<div><p class="r-kicker">' + esc(volLabel(s)) + '・前 ' + s.year + ' 年・' + esc(s.source) + '</p>' +
+      '<h1>' + esc(s.name) + '</h1><p class="r-episode">' + esc(s.episode) + '</p>';
+
+    if (!p) {
+      let msg;
+      if (S.serverState === 'loading' || (ZH.isSchool() && S.serverState === 'idle')) msg = '<p class="r-note" style="margin-top:12px">正在讀取結算……</p>';
+      else if (ZH.isGuest()) msg = '<p class="r-note" style="margin-top:12px">這個分頁裡沒有這一話的結算。訪客的結算只保存在當時遊玩的分頁。</p>';
+      else msg = '<p class="r-note" style="margin-top:12px">你還沒有完成這一話。玩完一話後，會自動來到這一頁。</p>';
+      $('r-hero').innerHTML = head + msg + '</div>';
+      return;
+    }
+
+    const ending = p.ending || {};
+    const title = ending.title || '終局';
+    const len = Array.from(title).length;
+    const chars = len >= 4 ? Math.ceil(len / 2) : len;
+    const plays = S.server && S.server.scenario && !S.fallback ? S.server.scenario.plays : 0;
+    const chips = [
+      '<span class="zh-chip zh-chip--gilt">' + esc(MODE_LABELS[p.mode] || p.mode) + '模式</span>',
+      p.faction ? '<span class="zh-chip">陣營：' + esc(p.faction) + '</span>' : '',
+      p.role ? '<span class="zh-chip">扮演：' + esc(p.role) + '</span>' : '',
+      plays > 1 ? '<span class="zh-chip zh-chip--patina">第 ' + plays + ' 次遊玩</span>' : '',
+      S.fallback ? '<span class="zh-chip">依伺服器紀錄重建</span>' : ''
+    ].join('');
+    $('r-hero').innerHTML = head + '<div class="r-chips">' + chips + '</div>' +
+      (ending.text ? '<p class="r-ending__text is-mobile" style="margin-top:12px">' + esc(ending.text) + '</p>' : '') + '</div>' +
+      '<div class="r-ending"><span class="r-seal zh-seal--stamp' + (ending.good === false ? ' is-bad' : '') + '" style="--n:' + chars + '" aria-label="結局：' + esc(title) + '">' + esc(title) + '</span>' +
+      (ending.text ? '<p class="r-ending__text">' + esc(ending.text) + '</p>' : '') + '</div>';
+  }
+
+  function renderStats() {
+    const p = S.payload;
+    const el = $('r-stats');
+    if (!p) { el.hidden = true; return; }
+    const a = anchorStats(p.anchors);
+    const c = codexProgress();
+    const secs = num(p.durationSec);
+    const stat = (label, value, unit) => '<div class="r-stat"><dt>' + label + '</dt><dd>' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</dd></div>';
+    el.innerHTML =
+      stat('謀略', fmt(num(p.scoreStrategy)), '/ 100') +
+      stat('德望', fmt(num(p.scoreVirtue)), '/ 100') +
+      (a.n ? stat('史實錨點首答', a.first, '/ ' + a.n + ' 題') : '') +
+      (c.total ? stat('本話圖鑑', c.got, '/ ' + c.total) : '') +
+      (secs !== null ? stat('用時', secs < 60 ? '不到 1' : Math.round(secs / 60), '分鐘') : '');
+    el.hidden = false;
+  }
+
+
+  // ───────────────────────── 畫面：列傳 ─────────────────────────
+
+  function renderBio() {
+    const p = S.payload;
+    $('r-cols').hidden = !p;
+    if (!p) return;
+    if(ZH.player){let box=document.getElementById('r-player');if(!box){box=document.createElement('section');box.id='r-player';box.className='zh-panel pl-player-result';document.getElementById('r-cols').before(box);}box.innerHTML='<div class="pl-profile-head"><span class="pl-avatar">'+ZH.player.avatar(ZH.player.profile&&ZH.player.profile.avatarId,ZH.player.profile&&ZH.player.profile.appearance)+'</span><div><b>'+esc(ZH.player.name())+'</b><p>本局技能：'+((p.playerSkills||[]).map(u=>esc((ZH.player.SKILLS.find(x=>x.id===u.id)||{}).name||u.id)).join('、')||'未使用')+'</p><p>首次作答與首次挑戰分數依原紀錄保存。</p></div></div>'; }
+    const b = buildBio();
+    const vertical = S.layout === 'vertical';
+    const chars = window.innerWidth < 561 ? 15 : 18;
+    $('r-bio').innerHTML =
+      '<div class="r-block__head"><h2 id="r-bio-h">列傳</h2><div class="zh-row">' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="r-layout">' + (vertical ? '改為橫排' : '改為直排') + '</button>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="r-copy">複製全文</button>' +
+      '<button type="button" class="zh-btn zh-btn--sm" id="r-download">下載</button>' +
+      '</div></div>' +
+      '<div class="r-scroll-wrap"><div class="r-scroll ' + (vertical ? 'is-vertical' : 'is-horizontal') + '" id="r-scroll" tabindex="0" role="article" aria-label="' + esc(b.title) + '" style="--chars:' + chars + '">' +
+      '<div class="r-scroll__paper"><h2 class="r-scroll__title">' + esc(b.title) + '</h2>' +
+      '<p>' + esc(b.body) + '</p>' +
+      '<p class="r-scroll__taishi"><b>太史公曰：</b>' + esc(b.taishi) + '</p>' +
+      '<p class="r-scroll__sign">' + esc(signature()) + '</p></div>' +
+      '</div></div>' +
+      '<p class="r-hint" id="r-hint"></p>' +
+      (S.fallback ? '<p class="r-hint">這份列傳依伺服器上第一次遊玩的紀錄重建，所以沒有當時的劇情細節。</p>' : '');
+
+    $('r-layout').addEventListener('click', () => {
+      S.layout = vertical ? 'horizontal' : 'vertical';
+      ZH.local.set('bioLayout', S.layout);
+      ZH.sfx('click');
+      renderBio();
+      $('r-layout').focus();
+    });
+    $('r-copy').addEventListener('click', copyAll);
+    $('r-download').addEventListener('click', downloadAll);
+    requestAnimationFrame(updateHint);
+  }
+
+  function updateHint() {
+    const el = $('r-scroll');
+    const hint = $('r-hint');
+    if (!el || !hint) return;
+    const overflow = el.scrollWidth - el.clientWidth > 4;
+    hint.textContent = S.layout === 'vertical'
+      ? (overflow ? '直排由右而左閱讀，竹簡可以往左捲動。' : '直排由右而左閱讀。')
+      : '';
+    hint.hidden = !hint.textContent;
+  }
+
+
+  // ───────────────────────── 畫面：五維與名位 ─────────────────────────
+
+  function radar(main, compare) {
+    const C = 140;
+    const R = 92;
+    const angle = i => -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const pt = (i, v) => {
+      const r = (R * Math.max(0, Math.min(100, Number(v) || 0))) / 100;
+      return (C + r * Math.cos(angle(i))).toFixed(1) + ',' + (C + r * Math.sin(angle(i))).toFixed(1);
+    };
+    const poly = vals => DIMS.map(([k], i) => pt(i, vals[k])).join(' ');
+    let svg = '<svg class="r-radar" viewBox="-24 -6 328 296" role="img" aria-label="五維雷達圖：' +
+      DIMS.map(([k, l]) => l + '本話 ' + fmt(main[k]) + (compare ? '、累積 ' + fmt(compare[k]) : '')).join('；') + '">';
+    [20, 40, 60, 80, 100].forEach(level => {
+      svg += '<polygon points="' + DIMS.map((d, i) => pt(i, level)).join(' ') + '" fill="none" stroke="' +
+        (level === 100 ? 'rgba(224,180,76,.45)' : 'rgba(236,230,214,.1)') + '"/>';
+    });
+    DIMS.forEach((d, i) => {
+      const end = pt(i, 100).split(',');
+      svg += '<line x1="' + C + '" y1="' + C + '" x2="' + end[0] + '" y2="' + end[1] + '" stroke="rgba(236,230,214,.1)"/>';
+    });
+    if (compare) svg += '<polygon points="' + poly(compare) + '" fill="none" stroke="#4a9c8a" stroke-width="2" stroke-dasharray="5 4"/>';
+    svg += '<polygon points="' + poly(main) + '" fill="rgba(224,180,76,.22)" stroke="#e0b44c" stroke-width="2" stroke-linejoin="round"/>';
+    DIMS.forEach(([k, label], i) => {
+      const x = C + (R + 26) * Math.cos(angle(i));
+      const y = C + (R + 26) * Math.sin(angle(i));
+      const anchor = Math.abs(x - C) < 8 ? 'middle' : x > C ? 'start' : 'end';
+      const dim = main[k] === null && (!compare || compare[k] === null);
+      svg += '<text x="' + x.toFixed(1) + '" y="' + (y - 4).toFixed(1) + '" text-anchor="' + anchor + '" fill="#ece6d6" font-size="15" opacity="' + (dim ? .45 : 1) + '">' + label + '</text>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y + 14).toFixed(1) + '" text-anchor="' + anchor + '" fill="#e0b44c" font-size="13" opacity="' + (dim ? .45 : 1) + '">' + (main[k] === null ? '—' : fmt(main[k])) + '</text>';
+    });
+    return svg + '</svg>';
+  }
+
+  function renderDims() {
+    if (!S.payload) return;
+    const run = runDims();
+    const cum = S.server && S.server.dims && !S.server.guest ? S.server.dims : null;
+    const rows = DIMS.map(([k, l]) => '<span>' + l + '</span><span class="n">' + fmt(run[k] === null ? null : run[k], 1) + '</span>' +
+      (cum ? '<span class="n is-cum">' + fmt(cum[k], 1) + '</span>' : '')).join('');
+    $('r-dims').innerHTML =
+      '<div class="r-block__head"><h2 id="r-dims-h">五維</h2></div>' +
+      radar(run, cum) +
+      '<div class="r-dimtab' + (cum ? '' : ' is-single') + '"><span class="h">維度</span><span class="h n">本話</span>' + (cum ? '<span class="h n">累積</span>' : '') + rows + '</div>' +
+      '<div class="r-legend"><span><i></i>本話表現</span>' + (cum ? '<span><i class="is-cum"></i>累積五維（成績只採每一話第一次的表現）</span>' : '') + '</div>' +
+      (cum ? '' : ZH.isGuest() ? '<p class="r-note" style="margin-top:10px">訪客只看得到本話表現。登入學校帳號後，每一話都會累積成五維。</p>' : '');
+  }
+
+  function renderRank() {
+    const el = $('r-rank');
+    if (!S.payload) return;
+    if (ZH.isGuest() && !S.demo) {
+      el.innerHTML = '<div class="r-block__head"><h2 id="r-rank-h">名位</h2></div>' +
+        '<p class="r-note">訪客沒有名位。登入學校帳號後，玩過的每一話都會累積「史筆」，從布衣一路晉升到封君。</p>' +
+        '<div class="zh-row" style="margin-top:12px"><button type="button" class="zh-btn zh-btn--primary zh-btn--sm" id="r-login">登入學校帳號</button></div>';
+      $('r-login').addEventListener('click', ZH.login);
+      return;
+    }
+    const sv = S.server;
+    if (!sv || sv.guest) {
+      el.innerHTML = '<div class="r-block__head"><h2 id="r-rank-h">名位</h2></div><p class="r-note">' +
+        (S.serverState === 'error' ? '暫時讀不到名位，請稍後重新整理。' : '正在計算史筆……') + '</p>';
+      return;
+    }
+    const next = sv.next;
+    const progress = next ? Math.max(0, Math.min(100, (100 * (sv.brush - sv.rankAt)) / Math.max(1, next.at - sv.rankAt))) : 100;
+    const rules = sv.brushRules || {};
+    el.innerHTML =
+      '<div class="r-block__head"><h2 id="r-rank-h">名位</h2></div>' +
+      '<div class="r-rank">' +
+      '<span class="zh-seal' + (sv.rankUp ? ' zh-seal--stamp' : '') + '" aria-label="名位">' + esc(sv.rank) + '</span>' +
+      '<div><p class="r-rank__brush">' + sv.brush + '<small>史筆</small></p>' +
+      '<div class="zh-bar" role="img" aria-label="晉升進度 ' + Math.round(progress) + '%"><span style="--v:' + progress.toFixed(1) + '%"></span></div>' +
+      '<p class="r-rank__next">' + (next ? '再 ' + Math.max(0, next.at - sv.brush) + ' 史筆，晉升為「' + esc(next.name) + '」' : '已是最高名位「封君」') + '</p></div>' +
+      '<details><summary>史筆怎麼累積？</summary><ul>' +
+      '<li>每完成一話 +' + (rules.scenario || 10) + '</li>' +
+      '<li>史實錨點第一次就選中史實 +' + (rules.anchorFirst || 3) + '；走完歧路後選回史實 +' + (rules.anchorRecovered || 1) + '</li>' +
+      '<li>每收集一個圖鑑 +' + (rules.codex || 1) + '</li>' +
+      '<li>寫下反思 +' + (rules.reflection || 5) + '（每一話算一次）</li>' +
+      '<li>同一話重玩，完成與第一次作答不會重複加分。</li></ul>' +
+      '<div class="r-ranks">' + (sv.ranks || []).map(r => '<span class="zh-chip' + (r.name === sv.rank ? ' zh-chip--gilt' : '') + '">' + esc(r.name) + ' ' + r.at + '</span>').join('') + '</div>' +
+      '</details></div>';
+  }
+
+
+  // ───────────────────────── 畫面：史實錨點 ─────────────────────────
+
+  function renderAnchors() {
+    const el = $('r-anchors');
+    const p = S.payload;
+    if (!p || !p.anchors.length) { el.hidden = true; return; }
+    const a = anchorStats(p.anchors);
+    const plays = S.server && S.server.scenario && !S.fallback ? S.server.scenario.plays : 0;
+    el.innerHTML =
+      '<div class="r-block__head"><h2 id="r-anchors-h">史實錨點</h2>' +
+      '<span class="r-note">首答正確 ' + a.first + ' / ' + a.n + '・歧路回歸 ' + a.recovered + '・仍答錯 ' + a.fail + '</span></div>' +
+      (plays > 1 ? '<p class="r-note" style="margin:-4px 0 12px">這是你第 ' + plays + ' 次玩這一話。五維只採第一次的作答；這次的表現會記為練習，也會更新最佳紀錄。</p>' : '') +
+      (S.fallback ? '<p class="r-note" style="margin:-4px 0 12px">以下是第一次遊玩時的作答。</p>' : '') +
+      '<ol class="r-anchors">' + p.anchors.map((r, i) => {
+        const path = r.correct ? 'direct' : r.path === 'fork' ? 'fork' : 'fail';
+        const meta = S.anchorsMeta[r.anchorId];
+        const answer = meta ? meta.options.find(o => o.key === meta.answer) : null;
+        const stem = meta ? (meta.role ? '【' + meta.role + '】' : '') + meta.stem : r.anchorId;
+        return '<li class="r-anc is-' + path + '"><details><summary>' +
+          '<span class="r-anc__no">' + (i + 1) + '</span>' +
+          '<span class="r-anc__badge">' + PATH_LABELS[path] + '</span>' +
+          '<span class="r-anc__stem">' + esc(stem) + '</span></summary>' +
+          '<div class="r-anc__body">' +
+          (meta ? (meta.passage ? '<p class="r-anc__passage">' + esc(meta.passage) + '</p>' : '') +
+            (answer ? '<p><b>史實</b>' + esc(answer.text) + '</p>' : '') +
+            (meta.followUp ? '<p><b>原文</b>' + esc(meta.followUp) + '</p>' : '') +
+            (meta.explanation ? '<p><b>解析</b>' + esc(meta.explanation) + '</p>' : '')
+            : '<p class="r-note">題目內容讀取中，或這一題已被老師停用。</p>') +
+          '</div></details></li>';
+      }).join('') + '</ol>';
+    el.hidden = false;
+  }
+
+
+  // ───────────────────────── 畫面：圖鑑 ─────────────────────────
+
+  function renderCodex() {
+    const el = $('r-codex');
+    const c = codexProgress();
+    if (!S.payload || !c.total) { el.hidden = true; return; }
+    const fresh = {};
+    (S.payload.codex || []).forEach(k => { fresh[k] = true; });
+    el.innerHTML =
+      '<div class="r-block__head"><h2 id="r-codex-h">本話史冊圖鑑</h2>' +
+      '<div class="zh-row"><span class="r-note">已收集 ' + c.got + ' / ' + c.total + (S.payload.codex.length ? '・這一局新增 ' + S.payload.codex.length : '') + '</span>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="r-codex-open">打開史冊圖鑑</button></div></div>' +
+      '<div class="zc-grid">' + c.items.map(it => ZH.codexBook.card(it, !!c.set[ZH.codexKey(it)], !!fresh[ZH.codexKey(it)])).join('') + '</div>';
+    ZH.codexBook.bindCards(el);
+    $('r-codex-open').addEventListener('click', () => ZH.codexBook.open({ scenarioId: S.id }));
+    el.hidden = false;
+  }
+
+
+  // ───────────────────────── 畫面：反思 ─────────────────────────
+
+  const draftKey = () => 'reflectDraft:' + S.id;
+
+  function renderReflect() {
+    const el = $('r-reflect');
+    if (!S.payload) { el.hidden = true; return; }
+    if (el.dataset.ready && !S.reflectionSent) return; // 已經畫過，避免清掉正在寫的內容
+    const prompts = S.payload.prompts.length ? S.payload.prompts : [
+      '這一話裡，你做的哪一個決定和史書不同？當時為什麼那樣選？',
+      '這段歷史裡，哪一個人物的做法最讓你意外？為什麼？',
+      '這一話的哪一句原文，讓你印象最深？'
+    ];
+    el.dataset.ready = '1';
+
+    if (S.reflectionSent) {
+      el.innerHTML =
+        '<div class="r-block__head"><h2 id="r-reflect-h">反思</h2></div>' +
+        '<div class="r-sent"><span class="zh-seal zh-seal--stamp" aria-hidden="true">收錄</span>' +
+        '<div><p class="r-note">' + (ZH.isGuest() && !S.demo ? '訪客的反思不會保存，請按上方「下載」留存。' : S.demo ? '示範模式：這則反思不會送出。' : '已收入史冊，老師可以在後臺看到。') + '</p>' +
+        '<p class="r-sent__text" style="margin-top:8px">' + esc(S.reflectionSent) + '</p>' +
+        '<div class="zh-row" style="margin-top:12px"><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="r-again">再寫一則</button></div></div></div>';
+      $('r-again').addEventListener('click', () => {
+        S.reflectionSent = null;
+        el.dataset.ready = '';
+        renderReflect();
+        $('r-text').focus();
+      });
+      el.hidden = false;
+      return;
+    }
+
+    el.innerHTML =
+      '<div class="r-block__head"><h2 id="r-reflect-h">寫下反思</h2></div>' +
+      '<ol class="r-prompts">' + prompts.map(q => '<li>' + esc(q) + '</li>').join('') + '</ol>' +
+      '<label class="zh-sr-only" for="r-text">反思內容</label>' +
+      '<textarea class="zh-input r-text" id="r-text" maxlength="' + REFLECT_MAX + '" placeholder="可以挑一題回答，也可以寫下自己的想法。至少 ' + REFLECT_MIN + ' 字。"></textarea>' +
+      '<div class="r-reflect__foot"><span class="r-note" id="r-count"></span>' +
+      '<button type="button" class="zh-btn zh-btn--primary" id="r-send">' + (ZH.isGuest() && !S.demo ? '收入這一頁' : '送出反思') + '</button></div>' +
+      '<p class="r-note" style="margin-top:8px" id="r-reward"></p>';
+    const text = $('r-text');
+    text.value = ZH.session.get(draftKey(), '');
+    const count = () => {
+      const n = Array.from(text.value.trim()).length;
+      $('r-count').textContent = n + ' / ' + REFLECT_MAX + ' 字' + (n && n < REFLECT_MIN ? '（還差 ' + (REFLECT_MIN - n) + ' 字）' : '');
+    };
+    count();
+    text.addEventListener('input', () => { count(); ZH.session.set(draftKey(), text.value); });
+    $('r-send').addEventListener('click', sendReflection);
+    updateReward();
+    el.hidden = false;
+  }
+
+  /** 反思下方的說明：伺服器回來後才知道這一話寫過反思沒有 */
+  function updateReward() {
+    const el = $('r-reward');
+    if (!el) return;
+    if (ZH.isGuest() && !S.demo) {
+      el.textContent = '訪客的反思不會保存。寫完後可以按「下載」，連同列傳一起留存。';
+      return;
+    }
+    const sv = S.server;
+    const first = sv && !sv.guest && !sv.reflected;
+    el.textContent = (first ? '第一次為這一話寫反思，可得史筆 ' + ((sv.brushRules && sv.brushRules.reflection) || 5) + '。' : '') +
+      (S.demo ? '示範模式不會送出。' : '送出後老師可以在後臺看到。');
+  }
+
+  function sendReflection() {
+    const text = $('r-text').value.trim();
+    if (Array.from(text).length < REFLECT_MIN) {
+      ZH.toast('反思至少寫 ' + REFLECT_MIN + ' 字。', 'bad');
+      $('r-text').focus();
+      return;
+    }
+    const done = () => {
+      S.reflectionSent = text;
+      ZH.session.remove(draftKey());
+      ZH.sfx('seal');
+      renderReflect();
+    };
+    if (S.demo || ZH.isGuest()) { done(); return; }
+    const btn = $('r-send');
+    btn.disabled = true;
+    ZH.track('reflection', { scenarioId: S.id, kind: 'reflection', text: text });
+    ZH.flushAll().then(res => {
+      if (res && res.ok === false) {
+        ZH.toast('網路不穩，反思已排隊，稍後會自動補送。', 'bad', 4000);
+      }
+      const firstTime = S.server && !S.server.guest && !S.server.reflected;
+      done();
+      if (firstTime) {
+        S.server.reflected = true;
+        S.server.brush += (S.server.brushRules && S.server.brushRules.reflection) || 5;
+        ZH.toast('史筆 +' + ((S.server.brushRules && S.server.brushRules.reflection) || 5), 'ok');
+        refreshServer();
+      }
+    });
+  }
+
+
+  // ───────────────────────── 下載與複製 ─────────────────────────
+
+  function fullText() {
+    const s = S.scen;
+    const p = S.payload;
+    const a = anchorStats(p.anchors);
+    const c = codexProgress();
+    const reflection = S.reflectionSent || ($('r-text') ? $('r-text').value.trim() : '');
+    const lines = [
+      'Re:縱橫鼎業　結算紀錄',
+      '劇本：' + volLabel(s) + ' ' + s.name + '（' + s.source + '）',
+      '模式：' + (MODE_LABELS[p.mode] || p.mode) + '　結局：' + ((p.ending && p.ending.title) || '—'),
+      '謀略 ' + fmt(num(p.scoreStrategy)) + '　德望 ' + fmt(num(p.scoreVirtue)) +
+        (a.n ? '　史實錨點首答 ' + a.first + '/' + a.n : '') + (c.total ? '　圖鑑 ' + c.got + '/' + c.total : ''),
+      '撰者：' + writerName() + (writerSeat() ? '（' + writerSeat() + '）' : ''),
+      '',
+      bioText(),
+      ''
+    ];
+    if (reflection) lines.push('【反思】', reflection, '');
+    return lines.join('\n');
+  }
+
+  function downloadAll() {
+    const name = 'zongheng_' + S.id + '_' + ymd(finishedDate()) + '.txt';
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + fullText().replace(/\n/g, '\r\n')], { type: 'text/plain;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    ZH.toast('已下載列傳與反思的文字檔。', 'ok');
+  }
+
+  function copyAll() {
+    const text = fullText();
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      ta.remove();
+      ZH.toast(ok ? '已複製全文，可以貼到學習歷程。' : '這個瀏覽器不允許複製，請改用「下載」。', ok ? 'ok' : 'bad', 3200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => ZH.toast('已複製全文，可以貼到學習歷程。', 'ok', 3200)).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+
+  // ───────────────────────── 下一步 ─────────────────────────
+
+  /** 從天下大地圖進來的「回程票」：同一話才算 */
+  function worldTicket() {
+    const t = ZH.session.get('world:return', null);
+    return t && S.scen && t.sid === S.scen.id ? t : null;
+  }
+  function goWorld() {
+    const t = worldTicket();
+    ZH.sfx('bell');
+    ZH.go('map', { w: (t && t.w) || 'ch' });
+  }
+  function renderWorldBar() {
+    const t = worldTicket();
+    if (!t || document.getElementById('r-world')) return;
+    const bar = ZH.html('<div class="r-world" id="r-world"><span><b>天下大地圖</b>：這一話的成績會帶回大地圖，換成計策卡。</span><button type="button" class="zh-btn zh-btn--primary zh-btn--sm">回到天下</button></div>');
+    bar.querySelector('button').addEventListener('click', goWorld);
+    document.body.insertBefore(bar, document.body.firstChild);
+  }
+
+  function renderActions() {
+    const s = S.scen;
+    const i = ZH.CATALOG.indexOf(s);
+    const next = ZH.CATALOG[i + 1];
+    const toWorld = !!worldTicket();
+    const nextOk = next && next.status === 'ready' && ZH.canPlay(next.id);
+    $('r-actions').innerHTML =
+      (toWorld ? '<button type="button" class="zh-btn zh-btn--primary" id="r-act-world">回到天下大地圖</button>' : '') +
+      '<button type="button" class="zh-btn zh-btn--quiet" id="r-act-home">回首頁</button>' +
+      (S.payload ? '<button type="button" class="zh-btn" id="r-act-again">再玩一次</button>' : '') +
+      (!S.payload && s.status === 'ready' ? '<button type="button" class="zh-btn zh-btn--primary" id="r-act-again">開始這一話</button>' : '') +
+      (nextOk ? '<button type="button" class="zh-btn' + (toWorld ? '' : ' zh-btn--primary') + '" id="r-act-next">下一話：' + esc(next.name) + '</button>' : '');
+    $('r-act-home').addEventListener('click', () => ZH.go('hub'));
+    if (toWorld) { $('r-act-world').addEventListener('click', goWorld); renderWorldBar(); }
+    const again = $('r-act-again');
+    if (again) again.addEventListener('click', () => {
+      if (S.demo || s.status !== 'ready') { ZH.toast('「' + s.name + '」還在製作中，完成後就能重玩。'); return; }
+      ZH.runs.restart(s.id,S.payload?.mode||'history').catch(e=>ZH.toast(e.message,'bad'));
+    });
+    const nx = $('r-act-next');
+    if (nx) nx.addEventListener('click', () => ZH.go(next.id));
+  }
+
+
+  // ───────────────────────── 伺服器 ─────────────────────────
+
+  function celebrate(sv) {
+    if (S.celebrated === sv.rank) return; // 同一個名位只慶祝一次
+    S.celebrated = sv.rank;
+    ZH.sfx('bell');
+    ZH.modal({
+      title: '晉升名位',
+      body: '<div style="display:grid;justify-items:center;gap:14px;text-align:center;padding:6px 0">' +
+        '<span class="zh-seal zh-seal--stamp" style="min-width:84px;height:84px;font-size:28px">' + esc(sv.rank) + '</span>' +
+        '<p>你由「' + esc(sv.prevRank) + '」晉升為「' + esc(sv.rank) + '」。史筆累積 ' + sv.brush + '。</p>' +
+        (sv.next ? '<p class="zh-dim zh-small">下一階「' + esc(sv.next.name) + '」需要史筆 ' + sv.next.at + '。</p>' : '') +
+        '</div>',
+      actions: [{ label: '收下', value: true, kind: 'primary' }]
+    });
+    setTimeout(() => ZH.sfx('seal'), 260);
+  }
+
+  function refreshServer() {
+    return ZH.call('api_getMyResult', S.id).then(res => {
+      if (!res || !res.ok) return;
+      S.server = res;
+      renderRank();
+      renderDims();
+      if (res.rankUp) celebrate(res);
+    }).catch(() => null);
+  }
+
+  function loadServer() {
+    S.serverState = 'loading';
+    return ZH.flushAll()
+      .catch(() => null)
+      .then(() => ZH.call('api_getMyResult', S.id))
+      .then(res => {
+        if (!res || !res.ok) throw new Error((res && res.msg) || '讀取結算失敗。');
+        S.server = res;
+        S.serverState = 'done';
+        if (!S.payload && res.scenario) {
+          S.payload = fromServer(res);
+          S.fallback = true;
+        }
+        renderAll();
+        if (res.rankUp) setTimeout(() => celebrate(res), 700);
+      })
+      .catch(err => {
+        S.serverState = 'error';
+        renderAll();
+        ZH.toast(err.message, 'bad', 4000);
+      });
+  }
+
+  /** 第一次開啟這份結算時，把列傳寫入紀錄（重新整理不會重複） */
+  function logBiography() {
+    const p = S.payload;
+    if (S.demo || ZH.isGuest() || S.fallback || !p || p.bioLogged) return;
+    ZH.track('reflection', { scenarioId: S.id, kind: 'biography', text: bioText() });
+    p.bioLogged = true;
+    ZH.session.set('result:' + S.id, p);
+  }
+
+
+  // ───────────────────────── 啟動 ─────────────────────────
+
+  // 故事山以本局的幕名與作答順序分組，內容全部連回本話原文。
+  function renderMountain(){
+    const el=$('r-mountain'),p=S.payload;if(!p){el.hidden=true;return;}
+    const phases=['故事發端','情勢推展','關鍵轉折','抉擇與收束','結局與回望'],stages=Array.isArray(p.learning)?p.learning:[],ordered=(p.anchors||[]).map(r=>S.anchorsMeta[r.anchorId]).filter(Boolean),groups=phases.map(()=>({stages:[],anchors:[]}));
+    ordered.forEach((a,i)=>groups[Math.min(4,Math.floor(i*5/ordered.length))].anchors.push(a));
+    stages.forEach((part,i)=>{const matches=groups.filter(g=>g.anchors.some(a=>(part.anchors||[]).includes(a.id)));if(matches.length)matches.forEach(g=>g.stages.push(part));else groups[Math.min(4,Math.floor(i*5/stages.length))].stages.push(part);});
+    const active=S.mountainPhase||0;
+    const reading=a=>{const result=p.anchors.find(x=>x.anchorId===a.id),options=Array.isArray(a.options)?a.options:Object.entries(a.options||{}).map(([key,v])=>({key,text:Array.isArray(v)?v[0]:v})),answer=options.find(o=>o.key===a.answer);return '<details><summary>'+esc(a.stem||'原文對讀')+'</summary><div class="r-mountain__reading">'+(a.source?'<p class="pl-texts">'+esc(a.source)+'</p>':'')+(a.passage?'<blockquote>'+esc(a.passage)+'</blockquote>':'')+(answer?'<p><b>原文應怎麼理解：</b>'+esc(answer.text)+'</p>':'')+(a.explanation?'<p>'+esc(a.explanation)+'</p>':'')+(a.followUp?'<p class="pl-texts">'+esc(a.followUp)+'</p>':'')+'<p class="pl-texts">你的首答：'+(result?.correct?'正確':result?.path==='fork'?'歧路回歸':'待回顧')+'</p></div></details>';};
+    el.innerHTML='<div class="r-block__head"><h2>故事山・回到原文</h2><span class="r-note">選一段情節，展開原文對讀</span></div><p class="pl-texts">本話文本：'+ZH.learningTexts(S.id).map(esc).join('、')+'</p>'+
+      '<svg class="r-mountain__shape" viewBox="0 0 900 200" role="img" aria-label="故事由發端、推展、轉折，走向收束與回望"><path d="M40 170 L235 105 L450 30 L665 105 L860 170 L860 192 L40 192 Z" fill="#e0b44c12"/><path d="M40 170 L235 105 L450 30 L665 105 L860 170" fill="none" stroke="#d5b15b" stroke-width="3"/>'+phases.map((label,i)=>'<g><circle data-peak="'+i+'" cx="'+[40,235,450,665,860][i]+'" cy="'+[170,105,30,105,170][i]+'" r="'+(i===active?13:9)+'" fill="'+(i===active?'#74c5af':'#d5b15b')+'"/><text x="'+[40,235,450,665,860][i]+'" y="'+[143,78,12,78,143][i]+'" text-anchor="middle" fill="#f1e6c8" font-size="17">'+(i+1)+'</text></g>').join('')+'</svg>'+
+      '<div class="r-mountain__steps" role="group" aria-label="故事山五階段">'+groups.map((g,i)=>'<button type="button" class="r-mountain__step" data-phase="'+i+'" aria-pressed="'+(i===active)+'" aria-controls="r-phase-'+i+'"><b>'+(i+1)+' '+phases[i]+'</b><span>'+esc(g.stages[0]?.title||(g.anchors.length?'原文對讀 '+g.anchors.length+' 題':'情節回望'))+'</span></button>').join('')+'</div>'+
+      '<div class="r-mountain__panels">'+groups.map((g,i)=>'<article id="r-phase-'+i+'"'+(i!==active?' hidden':'')+'><h3>'+phases[i]+'</h3>'+
+       g.stages.map(x=>'<p class="r-mountain__scene"><b>'+esc(x.title)+'</b>'+(x.sub?'・'+esc(x.sub):'')+'</p>'+((x.notes||[]).length?'<p class="r-mountain__scene">'+esc(x.notes[0])+'</p>':'')).join('')+
+       (g.anchors.length?g.anchors.map(reading).join(''):'<p class="r-note">'+(Object.keys(S.anchorsMeta).length?'此段沒有原文題；回想人物目標與局勢變化，並對照上方列傳。':'正在讀取本話原文……')+'</p>')+'</article>').join('')+'</div><p class="r-note">山形是整理情節的閱讀工具；各幕依本局順序排列。展開題目核對原句、字義與人物動機，再回想人物為何這樣做。</p>';
+    el.querySelectorAll('[data-phase]').forEach(b=>b.onclick=()=>{const index=Number(b.dataset.phase);S.mountainPhase=index;el.querySelectorAll('[data-phase]').forEach(x=>x.setAttribute('aria-pressed',String(Number(x.dataset.phase)===index)));el.querySelectorAll('.r-mountain__panels>article').forEach((x,i)=>x.hidden=i!==index);el.querySelectorAll('[data-peak]').forEach((x,i)=>{x.setAttribute('fill',i===index?'#74c5af':'#d5b15b');x.setAttribute('r',i===index?'13':'9');});});el.hidden=false;
+  }
+  function runMetrics(p){const a=p?.anchors||[],g=(p?.games||[]).filter(x=>!x.skipped);const pct=(x,max)=>max>0?Math.round(100*x/max):null;return [a.length?a.filter(x=>x.correct).length+'/'+a.length:'—',g.length?Math.round(g.reduce((s,x)=>s+(pct(x.firstScore??x.score,x.firstMax??x.maxScore)??0),0)/g.length)+'%':'—',g.length?Math.round(g.reduce((s,x)=>s+(pct(x.bestScore??x.score,x.bestMax??x.maxScore)??0),0)/g.length)+'%':'—',p?.scoreStrategy??'—',p?.scoreVirtue??'—',p?.durationSec!=null?Math.round(p.durationSec)+'秒':'—'];}
+  function showRun(run){const p=normalize(run.payload);if(!p)return;S.payload=p;S.fallback=!!p.legacy;ZH.session.set('result:'+S.id,p);renderAll();}
+  function renderRuns(){
+    const el=$('r-runs');if(!S.payload&&!S.runs?.length){el.hidden=true;return;}el.hidden=false;
+    if(!S.runs){el.innerHTML='<h2>通關紀錄</h2><p class="r-note">正在讀取本話各局紀錄……</p>';return;}
+    const runs=S.runs,active=runs.filter(x=>x.status!=='replaced'),selected=runs.find(x=>x.runId===S.payload?.runId)||active[active.length-1],prior=active.find(x=>x.status==='kept'&&x.runId!==selected?.runId),pending=active.filter(x=>x.status==='pending');
+    el.innerHTML='<div class="r-block__head"><h2>通關紀錄・重玩比較</h2><span class="r-note">保留 '+runs.filter(x=>x.status==='kept').length+' 局'+(pending.length?'・'+pending.length+'局待選':'')+'</span></div>'+
+      (active.length?'<label>查看這一局 <select class="zh-input" id="r-run-select">'+active.map((r,i)=>'<option value="'+esc(r.runId)+'"'+(r.runId===selected?.runId?' selected':'')+'>'+esc((i+1)+'・'+(r.payload?.ending?.title||'通關')+'・'+String(r.finishedAt).slice(0,19).replace('T',' ')+(r.legacy?'（舊紀錄重建）':'')+(r.status==='pending'?'（待選）':''))+'</option>').join('')+'</select></label>':'<p class="r-note">此話是升級前的結算；再挑戰完成後可比較與保存。</p>')+
+      (selected?'<div class="r-runs__table"><table><thead><tr><th>表現</th>'+(prior?'<th>已保留一局</th>':'')+'<th>目前查看</th></tr></thead><tbody>'+['原文首答','必要體驗・首次平均','必要體驗・最佳平均','謀略','德行','用時'].map((label,i)=>'<tr><th>'+label+'</th>'+(prior?'<td>'+esc(runMetrics(prior.payload)[i])+'</td>':'')+'<td>'+esc(runMetrics(selected.payload)[i])+'</td></tr>').join('')+'</tbody></table></div>':'')+
+      pending.map(r=>'<div class="r-runs__decision"><p><b>'+esc(r.payload?.ending?.title||'本次挑戰')+'</b>：選擇保存方式。</p><div class="zh-row"><button type="button" class="zh-btn zh-btn--quiet" data-run-choice="replace" data-run-id="'+esc(r.runId)+'">取代已保留的紀錄</button><button type="button" class="zh-btn zh-btn--primary" data-run-choice="both" data-run-id="'+esc(r.runId)+'">兩者都保留</button></div></div>').join('')+
+      '<p class="r-note">取代會改變自己的通關展示，舊局留作歷程備查；教師評量仍採原本的首次作答規則。尚未選擇的完整紀錄也會保存，日後可回來決定。</p>'+
+      (runs.some(x=>x.status==='replaced')?'<details><summary>已取代的歷程（'+runs.filter(x=>x.status==='replaced').length+'局）</summary>'+runs.filter(x=>x.status==='replaced').map(x=>'<p class="r-note">'+esc(String(x.finishedAt).slice(0,19)+'・'+(x.payload?.ending?.title||'通關'))+'</p>').join('')+'</details>':'');
+    $('r-run-select')?.addEventListener('change',e=>showRun(runs.find(x=>x.runId===e.target.value)));
+    el.querySelectorAll('[data-run-choice]').forEach(b=>b.onclick=async()=>{el.querySelectorAll('button').forEach(x=>x.disabled=true);try{const r=await ZH.runs.choose(S.id,b.dataset.runId,b.dataset.runChoice);S.runs=r.runs;renderRuns();ZH.toast('已保存這次選擇。','ok');}catch(e){ZH.toast(e.message,'bad');el.querySelectorAll('button').forEach(x=>x.disabled=false);}});
+  }
+  async function loadRuns(){if(S.demo){S.runs=[];renderRuns();return;}try{if(S.payload?.runId)await ZH.runs.ensure(S.payload);const r=await ZH.runs.history(S.id);S.runs=r.runs||[];if(!S.payload?.runId&&S.runs.length){const latest=S.runs.filter(x=>x.status!=='replaced').slice(-1)[0];if(latest?.payload)showRun(latest);}renderRuns();}catch(e){$('r-runs').hidden=false;$('r-runs').innerHTML='<h2>通關紀錄</h2><p>'+esc(e.message)+'</p><button type="button" class="zh-btn" id="r-runs-retry">重試儲存與讀取</button>';$('r-runs-retry').onclick=loadRuns;}}
+
+  function renderAll() {
+    renderDemo();
+    renderHero();
+    renderStats();
+    renderBio();
+    renderDims();
+    renderRank();
+    renderAnchors();
+    renderMountain();
+    renderRuns();
+    renderCodex();
+    renderReflect();
+    updateReward();
+    renderActions();
+  }
+
+  function renderMissing() {
+    $('r-hero').innerHTML = '<div class="zh-panel r-empty" style="grid-column:1/-1"><h1 style="font-size:28px">找不到這一話</h1>' +
+      '<p class="r-note">網址裡的劇本代碼不正確。請回首頁重新選擇。</p></div>';
+    $('r-actions').innerHTML = '<button type="button" class="zh-btn zh-btn--primary" id="r-act-home">回首頁</button>';
+    $('r-act-home').addEventListener('click', () => ZH.go('hub'));
+  }
+
+  ZH.ready(() => {
+    $('r-mark').addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); });
+    $('r-home').addEventListener('click', () => ZH.go('hub'));
+    $('r-book').addEventListener('click', () => ZH.codexBook.open({ scenarioId: S.scen ? S.id : '' }));
+
+    S.scen = ZH.findScenario(S.id);
+    if (!S.scen) { renderMissing(); return; }
+    document.title = S.scen.name + '・結算｜Re:縱橫鼎業';
+
+    if (S.demo) {
+      S.payload = demoPayload();
+      S.server = demoServer();
+      S.serverState = 'done';
+      ZH.codexBook.reveal(S.payload.codex);
+    } else {
+      S.payload = normalize(ZH.session.get('result:' + S.id, null));
+      // 這一局解鎖的項目可能還在補送，先顯示為已解鎖
+      if (S.payload) ZH.codexBook.reveal(S.payload.codex);
+    }
+
+    renderAll();
+    logBiography();
+    loadRuns();
+
+    ZH.codex.init().then(() => { renderStats(); renderDims(); renderCodex(); });
+    ZH.call('api_getLearningReview',S.id).then(r=>{if(r&&r.ok){r.anchors.forEach(a=>{if(!S.anchorsMeta[a.id])S.anchorsMeta[a.id]=Object.assign({},a,{options:Array.isArray(a.options)?a.options:Object.entries(a.options||{}).map(([key,v])=>({key,text:Array.isArray(v)?v[0]:v}))});});renderAnchors();renderMountain();}}).catch(()=>null);
+    ZH.anchor.load(S.id)
+      .then(list => { list.forEach(a => { S.anchorsMeta[a.id] = a; }); renderAnchors(); renderMountain(); })
+      .catch(() => null);
+
+    if (S.demo) {
+      setTimeout(() => celebrate(S.server), 900);
+    } else if (ZH.isSchool()) {
+      ZH.call('api_getStudentProfile').then(r=>{if(r?.ok){S.studentProfile=r.profile;renderBio();}}).catch(()=>null);
+      loadServer();
+    }
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateHint, 200);
+    });
+  });
+})();
+</script>
+</body>
+</html>

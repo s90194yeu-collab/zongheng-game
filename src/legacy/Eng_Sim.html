@@ -1,0 +1,1178 @@
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Eng_Sim.html
+ 版本：v0.1.0（2026-10-04）
+ 依賴：Core_css.html、Core_js.html（ZH.sfx、ZH.toast、ZH.modal、ZH.esc、ZH.settings）
+       選用：Anchor_js.html（史實錨點）、Codex_js.html（史冊圖鑑）
+ 說明：經營模擬引擎。大同與小康、子產治鄭、韓原之戰、商鞅變法、
+       秦政與沙丘、分封與還定三秦共用。引擎只管畫面與流程，
+       地點、人物、目標、爭端、制度卡、事件、結局都由劇本頁提供。
+   ・地點卡：每個地點有容量與規則；人物放進去之後，地點會告訴你夠不夠人手
+   ・人物：點一下人物，再點一個地點，就安置過去（手機、電腦都一樣；
+           選中的人物再點一次就取消；點「未安置」區或面板底部的「移回未安置」可以把人帶回來）
+   ・目標：劇本提供的檢查清單，每安置一個人就即時更新（例如「老有所終」）
+   ・爭端與制度卡：地點上冒出「爭端」，點它，從制度卡裡挑一張處理，
+           每一年可以用的「令」有限
+   ・年：按「過完這一年」結算（收成、事件），再進入下一年
+   ・對話、抉擇、標題、教學導引、史實錨點、圖鑑解鎖、存檔
+   ・電腦版：左邊地點、右邊面板；手機版：地點一欄往下捲，面板收在底部抽屜
+ 用法：
+   const game = ZH.sim.create(根元素, config);
+   game.start(存檔狀態或 null);
+ config 主要欄位：
+   id、mode、title、subtitle、years（共幾年）、yearName(n)、endYearLabel、seed
+   meters   [{ id, label, icon, max, start, danger, invert（越低越好）, show(state) }]
+   kinds    { 種類 id: { label, short, color } }        人物的種類（老、壯、幼……）
+   tags     { 標記 id: { label, color, hint } }         人物的特質（賢、能……）
+   units    [{ id, kind, name, glyph, tags, note, site }]  開場的人物（也可以在 initState 給）
+   sites(state) → [{ id, name, glyph, desc, cap, accepts(unit, state) → true 或原因,
+                     status(state, unitsHere) → { level: ok|warn|bad, text }, note, tone }]
+   assign(state) → 這時候能不能安置人物；poolLabel（未安置區的名稱）
+   goals(state)  → [{ id, label, quote, ok, detail }]   目標清單（即時檢查）
+   cards    [{ id, label, desc, kind, cost, visible(state), target: 'issue'|'none' }]
+   onCard(ctx, card, issue) → { resolved }               用一張制度卡（issue 可以是 null）
+   actions(state) → 每年的令數；cardsLabel、goalsLabel
+   phaseInfo(state) → { title, quote }                   地點上方的時代說明
+   events   [{ id, phase: start|end|move|card, once, when(state, info), run(ctx, info) }]
+   yearEnd(ctx)、confirmEnd(state) → 提示文字或 null、check(state) → 結果或 null、onEnd(result, ctx)
+   intro(ctx)（序幕，看完才進第一年；中途離開會重看）、save(state)、
+   tutorial [{ el, title, text, tab }] 或 (state) → 陣列（說明裡的「重看教學」）、help（HTML 或 (state) → HTML）、
+   anchorTotal、anchorOrder、yearSub(state)（每年標題下的小字）
+ ctx（劇本函式拿到的工具）：
+   state、rng()、meter(id)、add(id, delta, { at })、flag(name[, value])、log(text, kind)、
+   say(lines)、choose(options)、anchor(id)、unlock(codexKey)、banner(title, sub)、coach(steps)、
+   wait(ms)、quiet()、refresh()、save()、end(result)、
+   unit(id)、units(filter)、move(unitId, siteId 或 null)、addUnit(def)、removeUnit(id)、
+   issues()、addIssue({ id, site, title, text, need })、clearIssues()、
+   subtitle(text)、tab(name)、siteEl(id)、fx.float(siteId, text, color)、fx.pulse(siteId)
+============================================================
+-->
+<style>
+  /* ───────── 版面 ───────── */
+  .sim {
+    position: fixed; inset: 0; z-index: 10;
+    display: grid; grid-template-rows: auto minmax(0, 1fr);
+    background: var(--night); color: var(--text);
+  }
+  .sim-top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+    padding: calc(8px + var(--safe-t)) 14px 8px;
+    background: rgba(20, 26, 46, .95); border-bottom: 1px solid var(--line);
+  }
+  .sim-icon {
+    display: grid; place-items: center; width: 38px; height: 38px; flex: none; cursor: pointer;
+    border: 1px solid var(--line-soft); border-radius: 10px; background: none; color: var(--text);
+    font-size: 20px; line-height: 1;
+  }
+  .sim-icon:hover { border-color: var(--gilt); color: var(--gilt); }
+  .sim-title { display: flex; flex-direction: column; min-width: 0; }
+  .sim-title b { font-family: var(--f-display); font-size: 19px; letter-spacing: .1em; line-height: 1.2; white-space: nowrap; }
+  .sim-title span { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; }
+  .sim-year { display: flex; align-items: center; gap: 12px; }
+  .sim-year__n { font-family: var(--f-display); font-size: 22px; color: var(--gilt); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sim-year__n small { margin-left: 4px; font-size: 13px; color: var(--text-dim); }
+  .sim-pips { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text-dim); white-space: nowrap; }
+  .sim-pip { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--gilt); }
+  .sim-pip.is-full { background: var(--gilt); box-shadow: 0 0 8px var(--gilt-glow); }
+  .sim-meters { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
+  .sim-m { display: grid; grid-template-columns: 18px auto 72px 2.2em; align-items: center; gap: 6px; font-size: 13.5px; }
+  .sim-m svg { width: 18px; height: 18px; fill: currentColor; color: var(--gilt); }
+  .sim-m__bar { height: 7px; border-radius: 999px; background: rgba(236, 230, 214, .12); overflow: hidden; }
+  .sim-m__bar i { display: block; height: 100%; width: var(--v, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--patina), var(--gilt)); transition: width .5s ease; }
+  .sim-m.is-invert .sim-m__bar i { background: linear-gradient(90deg, #c9a24a, var(--cinnabar)); }
+  .sim-m__val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .sim-m.is-danger { color: #ff9c90; }
+  .sim-m.is-danger svg { color: var(--cinnabar); }
+  .sim-m.is-danger .sim-m__bar i { background: var(--cinnabar); }
+  .sim-menu { display: flex; gap: 6px; }
+
+  .sim-body { display: grid; grid-template-columns: minmax(0, 1fr) 360px; min-height: 0; }
+  .sim-main { position: relative; overflow-y: auto; padding: 14px 16px 28px; }
+  .sim-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; border-left: 1px solid var(--line-soft); background: rgba(20, 26, 46, .55); }
+
+  /* ───────── 時代說明 ───────── */
+  .sim-era {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; align-items: center;
+    margin-bottom: 14px; padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--slip-line); background: var(--slip); color: var(--slip-ink);
+  }
+  .sim-era b { font-family: var(--f-display); font-size: 22px; letter-spacing: .2em; }
+  .sim-era span { font-family: var(--f-display); font-size: 15.5px; line-height: 1.7; }
+
+  /* ───────── 未安置 ───────── */
+  .sim-pool {
+    margin-bottom: 14px; padding: 10px 12px 12px; border-radius: 12px;
+    border: 1px dashed var(--line); background: rgba(236, 230, 214, .04);
+  }
+  .sim-pool.is-target { border-style: solid; border-color: var(--gilt); }
+  .sim-pool__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .sim-pool__head b { font-family: var(--f-display); font-size: 16px; letter-spacing: .08em; }
+  .sim-pool__head span { font-size: 12.5px; color: var(--text-dim); }
+  .sim-pool__list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; }
+  .sim-pool__empty { font-size: 13.5px; color: var(--text-dim); padding: 8px 2px; }
+
+  /* ───────── 地點卡 ───────── */
+  .sim-sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 12px; }
+  .sim-site {
+    position: relative; display: grid; gap: 8px; align-content: start;
+    padding: 12px 12px 12px; border-radius: 12px;
+    border: 1px solid var(--line-soft); background: linear-gradient(180deg, rgba(39, 49, 79, .85), rgba(20, 26, 46, .9));
+    transition: border-color .2s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .sim-site__head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+  .sim-site__glyph {
+    display: grid; place-items: center; width: 42px; height: 42px; border-radius: 8px;
+    border: 2px solid var(--gilt); color: var(--gilt); background: rgba(11, 14, 29, .6);
+    font-family: var(--f-display); font-weight: 700; font-size: 22px;
+  }
+  .sim-site__name { font-family: var(--f-display); font-size: 18px; letter-spacing: .06em; line-height: 1.25; }
+  .sim-site__desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+  .sim-site__cap { font-size: 12.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sim-site__status { font-size: 13px; line-height: 1.5; padding: 4px 8px; border-radius: 6px; background: rgba(236, 230, 214, .05); color: var(--text-dim); }
+  .sim-site__status.is-ok { color: #a9e2d4; background: rgba(63, 157, 132, .12); }
+  .sim-site__status.is-warn { color: #f3d58a; background: rgba(224, 180, 76, .12); }
+  .sim-site__status.is-bad { color: #ffb4aa; background: rgba(217, 72, 59, .14); }
+  .sim-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sim-slot { width: 64px; height: 78px; border-radius: 10px; border: 1px dashed rgba(236, 230, 214, .18); }
+  .sim-site__put { display: none; }
+  .sim.is-picking .sim-site.is-target { border-color: var(--gilt); box-shadow: 0 0 0 1px var(--gilt-glow), 0 0 18px var(--gilt-glow); cursor: pointer; }
+  .sim.is-picking .sim-site.is-target .sim-site__put { display: inline-flex; }
+  .sim.is-picking .sim-site.is-off { opacity: .55; }
+  .sim-site.is-flash { animation: sim-flash .9s ease; }
+  .sim-site__float {
+    position: absolute; left: 50%; top: 36%; z-index: 2; pointer-events: none; white-space: nowrap;
+    font-family: var(--f-display); font-size: 20px; font-weight: 700; color: #fff7df;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .8); animation: sim-rise 1.5s ease-out forwards;
+  }
+  .sim-issues { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sim-issue {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 12px 4px 6px; cursor: pointer;
+    border: 1px solid var(--cinnabar); border-radius: 999px; background: rgba(217, 72, 59, .16); color: #ffd2cb;
+    font-size: 14px; animation: sim-issue 1.8s ease-in-out infinite;
+  }
+  .sim-issue i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--cinnabar); color: #fff4ec; font-style: normal; font-family: var(--f-display); font-weight: 700; }
+  .sim-issue.is-done { animation: none; border-color: var(--patina); background: rgba(63, 157, 132, .14); color: #bdf2dd; cursor: default; }
+  .sim-issue.is-done i { background: var(--patina); }
+
+  /* ───────── 人物 ───────── */
+  .sim-unit {
+    position: relative; display: grid; justify-items: center; align-content: start; gap: 2px;
+    width: 64px; height: 78px; padding: 6px 2px 4px; cursor: pointer;
+    border: 1px solid var(--line-soft); border-radius: 10px; background: rgba(11, 14, 29, .55); color: var(--text);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .sim-unit:hover { border-color: var(--uc, var(--gilt)); }
+  .sim-unit__glyph {
+    display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid var(--uc, var(--gilt)); color: var(--uc, var(--gilt)); background: rgba(11, 14, 29, .8);
+    font-family: var(--f-display); font-weight: 700; font-size: 18px;
+  }
+  .sim-unit__name { font-size: 12.5px; line-height: 1.2; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sim-unit__kind { position: absolute; top: 3px; left: 3px; padding: 0 4px; border-radius: 4px; font-size: 11px; line-height: 1.5; background: var(--uc, var(--gilt)); color: #13182a; font-weight: 700; }
+  .sim-unit__tags { position: absolute; top: 3px; right: 3px; display: grid; gap: 2px; }
+  .sim-unit__tags i { display: grid; place-items: center; width: 17px; height: 17px; border-radius: 4px; font-style: normal; font-size: 11px; font-weight: 700; background: var(--tc, #8a7350); color: #fff7df; }
+  .sim-unit.is-sel { transform: translateY(-4px); border-color: var(--gilt); box-shadow: 0 0 0 2px var(--gilt), 0 8px 20px rgba(0, 0, 0, .45); }
+  .sim-unit.is-locked { cursor: default; opacity: .9; }
+
+  /* ───────── 選取提示（放在面板底部，不會蓋住地點） ───────── */
+  .sim-hint {
+    flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+    padding: 8px 10px; border-radius: 10px; border: 1px solid var(--gilt);
+    background: rgba(224, 180, 76, .1); font-size: 14px; line-height: 1.5;
+    animation: zh-rise .2s ease both;
+  }
+  .sim-hint > span { flex: 1 1 10em; min-width: 0; }
+  .sim-hint .zh-btn { flex: none; }
+
+  /* ───────── 右側面板 ───────── */
+  .sim-tabs { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); }
+  .sim-tab {
+    position: relative; flex: 1; padding: 11px 6px 9px; cursor: pointer;
+    border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-dim);
+    font-family: var(--f-display); font-size: 15.5px; white-space: nowrap;
+  }
+  .sim-tab[aria-selected="true"] { color: var(--gilt); border-bottom-color: var(--gilt); }
+  .sim-tab .sim-dot { position: absolute; top: 8px; right: 10%; width: 8px; height: 8px; border-radius: 50%; background: var(--cinnabar); }
+  .sim-handle { display: none; }
+  .sim-panel__body { overflow-y: auto; padding: 12px 14px 16px; }
+  .sim-panel__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px calc(10px + var(--safe-b)); border-top: 1px solid var(--line); }
+  .sim-foot__info { font-size: 13px; color: var(--text-dim); }
+  .sim-end.is-ready { animation: sim-glow-btn 1.6s ease-in-out infinite; }
+
+  .sim-goal-sum { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
+  .sim-goal-sum .zh-bar { flex: 1; }
+  .sim-goals { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .sim-goal { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-soft); background: rgba(236, 230, 214, .03); }
+  .sim-goal__mark { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); color: var(--text-dim); font-weight: 700; }
+  .sim-goal.is-ok { border-color: rgba(63, 157, 132, .55); background: rgba(63, 157, 132, .1); }
+  .sim-goal.is-ok .sim-goal__mark { border-color: var(--patina); background: var(--patina); color: #fff; }
+  .sim-goal__label { font-family: var(--f-display); font-size: 16.5px; }
+  .sim-goal__quote { font-size: 12.5px; color: var(--gilt); }
+  .sim-goal__detail { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+  .sim-card {
+    margin-bottom: 8px; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid var(--line-soft); background: var(--slip); color: var(--slip-ink);
+    box-shadow: inset 0 0 0 1px rgba(107, 74, 42, .2);
+  }
+  .sim-card__head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .sim-card__kind { padding: 1px 8px; border-radius: 999px; font-size: 12px; color: #fff4ec; background: #7a2a1c; }
+  .sim-card__kind.is-alt { background: #5a6170; }
+  .sim-card__title { font-family: var(--f-display); font-size: 17px; font-weight: 700; }
+  .sim-card__cost { margin-left: auto; font-size: 12px; color: #6b4a2a; white-space: nowrap; }
+  .sim-card__text { font-size: 13.5px; line-height: 1.65; }
+  .sim-card .zh-btn { margin-top: 6px; }
+  .sim-empty { padding: 18px 6px; text-align: center; color: var(--text-dim); font-size: 14px; }
+
+  .sim-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .sim-log li { display: grid; grid-template-columns: 3.6em minmax(0, 1fr); gap: 8px; font-size: 13.5px; line-height: 1.6; }
+  .sim-log li span { color: var(--gilt); font-variant-numeric: tabular-nums; }
+  .sim-log li.is-bad { color: #ffb4aa; }
+  .sim-log li.is-good { color: #a9e2d4; }
+
+  /* ───────── 對話、抉擇、標題、教學 ───────── */
+  .sim-say {
+    position: fixed; left: 0; right: 0; margin: 0 auto; bottom: calc(16px + var(--safe-b)); z-index: 45;
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start;
+    width: min(840px, calc(100vw - 24px)); padding: 16px 18px 14px;
+    border: 1px solid var(--gilt); border-radius: 14px; cursor: pointer;
+    background: linear-gradient(180deg, rgba(39, 49, 79, .98), rgba(20, 26, 46, .98)); box-shadow: var(--shadow);
+    animation: zh-rise .2s ease both;
+  }
+  .sim-say__face {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--fc, var(--gilt)); color: var(--fc, var(--gilt)); background: rgba(11, 14, 29, .8);
+    font-family: var(--f-display); font-weight: 700; font-size: 30px;
+  }
+  .sim-say__name { display: inline-block; margin-bottom: 4px; padding: 1px 12px; border-radius: 4px; background: var(--fc, var(--cinnabar)); color: #fff4ec; font-family: var(--f-display); font-weight: 700; }
+  .sim-say__text { min-height: 3.4em; font-family: var(--f-display); font-size: 18px; line-height: 1.8; }
+  .sim-say__more { margin-top: 2px; text-align: right; font-size: 12.5px; color: var(--text-dim); }
+  .sim-say.is-narrator { grid-template-columns: minmax(0, 1fr); border-color: var(--slip-line); background: var(--slip); color: var(--slip-ink); }
+  .sim-say.is-narrator .sim-say__more { color: #6b5a3a; }
+
+  .sim-choice { position: fixed; inset: 0; z-index: 46; display: grid; place-items: center; padding: 16px; background: rgba(8, 10, 22, .72); animation: zh-fade-in .2s ease both; }
+  .sim-choice__card { width: min(560px, 100%); max-height: 100%; overflow: auto; padding: 20px; border: 1px solid var(--gilt); border-radius: 14px; background: linear-gradient(180deg, var(--night-3), var(--night-2)); box-shadow: var(--shadow); }
+  .sim-choice__card h2 { font-size: 22px; margin-bottom: 8px; }
+  .sim-choice__card > p { margin-bottom: 14px; line-height: 1.8; }
+  .sim-choice .zh-choice__text small { display: block; font-family: var(--f-body); font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+  .sim-banner { position: fixed; inset: 0; z-index: 44; display: grid; place-items: center; pointer-events: none; }
+  .sim-banner__in { text-align: center; animation: sim-banner 1.5s ease both; }
+  .sim-banner__title { font-family: var(--f-display); font-size: clamp(42px, 9vw, 84px); letter-spacing: .3em; color: var(--text); text-shadow: 0 4px 30px rgba(0, 0, 0, .8); }
+  .sim-banner__sub { margin-top: 4px; font-family: var(--f-display); font-size: 18px; letter-spacing: .2em; color: var(--gilt); text-shadow: 0 2px 12px rgba(0, 0, 0, .8); }
+
+  .sim-coach { position: fixed; inset: 0; z-index: 48; }
+  .sim-coach__hole { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(6, 8, 20, .72); border: 2px solid var(--gilt); transition: all .25s ease; pointer-events: none; }
+  .sim-coach__tip {
+    position: fixed; width: min(340px, calc(100vw - 24px)); padding: 14px 16px;
+    border: 1px solid var(--gilt); border-radius: 12px; background: var(--night-2); box-shadow: var(--shadow);
+  }
+  .sim-coach__tip h3 { font-size: 18px; margin-bottom: 4px; color: var(--gilt); }
+  .sim-coach__tip p { font-size: 14.5px; line-height: 1.7; }
+  .sim-coach__tip .zh-row { justify-content: space-between; margin-top: 12px; }
+  .sim-coach__step { font-size: 12.5px; color: var(--text-dim); }
+
+  @keyframes sim-rise { 0% { opacity: 0; transform: translate(-50%, 8px); } 15% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -46px); } }
+  @keyframes sim-flash { 0% { box-shadow: 0 0 0 0 var(--gilt-glow); } 30% { box-shadow: 0 0 0 4px var(--gilt), 0 0 26px var(--gilt-glow); } 100% { box-shadow: 0 0 0 0 transparent; } }
+  @keyframes sim-issue { 0%, 100% { box-shadow: 0 0 0 0 rgba(217, 72, 59, 0); } 50% { box-shadow: 0 0 0 3px rgba(217, 72, 59, .35); } }
+  @keyframes sim-glow-btn { 0%, 100% { box-shadow: 0 6px 18px rgba(224, 180, 76, .25); } 50% { box-shadow: 0 0 0 4px var(--gilt-glow), 0 6px 26px rgba(224, 180, 76, .55); } }
+  @keyframes sim-banner { 0% { opacity: 0; filter: blur(8px); transform: scale(1.06); } 25% { opacity: 1; filter: none; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; } }
+
+  body.sim-on .zc-pop { top: calc(var(--sim-top, 60px) + 10px); }
+  .sim.is-intro .sim-body { filter: blur(3px) brightness(.55); pointer-events: none; transition: filter .6s ease; }
+
+  /* ───────── 手機 ───────── */
+  @media (max-width: 860px) {
+    .sim-top { gap: 6px 10px; padding: calc(6px + var(--safe-t)) 10px 6px; }
+    .sim-title b { font-size: 16px; }
+    .sim-title span { display: none; }
+    .sim-year__n { font-size: 18px; }
+    .sim-year { gap: 8px; }
+    .sim-pip { width: 12px; height: 12px; }
+    .sim-menu { margin-left: auto; }
+    .sim-menu .zh-btn { padding: 4px 10px; min-height: 34px; }
+    .sim-menu [data-act="sound"] { display: none; }
+    .sim-meters { order: 5; width: 100%; margin-left: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+    .sim-m { grid-template-columns: 16px auto minmax(0, 1fr) 2em; gap: 4px; font-size: 12.5px; }
+    .sim-m svg { width: 16px; height: 16px; }
+    .sim-body { grid-template-columns: minmax(0, 1fr); }
+    .sim-main { padding: 10px 10px calc(150px + var(--safe-b)); }
+    .sim-era { grid-template-columns: minmax(0, 1fr); padding: 10px 12px; }
+    .sim-era b { font-size: 19px; }
+    .sim-era span { font-size: 14.5px; }
+    .sim-sites { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .sim-unit, .sim-slot { width: 58px; height: 74px; }
+    .sim-unit__name { max-width: 54px; }
+    .sim-panel {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      grid-template-rows: auto auto auto; max-height: 72dvh;
+      border: 0; border-top: 1px solid var(--gilt); border-radius: 16px 16px 0 0;
+      background: rgba(20, 26, 46, .98); box-shadow: 0 -10px 30px rgba(0, 0, 0, .45);
+    }
+    .sim-handle { display: block; width: 44px; height: 5px; margin: 8px auto 0; border: 0; border-radius: 999px; background: var(--line); cursor: pointer; padding: 0; }
+    .sim-panel__body { display: none; max-height: calc(72dvh - 130px); }
+    .sim-panel.is-open .sim-panel__body { display: block; }
+    .sim.is-picking .sim-main { padding-bottom: calc(210px + var(--safe-b)); }
+    .sim-say { bottom: calc(10px + var(--safe-b)); padding: 12px 14px; }
+    .sim-say__face { width: 48px; height: 48px; font-size: 24px; }
+    .sim-say__text { font-size: 16.5px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sim-site__float, .sim-banner__in, .sim-issue { animation-duration: .01ms !important; }
+  }
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+
+  const global = window;
+  const SPEED = { slow: 42, normal: 22, fast: 9, instant: 0 };
+  const REDUCE = !!(global.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const ICONS = {
+    grain: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9.2 19V8.6C6.2 8.4 4.2 6.4 4 3c3.3.2 5.2 2.1 5.2 5.2V8.6h1.6v-.4C10.8 5.1 12.7 3.2 16 3c-.2 3.4-2.2 5.4-5.2 5.6V19z"/><path d="M9.2 14c-2.6-.2-4.4-1.8-4.6-4.4 2.6.2 4.4 1.8 4.6 4.4zm1.6 0c.2-2.6 2-4.2 4.6-4.4-.2 2.6-2 4.2-4.6 4.4z"/></svg>',
+    people: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7" cy="6" r="3"/><circle cx="14.2" cy="7" r="2.4"/><path d="M1 18c0-4 2.7-6.3 6-6.3s6 2.3 6 6.3zm12.6 0c0-2.5-.6-4.3-1.7-5.4.6-.3 1.4-.5 2.2-.5 2.6 0 4.9 2 4.9 5.9z"/></svg>',
+    heart: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18S2 12.8 2 7.4C2 4.9 4 3 6.3 3c1.6 0 3 .9 3.7 2.2C10.7 3.9 12.1 3 13.7 3 16 3 18 4.9 18 7.4 18 12.8 10 18 10 18z"/></svg>',
+    flame: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 19c-3.9 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.1 3.6-7 .6 1.6 1.5 2.6 2.6 3C9.4 6.1 10.2 3.3 12.4 1c.3 3.3 4.1 5.6 4.1 11.4 0 3.8-2.6 6.6-6.5 6.6zm.1-2c1.6 0 2.7-1.1 2.7-2.6 0-1.7-1.3-2.8-2-4-.5 1.4-1.6 2-2.5 2.4-.6.4-.9 1-.9 1.7 0 1.4 1.1 2.5 2.7 2.5z"/></svg>',
+    eye: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4C5 4 1.7 8.6 1 10c.7 1.4 4 6 9 6s8.3-4.6 9-6c-.7-1.4-4-6-9-6zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg>',
+    scroll: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h10a2 2 0 0 1 2 2v9h1a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5H3a1 1 0 0 1-1-1 1 1 0 0 1 1-1zm2 4v1.6h8V7zm0 3v1.6h8V10z"/></svg>'
+  };
+
+  const esc = s => ZH.esc(s);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const isMobile = () => global.innerWidth <= 860;
+
+  /** 可重現的亂數（種子存在狀態裡，讀檔後接著用） */
+  function makeRng(state) {
+    return function () {
+      let t = (state.rng = (state.rng + 0x6D2B79F5) >>> 0);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function create(root, config) {
+    const C = Object.assign({
+      mode: 'history', years: 3, yearName: n => '第 ' + n + ' 年', endYearLabel: '過完這一年',
+      meters: [], kinds: {}, tags: {}, units: [], sites: () => [], goals: () => [], cards: [],
+      events: [], speakers: {}, characters: [], assign: () => true, poolLabel: '還沒安置的人',
+      goalsLabel: '目標', cardsLabel: '制度', actions: () => 0
+    }, config);
+    const S = { state: null, busy: 0, tab: 'goals', open: false, ended: false, sel: null, seen: { log: 0 }, saving: null };
+    const el = {};
+    let rng = null;
+
+    const sitesNow = () => (typeof C.sites === 'function' ? C.sites(S.state) : C.sites) || [];
+    const siteDef = id => sitesNow().find(s => s.id === id);
+    const unitsAt = id => S.state.units.filter(u => u.site === id && !u.hidden);
+    const capOf = site => (typeof site.cap === 'function' ? site.cap(S.state) : site.cap) || 0;
+    const kindOf = k => C.kinds[k] || { label: k, short: k, color: '#e0b44c' };
+    const visibleCards = () => (C.cards || []).filter(c => !c.visible || c.visible(S.state));
+    const canAssign = () => !S.ended && !S.busy && !!C.assign(S.state);
+
+    function freshState() {
+      const st = {
+        v: 1, year: 1, phase: '', meters: {}, flags: {}, done: {}, units: [], issues: [], actions: 0,
+        log: [], anchors: [], codex: [], ended: null, rng: (Number(C.seed) || Date.now()) >>> 0
+      };
+      C.meters.forEach(m => { st.meters[m.id] = m.start === undefined ? 0 : m.start; });
+      st.units = (C.units || []).map(u => Object.assign({ site: null, tags: [] }, JSON.parse(JSON.stringify(u))));
+      if (C.initState) {
+        const extra = C.initState(st) || {};
+        Object.keys(extra).forEach(k => {
+          if (k === 'flags' || k === 'meters') Object.assign(st[k], extra[k]);
+          else st[k] = extra[k];
+        });
+      }
+      return st;
+    }
+
+
+    // ───────────── 畫面骨架 ─────────────
+
+    function skeleton() {
+      root.innerHTML =
+        '<div class="sim" data-sim="' + esc(C.id) + '">' +
+        '<header class="sim-top">' +
+        '<button type="button" class="sim-icon" data-act="home" aria-label="離開（會自動存檔）" title="離開">‹</button>' +
+        '<div class="sim-title"><b>' + esc(C.title) + '</b><span>' + esc(C.subtitle || '') + '</span></div>' +
+        '<div class="sim-year" data-coach="year"><span class="sim-year__n" aria-live="polite"></span><span class="sim-pips" aria-label="今年剩下的令"></span></div>' +
+        '<div class="sim-meters" data-coach="meters"></div>' +
+        '<div class="sim-menu"><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="help">說明</button>' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="sound"></button></div>' +
+        '</header>' +
+        '<div class="sim-body">' +
+        '<main class="sim-main" aria-label="地點">' +
+        '<div class="sim-era" hidden></div>' +
+        '<section class="sim-pool" data-coach="pool" aria-label="' + esc(C.poolLabel) + '"></section>' +
+        '<div class="sim-sites" data-coach="sites"></div>' +
+        '</main>' +
+        '<aside class="sim-panel" aria-label="面板">' +
+        '<div><button type="button" class="sim-handle" aria-label="展開或收起面板"></button>' +
+        '<div class="sim-tabs" role="tablist">' +
+        '<button type="button" class="sim-tab" role="tab" data-tab="goals" data-coach="goals-tab">' + esc(C.goalsLabel) + '</button>' +
+        (C.cards && C.cards.length ? '<button type="button" class="sim-tab" role="tab" data-tab="cards" data-coach="cards-tab">' + esc(C.cardsLabel) + '</button>' : '') +
+        '<button type="button" class="sim-tab" role="tab" data-tab="log">紀錄</button>' +
+        '</div></div>' +
+        '<div class="sim-panel__body"></div>' +
+        '<div class="sim-panel__foot"><span class="sim-foot__info"></span>' +
+        '<button type="button" class="zh-btn zh-btn--primary sim-end" data-act="end" data-coach="end">' + esc(C.endYearLabel) + '</button></div>' +
+        '</aside>' +
+        '</div></div>';
+      const q = s => root.querySelector(s);
+      el.app = q('.sim');
+      el.year = q('.sim-year__n');
+      el.pips = q('.sim-pips');
+      el.meters = q('.sim-meters');
+      el.main = q('.sim-main');
+      el.era = q('.sim-era');
+      el.pool = q('.sim-pool');
+      el.sites = q('.sim-sites');
+      el.panel = q('.sim-panel');
+      el.body = q('.sim-panel__body');
+      el.info = q('.sim-foot__info');
+      el.end = q('.sim-end');
+      el.sound = q('[data-act="sound"]');
+      el.subtitle = q('.sim-title span');
+
+      q('[data-act="home"]').addEventListener('click', leave);
+      q('[data-act="help"]').addEventListener('click', help);
+      el.sound.addEventListener('click', () => {
+        ZH.setSetting('sound', !ZH.settings.sound);
+        renderTop();
+        ZH.sfx('click');
+      });
+      el.end.addEventListener('click', endYear);
+      q('.sim-handle').addEventListener('click', () => setOpen(!S.open));
+      root.querySelectorAll('.sim-tab').forEach(t => t.addEventListener('click', () => {
+        if (isMobile() && S.tab === t.dataset.tab) { setOpen(!S.open); return; }
+        S.tab = t.dataset.tab;
+        if (isMobile()) setOpen(true);
+        renderPanel();
+      }));
+      el.pool.addEventListener('click', e => {
+        if (e.target.closest('.sim-unit')) return;
+        if (S.sel) placeSelected(null);
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && S.sel && !document.querySelector('.zh-modal, .sim-choice, .za')) { select(null); }
+      });
+    }
+
+    function setOpen(on) {
+      S.open = !!on;
+      el.panel.classList.toggle('is-open', S.open);
+    }
+
+
+    // ───────────── 繪製 ─────────────
+
+    function refresh() {
+      renderTop();
+      renderMain();
+      renderPanel();
+    }
+
+    function renderTop() {
+      const s = S.state;
+      el.year.innerHTML = esc(C.yearName(Math.min(s.year, C.years))) + '<small>/ ' + C.years + '</small>';
+      const full = C.actions(s) || 0;
+      if (full > 0) {
+        el.pips.hidden = false;
+        let pips = '令 ';
+        for (let i = 0; i < Math.max(full, s.actions); i++) pips += '<i class="sim-pip' + (i < s.actions ? ' is-full' : '') + '"></i>';
+        el.pips.innerHTML = pips;
+      } else {
+        el.pips.hidden = true;
+      }
+      el.meters.innerHTML = C.meters.filter(m => !m.show || m.show(s)).map(m => {
+        const v = Math.round(s.meters[m.id] || 0);
+        const max = m.max || 100;
+        const danger = m.danger !== undefined && (m.invert ? v >= m.danger : v <= m.danger);
+        return '<div class="sim-m' + (m.invert ? ' is-invert' : '') + (danger ? ' is-danger' : '') + '" title="' + esc(m.label + ' ' + v + ' / ' + max) + '">' +
+          (ICONS[m.icon] || '') + '<span>' + esc(m.label) + '</span><span class="sim-m__bar"><i style="--v:' + clamp(100 * v / max, 0, 100).toFixed(0) + '%"></i></span>' +
+          '<span class="sim-m__val">' + v + '</span></div>';
+      }).join('');
+      el.sound.textContent = ZH.settings.sound ? '音效：開' : '音效：關';
+      el.sound.setAttribute('aria-pressed', String(!!ZH.settings.sound));
+      el.end.disabled = !!S.busy || S.ended;
+      const goals = C.goals(s) || [];
+      el.end.classList.toggle('is-ready', !S.busy && !S.ended && ((goals.length && goals.every(g => g.ok)) || (full > 0 && s.actions === 0)));
+      el.app.className = 'sim sim-phase-' + (s.phase || 'none') + (S.sel ? ' is-picking' : '') + (C.intro && !s.flags.__intro ? ' is-intro' : '');
+    }
+
+    function unitHtml(u, locked) {
+      const k = kindOf(u.kind);
+      const tags = (u.tags || []).map(t => {
+        const d = C.tags[t] || { label: t };
+        return '<i style="--tc:' + esc(d.color || '#8a7350') + '" title="' + esc(d.hint || d.label) + '">' + esc(d.short || d.label.slice(0, 1)) + '</i>';
+      }).join('');
+      const title = u.name + '（' + k.label + '）' + ((u.tags || []).length ? '・' + u.tags.map(t => (C.tags[t] || { label: t }).label).join('、') : '') + (u.note ? '：' + u.note : '');
+      return '<button type="button" class="sim-unit' + (S.sel === u.id ? ' is-sel' : '') + (locked ? ' is-locked' : '') + '" data-unit="' + esc(u.id) + '" style="--uc:' + esc(k.color || '#e0b44c') + '"' +
+        ' aria-pressed="' + (S.sel === u.id) + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">' +
+        '<span class="sim-unit__kind">' + esc(k.short || k.label) + '</span>' +
+        (tags ? '<span class="sim-unit__tags">' + tags + '</span>' : '') +
+        '<span class="sim-unit__glyph">' + esc(u.glyph || u.name.slice(0, 1)) + '</span>' +
+        '<span class="sim-unit__name">' + esc(u.name) + '</span></button>';
+    }
+
+    function renderMain() {
+      const s = S.state;
+      const era = C.phaseInfo ? C.phaseInfo(s) : null;
+      el.era.hidden = !era;
+      if (era) el.era.innerHTML = '<b>' + esc(era.title) + '</b><span>' + esc(era.quote || '') + '</span>';
+
+      const assign = canAssign();
+      const sel = S.sel ? S.state.units.find(u => u.id === S.sel) : null;
+      const pool = s.units.filter(u => !u.site && !u.hidden);
+      const showPool = !!C.assign(s) || pool.length > 0;
+      el.pool.hidden = !showPool;
+      el.pool.classList.toggle('is-target', !!sel && !!sel.site);
+      if (showPool) {
+        el.pool.innerHTML = '<div class="sim-pool__head"><b>' + esc(C.poolLabel) + '</b><span>' +
+          (sel ? (sel.site ? '點這裡，把' + esc(sel.name) + '帶回來' : '已選：' + esc(sel.name) + '，再點一個地點') : pool.length ? '點一個人，再點一個地點' : '') + '</span></div>' +
+          '<div class="sim-pool__list">' + (pool.length ? pool.map(u => unitHtml(u, !assign)).join('') : '<span class="sim-pool__empty">每個人都安置好了。</span>') + '</div>';
+      }
+
+      el.sites.innerHTML = sitesNow().map(site => {
+        const here = unitsAt(site.id);
+        const cap = capOf(site);
+        const st = site.status ? site.status(s, here) : null;
+        let target = '';
+        if (sel && assign) {
+          const ok = sel.site !== site.id && acceptOf(site, sel) === true;
+          target = ok ? ' is-target' : ' is-off';
+        }
+        const issues = s.issues.filter(i => i.site === site.id);
+        const slots = cap > here.length ? cap - here.length : 0;
+        return '<section class="sim-site' + target + (site.tone ? ' tone-' + esc(site.tone) : '') + '" data-site="' + esc(site.id) + '" data-coach="site-' + esc(site.id) + '">' +
+          '<div class="sim-site__head"><span class="sim-site__glyph" aria-hidden="true">' + esc(site.glyph || site.name.slice(0, 1)) + '</span>' +
+          '<div><h3 class="sim-site__name">' + esc(site.name) + '</h3>' + (site.desc ? '<p class="sim-site__desc">' + esc(typeof site.desc === 'function' ? site.desc(s) : site.desc) + '</p>' : '') + '</div>' +
+          (cap ? '<span class="sim-site__cap">' + here.length + ' / ' + cap + '</span>' : '<span></span>') + '</div>' +
+          (st && st.text ? '<p class="sim-site__status' + (st.level ? ' is-' + esc(st.level) : '') + '">' + esc(st.text) + '</p>' : '') +
+          (cap || here.length ? '<div class="sim-slots">' + here.map(u => unitHtml(u, !assign)).join('') + Array.from({ length: Math.min(slots, 8) }).map(() => '<span class="sim-slot" aria-hidden="true"></span>').join('') + '</div>' : '') +
+          (issues.length ? '<div class="sim-issues">' + issues.map(i => '<button type="button" class="sim-issue' + (i.done ? ' is-done' : '') + '" data-issue="' + esc(i.id) + '"' + (i.done ? ' disabled' : '') + '><i>' + (i.done ? '安' : '爭') + '</i>' + esc(i.title) + '</button>').join('') + '</div>' : '') +
+          '<button type="button" class="zh-btn zh-btn--sm zh-btn--primary sim-site__put" data-put="' + esc(site.id) + '">安置到這裡</button>' +
+          '</section>';
+      }).join('');
+
+      root.querySelectorAll('.sim-unit').forEach(b => b.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!canAssign()) {
+          const u = S.state.units.find(x => x.id === b.dataset.unit);
+          if (u && u.note) ZH.toast(u.name + '：' + u.note);
+          return;
+        }
+        select(S.sel === b.dataset.unit ? null : b.dataset.unit);
+      }));
+      root.querySelectorAll('.sim-site').forEach(c => c.addEventListener('click', e => {
+        if (e.target.closest('.sim-unit, .sim-issue')) return;
+        if (!S.sel) return;
+        placeSelected(c.dataset.site);
+      }));
+      root.querySelectorAll('.sim-issue').forEach(b => b.addEventListener('click', e => {
+        e.stopPropagation();
+        openIssue(b.dataset.issue);
+      }));
+    }
+
+    function renderPanel() {
+      const s = S.state;
+      root.querySelectorAll('.sim-tab').forEach(t => {
+        t.setAttribute('aria-selected', String(t.dataset.tab === S.tab));
+        const dot = t.dataset.tab === 'log' && s.log.length > S.seen.log;
+        const old = t.querySelector('.sim-dot');
+        if (dot && !old) t.appendChild(ZH.html('<span class="sim-dot" aria-hidden="true"></span>'));
+        if (!dot && old) old.remove();
+      });
+      const body = el.body;
+      if (S.tab === 'goals') {
+        const goals = C.goals(s) || [];
+        const n = goals.filter(g => g.ok).length;
+        body.innerHTML = goals.length
+          ? '<div class="sim-goal-sum"><span>' + n + ' / ' + goals.length + '</span><span class="zh-bar"><span style="--v:' + (100 * n / goals.length).toFixed(0) + '%"></span></span></div>' +
+            '<ul class="sim-goals">' + goals.map(g => '<li class="sim-goal' + (g.ok ? ' is-ok' : '') + '"><span class="sim-goal__mark" aria-hidden="true">' + (g.ok ? '✓' : '') + '</span><div>' +
+              '<div class="sim-goal__label">' + esc(g.label) + '<span class="zh-sr-only">' + (g.ok ? '（已達成）' : '（未達成）') + '</span></div>' +
+              (g.quote ? '<div class="sim-goal__quote">' + esc(g.quote) + '</div>' : '') +
+              (g.detail ? '<div class="sim-goal__detail">' + esc(g.detail) + '</div>' : '') + '</div></li>').join('') + '</ul>'
+          : '<p class="sim-empty">這個時期沒有目標清單。</p>';
+      } else if (S.tab === 'cards') {
+        const cards = visibleCards();
+        body.innerHTML = (C.cardsNote ? '<p class="zh-dim zh-small" style="margin:0 0 10px">' + esc(typeof C.cardsNote === 'function' ? C.cardsNote(s) : C.cardsNote) + '</p>' : '') +
+          (cards.length ? cards.map(c => '<div class="sim-card"><div class="sim-card__head"><span class="sim-card__kind' + (c.alt ? ' is-alt' : '') + '">' + esc(c.kind || C.cardsLabel) + '</span>' +
+            '<span class="sim-card__title">' + esc(c.label) + '</span><span class="sim-card__cost">' + (c.cost === 0 ? '不用令' : (c.cost || 1) + ' 令') + '</span></div>' +
+            '<p class="sim-card__text">' + esc(typeof c.desc === 'function' ? c.desc(s) : c.desc || '') + '</p>' +
+            (c.target === 'none' ? '<button type="button" class="zh-btn zh-btn--sm" data-card="' + esc(c.id) + '">使用</button>' : '') + '</div>').join('')
+            : '<p class="sim-empty">目前還沒有可以用的' + esc(C.cardsLabel) + '。</p>');
+        body.querySelectorAll('[data-card]').forEach(b => b.addEventListener('click', () => useCard(b.dataset.card, null)));
+      } else {
+        S.seen.log = s.log.length;
+        body.innerHTML = s.log.length
+          ? '<ul class="sim-log">' + s.log.slice().reverse().map(l => '<li class="' + (l.kind ? 'is-' + esc(l.kind) : '') + '"><span>' + esc(C.yearName(l.year).replace(/\s+/g, '')) + '</span><div>' + esc(l.text) + '</div></li>').join('') + '</ul>'
+          : '<p class="sim-empty">還沒有紀錄。</p>';
+        renderTabsDot();
+      }
+      const open = s.issues.filter(i => !i.done).length;
+      el.info.textContent = S.ended ? '這一局已經結束。' : open ? '還有 ' + open + ' 件爭端' : (C.actions(s) ? '還有 ' + s.actions + ' 道令' : '');
+    }
+
+    function renderTabsDot() {
+      const t = root.querySelector('.sim-tab[data-tab="log"] .sim-dot');
+      if (t) t.remove();
+    }
+
+
+    // ───────────── 安置 ─────────────
+
+    function acceptOf(site, unit) {
+      if (!site.accepts) return '這裡不能安置人。';
+      const r = site.accepts(unit, S.state);
+      if (r !== true) return r || '這裡不收這個人。';
+      if (unit.site !== site.id && unitsAt(site.id).length >= capOf(site)) return site.name + '已經滿了。';
+      return true;
+    }
+
+    function select(id) {
+      S.sel = id;
+      if (id && isMobile()) setOpen(false);
+      renderMain();
+      renderTop();
+      showHint();
+    }
+
+    function showHint() {
+      const old = root.querySelector('.sim-hint');
+      if (old) old.remove();
+      if (!S.sel) return;
+      const u = S.state.units.find(x => x.id === S.sel);
+      if (!u) return;
+      const hint = ZH.html('<div class="sim-hint" role="status"><span>已選：<b>' + esc(u.name) + '</b>（' + esc(kindOf(u.kind).label) + '）・點一個發光的地點</span>' +
+        (u.site ? '<button type="button" class="zh-btn zh-btn--sm" data-h="back">移回未安置</button>' : '') +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-h="cancel">取消</button></div>');
+      hint.querySelector('[data-h="cancel"]').addEventListener('click', () => select(null));
+      const back = hint.querySelector('[data-h="back"]');
+      if (back) back.addEventListener('click', () => placeSelected(null));
+      el.panel.querySelector('.sim-panel__foot').prepend(hint);
+    }
+
+    function placeSelected(siteId) {
+      const u = S.state.units.find(x => x.id === S.sel);
+      if (!u) { select(null); return; }
+      if (siteId === null) {
+        if (!u.site) { select(null); return; }
+        u.site = null;
+        ZH.sfx('click');
+        afterMove(u, null);
+        return;
+      }
+      const site = siteDef(siteId);
+      if (!site) return;
+      if (u.site === siteId) { select(null); return; }
+      const ok = acceptOf(site, u);
+      if (ok !== true) { ZH.toast(ok, 'bad'); ZH.sfx('ng'); return; }
+      u.site = siteId;
+      ZH.sfx('ok');
+      afterMove(u, site);
+    }
+
+    function afterMove(u, site) {
+      S.sel = null;
+      showHint();
+      refresh();
+      if (site) fx.pulse(site.id);
+      const list = C.events.filter(e => e.phase === 'move');
+      if (list.length) runEvents('move', { unit: u, site: site }).then(() => { refresh(); save(); });
+      else save();
+    }
+
+
+    // ───────────── 爭端與制度卡 ─────────────
+
+    function openIssue(id) {
+      const issue = S.state.issues.find(i => i.id === id);
+      if (!issue || issue.done || S.busy || S.ended) return;
+      const cards = visibleCards().filter(c => c.target !== 'none');
+      if (!cards.length) { ZH.toast('現在還沒有可以處理這件事的' + C.cardsLabel + '。'); return; }
+      const costOf = c => (c.cost === undefined ? 1 : c.cost);
+      if (!cards.some(c => costOf(c) <= S.state.actions)) { ZH.toast('今年的令已經用完了。', 'bad'); return; }
+      setBusy(true);
+      choose({
+        title: issue.title,
+        text: issue.text + (C.actions(S.state) ? '（今年還有 ' + S.state.actions + ' 道令）' : ''),
+        options: cards.map(c => ({
+          label: c.label + (c.cost === 0 ? '' : '（' + (c.cost || 1) + ' 令）'),
+          desc: typeof c.desc === 'function' ? c.desc(S.state) : c.desc, value: c.id,
+          disabled: costOf(c) > S.state.actions
+        })).concat([{ label: '先放著', desc: '今年不處理，年底這件事會變得更麻煩。', value: '' }])
+      }).then(pick => {
+        setBusy(false);
+        if (pick) return useCard(pick, issue);
+      });
+    }
+
+    function useCard(cardId, issue) {
+      const card = (C.cards || []).find(c => c.id === cardId);
+      if (!card || S.busy || S.ended) return Promise.resolve();
+      const cost = card.cost === undefined ? 1 : card.cost;
+      if (cost > S.state.actions) { ZH.toast('今年的令不夠了。', 'bad'); return Promise.resolve(); }
+      S.state.actions -= cost;
+      setBusy(true);
+      return Promise.resolve()
+        .then(() => C.onCard ? C.onCard(ctx, card, issue) : null)
+        .then(r => {
+          if (r && r.refund) S.state.actions += cost;
+          if (issue && r && r.resolved) {
+            issue.done = true;
+            fx.pulse(issue.site);
+          }
+          return runEvents('card', { card: card, issue: issue, result: r });
+        })
+        .catch(err => { if (global.console) console.error(err); ZH.toast('發生錯誤：' + err.message, 'bad'); })
+        .then(() => {
+          if (S.ended) return;
+          const r = check();
+          if (r) { finish(r); return; }
+          setBusy(false);
+          refresh();
+          save();
+        });
+    }
+
+
+    // ───────────── 特效 ─────────────
+
+    const fx = {
+      float(siteId, text, color) {
+        const card = el.sites.querySelector('[data-site="' + siteId + '"]');
+        if (!card) return;
+        const f = ZH.html('<span class="sim-site__float"></span>');
+        f.textContent = text;
+        if (color) f.style.color = color;
+        card.appendChild(f);
+        setTimeout(() => f.remove(), 1600);
+      },
+      pulse(siteId) {
+        const card = el.sites.querySelector('[data-site="' + siteId + '"]');
+        if (!card) return Promise.resolve();
+        card.classList.remove('is-flash');
+        void card.offsetWidth;
+        card.classList.add('is-flash');
+        return sleep(REDUCE ? 0 : 400);
+      }
+    };
+
+
+    // ───────────── 對話、抉擇、標題、教學 ─────────────
+
+    function speakerOf(who) {
+      if (!who) return null;
+      const c = C.characters.find(x => x.id === who || x.name === who);
+      if (c) return { name: c.name, glyph: c.glyph, color: c.color };
+      const sp = C.speakers[who];
+      if (sp) return { name: sp.name || who, glyph: sp.glyph || who.slice(0, 1), color: sp.color };
+      return { name: who, glyph: who.slice(0, 1), color: null };
+    }
+
+    function sayOne(line) {
+      const l = typeof line === 'string' ? { text: line } : line;
+      const sp = speakerOf(l.who);
+      return new Promise(resolve => {
+        const box = ZH.html(
+          '<div class="sim-say' + (sp ? '' : ' is-narrator') + '" role="dialog" aria-live="polite" tabindex="-1"' + (sp && sp.color ? ' style="--fc:' + esc(sp.color) + '"' : '') + '>' +
+          (sp ? '<span class="sim-say__face" aria-hidden="true">' + esc(sp.glyph) + '</span>' : '') +
+          '<div>' + (sp ? '<span class="sim-say__name">' + esc(sp.name) + '</span>' : '') +
+          '<p class="sim-say__text"></p><p class="sim-say__more">點一下繼續 ▾</p></div></div>'
+        );
+        document.body.appendChild(box);
+        const textEl = box.querySelector('.sim-say__text');
+        const speed = Object.prototype.hasOwnProperty.call(SPEED, ZH.settings.textSpeed) ? SPEED[ZH.settings.textSpeed] : SPEED.normal;
+        const text = String(l.text || '');
+        let i = 0;
+        let typing = !!speed && !REDUCE;
+        let timer = null;
+        if (typing) {
+          timer = setInterval(() => {
+            i += 1;
+            textEl.textContent = text.slice(0, i);
+            if (i >= text.length) { clearInterval(timer); typing = false; }
+          }, speed);
+        } else {
+          textEl.textContent = text;
+        }
+        const advance = () => {
+          if (typing) { clearInterval(timer); typing = false; textEl.textContent = text; return; }
+          document.removeEventListener('keydown', onKey, true);
+          box.remove();
+          resolve();
+        };
+        const onKey = e => {
+          if (document.querySelector('.za, .zc, .zc-detail, .zh-modal')) return;
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); advance(); }
+        };
+        box.addEventListener('click', advance);
+        document.addEventListener('keydown', onKey, true);
+        box.focus({ preventScroll: true });
+        ZH.sfx('click');
+      });
+    }
+
+    function say(lines) {
+      const list = Array.isArray(lines) ? lines : [lines];
+      if (isMobile()) setOpen(false);
+      return list.reduce((p, l) => p.then(() => sayOne(l)), Promise.resolve());
+    }
+
+    /** 抉擇：options [{ label, desc, value, disabled }]；回傳選到的 value */
+    function choose(o) {
+      return new Promise(resolve => {
+        const previous = document.activeElement;
+        const wrap = ZH.html(
+          '<div class="sim-choice" role="dialog" aria-modal="true" aria-labelledby="sim-choice-t"><div class="sim-choice__card">' +
+          '<h2 id="sim-choice-t">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') +
+          '<div class="zh-choices">' + (o.options || []).map((op, i) =>
+            '<button type="button" class="zh-choice" data-i="' + i + '"' + (op.disabled ? ' disabled' : '') + '><span class="zh-choice__key">' + '甲乙丙丁戊己庚辛壬癸子丑'[i] + '</span>' +
+            '<span class="zh-choice__text">' + esc(op.label) + (op.desc ? '<small>' + esc(op.desc) + '</small>' : '') + '</span></button>').join('') +
+          '</div></div></div>'
+        );
+        document.body.appendChild(wrap);
+        wrap.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => {
+          ZH.sfx('click');
+          wrap.remove();
+          if (previous && previous.focus) previous.focus({ preventScroll: true });
+          resolve(o.options[Number(b.dataset.i)].value);
+        }));
+        const first = wrap.querySelector('[data-i]:not(:disabled)');
+        if (first) first.focus({ preventScroll: true });
+      });
+    }
+
+    function banner(title, sub) {
+      const b = ZH.html('<div class="sim-banner" aria-live="polite"><div class="sim-banner__in"><div class="sim-banner__title">' + esc(title) + '</div>' + (sub ? '<div class="sim-banner__sub">' + esc(sub) + '</div>' : '') + '</div></div>');
+      document.body.appendChild(b);
+      ZH.sfx('bell');
+      return sleep(REDUCE ? 300 : 1500).then(() => b.remove());
+    }
+
+    function quiet() {
+      const t0 = Date.now();
+      const busy = () => document.querySelector('.zc-pop');
+      return new Promise(resolve => {
+        const tick = () => (!busy() || Date.now() - t0 > 15000 ? resolve() : setTimeout(tick, 200));
+        tick();
+      });
+    }
+
+    /** 教學導引：steps [{ el: data-coach 名稱, title, text }] */
+    function coach(steps) {
+      const list = (steps || []).filter(Boolean);
+      if (!list.length) return Promise.resolve();
+      return quiet().then(() => new Promise(resolve => {
+        let i = 0;
+        const wrap = ZH.html('<div class="sim-coach" role="dialog" aria-modal="true" aria-label="操作說明"><div class="sim-coach__hole"></div><div class="sim-coach__tip"></div></div>');
+        document.body.appendChild(wrap);
+        const hole = wrap.querySelector('.sim-coach__hole');
+        const tip = wrap.querySelector('.sim-coach__tip');
+        const show = () => {
+          const st = list[i];
+          if (isMobile()) {
+            const inPanel = ['goals-tab', 'cards-tab', 'end'].indexOf(st.el) > -1;
+            setOpen(false);
+            if (inPanel && st.tab) { S.tab = st.tab; renderPanel(); }
+          }
+          const target = root.querySelector('[data-coach="' + st.el + '"]');
+          if (target && target.scrollIntoView && el.main.contains(target)) target.scrollIntoView({ block: 'nearest' });
+          const r = target && target.offsetParent !== null ? target.getBoundingClientRect() : null;
+          if (r && r.width) {
+            const top = Math.max(r.top, 4);
+            const bottom = Math.min(r.bottom, global.innerHeight - 4);
+            Object.assign(hole.style, { display: 'block', left: (r.left - 6) + 'px', top: (top - 6) + 'px', width: (r.width + 12) + 'px', height: (bottom - top + 12) + 'px' });
+          } else {
+            hole.style.display = 'none';
+          }
+          tip.innerHTML = '<h3>' + esc(st.title) + '</h3><p>' + esc(st.text) + '</p>' +
+            '<div class="zh-row"><span class="sim-coach__step">' + (i + 1) + ' / ' + list.length + '</span><span class="zh-row" style="gap:8px;margin:0">' +
+            (i < list.length - 1 ? '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-c="skip">略過</button>' : '') +
+            '<button type="button" class="zh-btn zh-btn--primary zh-btn--sm" data-c="next">' + (i < list.length - 1 ? '下一步' : '開始') + '</button></span></div>';
+          const tw = tip.offsetWidth;
+          const th = tip.offsetHeight;
+          let left;
+          let top;
+          if (r && r.width) {
+            const rb = Math.min(r.bottom, global.innerHeight - 4);
+            left = clamp(r.left + r.width / 2 - tw / 2, 12, global.innerWidth - tw - 12);
+            top = rb + 14 + th < global.innerHeight ? rb + 14 : Math.max(r.top, 4) - th - 14;
+            if (top < 12) top = clamp(global.innerHeight / 2 - th / 2, 12, global.innerHeight - th - 12);
+          } else {
+            left = global.innerWidth / 2 - tw / 2;
+            top = global.innerHeight / 2 - th / 2;
+          }
+          tip.style.left = left + 'px';
+          tip.style.top = top + 'px';
+          tip.querySelector('[data-c="next"]').focus({ preventScroll: true });
+          tip.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
+            ZH.sfx('click');
+            if (b.dataset.c === 'skip' || i === list.length - 1) { done(); return; }
+            i += 1;
+            show();
+          }));
+        };
+        const onResize = () => show();
+        const done = () => {
+          global.removeEventListener('resize', onResize);
+          wrap.remove();
+          if (isMobile()) setOpen(false);
+          S.tab = 'goals';
+          renderPanel();
+          resolve();
+        };
+        global.addEventListener('resize', onResize);
+        show();
+      }));
+    }
+
+    const tutorialNow = () => (typeof C.tutorial === 'function' ? C.tutorial(S.state) : C.tutorial) || [];
+
+    function help() {
+      const tour = tutorialNow().length > 0 && !S.busy;
+      ZH.modal({
+        title: '怎麼玩',
+        body: (typeof C.help === 'function' ? C.help(S.state) : C.help) || '',
+        actions: (tour ? [{ label: '重看教學', value: 'tour', kind: 'quiet' }] : []).concat([{ label: '知道了', value: true, kind: 'primary' }])
+      }).then(v => { if (v === 'tour') coach(tutorialNow()); });
+    }
+
+    function leave() {
+      ZH.modal({
+        title: '離開這一局？',
+        body: '<p>' + (ZH.isGuest() ? '訪客的進度只保存在這個分頁；關閉分頁就會消失。' : '目前的進度會自動存檔，下次可以從這一年繼續。') + '</p>',
+        actions: [{ label: '繼續玩', value: false, kind: 'quiet' }, { label: '存檔並離開', value: true, kind: 'primary' }]
+      }).then(go => {
+        if (!go) return;
+        Promise.race([save(), sleep(4000)]).then(() => ZH.go('hub'));
+      });
+    }
+
+
+    // ───────────── 狀態操作 ─────────────
+
+    function log(text, kind) {
+      S.state.log.push({ year: S.state.year, text: String(text), kind: kind || '' });
+      if (S.state.log.length > 200) S.state.log.splice(0, S.state.log.length - 200);
+      renderPanel();
+    }
+
+    function add(id, delta, opts) {
+      const o = opts || {};
+      const m = C.meters.find(x => x.id === id);
+      if (!m || !delta) return 0;
+      const before = S.state.meters[id] || 0;
+      S.state.meters[id] = clamp(Math.round(before + delta), 0, m.max || 100);
+      const real = S.state.meters[id] - before;
+      const goodUp = !m.invert;
+      if (real && o.at) fx.float(o.at, m.label + (real > 0 ? ' +' : ' ') + real, (real > 0) === goodUp ? '#bdf2dd' : '#ffb4aa');
+      renderTop();
+      return real;
+    }
+
+    function unlock(key) {
+      if (!ZH.codex) return false;
+      const i = String(key).indexOf(':');
+      const ok = ZH.codex.unlock(key.slice(0, i), key.slice(i + 1), C.id);
+      if (ok && S.state.codex.indexOf(key) === -1) S.state.codex.push(key);
+      return ok;
+    }
+
+    function anchor(id) {
+      const done = S.state.anchors.find(a => a.anchorId === id);
+      if (done) return Promise.resolve(done);
+      const item = ZH.anchor && ZH.anchor.get(C.id, id);
+      if (!item) {
+        log('（史實錨點 ' + id + ' 暫時讀不到，先略過）');
+        return Promise.resolve(null);
+      }
+      if (isMobile()) setOpen(false);
+      const order = Array.isArray(C.anchorOrder) ? C.anchorOrder.indexOf(id) + 1 : 0;
+      return ZH.anchor.run(item, { scenarioId: C.id, mode: C.mode, index: order || item.seq, total: C.anchorTotal || 0 }).then(r => {
+        S.state.anchors.push(r);
+        save();
+        return r;
+      });
+    }
+
+    /** 存檔：同一時間只送一份；存檔中又要存，就等這次存完再存一次最新的狀態 */
+    function save() {
+      if (!C.save) return Promise.resolve();
+      if (S.saving) { S.saveAgain = true; return S.saving; }
+      S.saving = Promise.resolve(C.save(JSON.parse(JSON.stringify(S.state))))
+        .catch(() => null)
+        .then(r => {
+          S.saving = null;
+          if (S.saveAgain) { S.saveAgain = false; return save(); }
+          return r;
+        });
+      return S.saving;
+    }
+
+    const ctx = {
+      get state() { return S.state; },
+      rng: () => rng(),
+      meter: id => S.state.meters[id] || 0,
+      add: add,
+      flag(name, value) {
+        if (value === undefined) return S.state.flags[name];
+        S.state.flags[name] = value;
+        return value;
+      },
+      log: log,
+      say: say,
+      choose: choose,
+      anchor: anchor,
+      unlock: unlock,
+      banner: banner,
+      coach: coach,
+      wait: ms => sleep(REDUCE ? 0 : ms),
+      quiet: quiet,
+      refresh: refresh,
+      save: save,
+      end: result => finish(result),
+      unit: id => S.state.units.find(u => u.id === id) || null,
+      units: filter => S.state.units.filter(u => !u.hidden && (!filter || filter(u))),
+      move(id, siteId) { const u = S.state.units.find(x => x.id === id); if (u) u.site = siteId || null; },
+      addUnit(def) { const u = Object.assign({ site: null, tags: [] }, def); S.state.units.push(u); return u; },
+      removeUnit(id) { S.state.units = S.state.units.filter(u => u.id !== id); },
+      issues: () => S.state.issues,
+      addIssue(def) { const i = Object.assign({ done: false }, def); S.state.issues.push(i); return i; },
+      clearIssues() { S.state.issues = []; },
+      setPhase(p) { S.state.phase = p; },
+      subtitle(text) { el.subtitle.textContent = String(text || ''); },
+      tab(name) { S.tab = name; renderPanel(); },
+      siteEl: id => el.sites.querySelector('[data-site="' + id + '"]'),
+      fx: fx
+    };
+
+
+    // ───────────── 流程 ─────────────
+
+    function setBusy(on) {
+      S.busy = Math.max(0, S.busy + (on ? 1 : -1));
+      if (S.busy && S.sel) { S.sel = null; showHint(); }
+      renderTop();
+      renderMain();
+      renderPanel();
+    }
+
+    function check() {
+      return C.check ? C.check(S.state) : null;
+    }
+
+    function runEvents(phase, info) {
+      const list = C.events.filter(e => (e.phase || 'start') === phase);
+      return list.reduce((p, ev) => p.then(() => {
+        if (S.ended) return;
+        if (ev.once !== false && S.state.done[ev.id]) return;
+        if (ev.when && !ev.when(S.state, info)) return;
+        S.state.done[ev.id] = true;
+        return Promise.resolve(ev.run(ctx, info)).then(() => {
+          refresh();
+          const r = check();
+          if (r) finish(r);
+        });
+      }), Promise.resolve());
+    }
+
+    function endYear() {
+      if (S.busy || S.ended) return;
+      const go = () => {
+        setBusy(true);
+        if (S.sel) select(null);
+        if (isMobile()) setOpen(false);
+        Promise.resolve()
+          .then(() => runEvents('end'))
+          .then(() => { if (!S.ended && C.yearEnd) return C.yearEnd(ctx); })
+          .then(() => {
+            if (S.ended) return;
+            refresh();
+            const r = check();
+            if (r) { finish(r); return; }
+            S.state.year += 1;
+            const r2 = check();
+            if (r2) { finish(r2); return; }
+            return startYear();
+          })
+          .catch(err => { if (global.console) console.error(err); ZH.toast('發生錯誤：' + err.message, 'bad'); setBusy(false); });
+      };
+      const msg = C.confirmEnd ? C.confirmEnd(S.state) : null;
+      if (msg) {
+        ZH.modal({
+          title: '確定' + C.endYearLabel + '？',
+          body: '<p>' + esc(msg) + '</p>',
+          actions: [{ label: '再想想', value: false, kind: 'quiet' }, { label: C.endYearLabel, value: true, kind: 'primary' }]
+        }).then(v => { if (v) go(); });
+      } else {
+        go();
+      }
+    }
+
+    function startYear() {
+      S.state.actions = C.actions(S.state) || 0;
+      refresh();
+      return banner(C.yearName(S.state.year), C.yearSub ? C.yearSub(S.state) : '')
+        .then(() => runEvents('start'))
+        .then(() => {
+          if (S.ended) return;
+          setBusy(false);
+          refresh();
+          save();
+        });
+    }
+
+    function finish(result) {
+      if (S.ended) return;
+      S.ended = true;
+      S.state.ended = result;
+      S.busy = 1;
+      S.sel = null;
+      showHint();
+      refresh();
+      save().then(() => { if (C.onEnd) C.onEnd(result, ctx); });
+    }
+
+    function start(saved) {
+      S.state = saved && saved.v ? saved : freshState();
+      rng = makeRng(S.state);
+      skeleton();
+      S.seen.log = S.state.log.length;
+      S.busy = 1;
+      refresh();
+      document.body.classList.add('sim-on');
+      const topH = () => { const tb = root.querySelector('.sim-top'); if (tb) document.documentElement.style.setProperty('--sim-top', tb.offsetHeight + 'px'); };
+      topH();
+      let t = null;
+      global.addEventListener('resize', () => {
+        clearTimeout(t);
+        t = setTimeout(() => { topH(); if (!isMobile()) setOpen(false); }, 150);
+      });
+      if (S.state.ended) { S.ended = true; if (C.onEnd) C.onEnd(S.state.ended, ctx); return; }
+      // 開場（序幕）：還沒看完就從頭看，看完才進第一年
+      if (!S.state.flags.__intro) {
+        return Promise.resolve(C.intro ? C.intro(ctx) : null)
+          .then(() => { S.state.flags.__intro = true; renderTop(); if (!S.ended) return startYear(); })
+          .catch(err => { if (global.console) console.error(err); setBusy(false); });
+      }
+      return runEvents('start').then(() => {
+        if (S.ended) return;
+        setBusy(false);
+        refresh();
+      });
+    }
+
+    return { start: start, ctx: ctx, refresh: refresh, get state() { return S.state; } };
+  }
+
+  ZH.sim = { create: create, icons: ICONS };
+})(window.ZH);
+</script>

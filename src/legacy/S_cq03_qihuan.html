@@ -1,0 +1,1670 @@
+<!-- 本話任務：長勺須等彼竭我盈且察轍望旗；主盟靠救援與守信持續建立。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：S_cq03_qihuan.html
+ 版本：v0.1.0（2026-10-08）
+ 依賴：Core_css、Core_js（v0.2.1）、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story（v0.2.0）
+       伺服器 Code.gs v0.1.5（自動帶入 Art_kit v0.1.2、Arena_js）、Rank.gs、Save.gs、Log.gs、AnchorBank.gs v0.1.5
+       劇本資料檔 S_cq03_qihuan_data.gs（錨點 qh_01～qh_14、圖鑑 14 項）
+ 說明：第一卷 第 3 話「齊桓稱霸」（約 40 分鐘）。原典〈曹劌論戰〉（《左傳・莊公十年》）、
+       〈管晏列傳〉（《史記》），主線取材《左傳・莊公八年至十年、閔公元年、僖公四年、九年》、
+       《史記・齊太公世家、刺客列傳》。
+       序：齊亂。
+       第一幕：爭先入齊。挑戰賽「爭先入齊」：交替催馬和公子糾競速，管仲放箭時抓準時機「詳死」。
+               乾時之戰、置射鉤而用管仲、管鮑之交。
+       第二幕：曹劌論戰（曹劌視角）。挑戰賽「長勺之戰」：齊人三鼓以前按住魯莊公，再察轍望旗。
+       第三幕：九合諸侯。倉廩實而知禮節、柯之盟、救邢；挑戰賽「九合諸侯」（三國志式地圖戰略，和楚國搶諸侯）；
+               召陵之盟、葵丘受胙。
+       尾聲：管仲之死、桓公之死。
+ 網址：?page=S_cq03_qihuan（需要學校帳號）
+============================================================
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題頁 ───────── */
+  .ep-title {
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 520px at 70% 0%, var(--ep-glow, rgba(127, 85, 152, .24)), transparent 65%),
+      radial-gradient(700px 600px at 0% 100%, rgba(224, 180, 76, .12), transparent 60%);
+  }
+  .ep-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width: min(1040px, 100%); margin: 0 auto; padding: 8px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 22px; align-content: start; }
+  .ep-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .ep-h1 { margin-top: 4px; font-size: clamp(46px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .ep-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ep-note { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, auto); gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: rgba(20, 26, 46, .82); box-shadow: var(--shadow);
+  }
+  .ep-seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--ep-color, #7f5598); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--ep-color, #7f5598);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--ep-color, #7f5598); background: rgba(11, 14, 29, .6);
+  }
+  .ep-seal.has-art { width: 96px; height: 124px; padding: 0; overflow: hidden; background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); }
+  .ep-seal.has-art .ck { width: 100%; height: 100%; }
+  .ep-start__name { font-family: var(--f-display); font-size: 22px; }
+  .ep-start__lead { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start__act { display: grid; gap: 8px; }
+  .ep-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .ep-point { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .7); }
+  .ep-point b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; color: var(--gilt); }
+  .ep-point span { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  @media (max-width: 860px) {
+    .ep-start { grid-template-columns: auto minmax(0, 1fr); }
+    .ep-start__act { grid-column: 1 / -1; }
+    .ep-seal.has-art { width: 72px; height: 94px; }
+  }
+
+  /* ───────── 地圖場景 ───────── */
+  .sty-bg svg.qh-map { top: 58px; bottom: auto; height: calc(100% - 58px - 200px); }
+  .qh-map text { font-family: var(--f-display); fill: #2b2418; }
+  .qh-map .m-city { font-size: 28px; font-weight: 700; text-anchor: middle; }
+  .qh-map .m-sub { font-size: 18px; text-anchor: middle; fill: #6b5a3a; }
+  .qh-map .m-small { font-size: 21px; text-anchor: middle; fill: #4a3d28; }
+  .qh-map .m-big { font-size: 78px; font-weight: 700; text-anchor: middle; fill: #5c4d33; opacity: .26; }
+  .qh-map .m-river { font-size: 22px; fill: #3f5f86; }
+  .qh-map .m-note { font-size: 25px; font-weight: 700; text-anchor: middle; paint-order: stroke; stroke: #ecdfb8; stroke-width: 6px; }
+  @media (max-width: 860px) {
+    .sty-bg svg.qh-map { top: 52px; height: calc(100% - 52px - 170px); }
+  }
+
+  /* ───────── 小遊戲共用 ───────── */
+  @keyframes qh-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes qh-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @keyframes qh-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(217, 72, 59, .7); } 50% { box-shadow: 0 0 0 7px rgba(217, 72, 59, 0); } }
+  @keyframes qh-glow { from { box-shadow: 0 0 0 2px rgba(224, 180, 76, .35); } to { box-shadow: 0 0 0 6px rgba(224, 180, 76, .9); } }
+  .qh-fuse { height: 8px; border-radius: 999px; background: rgba(236, 230, 214, .14); overflow: hidden; }
+  .qh-fuse i { display: block; height: 100%; width: var(--p, 100%); background: linear-gradient(90deg, #a3362c, #e0b44c); }
+  .qh-fuse.is-warn i { background: #d9483b; }
+  .qh-face { display: block; width: 76px; height: 96px; border-radius: 12px; overflow: hidden; border: 2px solid var(--line); background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); }
+  .qh-face .ck { width: 100%; height: 100%; }
+  .qh-face__seal { display: grid; place-items: center; width: 100%; height: 100%; font-family: var(--f-display); font-size: 36px; font-weight: 700; }
+
+  /* ───────── 小遊戲一：爭先入齊 ───────── */
+  .qh-race { display: grid; gap: 10px; align-content: start; width: min(900px, 100%); margin: 0 auto; padding: 12px; }
+  .qh-race__field { position: relative; display: grid; gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(180deg, #2b3550, #1b2238); }
+  .qh-lane { position: relative; height: 92px; border-radius: 10px; overflow: hidden; background-color: #b38d57; background-image: repeating-linear-gradient(90deg, rgba(90, 60, 30, .22) 0 6px, transparent 6px 60px), linear-gradient(180deg, #7a9a55 0 16%, #c9a56a 16% 84%, #7a9a55 84%); }
+  .qh-lane__name { position: absolute; left: 10px; top: 4px; z-index: 2; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
+  .qh-lane__goal { position: absolute; right: 0; top: 0; bottom: 0; width: 44px; display: grid; place-items: center; font-style: normal; font-family: var(--f-display); font-size: 15px; color: #fff; background: repeating-conic-gradient(#2b2418 0 25%, #e8d6a6 0 50%) 0 0 / 14px 14px; }
+  .qh-lane__goal span { display: block; padding: 4px 5px; border-radius: 5px; background: rgba(43, 36, 24, .92); box-shadow: 0 0 0 2px #e0b44c; line-height: 1.15; text-align: center; }
+  .qh-car { position: absolute; left: 0; bottom: 8px; width: 96px; height: 62px; will-change: transform; }
+  .qh-car svg { width: 100%; height: 100%; display: block; }
+  .qh-car.is-stun { animation: qh-shake .3s ease 2; }
+  .qh-race__aim { position: absolute; inset: 0; z-index: 3; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; padding: 12px 18px; border-radius: 14px; background: rgba(8, 10, 22, .93); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: qh-in .2s ease both; }
+  .qh-race__aim[hidden] { display: none; }
+  .qh-aim__txt { font-family: var(--f-display); font-size: 18px; line-height: 1.6; }
+  .qh-aim__txt small { display: block; font-family: var(--f-body); font-size: 13.5px; color: var(--text-dim); }
+  .qh-aim__target { position: relative; justify-self: center; width: 140px; height: 140px; margin-top: 6px; }
+  .qh-aim__hook { position: absolute; inset: 44px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f6dc8a, #b8862e 60%, #6a4a14); box-shadow: 0 0 0 3px #2b2418; }
+  .qh-aim__ring { position: absolute; inset: 44px; border-radius: 50%; border: 4px solid #ff6a5a; transform: scale(var(--s, 2)); opacity: var(--o, 1); }
+  .qh-aim__ring.is-hit { border-color: #ffe08a; }
+  .qh-race__msg { min-height: 1.6em; text-align: center; font-family: var(--f-display); font-size: 17px; line-height: 1.6; }
+  .qh-race__msg.is-bad { color: #ffb4aa; }
+  .qh-race__msg.is-good { color: #a9e2d4; }
+  .qh-race__pad { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; }
+  .qh-pad { min-height: 72px; font-size: 21px; touch-action: manipulation; user-select: none; -webkit-user-select: none; display: grid; place-items: center; line-height: 1.2; }
+  .qh-pad small { display: block; font-size: 12px; opacity: .7; }
+  .qh-pad.is-next { border-color: var(--gilt); box-shadow: 0 0 0 2px rgba(224, 180, 76, .45); }
+  .qh-pad--die { min-width: 150px; animation: qh-glow .6s ease-in-out infinite alternate; }
+  .qh-pad--die[hidden] { display: none; }
+  @media (max-width: 719px) {
+    .qh-race { padding: 8px; gap: 8px; }
+    .qh-race__field { padding: 8px; gap: 8px; }
+    .qh-lane { height: 78px; }
+    .qh-car { width: 78px; height: 52px; bottom: 6px; }
+    .qh-race__aim { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 4px; padding: 8px; }
+    .qh-race__aim .qh-face { display: none; }
+    .qh-aim__target { width: 110px; height: 110px; margin-top: 0; }
+    .qh-aim__hook, .qh-aim__ring { inset: 34px; }
+    .qh-race__pad { grid-template-columns: 1fr 1fr; }
+    .qh-pad--die { grid-column: 1 / -1; grid-row: 1; }
+    .qh-pad { min-height: 84px; }
+  }
+
+  /* ───────── 小遊戲二：長勺之戰 ───────── */
+  .qh-cs { display: grid; gap: 10px; align-content: start; width: min(900px, 100%); margin: 0 auto; padding: 12px; }
+  .qh-cs__front { display: grid; grid-template-columns: auto auto 1fr auto; gap: 10px; align-items: center; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(180deg, #2b3550, #1b2238); }
+  .qh-cs__lu { display: grid; justify-items: center; gap: 2px; font-family: var(--f-display); font-size: 13px; }
+  .qh-cs__lu.is-urge .qh-face { border-color: #d9483b; animation: qh-pulse .6s ease-in-out infinite; }
+  .qh-cs__mid { display: grid; gap: 8px; justify-items: center; text-align: center; }
+  .qh-cs__say { min-height: 2.8em; font-family: var(--f-display); font-size: 18px; line-height: 1.5; }
+  .qh-cs__say b { color: #ffd98a; }
+  .qh-drums { display: flex; gap: 10px; }
+  .qh-drums i { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #7f5598; color: #c9b0dc; font-style: normal; font-family: var(--f-display); font-size: 15px; }
+  .qh-drums i.is-on { background: #7f5598; color: #fff; }
+  .qh-cs__qi { display: grid; justify-items: center; gap: 4px; font-family: var(--f-display); }
+  .qh-drum { width: 84px; height: 84px; transform-origin: 50% 70%; }
+  .qh-drum.is-beat { animation: qh-beat .35s ease; }
+  @keyframes qh-beat { 0% { transform: scale(1); } 30% { transform: scale(1.18) rotate(-4deg); } 100% { transform: scale(1); } }
+  .qh-cs__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .qh-cs__btns .zh-btn { min-height: 74px; font-size: 22px; touch-action: manipulation; display: grid; place-items: center; line-height: 1.2; }
+  .qh-cs__btns small { display: block; font-size: 12px; opacity: .7; }
+  .qh-cs__btns [data-cs="stop"].is-live { border-color: #d9483b; animation: qh-pulse .6s ease-in-out infinite; }
+  .qh-cs__btns [data-cs="go"].is-ready { animation: qh-glow .5s ease-in-out infinite alternate; }
+  .qh-cs__fb { min-height: 1.6em; text-align: center; font-size: 15px; line-height: 1.6; color: var(--text-dim); }
+  .qh-cs__fb.is-bad { color: #ffb4aa; }
+  .qh-cs__fb.is-good { color: #a9e2d4; }
+  .qh-cs2 { display: grid; gap: 10px; }
+  .qh-cs2__head { text-align: center; font-family: var(--f-display); font-size: 18px; line-height: 1.6; }
+  .qh-cs2__head small { display: block; font-family: var(--f-body); font-size: 13.5px; color: var(--text-dim); }
+  .qh-cs2__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .qh-unit { position: relative; padding: 0; border-radius: 12px; border: 2px solid var(--line); background: #d8c49a; cursor: pointer; overflow: hidden; touch-action: manipulation; }
+  .qh-unit svg { display: block; width: 100%; height: auto; }
+  .qh-unit:hover:not(:disabled) { border-color: var(--gilt); }
+  .qh-unit:disabled { cursor: default; }
+  .qh-unit b { position: absolute; left: 0; right: 0; bottom: 0; padding: 4px; font-family: var(--f-display); font-size: 16px; color: #fff; background: rgba(0, 0, 0, .55); }
+  .qh-unit b:empty { display: none; }
+  .qh-unit.is-ok { border-color: #6fb0a0; box-shadow: 0 0 0 3px rgba(111, 176, 160, .6); }
+  .qh-unit.is-bad { border-color: #d9483b; animation: qh-shake .35s ease; }
+  .qh-unit.is-reveal { border-color: #e0b44c; }
+  @media (max-width: 719px) {
+    .qh-cs { padding: 8px; gap: 8px; }
+    .qh-cs__front { grid-template-columns: auto 1fr auto; padding: 8px; gap: 6px; }
+    .qh-cs__lu--cao { display: none; }
+    .qh-face { width: 60px; height: 76px; }
+    .qh-drum { width: 60px; height: 60px; }
+    .qh-cs__say { font-size: 15.5px; }
+    .qh-drums i { width: 32px; height: 32px; font-size: 13px; }
+    .qh-cs2__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* ───────── 小遊戲三：九合諸侯 ───────── */
+  .qh-jh { position: relative; display: grid; gap: 10px; align-content: start; width: min(1060px, 100%); margin: 0 auto; padding: 12px; }
+  .qh-jh__bar { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(20, 26, 46, .94); }
+  .qh-jh__year { font-family: var(--f-display); font-size: 18px; color: var(--gilt); }
+  .qh-jh__res { display: inline-flex; gap: 6px; align-items: center; font-size: 14.5px; }
+  .qh-jh__res b { font-size: 17px; color: #fff; font-variant-numeric: tabular-nums; }
+  .qh-jh__ap { display: inline-flex; gap: 4px; }
+  .qh-jh__ap i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--gilt); }
+  .qh-jh__ap i.is-on { background: var(--gilt); }
+  .qh-jh__bar .qh-fuse { flex: 1 1 120px; min-width: 100px; }
+  .qh-jh__main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); gap: 10px; }
+  .qh-jh__map { position: relative; height: 420px; border-radius: 14px; overflow: hidden; border: 1px solid #8a7350; background: #e7d9b0; }
+  .qh-jh__map > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .qh-st {
+    position: absolute; transform: translate(-50%, -50%); width: 62px; height: 62px; padding: 0; border-radius: 50%;
+    border: 3px solid #8a7a5a; background: #cfc3a0; color: #2b2418; font: inherit; font-family: var(--f-display); font-size: 24px; font-weight: 700;
+    cursor: pointer; touch-action: manipulation; box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+  }
+  .qh-st.is-qi { background: #7f5598; border-color: #3a2448; color: #fff; }
+  .qh-st.is-chu { background: #a83a2c; border-color: #4a1610; color: #fff; }
+  .qh-st.is-sel { outline: 4px solid var(--gilt); outline-offset: 2px; }
+  .qh-st.is-target { animation: qh-pulse .8s ease-in-out infinite; }
+  .qh-st em { position: absolute; top: -10px; right: -12px; padding: 1px 6px; border-radius: 999px; font-style: normal; font-family: var(--f-body); font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .qh-st em.is-crisis { background: #d9483b; color: #fff; }
+  .qh-st em.is-target { top: auto; bottom: -10px; background: #2b2418; color: #ffb4aa; }
+  .qh-jh__home { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-display); font-size: 15px; font-weight: 700; text-align: center; pointer-events: none; }
+  .qh-jh__home b { display: block; font-size: 30px; line-height: 1; }
+  .qh-jh__side { display: grid; gap: 8px; align-content: start; }
+  .qh-jh__event { padding: 10px 12px; border-left: 4px solid var(--gilt); border-radius: 10px; background: rgba(224, 180, 76, .1); font-size: 14.5px; line-height: 1.7; }
+  .qh-jh__event b { display: block; font-family: var(--f-display); font-size: 17px; color: var(--gilt); }
+  .qh-jh__sel { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .9); font-size: 14.5px; line-height: 1.7; min-height: 112px; }
+  .qh-jh__sel h3 { font-family: var(--f-display); font-size: 19px; }
+  .qh-jh__acts { display: grid; gap: 6px; margin-top: 6px; }
+  .qh-jh__acts .zh-btn { min-height: 48px; justify-content: space-between; font-size: 16px; }
+  .qh-jh__acts .zh-btn small { font-size: 12.5px; opacity: .8; }
+  .qh-jh__global { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .qh-jh__global .zh-btn { min-height: 52px; display: grid; place-items: center; align-content: center; gap: 2px; line-height: 1.2; }
+  .qh-jh__global .zh-btn small { display: block; font-size: 12.5px; opacity: .8; }
+  .qh-jh__log { display: grid; gap: 4px; max-height: 120px; overflow: auto; }
+  .qh-jh__log p { padding: 4px 8px; border-radius: 6px; background: rgba(236, 230, 214, .05); font-size: 13.5px; line-height: 1.6; color: var(--text-dim); }
+  .qh-jh__log p:first-child { color: var(--text); background: rgba(224, 180, 76, .1); animation: qh-in .25s ease both; }
+  .qh-jh__intro { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 16px; background: rgba(8, 10, 22, .78); animation: qh-in .2s ease both; }
+  .qh-jh__intro[hidden] { display: none; }
+  .qh-jh__intro div { width: min(520px, 100%); padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: linear-gradient(180deg, var(--night-3, #27314f), var(--night-2, #1b2238)); text-align: center; }
+  .qh-jh__intro small { color: var(--gilt); letter-spacing: .1em; }
+  .qh-jh__intro h3 { margin: 4px 0 8px; font-family: var(--f-display); font-size: 26px; }
+  .qh-jh__intro p { font-size: 15px; line-height: 1.7; color: var(--text-dim); }
+  @media (max-width: 860px) {
+    .qh-jh { padding: 8px; gap: 8px; }
+    .qh-jh__main { grid-template-columns: minmax(0, 1fr); }
+    .qh-jh__map { height: 310px; }
+    .qh-st { width: 54px; height: 54px; font-size: 21px; }
+    /* 手機：點了國家，行動按鈕就在地圖正下方 */
+    .qh-jh__side { display: flex; flex-direction: column; }
+    .qh-jh__sel { order: 1; min-height: 0; }
+    .qh-jh__global { order: 2; }
+    .qh-jh__event { order: 3; font-size: 13.5px; line-height: 1.6; }
+    .qh-jh__log { order: 4; max-height: 96px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .qh-st.is-target, .qh-pad--die, .qh-cs__btns .zh-btn, .qh-cs__lu.is-urge .qh-face { animation: none; } }
+  /* 小遊戲進行中，圖鑑提示卡移到畫面下方、不擋點擊 */
+  body:has(.sty-game) .zc-pop { top: auto; bottom: calc(14px + var(--safe-b)); pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="ep-root"></div>
+
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+
+  // ═════════════════════════ 1. 基本設定 ═════════════════════════
+
+  const SID = 'S_cq03_qihuan';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['qh_01', 'qh_02', 'qh_03', 'qh_04', 'qh_05', 'qh_06', 'qh_07', 'qh_08', 'qh_09', 'qh_10', 'qh_11', 'qh_12', 'qh_13', 'qh_14'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => []);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  // 打開「說明」或圖鑑內容時，即時的小遊戲暫停
+  const paused = () => !!document.querySelector('.zh-modal, .zc-detail, .zc[role="dialog"]');
+  // 自動試玩的提示只在本機測試伺服器出現；正式網址加 &test=1 也不會有，排行榜才公平
+  const TEST = !!params.test && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  const META = ZH.findScenario(SID) || {
+    id: SID, vol: 'cq', ep: 3, name: '齊桓稱霸', episode: '射中我腰帶的人，竟然成了我的宰相', year: 686,
+    genre: '三國志式戰略', source: '〈曹劌論戰〉、〈管晏列傳〉', guest: false, status: 'ready'
+  };
+
+  const ROLE = {
+    who: 'xiaobai', name: '公子小白', glyph: '桓', color: '#7f5598',
+    title: '齊桓公',
+    lead: '齊國大亂，你和哥哥公子糾都流亡在外。誰先趕回臨淄，誰就是國君——半路上，一支箭射中了你的腰帶鉤。這一話，你要從爭位、用人、長勺之敗，一路走到九合諸侯、一匡天下。'
+  };
+
+  const POINTS = [
+    { title: '挑戰賽：爭先入齊', text: '左右交替催馬，和公子糾搶回臨淄。管仲的箭射來時，要裝死裝得像。' },
+    { title: '挑戰賽：長勺之戰', text: '換你當曹劌：齊人三鼓以前按住魯莊公，再看清車轍和旗子才追擊。' },
+    { title: '挑戰賽：九合諸侯', text: '三國志式地圖戰略：救燕、救邢、存衛，在楚國以前讓諸侯歸心。' },
+    { title: '原典：管晏列傳', text: '「生我者父母，知我者鮑子也。」射你一箭的人，能不能當你的宰相？' }
+  ];
+
+
+  // ═════════════════════════ 2. 人物 ═════════════════════════
+  // 外型來自 Art_kit 的內建名冊（v0.1.2 起收錄本話全部人物）；代碼與名冊相同時優先用代碼查。
+
+  const CHARACTERS = [
+    { id: 'xiaobai', name: '公子小白', glyph: '白', color: '#7f5598', title: '你・齊公子' },
+    { id: 'qihuan', name: '齊桓公', glyph: '桓', color: '#7f5598', title: '齊侯・小白' },
+    { id: 'qihuanold', name: '齊桓公', glyph: '桓', color: '#7f5598', title: '齊侯・晚年' },
+    { id: 'guanzhong', name: '管仲', glyph: '仲', color: '#9a6ab8', title: '管夷吾' },
+    { id: 'baoshu', name: '鮑叔牙', glyph: '鮑', color: '#4f6f96', title: '齊國大夫' },
+    { id: 'jiu', name: '公子糾', glyph: '糾', color: '#6a5a88', title: '小白的哥哥' },
+    { id: 'shaohu', name: '召忽', glyph: '召', color: '#8a4a5a', title: '公子糾的師傅' },
+    { id: 'luzhuang', name: '魯莊公', glyph: '魯', color: '#6f7f3f', title: '魯侯' },
+    { id: 'caogui', name: '曹劌', glyph: '劌', color: '#7f8f4a', title: '魯國人' },
+    { id: 'xiangren', name: '鄉人', glyph: '鄉', color: '#86704e', title: '曹劌的同鄉' },
+    { id: 'caomo', name: '曹沫', glyph: '沫', color: '#6f7f3f', title: '魯國將軍' },
+    { id: 'chushi', name: '楚國使者', glyph: '楚', color: '#a83a2c', title: '楚成王派來的使者' },
+    { id: 'quwan', name: '屈完', glyph: '完', color: '#b8352b', title: '楚國大夫' },
+    { id: 'zaikong', name: '宰孔', glyph: '孔', color: '#a8843a', title: '周王室的太宰' },
+    { id: 'shiguan', name: '史官', glyph: '史', color: '#8a7350' }
+  ];
+
+
+  // ═════════════════════════ 3. 數值 ═════════════════════════
+
+  const METERS = [
+    { id: 'guo', label: '國力', icon: 'grain', max: 100, start: 40 },
+    { id: 'xin', label: '信義', icon: 'heart', max: 100, start: 35 }
+  ];
+
+
+  // ═════════════════════════ 4. 說明 ═════════════════════════
+
+  const HELP =
+    '<p><b>好幾個視角</b>：你主要扮演公子小白（齊桓公）；第二幕換成魯國的曹劌，柯之盟時是管仲。</p>' +
+    '<p style="margin-top:10px"><b>爭先入齊</b>：左右交替按「左驂」「右驂」催馬，同一邊連按會絆倒。管仲放箭時，看準紅圈縮到帶鉤上的那一刻按「詳死」。</p>' +
+    '<p style="margin-top:10px"><b>長勺之戰</b>：魯莊公一想擊鼓，就按「未可」攔住他；齊軍擂完第三通鼓，馬上按「可矣」。接著點出真正潰逃的齊軍（車轍亂、旗子倒）。</p>' +
+    '<p style="margin-top:10px"><b>九合諸侯</b>：每年兩次行動，用兵力「救」、用信義「盟」，和楚國搶九個諸侯國。紅色「急」是被戎狄攻擊，「楚將至」是楚國今年要拉攏的國家。</p>' +
+    '<p style="margin-top:10px"><b>國力、信義</b>：管仲說「倉廩實而知禮節」，又說「棄信於諸侯，失天下之援」。兩者都高、挑戰賽成績也好，結局最好。</p>' +
+    '<p style="margin-top:10px"><b>史實錨點</b>：本話 14 題，其中 4 題是「如果你是他，你怎麼做」。選錯會先看到歧路，再回到史書。</p>' +
+    '<p style="margin-top:10px"><b>挑戰賽</b>：每個小遊戲最多挑戰三次，劇情採計最好的一次，成績會列入全班排行。</p>' +
+    '<p style="margin-top:10px"><b>中途離開</b>：會自動存檔，下次從這一段的開頭接著玩。</p>';
+
+
+  // ═════════════════════════ 5. 場景 ═════════════════════════
+
+  const PURPLE = '#6a3f8a';
+  const GREEN = '#4f7a3a';
+  const RED = '#a3362c';
+  function mapHead(color) { return '<marker id="qh-ah-' + color.slice(1) + '" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="' + color + '"/></marker>'; }
+  function mapArrow(d, color, dash) { return '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="6" stroke-linecap="round"' + (dash ? ' stroke-dasharray="4 12"' : '') + ' marker-end="url(#qh-ah-' + color.slice(1) + ')"/>'; }
+  function mapCity(x, y, name, sub, subRight) {
+    return '<rect x="' + (x - 8) + '" y="' + (y - 8) + '" width="16" height="16" rx="2" fill="#2b2418"/>' +
+      '<text class="m-city" x="' + x + '" y="' + (y - 16) + '">' + name + '</text>' +
+      (sub ? '<text class="m-sub" x="' + (subRight ? x + 44 : x) + '" y="' + (subRight ? y + 6 : y + 30) + '">' + sub + '</text>' : '');
+  }
+  function mapDot(x, y, name, dy, dx) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="6" fill="#2b2418"/>' +
+      '<text class="m-small" x="' + (x + (dx || 0)) + '" y="' + (y + (dy || -14)) + '">' + name + '</text>';
+  }
+  function mapNote(text, x, y, color) { return '<text class="m-note" x="' + x + '" y="' + y + '" style="fill:' + color + '">' + text + '</text>'; }
+  function mapStar(x, y, color) { return '<path transform="translate(' + x + ' ' + y + ')" d="M0 -16 L5 -5 L16 -4 L8 4 L10 15 L0 9 L-10 15 L-8 4 L-16 -4 L-5 -5 Z" fill="' + color + '"/>'; }
+  function mapWrap(inner) {
+    return '<svg class="qh-map" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+      '<defs>' + mapHead(PURPLE) + mapHead(GREEN) + mapHead(RED) + '</defs>' +
+      '<rect x="16" y="16" width="968" height="588" rx="18" fill="#e7d9b0" stroke="#8a7350" stroke-width="3"/>' + inner + '</svg>';
+  }
+
+  // 齊魯一帶（爭國、長勺、柯之盟）
+  function mapQiLu(stage) {
+    let route = '';
+    if (stage === 'race') {
+      route = mapArrow('M832 450 C800 360 724 250 656 172', PURPLE, true) + mapArrow('M314 452 C380 360 520 240 628 168', GREEN, true) +
+        mapArrow('M470 330 C580 360 690 400 790 424', RED) + mapNote('遮莒道', 628, 452, RED) +
+        mapNote('小白', 846, 340, PURPLE) + mapNote('公子糾', 290, 338, GREEN);
+    } else if (stage === 'chang') {
+      route = mapArrow('M630 174 C560 262 480 342 432 396', PURPLE) + mapStar(420, 410, RED) + mapNote('齊師伐我', 690, 318, PURPLE) + mapNote('長勺', 420, 456, RED);
+    } else {
+      route = mapArrow('M626 160 C500 160 330 230 236 286', PURPLE, true) + mapArrow('M300 456 C270 400 240 350 226 306', GREEN, true) + mapStar(220, 296, RED) + mapNote('柯之盟', 220, 258, RED);
+    }
+    return mapWrap(
+      '<g opacity=".5">' +
+      '<path d="M24 24 L976 24 L976 312 C820 330 640 310 520 336 C420 356 300 316 24 330 Z" fill="#d6c8e0"/>' +
+      '<path d="M24 368 C200 346 360 384 520 404 L566 598 L24 598 Z" fill="#d2dcbc"/>' +
+      '<path d="M700 382 C780 362 900 380 976 398 L976 598 L700 598 Z" fill="#e2cfb4"/>' +
+      '</g>' +
+      '<path d="M380 344 l22 -40 l22 40 Z M412 344 l26 -50 l26 50 Z" fill="#8a7a5a" opacity=".55"/><text class="m-small" x="430" y="372">泰山</text>' +
+      '<path d="M40 210 C200 196 360 214 520 200 C640 190 760 150 960 120" fill="none" stroke="#6a8bb0" stroke-width="6" stroke-linecap="round"/>' +
+      '<text class="m-river" x="120" y="190">濟水</text>' +
+      '<text class="m-big" x="520" y="110">齊</text><text class="m-big" x="180" y="540">魯</text><text class="m-big" x="880" y="560">莒</text>' +
+      route +
+      mapCity(640, 160, '臨淄', '齊都', true) + mapCity(300, 470, '曲阜', '魯都', true) + mapCity(840, 466, '莒') +
+      mapDot(540, 236, '乾時', stage === 'chang' ? 8 : 30, stage === 'chang' ? -50 : 0) + (stage === 'chang' ? '' : mapDot(420, 410, '長勺', 32)) + (stage === 'ke' ? '' : mapDot(220, 296, '柯', -14))
+    );
+  }
+
+  // 中原（九合諸侯、召陵）
+  function mapZhongyuan(stage) {
+    let route = '';
+    if (stage === 'jiu') {
+      route = mapArrow('M860 178 C820 120 780 86 736 62', PURPLE) + mapArrow('M856 192 C760 170 650 150 566 144', PURPLE) + mapArrow('M856 204 C780 220 690 232 620 238', PURPLE) +
+        mapNote('伐山戎救燕', 600, 74, PURPLE) + mapNote('救邢', 700, 132, PURPLE) + mapNote('存衛', 740, 262, PURPLE);
+    } else {
+      route = mapArrow('M866 212 C770 320 620 470 532 534', PURPLE) + mapArrow('M528 526 C534 512 540 502 545 494', PURPLE) +
+        mapStar(548, 486, RED) + mapNote('侵蔡伐楚', 760, 400, PURPLE) + mapNote('召陵之盟', 640, 470, RED) +
+        '<text class="m-small" x="392" y="556" style="font-weight:700">方城</text><path d="M360 528 l18 -30 l18 30 Z M388 528 l18 -30 l18 30 Z" fill="#8a6a4a" opacity=".55"/>';
+    }
+    return mapWrap(
+      '<g opacity=".45">' +
+      '<path d="M760 24 L976 24 L976 318 C900 300 830 262 770 232 Z" fill="#d6c8e0"/>' +
+      '<path d="M200 486 C360 466 560 492 760 530 L760 598 L200 598 Z" fill="#d6b8a2"/>' +
+      '</g>' +
+      '<path d="M180 20 C192 110 205 210 222 300 C300 322 380 318 450 304 C520 290 590 262 650 220 C710 178 790 110 900 40" fill="none" stroke="#6a8bb0" stroke-width="8" stroke-linecap="round"/>' +
+      '<path d="M120 470 C190 500 260 540 330 600" fill="none" stroke="#6a8bb0" stroke-width="6" stroke-linecap="round"/>' +
+      '<text class="m-river" x="130" y="150">黃河</text><text class="m-river" x="150" y="540">漢水</text>' +
+      '<text class="m-big" x="905" y="112">齊</text><text class="m-big" x="300" y="590">楚</text><text class="m-big" x="300" y="110">戎狄</text>' +
+      route +
+      mapCity(875, 196, '臨淄', '', false) + mapCity(720, 56, '燕') + mapCity(552, 140, '邢') + mapCity(604, 238, '衛') +
+      mapCity(820, 380, '魯') + mapCity(660, 440, '宋') + mapCity(500, 410, '鄭') + mapCity(430, 360, '王城', '周', true) +
+      mapCity(620, 530, '陳') + mapCity(510, 560, '蔡') + mapDot(440, 470, '許', 30) + (stage === 'shao' ? '' : mapDot(548, 486, '召陵', -14, 40)) +
+      mapCity(250, 470, '郢', '楚都', true)
+    );
+  }
+
+  const MAP_SKY = 'radial-gradient(120% 90% at 50% 30%, #2b2f46 0%, #121628 75%)';
+  const SCENES = {
+    map_race: { sky: MAP_SKY, art: mapQiLu('race') },
+    map_chang: { sky: MAP_SKY, art: mapQiLu('chang') },
+    map_ke: { sky: MAP_SKY, art: mapQiLu('ke') },
+    map_jiu: { sky: MAP_SKY, art: mapZhongyuan('jiu') },
+    map_shao: { sky: MAP_SKY, art: mapZhongyuan('shao') },
+    qi_dusk: { base: 'palace', tod: 'dusk', banner: '#7f5598', glyph: '齊' },
+    qi_day: { base: 'palace', tod: 'day', banner: '#7f5598', glyph: '齊' },
+    qi_night: { base: 'palace', tod: 'night', banner: '#7f5598', glyph: '齊' },
+    qi_hall: { base: 'hall', tod: 'day' },
+    qi_hall_night: { base: 'hall', tod: 'night' },
+    lu_city: { base: 'city', tod: 'day', banner: '#6f7f3f', glyph: '魯' },
+    ju_road: { base: 'road', tod: 'dawn' },
+    lu_village: { base: 'village', tod: 'day' },
+    lu_hall: { base: 'hall', tod: 'dusk' },
+    changshao: { base: 'battlefield', tod: 'day', banner: '#6f7f3f' },
+    ke_altar: { base: 'field', tod: 'day', weather: 'leaves' },
+    chu_border: { base: 'camp', tod: 'dusk', banner: '#7f5598', glyph: '齊' },
+    shaoling: { base: 'camp', tod: 'day', banner: '#7f5598', glyph: '齊' },
+    kuiqiu: { base: 'field', tod: 'day', weather: 'petals' },
+    qi_empty: { base: 'room', tod: 'night' }
+  };
+
+
+  // ═════════════════════════ 6. 劇情節點 ═════════════════════════
+
+  const NODES = {
+
+    // ───── 序：齊亂 ─────
+
+    n_intro: async ctx => {
+      await ctx.chapter('序　齊亂', '前 686 年・齊');
+      await ctx.scene('qi_dusk', { place: '齊・臨淄', time: '前 686 年' });
+      ctx.cast(['baoshu', 'xiaobai']);
+      await ctx.say([
+        { text: '齊襄公即位以後，言行反覆無常，國人提心吊膽。' },
+        { who: 'baoshu', text: '君使民慢，亂將作矣。', expr: 'worried' },
+        { text: '——國君反覆無常，百姓不再敬畏他，禍亂就要發生了。' },
+        { text: '大夫鮑叔牙帶著公子小白，逃到東南方的莒國。' }
+      ]);
+      await ctx.anchor('qh_01');
+      ctx.cast(['guanzhong', 'jiu', 'shaohu']);
+      await ctx.say([
+        { text: '禍亂果然來了。管夷吾（管仲）、召忽帶著另一位公子——小白的哥哥公子糾，逃到了魯國。' },
+        { who: 'shiguan', text: '管仲和鮑叔牙是年輕時的好朋友，一起做過買賣。如今各為其主，一個輔佐小白，一個輔佐公子糾。' },
+        { text: '前 686 年冬，公孫無知殺了齊襄公，自立為君；第二年春天，無知也被國人殺了。' },
+        { text: '齊國沒有國君了。' }
+      ]);
+      ctx.log('襄公立，無常。鮑叔牙奉公子小白出奔莒，管夷吾、召忽奉公子糾奔魯。無知弒襄公，國人殺無知。');
+      return 'n_race';
+    },
+
+    // ───── 第一幕：爭先入齊 ─────
+
+    n_race: async ctx => {
+      await ctx.chapter('第一幕　爭先入齊', '前 685 年');
+      await ctx.scene('map_race', { place: '爭先入齊', time: '前 685 年春' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '齊國的大夫高傒、國氏暗中派人到莒國，請小白趕快回國。' },
+        { text: '魯國聽說無知死了，也發兵護送公子糾回齊國。誰先到臨淄，誰就是國君。' },
+        { text: '管仲另外帶了一支兵，埋伏在莒國通往齊國的路上——他要攔住小白。' }
+      ]);
+      await ctx.scene('ju_road', { place: '莒道', time: '前 685 年・黎明' });
+      ctx.cast(['xiaobai', 'baoshu']);
+      await ctx.say([
+        { text: '（你是公子小白）' },
+        { who: 'baoshu', text: '公子，魯國的人馬也出發了。再快一點！', expr: 'serious' },
+        { who: 'xiaobai', text: '鮑叔，替我握緊韁繩。', expr: 'serious' }
+      ]);
+      ctx.cast([]);
+      const r = await ctx.minigame({
+        id: 'qh_zhengxian', title: '爭先入齊', skip: true,
+        goal: '左右交替催馬，比公子糾先到臨淄。管仲放箭時，抓準時機「詳死」。',
+        help: '<p>交替按「左驂」「右驂」（鍵盤 ← →，或 A、D），馬就越跑越快；同一邊連按兩下會絆倒。</p>' +
+          '<p style="margin-top:8px">跑到一半，管仲會在路邊放箭：紅圈縮到金色帶鉤上的那一刻按「詳死」（或空白鍵）。裝得越像，魯國的人馬就走得越慢。</p>' +
+          '<p style="margin-top:8px">上方的競速條是你和公子糾的進度。先到臨淄的人當國君；贏得越多，分數越高。</p>'
+      }, (body, g) => zhengxianGame(body, g));
+      ctx.flag('zhengScore', r.skipped ? 0 : (r.score || 0));
+      ctx.flag('feign', r.skipped ? '' : (r.feign || ''));
+      ctx.add('guo', r.skipped ? 5 : r.passed ? 10 : 5);
+      ctx.unlock('treasure:daigou');
+      await ctx.scene('qi_day', { place: '齊・臨淄', time: '前 685 年' });
+      ctx.cast(['xiaobai', 'baoshu']);
+      await ctx.say([
+        { text: r.skipped ? '小白一路飛馳。' : r.feign === 'perfect' ? '你倒在車上一動也不動，連管仲都信了。' : r.feign === 'good' ? '你倒在車上，管仲遲疑了一下，還是派人回報。' : '你倒得慢了一點，管仲有些起疑——好在他還是派人回報了魯國。' },
+        { who: 'shiguan', text: '《史記》說：管仲一箭射中小白的帶鉤，小白假裝死去，管仲派人快馬回報魯國。護送公子糾的隊伍放慢了腳步，六天後才到齊國——小白早已入城，高傒擁立他為君。他就是齊桓公。' }
+      ]);
+      await ctx.anchor('qh_02');
+      ctx.log(r.skipped ? '射中小白帶鉤，小白詳死，遂先入（略過）。' : '射中小白帶鉤，小白詳死' + (r.passed ? '，馳驅先入。' : '，幾為子糾所先。'));
+      return 'n_qianshi';
+    },
+
+    n_qianshi: async ctx => {
+      await ctx.scene('lu_city', { place: '魯・曲阜', time: '前 685 年秋' });
+      ctx.cast(['baoshu']);
+      await ctx.say([
+        { text: '秋天，魯軍和齊軍在乾時交戰。魯軍大敗，魯莊公丟了戰車，換車逃回。' },
+        { text: '鮑叔牙率軍來到魯國：' },
+        { who: 'baoshu', text: '子糾，親也，請君討之。管、召，讎也，請受而甘心焉。', expr: 'serious' },
+        { text: '——公子糾是我們國君的親兄弟，請魯國處置；管仲和召忽是仇人，請交給我們帶回去親手發落。' },
+        { text: '魯國殺了公子糾，召忽自殺殉主。管仲卻請求被囚禁，押回齊國。' }
+      ]);
+      await ctx.scene('qi_hall', { place: '齊・朝堂', time: '前 685 年' });
+      ctx.cast(['qihuan', 'baoshu']);
+      await ctx.say([
+        { text: '一進齊國邊境的堂阜，鮑叔牙就替管仲解開了繩索。回到臨淄，他向齊桓公報告：' },
+        { who: 'baoshu', text: '管夷吾治於高傒，使相可也。', expr: 'serious' },
+        { who: 'qihuan', text: '就是他？那一箭差點要了寡人的命！', expr: 'angry' },
+        { who: 'baoshu', text: '君將治齊，即高傒與叔牙足也。君且欲霸王，非管夷吾不可。', expr: 'serious' },
+        { text: '——您若只想治理齊國，有高傒和我就夠了；您若想稱霸天下，非管仲不可。' }
+      ]);
+      const a = await ctx.anchor('qh_03');
+      ctx.add('guo', a && a.correct ? 10 : 5);
+      ctx.add('xin', 5);
+      ctx.cast(['guanzhong', 'baoshu']);
+      await ctx.say([
+        { text: '齊桓公放下了那一箭之仇，任用管仲為相。鮑叔牙推薦了好友，自己甘願位居其下。' },
+        { text: '多年以後，管仲回想起這位朋友：' },
+        { who: 'guanzhong', text: '吾始困時，嘗與鮑叔賈，分財利多自與，鮑叔不以我為貪，知我貧也。吾嘗為鮑叔謀事而更窮困，鮑叔不以我為愚，知時有利不利也。', expr: 'happy' },
+        { who: 'guanzhong', text: '吾嘗三仕三見逐於君，鮑叔不以我為不肖，知我不遭時也。吾嘗三戰三走，鮑叔不以我為怯，知我有老母也。' },
+        { who: 'guanzhong', text: '公子糾敗，召忽死之，吾幽囚受辱，鮑叔不以我為無恥，知我不羞小節而恥功名不顯于天下也。生我者父母，知我者鮑子也。', expr: 'sad' }
+      ]);
+      await ctx.anchor('qh_04');
+      ctx.unlock('person:cq_guanzhong');
+      ctx.unlock('person:cq_baoshuya');
+      ctx.unlock('idiom:guanbaozhijiao');
+      ctx.log('魯師敗于乾時。鮑叔受管仲于魯，桓公置射鉤而使管仲相。');
+      return 'n_caogui';
+    },
+
+    // ───── 第二幕：曹劌論戰 ─────
+
+    n_caogui: async ctx => {
+      await ctx.chapter('第二幕　曹劌論戰', '前 684 年・魯');
+      await ctx.scene('map_chang', { place: '齊師伐魯', time: '前 684 年春' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '齊桓公即位第二年，齊軍攻打魯國。剛打贏乾時之戰的齊國，以為魯國不堪一擊。' },
+        { text: '（視角轉換）你是魯國人曹劌。聽說魯莊公要迎戰，你決定去見他。' }
+      ]);
+      await ctx.scene('lu_village', { place: '魯・曹劌的家鄉', time: '前 684 年春' });
+      ctx.cast(['caogui', 'xiangren']);
+      await ctx.say([
+        { who: 'xiangren', text: '肉食者謀之，又何間焉？', expr: 'surprised' },
+        { text: '——打仗的事，當官吃肉的人自然會謀劃，你又何必去插手？' },
+        { who: 'caogui', text: '肉食者鄙，未能遠謀。', expr: 'serious' }
+      ]);
+      await ctx.anchor('qh_05');
+      await ctx.scene('lu_hall', { place: '魯・宮中', time: '前 684 年春' });
+      ctx.cast(['caogui', 'luzhuang']);
+      await ctx.say([
+        { who: 'caogui', text: '何以戰？', expr: 'serious' },
+        { who: 'luzhuang', text: '衣食所安，弗敢專也，必以分人。' },
+        { who: 'caogui', text: '小惠未徧，民弗從也。' },
+        { who: 'luzhuang', text: '犧牲玉帛，弗敢加也，必以信。', expr: 'worried' },
+        { who: 'caogui', text: '小信未孚，神弗福也。' },
+        { who: 'luzhuang', text: '小大之獄，雖不能察，必以情。', expr: 'serious' }
+      ]);
+      await ctx.anchor('qh_06');
+      await ctx.say([
+        { who: 'caogui', text: '忠之屬也，可以一戰。戰則請從。', expr: 'happy' },
+        { text: '魯莊公讓曹劌和自己同乘一輛戰車，開赴長勺。' }
+      ]);
+      ctx.log('齊師伐魯。曹劌請見，問何以戰，曰：「忠之屬也，可以一戰。」');
+      return 'n_changshao';
+    },
+
+    n_changshao: async ctx => {
+      await ctx.scene('changshao', { place: '長勺', time: '前 684 年春' });
+      ctx.cast(['luzhuang', 'caogui']);
+      await ctx.say([
+        { text: '公與之乘，戰于長勺。對面的齊軍陣中，戰鼓擂了起來——' },
+        { who: 'luzhuang', text: '擂鼓！出擊！', expr: 'angry' },
+        { who: 'caogui', text: '未可。', expr: 'serious' }
+      ]);
+      ctx.cast([]);
+      const r = await ctx.minigame({
+        id: 'qh_changshao', title: '長勺之戰', skip: true,
+        goal: '齊人三鼓以前按住魯莊公，三鼓一過立刻出擊；再看清誰是真的潰逃。',
+        help: '<p><b>第一階段・三鼓</b>：齊軍會擂三通鼓。魯莊公一舉起鼓槌（紅框閃動），就按「未可」（鍵盤 ←）攔住他；齊軍擂完第三通鼓，馬上按「可矣」（鍵盤 → 或空白鍵）。太早按「可矣」，魯軍的士氣會先洩掉。</p>' +
+          '<p style="margin-top:8px"><b>第二階段・察轍望旗</b>：齊軍敗退，但大國難測，可能有埋伏。三輪，每輪四支齊軍，只點<b>車轍雜亂、旗子倒下</b>的那幾支去追；車轍整齊或旗子還豎著的，可能是誘敵。</p>' +
+          '<p style="margin-top:8px">按得準、反應快、追得對，分數越高。</p>'
+      }, (body, g) => changshaoGame(body, g));
+      ctx.flag('changScore', r.skipped ? 0 : (r.score || 0));
+      ctx.add('guo', -5);
+      await ctx.scene('changshao', { place: '長勺', time: '前 684 年春' });
+      ctx.cast(['luzhuang', 'caogui']);
+      await ctx.say([
+        { text: r.skipped ? '曹劌靜靜看著齊軍擂鼓。' : r.passed ? '你一直按住魯莊公，直到齊軍的鼓聲變得有氣無力。' : '魯軍的鼓聲亂了一些，好在曹劌及時穩住了陣腳。' },
+        { who: 'shiguan', text: '齊人三鼓。劌曰：「可矣。」齊師敗績。公將馳之。劌曰：「未可。」下視其轍，登軾而望之，曰：「可矣。」遂逐齊師。' },
+        { text: '打完了仗，魯莊公問曹劌：為什麼要那樣做？' },
+        { who: 'caogui', text: '夫戰，勇氣也。一鼓作氣，再而衰，三而竭。彼竭我盈，故克之。', expr: 'serious' },
+        { who: 'caogui', text: '夫大國，難測也，懼有伏焉。吾視其轍亂，望其旗靡，故逐之。' }
+      ]);
+      await ctx.anchor('qh_07');
+      ctx.unlock('person:cq_caogui');
+      ctx.unlock('idiom:yiguzuoqi');
+      ctx.unlock('text:caoguilunzhan');
+      await ctx.say([{ who: 'shiguan', text: '這是齊桓公即位以後吃的第一場敗仗。剛當上宰相的管仲知道：齊國要稱霸，光靠兵車是不夠的。' }]);
+      ctx.log(r.skipped ? '戰于長勺，齊師敗績（略過）。' : '戰于長勺，曹劌待齊人三鼓而擊之' + (r.passed ? '，視其轍亂，望其旗靡，乃逐之。' : '。') + '齊師敗績。');
+      return 'n_ke';
+    },
+
+    // ───── 第三幕：九合諸侯 ─────
+
+    n_ke: async ctx => {
+      await ctx.chapter('第三幕　九合諸侯', '前 681 — 前 651 年');
+      await ctx.scene('qi_hall', { place: '齊・朝堂', time: '管仲為相' });
+      ctx.cast(['qihuan', 'guanzhong']);
+      await ctx.say([
+        { text: '（你是齊桓公）管仲當上宰相以後，靠著海邊煮鹽、流通貨物、累積財富，讓小小的齊國富強起來。' },
+        { who: 'guanzhong', text: '倉廩實而知禮節，衣食足而知榮辱，上服度則六親固。四維不張，國乃滅亡。', expr: 'serious' },
+        { who: 'qihuan', text: '先讓百姓吃飽穿暖，再談禮義……寡人明白了。', expr: 'happy' }
+      ]);
+      await ctx.anchor('qh_08');
+      ctx.add('guo', 15);
+      await ctx.scene('map_ke', { place: '柯之盟', time: '前 681 年冬' });
+      ctx.cast([]);
+      await ctx.say([{ text: '前 681 年冬，齊、魯兩國在柯地會盟，結束多年的敵對。' }]);
+      await ctx.scene('ke_altar', { place: '柯・盟壇', time: '前 681 年冬' });
+      ctx.cast(['qihuan', 'caomo']);
+      await ctx.say([
+        { text: '盟誓剛完，魯國的將軍曹沫突然衝上盟壇，拿著匕首逼住齊桓公，左右的人都不敢動。（有人認為，曹沫就是長勺之戰的曹劌。）' },
+        { who: 'caomo', text: '齊強魯弱，而大國侵魯亦甚矣。今魯城壞即壓齊境，君其圖之。', expr: 'angry' },
+        { text: '——齊國強、魯國弱，你們侵佔魯國的土地也太多了。如今魯國的城牆一倒，就要壓到齊國的國境上了，您看著辦吧！' },
+        { text: '齊桓公只好答應：把侵佔的魯地全部歸還。曹沫丟下匕首，走下盟壇，回到群臣的位置，臉色不變，說話如常。' },
+        { who: 'qihuan', text: '被人拿刀逼著答應的事，也能算數嗎？寡人要反悔！', expr: 'angry' }
+      ]);
+      ctx.cast(['qihuan', 'guanzhong']);
+      await ctx.say([{ text: '（視角轉換）你是管仲。國君氣得發抖，正等你開口。' }]);
+      const a = await ctx.anchor('qh_09');
+      ctx.add('xin', a && a.correct ? 15 : 8);
+      await ctx.say([
+        { who: 'guanzhong', text: '不可。夫貪小利以自快，棄信於諸侯，失天下之援，不如與之。', expr: 'serious' },
+        { text: '齊桓公把侵佔的魯地全部歸還。' },
+        { who: 'shiguan', text: '〈管晏列傳〉說：「於柯之會，桓公欲背曹沫之約，管仲因而信之，諸侯由是歸齊。故曰：『知與之為取，政之寶也。』」——懂得「給」就是「得」，是治國的法寶。' }
+      ]);
+      ctx.log('盟于柯。桓公欲背曹沫之約，管仲因而信之，諸侯由是歸齊。');
+      return 'n_jiuhe';
+    },
+
+    n_jiuhe: async ctx => {
+      await ctx.scene('map_jiu', { place: '九合諸侯', time: '前 681 — 前 656 年' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '諸侯漸漸歸心。可是北方的山戎、狄人不斷南下，南方的楚國也一天比一天強大，拉攏中原的小國。' },
+        { text: '前 663 年，齊桓公北伐山戎，救援燕國。回程時大軍迷了路，管仲說：「老馬之智可用也。」放開老馬，跟著牠走，果然找到了路。' }
+      ]);
+      await ctx.scene('qi_hall', { place: '齊・朝堂', time: '前 661 年' });
+      ctx.cast(['qihuan', 'guanzhong']);
+      await ctx.say([
+        { text: '前 661 年，狄人攻打邢國。管仲對齊桓公說：' },
+        { who: 'guanzhong', text: '戎狄豺狼，不可厭也；諸夏親暱，不可棄也；宴安酖毒，不可懷也。', expr: 'serious' },
+        { who: 'guanzhong', text: '《詩》云：「豈不懷歸？畏此簡書。」簡書，同惡相恤之謂也。請救邢以從簡書。' }
+      ]);
+      await ctx.anchor('qh_10');
+      ctx.add('xin', 5);
+      await ctx.say([
+        { text: '（你是齊桓公）接下來二十多年，你要和楚國搶諸侯的心。' },
+        { who: 'guanzhong', text: '有難的，用兵去救；無事的，用信去盟。主公，九國之心，就在這幾年。', expr: 'smirk' }
+      ]);
+      ctx.cast([]);
+      const r = await ctx.minigame({
+        id: 'qh_jiuhe', title: '九合諸侯', skip: true,
+        goal: '從各國眼前的危機出發，以救援、安置、守約與調停建立主盟信用；九合不等於九國領土。',
+        help: '<p>地圖上有九個諸侯國：<b>紫色</b>是齊國的盟國，<b>紅色</b>是楚國的，<b>灰色</b>還沒有表態。</p>' +
+          '<p style="margin-top:8px">每一年有兩次行動、20 秒。點一個國家，再選行動：</p>' +
+          '<p>・<b>救</b>（花兵力）：國家被戎狄攻擊（紅色「急」）時派兵去救，它就會歸附，信義也會提高。盟國有難沒去救，它會離心。</p>' +
+          '<p>・<b>盟</b>（花信義）：沒有危難的國家，用信義和它結盟。</p>' +
+          '<p>・<b>伐</b>（花兵力）：把楚國的盟國打回中立，之後才能結盟。</p>' +
+          '<p>・<b>修內政</b>：補充兵力和信義。</p>' +
+          '<p style="margin-top:8px">每年結束時，楚國會拉攏一個國家（標著「楚將至」）——先和它結盟，就能擋下楚國；不過兵力要留 25 以上，楚國才不敢硬搶齊國的盟國。最後一年楚國會拉攏兩國。</p>'
+      }, (body, g) => jiuheGame(body, g));
+      ctx.flag('jiuScore', r.skipped ? 0 : (r.score || 0));
+      ctx.flag('jiuAllies', r.skipped ? 0 : (r.allies || 0));
+      const sc = r.skipped ? 4 : (r.score || 0);
+      ctx.add('guo', Math.round(sc));
+      ctx.add('xin', Math.round(sc));
+      ctx.unlock('idiom:laomashitu');
+      ctx.unlock('idiom:jiuheyikuang');
+      await ctx.scene('map_jiu', { place: '九合諸侯', time: '前 681 — 前 656 年' });
+      await ctx.say([
+        { text: r.skipped ? '齊國北伐山戎、救邢、存衛，諸侯漸漸以齊國為首。' : r.allies >= 7 ? '九國之中，' + r.allies + ' 國站在齊國這邊——楚國在中原幾乎無人可拉。' : r.allies >= 5 ? '九國之中，' + r.allies + ' 國站在齊國這邊，但楚國在南方仍有不少盟友。' : '只有 ' + (r.allies || 0) + ' 國願意跟著齊國走，楚國的勢力越來越大。' },
+        { who: 'shiguan', text: '孔子說：「桓公九合諸侯，不以兵車，管仲之力也。」又說：「微管仲，吾其被髮左衽矣。」——沒有管仲，我們恐怕都要披散頭髮、衣襟向左開，成了夷狄了。' }
+      ]);
+      ctx.log(r.skipped ? '北伐山戎，救邢存衛（略過）。' : '北伐山戎，救邢存衛，諸侯從齊者' + (r.allies || 0) + '國。');
+      return 'n_shaoling';
+    },
+
+    n_shaoling: async ctx => {
+      await ctx.scene('map_shao', { place: '伐楚', time: '前 656 年春' });
+      ctx.cast([]);
+      await ctx.say([{ text: '前 656 年春，齊桓公率領諸侯聯軍攻打蔡國。蔡軍潰散，聯軍接著南下伐楚。楚成王派使者來到聯軍——' }]);
+      await ctx.scene('chu_border', { place: '楚境', time: '前 656 年春' });
+      ctx.cast(['guanzhong', 'chushi']);
+      await ctx.say([
+        { who: 'chushi', text: '君處北海，寡人處南海，唯是風馬牛不相及也。不虞君之涉吾地也，何故？', expr: 'angry' }
+      ]);
+      await ctx.anchor('qh_11');
+      await ctx.say([
+        { who: 'guanzhong', text: '昔召康公命我先君大公曰：「五侯九伯，女實征之，以夾輔周室。」賜我先君履：東至于海，西至于河，南至于穆陵，北至于無棣。', expr: 'serious' },
+        { who: 'guanzhong', text: '爾貢包茅不入，王祭不共，無以縮酒，寡人是徵。昭王南征而不復，寡人是問。' },
+        { who: 'chushi', text: '貢之不入，寡君之罪也，敢不共給？昭王之不復，君其問諸水濱。', expr: 'smirk' }
+      ]);
+      await ctx.anchor('qh_12');
+      ctx.unlock('idiom:fengmaniu');
+      ctx.unlock('treasure:baomao');
+      await ctx.scene('shaoling', { place: '召陵', time: '前 656 年夏' });
+      ctx.cast(['qihuan', 'quwan']);
+      await ctx.say([
+        { text: '聯軍推進到陘地。夏天，楚成王派大夫屈完來見，聯軍退到召陵。齊桓公把諸侯的軍隊排列整齊，和屈完同乘一車檢閱。' },
+        { who: 'qihuan', text: '豈不穀是為？先君之好是繼。與不穀同好，如何？', expr: 'happy' },
+        { who: 'quwan', text: '君惠徼福於敝邑之社稷，辱收寡君，寡君之願也。' },
+        { who: 'qihuan', text: '以此眾戰，誰能禦之？以此攻城，何城不克？', expr: 'smirk' },
+        { who: 'quwan', text: '君若以德綏諸侯，誰敢不服？君若以力，楚國方城以為城，漢水以為池，雖眾，無所用之。', expr: 'serious' }
+      ]);
+      await ctx.anchor('qh_13');
+      ctx.unlock('person:cq_quwan');
+      await ctx.say([{ text: '屈完及諸侯盟。——楚國和諸侯在召陵結盟，聯軍不戰而還。' }]);
+      ctx.log('以諸侯之師侵蔡伐楚，責包茅之貢。屈完及諸侯盟于召陵。');
+      return 'n_kuiqiu';
+    },
+
+    n_kuiqiu: async ctx => {
+      await ctx.scene('kuiqiu', { place: '葵丘', time: '前 651 年夏' });
+      ctx.cast(['qihuanold', 'zaikong']);
+      await ctx.say([
+        { text: '前 651 年夏，齊桓公和諸侯在葵丘會盟。這時他已經是白髮蒼蒼的老人了。周天子派太宰孔送來祭肉。' },
+        { who: 'zaikong', text: '天子有事于文、武，使孔賜伯舅胙。', expr: 'serious' },
+        { text: '齊桓公正要走下台階跪拜——' },
+        { who: 'zaikong', text: '且有後命。天子使孔曰：「以伯舅耋老，加勞，賜一級，無下拜。」', expr: 'happy' },
+        { text: '（你是齊桓公）諸侯都看著你。' }
+      ]);
+      const a = await ctx.anchor('qh_14');
+      ctx.add('xin', a && a.correct ? 10 : 5);
+      await ctx.say([
+        { who: 'qihuanold', text: '天威不違顏咫尺，小白余敢貪天子之命無下拜？恐隕越于下，以遺天子羞。敢不下拜？', expr: 'serious' },
+        { text: '下，拜；登，受。——齊桓公走下台階跪拜，再登堂接受祭肉。' },
+        { who: 'shiguan', text: '尊王而攘夷，這是齊桓公霸業最高的時刻。' }
+      ]);
+      ctx.unlock('person:cq_qihuangong');
+      ctx.log('會諸侯于葵丘，王使宰孔賜胙，桓公下拜受之。');
+      return 'n_wei';
+    },
+
+    // ───── 尾聲：霸主之死 ─────
+
+    n_wei: async ctx => {
+      await ctx.chapter('尾聲　霸主之死', '前 645 — 前 643 年');
+      await ctx.scene('qi_hall_night', { place: '齊・宮中', time: '前 645 年' });
+      ctx.cast(['qihuanold', 'guanzhong']);
+      await ctx.say([
+        { text: '前 645 年，管仲病重。齊桓公到他的床前，問：群臣之中，誰可以接替你當宰相？' },
+        { who: 'guanzhong', text: '知臣莫如君。', expr: 'sad' },
+        { text: '齊桓公一連問了易牙、開方、豎刁三個人。管仲一一搖頭：這三個人為了討好國君，做的事都違背人情，不可親近。' },
+        { text: '管仲死後，齊桓公沒有聽他的話，還是重用了這三個人。' }
+      ]);
+      await ctx.scene('qi_empty', { place: '齊・宮中', time: '前 643 年冬' });
+      ctx.cast([]);
+      await ctx.say([
+        { text: '前 643 年，齊桓公病倒。五個兒子各自結黨，爭奪君位，沒有人理會病榻上的父親。' },
+        { text: '齊桓公死後，遺體在床上停放了六十七天，無人收殮。' },
+        { who: 'shiguan', text: '九合諸侯、一匡天下的霸主，晚年卻是這樣的結局。——就在前一年，一位流亡的晉國公子來到臨淄，齊桓公還把宗室之女嫁給他。那位公子叫重耳（第 4 話）。' }
+      ]);
+      ctx.unlock('text:guanyanliezhuan');
+      ctx.log('管仲卒，桓公近易牙、開方、豎刁。桓公卒，五公子爭立。');
+      return 'n_end';
+    },
+
+    n_end: async ctx => {
+      const zheng = Number(ctx.flag('zhengScore')) || 0;
+      const chang = Number(ctx.flag('changScore')) || 0;
+      const jiu = Number(ctx.flag('jiuScore')) || 0;
+      const total = zheng * 0.3 + chang * 0.3 + jiu * 0.4;
+      const key = total >= 7 && ctx.meter('guo') >= 70 && ctx.meter('xin') >= 70 ? 'great' : total >= 4 ? 'good' : 'bad';
+      return ctx.end({ type: 'final', key: key, total: Math.round(total * 10) / 10 });
+    }
+  };
+
+
+  // ═════════════════════════ 7. 小遊戲 ═════════════════════════
+  // 每次挑戰都會重新呼叫小遊戲函式：所有狀態都寫在函式裡面。
+
+  function shuffle(list, rng) {
+    const a = list.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+
+  function face(id, expr) {
+    const c = CHARACTERS.find(x => x.id === id) || { id: id, name: id, glyph: '' };
+    if (window.ART && ART.portrait) return ART.portrait(c, { bust: true, expr: expr || null });
+    return '<span class="qh-face__seal" style="color:' + esc(c.color || '#e0b44c') + '">' + esc(c.glyph || '') + '</span>';
+  }
+
+  // ───── 小遊戲一：爭先入齊 ─────
+
+  function carSvg(color, flag) {
+    return '<svg viewBox="0 0 120 76" aria-hidden="true">' +
+      '<ellipse cx="62" cy="70" rx="50" ry="5" fill="rgba(0,0,0,.25)"/>' +
+      '<path d="M78 46 C84 30 96 26 104 30 L112 24 L114 32 L108 36 C110 44 104 52 96 52 L84 52 Z" fill="#6e4326" stroke="#2a1a10" stroke-width="2"/>' +
+      '<path d="M86 52 l-4 16 M100 50 l4 18" stroke="#2a1a10" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M40 44 L82 44" stroke="#4a3020" stroke-width="4"/>' +
+      '<rect x="14" y="30" width="34" height="20" rx="3" fill="' + color + '" stroke="#2b2418" stroke-width="2"/>' +
+      '<path d="M24 30 L24 8 M24 8 L44 12 L24 18" stroke="#2b2418" stroke-width="2.5" fill="' + flag + '"/>' +
+      '<circle cx="31" cy="56" r="13" fill="#3a2a1a"/><circle cx="31" cy="56" r="9" fill="none" stroke="#c9a56a" stroke-width="2"/>' +
+      '<path d="M31 47 V65 M22 56 H40" stroke="#c9a56a" stroke-width="1.5"/>' +
+      '</svg>';
+  }
+
+  function zhengxianGame(body, g) {
+    return new Promise(resolve => {
+      body.innerHTML =
+        '<div class="qh-race">' +
+        '<div class="qh-race__field">' +
+        '<div class="qh-lane qh-lane--me"><span class="qh-lane__name">小白（你）・莒 → 臨淄</span><i class="qh-lane__goal"><span>臨<br>淄</span></i><b class="qh-car qh-car--me">' + carSvg('#7f5598', '#c9b0dc') + '</b></div>' +
+        '<div class="qh-lane qh-lane--rv"><span class="qh-lane__name">公子糾・魯 → 臨淄</span><i class="qh-lane__goal"><span>臨<br>淄</span></i><b class="qh-car qh-car--rv">' + carSvg('#5f8a5a', '#cfe0b0') + '</b></div>' +
+        '<div class="qh-race__aim" hidden><span class="qh-face">' + face('guanzhong', 'serious') + '</span>' +
+        '<div><p class="qh-aim__txt">管仲在莒道上拉弓……<small>紅圈縮到帶鉤上的那一刻，按「詳死」！</small></p><div class="qh-aim__target"><i class="qh-aim__hook"></i><i class="qh-aim__ring"></i></div></div></div>' +
+        '</div>' +
+        '<p class="qh-race__msg" aria-live="polite">左右交替按，催馬快跑！</p>' +
+        '<div class="qh-race__pad">' +
+        '<button type="button" class="zh-btn qh-pad" data-k="L">左驂<small>← 或 A</small></button>' +
+        '<button type="button" class="zh-btn zh-btn--primary qh-pad qh-pad--die" data-k="D" hidden>詳死！<small>空白鍵</small></button>' +
+        '<button type="button" class="zh-btn qh-pad" data-k="R">右驂<small>→ 或 D</small></button>' +
+        '</div></div>';
+      const $ = s => body.querySelector(s);
+      const field = $('.qh-race__field');
+      const carMe = $('.qh-car--me');
+      const carRv = $('.qh-car--rv');
+      const laneMe = $('.qh-lane--me');
+      const laneRv = $('.qh-lane--rv');
+      const aim = $('.qh-race__aim');
+      const ring = $('.qh-aim__ring');
+      const aimTxt = $('.qh-aim__txt');
+      const msg = $('.qh-race__msg');
+      const btnL = $('[data-k="L"]');
+      const btnR = $('[data-k="R"]');
+      const btnD = $('[data-k="D"]');
+      const race = g.race ? g.race({ me: '小白（你）', rival: '公子糾', rivalColor: '#5f8a5a', goal: '先到臨淄的人當國君' }) : null;
+
+      const RV = 4.2;            // 公子糾每秒前進（全程 100）；詳死裝得像，魯國的人馬才會放慢
+      const VMAX = 9;
+      const AIM_AT = 42;         // 跑到這裡，管仲放箭
+      const AIM_DUR = 1.8;       // 紅圈縮小的時間
+      const HIT_T = AIM_DUR * (2.2 - 1) / 2;   // 紅圈剛好蓋住帶鉤的時間
+      let me = 0, rv = 0, v = 0, mult = 1, phase = 'run', phaseT = 0, waitFor = 0.6 + g.rng() * 0.8;
+      let last = null, lockUntil = 0, streak = 0, stunned = 0, feign = '', ambushed = false, over = false, raf = 0, lastLi = -1;
+
+      const setMsg = (text, kind) => { msg.textContent = text; msg.className = 'qh-race__msg' + (kind ? ' is-' + kind : ''); };
+      const place = () => {
+        const wMe = laneMe.clientWidth - carMe.offsetWidth - 44;
+        const wRv = laneRv.clientWidth - carRv.offsetWidth - 44;
+        carMe.style.transform = 'translateX(' + Math.max(0, wMe * me / 100).toFixed(1) + 'px)';
+        carRv.style.transform = 'translateX(' + Math.max(0, wRv * rv / 100).toFixed(1) + 'px)';
+        laneMe.style.backgroundPosition = (-me * 18).toFixed(0) + 'px 0, 0 0';
+        laneRv.style.backgroundPosition = (-rv * 18).toFixed(0) + 'px 0, 0 0';
+        if (race) { race.me(me / 100); race.rival(rv / 100); }
+        btnL.classList.toggle('is-next', phase === 'run' && last !== 'L');
+        btnR.classList.toggle('is-next', phase === 'run' && last !== 'R');
+        const li = Math.max(0, Math.ceil((100 - me) * 0.6));
+        if (li !== lastLi) { lastLi = li; g.setStatus('距臨淄 ' + li + ' 里'); }
+        if (TEST) {
+          field.dataset.phase = phase;
+          field.dataset.next = last === 'L' ? 'R' : 'L';
+          field.dataset.hit = phase === 'aim' && Math.abs(phaseT - HIT_T) < 0.06 ? '1' : '0';
+        }
+      };
+      const end = win => {
+        if (over) return;
+        over = true;
+        cancelAnimationFrame(raf);
+        place();
+        let score;
+        if (win) {
+          score = Math.round(5 + clamp((100 - rv) / 10, 0, 5));
+          g.sfx('ok');
+          if (g.pop) g.pop('先入臨淄！', 'gold');
+          setMsg('城門大開，高傒迎你入城。', 'good');
+        } else {
+          score = Math.round(4 * me / 100);
+          g.sfx('ng');
+          if (g.pop) g.pop('公子糾先到了……', 'bad');
+          setMsg('公子糾的車隊先進了城門。', 'bad');
+        }
+        const result = { passed: !!win, score: clamp(score, 0, 10), max: 10, win: !!win, feign: feign || 'miss' };
+        setTimeout(() => resolve(result), 1400);
+      };
+      const tap = side => {
+        if (over || paused()) return;
+        if (side === 'D') { if (phase === 'wait' || phase === 'aim') feignDeath(); return; }
+        if (phase !== 'run') return;
+        const now = performance.now();
+        if (now < lockUntil || stunned > 0) return;
+        if (side === last) {
+          v *= 0.35;
+          lockUntil = now + 350;
+          streak = 0;
+          if (g.combo) g.combo(0);
+          if (g.shake) g.shake();
+          g.sfx('ng');
+          carMe.classList.remove('is-stun');
+          void carMe.offsetWidth;
+          carMe.classList.add('is-stun');
+          setMsg('同一邊連按，馬失前蹄！要左右交替。', 'bad');
+          last = null;
+          return;
+        }
+        last = side;
+        v = Math.min(VMAX, v + 1.7);
+        streak += 1;
+        if (g.combo && streak % 5 === 0) g.combo(streak);
+        if (streak === 10) setMsg('好！保持節奏！', 'good');
+      };
+      const feignDeath = () => {
+        let kind;
+        if (phase === 'wait') kind = 'miss';
+        else {
+          const d = Math.abs(phaseT - HIT_T);
+          kind = d <= 0.12 ? 'perfect' : d <= 0.3 ? 'good' : 'miss';
+        }
+        resolveAmbush(kind);
+      };
+      const resolveAmbush = kind => {
+        feign = kind;
+        btnD.hidden = true;
+        ring.classList.add('is-hit');
+        if (kind === 'perfect') {
+          mult = 0.45;
+          g.sfx('ok');
+          if (g.pop) g.pop('詳死！管仲信了', 'gold');
+          aimTxt.innerHTML = '箭中帶鉤，你應聲倒下……<small>管仲派人快馬回報魯國：小白死了！</small>';
+        } else if (kind === 'good') {
+          mult = 0.65;
+          g.sfx('ok');
+          if (g.pop) g.pop('裝得還算像', 'ok');
+          aimTxt.innerHTML = '箭中帶鉤，你倒在車上。<small>管仲遲疑了一下，還是派人回報。</small>';
+        } else {
+          mult = 0.95;
+          stunned = 1.2;
+          g.sfx('ng');
+          if (g.shake) g.shake();
+          if (g.flash) g.flash('bad');
+          if (g.pop) g.pop('管仲起疑了！', 'bad');
+          aimTxt.innerHTML = '你倒得不自然，管仲起了疑心……<small>魯國的人馬只稍微放慢了一點。</small>';
+        }
+        phase = 'fall';
+        phaseT = 0;
+      };
+      const step = dt => {
+        rv += RV * mult * dt;
+        if (phase === 'run') {
+          if (stunned > 0) stunned = Math.max(0, stunned - dt);
+          me += v * dt;
+          v *= Math.exp(-1.6 * dt);
+          if (!ambushed && me >= AIM_AT) {
+            ambushed = true;
+            phase = 'wait';
+            phaseT = 0;
+            v = 0;
+            aim.hidden = false;
+            btnD.hidden = false;
+            ring.style.setProperty('--s', '2.2');
+            ring.style.setProperty('--o', '0');
+            setMsg('有埋伏！', 'bad');
+          }
+        } else if (phase === 'wait') {
+          phaseT += dt;
+          if (phaseT >= waitFor) { phase = 'aim'; phaseT = 0; ring.style.setProperty('--o', '1'); g.sfx('tick'); }
+        } else if (phase === 'aim') {
+          phaseT += dt;
+          const sc = 2.2 - 2 * Math.min(1, phaseT / AIM_DUR);
+          ring.style.setProperty('--s', sc.toFixed(3));
+          if (phaseT >= AIM_DUR) resolveAmbush('miss');
+        } else if (phase === 'fall') {
+          phaseT += dt;
+          if (phaseT >= 1.6) {
+            phase = 'run';
+            aim.hidden = true;
+            setMsg('趁魯國以為你死了，快馬加鞭！', 'good');
+          }
+        }
+        place();
+        if (me >= 100) { me = 100; end(true); }
+        else if (rv >= 100) { rv = 100; end(false); }
+      };
+      [btnL, btnR, btnD].forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); tap(b.dataset.k); }));
+      const onKey = e => {
+        if (e.repeat) return;
+        const k = e.key;
+        if (k === 'ArrowLeft' || k === 'a' || k === 'A') { e.preventDefault(); tap('L'); }
+        else if (k === 'ArrowRight' || k === 'd' || k === 'D') { e.preventDefault(); tap('R'); }
+        else if (k === ' ' || k === 'Enter') { e.preventDefault(); tap('D'); }
+      };
+      document.addEventListener('keydown', onKey);
+      let lastT = performance.now();
+      const loop = now => {
+        const dt = Math.min(0.05, (now - lastT) / 1000);
+        lastT = now;
+        if (!over && !paused()) step(dt);
+        if (!over) raf = requestAnimationFrame(loop);
+      };
+      g.onCleanup(() => { over = true; cancelAnimationFrame(raf); document.removeEventListener('keydown', onKey); });
+      place();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+  // ───── 小遊戲二：長勺之戰（三鼓、察轍望旗） ─────
+
+  const DRUM_SVG = '<svg class="qh-drum" viewBox="0 0 100 100" aria-hidden="true"><path d="M20 80 L30 96 M80 80 L70 96" stroke="#4a3020" stroke-width="5" stroke-linecap="round"/>' +
+    '<ellipse cx="50" cy="60" rx="34" ry="28" fill="#8a3a2c" stroke="#2b1410" stroke-width="3"/><ellipse cx="50" cy="44" rx="34" ry="14" fill="#e8d6a6" stroke="#2b1410" stroke-width="3"/>' +
+    '<path d="M24 54 v18 M38 58 v20 M62 58 v20 M76 54 v18" stroke="#e0b44c" stroke-width="2.5"/><text x="50" y="50" text-anchor="middle" font-size="16" font-weight="700" fill="#7f5598">齊</text></svg>';
+
+  function unitSvg(rutsMessy, flagDown, rng) {
+    let ruts = '';
+    if (rutsMessy) {
+      for (let k = 0; k < 4; k++) {
+        const x0 = 20 + rng() * 80, x1 = 20 + rng() * 80, c1 = rng() * 120, c2 = rng() * 120;
+        ruts += '<path d="M' + x0.toFixed(0) + ' 118 C' + c1.toFixed(0) + ' 100 ' + c2.toFixed(0) + ' 80 ' + x1.toFixed(0) + ' 62" fill="none" stroke="#6a4a24" stroke-width="3.5" opacity=".75"/>';
+      }
+    } else {
+      ruts = '<path d="M42 118 L52 62 M78 118 L68 62" stroke="#6a4a24" stroke-width="3.5" opacity=".8"/><path d="M40 112 L80 112 M45 96 L75 96 M48 80 L72 80" stroke="#8a6a3a" stroke-width="1.5" opacity=".35"/>';
+    }
+    const flag = flagDown
+      ? '<g transform="rotate(' + (38 + rng() * 16).toFixed(0) + ' 36 60)"><path d="M36 60 V12" stroke="#3a2a1a" stroke-width="4"/><path d="M36 14 C40 26 34 34 40 46 L46 44 C40 32 46 24 42 12 Z" fill="#7f5598"/></g>'
+      : '<path d="M36 60 V10" stroke="#3a2a1a" stroke-width="4"/><path d="M36 12 C52 8 62 16 78 12 L78 36 C62 40 52 32 36 36 Z" fill="#7f5598"/><text x="57" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">齊</text>';
+    return '<svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" fill="#d8c49a"/><rect y="58" width="120" height="62" fill="#c9b07a"/>' + ruts + flag + '</svg>';
+  }
+
+  function changshaoGame(body, g) {
+    return new Promise(resolve => {
+      body.innerHTML =
+        '<div class="qh-cs">' +
+        '<div class="qh-cs__front">' +
+        '<div class="qh-cs__lu qh-cs__lu--zhuang"><span class="qh-face">' + face('luzhuang', 'serious') + '</span>魯莊公</div>' +
+        '<div class="qh-cs__lu qh-cs__lu--cao"><span class="qh-face">' + face('caogui', 'serious') + '</span>曹劌（你）</div>' +
+        '<div class="qh-cs__mid"><p class="qh-cs__say" aria-live="polite">兩軍對陣。齊軍準備擂鼓……</p><div class="qh-drums"><i>一</i><i>再</i><i>三</i></div></div>' +
+        '<div class="qh-cs__qi">' + DRUM_SVG + '齊軍</div>' +
+        '</div>' +
+        '<div class="qh-cs__btns"><button type="button" class="zh-btn" data-cs="stop">未可！<small>攔住魯莊公（←）</small></button><button type="button" class="zh-btn zh-btn--primary" data-cs="go">可矣！<small>擊鼓出擊（→ 或空白鍵）</small></button></div>' +
+        '<p class="qh-cs__fb" aria-live="polite"></p>' +
+        '</div>';
+      const $ = s => body.querySelector(s);
+      const sayEl = $('.qh-cs__say');
+      const fb = $('.qh-cs__fb');
+      const drumEl = $('.qh-drum');
+      const drums = Array.from(body.querySelectorAll('.qh-drums i'));
+      const zhuang = $('.qh-cs__lu--zhuang');
+      const zhuangFace = zhuang.querySelector('.qh-face');
+      const btnStop = $('[data-cs="stop"]');
+      const btnGo = $('[data-cs="go"]');
+      const race = g.race ? g.race({ me: '魯軍士氣', rival: '齊軍士氣', rivalColor: '#7f5598', goal: '彼竭我盈：等齊軍三鼓、士氣耗盡再出擊' }) : null;
+
+      // 時間表
+      const r = () => g.rng();
+      const t1 = 2.2 + r() * 0.8;
+      const t2 = t1 + 2.6 + r() * 0.8;
+      const t3 = t2 + 2.6 + r() * 0.8;
+      const urges = [
+        { at: t1 + 0.5 + r() * 0.7, win: 1.1 },
+        { at: t2 + 0.4 + r() * 0.5, win: 1.0 },
+        { at: t2 + 1.4 + r() * 0.2, win: 0.85 }
+      ];
+      let t = 0, drumN = 0, luQi = 0.7, qiQi = 0.5, stops = 0, early = 0, rt = -1, live = null, phase = 1, over = false, raf = 0, timer = 0;
+      let p1 = 0, hits = 0, wrongs = 0;
+      const setFb = (text, kind) => { fb.textContent = text; fb.className = 'qh-cs__fb' + (kind ? ' is-' + kind : ''); };
+      const setZhuang = expr => { zhuangFace.innerHTML = face('luzhuang', expr); };
+      const paint = () => {
+        if (race) { race.me(luQi); race.rival(qiQi); }
+        drums.forEach((d, i) => d.classList.toggle('is-on', i < drumN));
+        btnStop.classList.toggle('is-live', !!live);
+        btnGo.classList.toggle('is-ready', phase === 1 && drumN >= 3 && rt < 0);
+        zhuang.classList.toggle('is-urge', !!live);
+        if (TEST) { body.dataset.live = live ? '1' : '0'; body.dataset.ready = drumN >= 3 && rt < 0 ? '1' : '0'; }
+      };
+      const beat = n => {
+        drumN = n;
+        drumEl.classList.remove('is-beat');
+        void drumEl.offsetWidth;
+        drumEl.classList.add('is-beat');
+        g.sfx('drum');
+        qiQi = n === 1 ? 1 : n === 2 ? 0.72 : 0.38;
+        sayEl.innerHTML = n === 1 ? '<b>齊人一鼓！</b>齊軍士氣正盛。' : n === 2 ? '<b>齊人再鼓！</b>鼓聲已經沒那麼響了。' : '<b>齊人三鼓！</b>齊軍的士氣耗盡了——';
+      };
+      const stop = () => {
+        if (phase !== 1 || over || paused()) return;
+        if (!live) return;
+        live.done = true;
+        live = null;
+        stops += 1;
+        g.sfx('ok');
+        if (g.pop) g.pop('未可！', 'ok');
+        setZhuang('worried');
+        setFb('你攔住了魯莊公：「未可。」', 'good');
+        paint();
+      };
+      const go = () => {
+        if (phase !== 1 || over || paused()) return;
+        if (drumN < 3) {
+          early += 1;
+          luQi = Math.max(0.1, luQi - 0.2);
+          g.sfx('ng');
+          if (g.shake) g.shake();
+          if (g.pop) g.pop('太早了！', 'bad');
+          setFb('齊軍的氣還沒竭，魯軍先衝反而吃虧。等它擂完三通鼓！', 'bad');
+          paint();
+          return;
+        }
+        if (rt >= 0) return;
+        rt = t - t3;
+        luQi = Math.min(1, luQi + 0.25);
+        g.sfx('drum');
+        if (g.pop) g.pop(rt <= 0.6 ? '一鼓作氣！' : '可矣！', rt <= 0.6 ? 'gold' : 'ok');
+        sayEl.innerHTML = '<b>魯軍一鼓！</b>彼竭我盈——齊師敗績！';
+        setZhuang('happy');
+        finishPhase1();
+      };
+      const finishPhase1 = () => {
+        const timing = rt < 0 ? 0 : rt <= 0.6 ? 3 : rt <= 1.0 ? 2.5 : rt <= 1.6 ? 2 : rt <= 2.5 ? 1 : 0.5;
+        p1 = Math.max(0, 2 * stops / urges.length + timing - 0.8 * early);
+        phase = 0;
+        paint();
+        timer = setTimeout(startPhase2, 1500);
+      };
+      const step = dt => {
+        if (phase !== 1) return;
+        t += dt;
+        if (drumN < 1 && t >= t1) beat(1);
+        else if (drumN < 2 && t >= t2) beat(2);
+        else if (drumN < 3 && t >= t3) beat(3);
+        // 齊軍的氣慢慢消退
+        qiQi = Math.max(drumN >= 3 ? 0.12 : 0.3, qiQi - dt * 0.05);
+        urges.forEach(u => {
+          if (!u.started && t >= u.at) {
+            u.started = true;
+            live = u;
+            setZhuang('angry');
+            sayEl.innerHTML = '<b>公將鼓之！</b>魯莊公舉起了鼓槌——';
+            g.sfx('tick');
+          }
+          if (u === live && t >= u.at + u.win) {
+            live = null;
+            u.done = true;
+            luQi = Math.max(0.1, luQi - 0.2);
+            g.sfx('ng');
+            if (g.shake) g.shake();
+            if (g.pop) g.pop('魯軍先鼓了……', 'bad');
+            setZhuang('serious');
+            setFb('沒攔住！魯軍的鼓聲白白響了一通，士氣先洩了一些。', 'bad');
+          }
+        });
+        if (drumN >= 3 && rt < 0 && t - t3 > 8) { rt = 9; finishPhase1(); }
+        paint();
+      };
+
+      // 第二階段：察轍望旗
+      const ROUNDS = [
+        ['r', 'r', 'a', 'a'],
+        ['r', 'r', 'a', 'm'],
+        ['r', 'r', 'm', 'm']
+      ];
+      let round = -1, cards = [], found = 0, need = 0, fuse = 0, fuseMax = 1, rLock = true;
+      const startPhase2 = () => {
+        if (over) return;
+        phase = 2;
+        body.innerHTML =
+          '<div class="qh-cs"><div class="qh-cs2">' +
+          '<p class="qh-cs2__head">齊師敗績！魯莊公想立刻追——「未可。」<small>下視其轍，登軾而望之：只追<b>車轍雜亂、旗子倒下</b>的齊軍。</small></p>' +
+          '<div class="qh-fuse"><i></i></div><div class="qh-cs2__grid"></div>' +
+          '<p class="qh-cs__fb" aria-live="polite"></p></div></div>';
+        nextRound();
+      };
+      const nextRound = () => {
+        if (over) return;
+        round += 1;
+        if (round >= ROUNDS.length) { finishAll(); return; }
+        const kinds = shuffle(ROUNDS[round], g.rng).map(k => {
+          if (k === 'm') return g.rng() < 0.5 ? { r: false, ruts: true, flag: false } : { r: false, ruts: false, flag: true };
+          return k === 'r' ? { r: true, ruts: true, flag: true } : { r: false, ruts: false, flag: false };
+        });
+        cards = kinds;
+        found = 0;
+        need = kinds.filter(k => k.r).length;
+        fuseMax = 6.5 - round * 0.8;
+        fuse = fuseMax;
+        const grid = body.querySelector('.qh-cs2__grid');
+        grid.innerHTML = kinds.map((k, i) => '<button type="button" class="qh-unit" data-i="' + i + '"' + (TEST && k.r ? ' data-r="1"' : '') + ' aria-label="第 ' + (i + 1) + ' 支齊軍">' + unitSvg(k.ruts, k.flag, g.rng) + '<b></b></button>').join('');
+        grid.querySelectorAll('.qh-unit').forEach(b => b.addEventListener('click', () => pickUnit(Number(b.dataset.i), b)));
+        const fbEl = body.querySelector('.qh-cs__fb');
+        fbEl.textContent = '第 ' + (round + 1) + ' / 3 輪';
+        fbEl.className = 'qh-cs__fb';
+        g.setStatus('察轍望旗 ' + (round + 1) + ' / 3');
+        rLock = false;
+      };
+      const pickUnit = (i, btn) => {
+        if (rLock || over || paused() || btn.disabled) return;
+        btn.disabled = true;
+        const k = cards[i];
+        const tag = btn.querySelector('b');
+        const fbEl = body.querySelector('.qh-cs__fb');
+        if (k.r) {
+          hits += 1;
+          found += 1;
+          btn.classList.add('is-ok');
+          tag.textContent = '逐！';
+          g.sfx('ok');
+          if (g.combo) g.combo(hits);
+          if (found >= need) endRound(true);
+        } else {
+          wrongs += 1;
+          btn.classList.add('is-bad');
+          tag.textContent = '有伏！';
+          g.sfx('ng');
+          if (g.shake) g.shake();
+          if (g.pop) g.pop('中了埋伏！', 'bad');
+          if (g.combo) g.combo(0);
+          fbEl.textContent = k.ruts ? '車轍是亂了，可是旗子還豎著——可能是假裝敗退。' : k.flag ? '旗子倒了，可是車轍整整齊齊——退得很有秩序。' : '車轍整齊、旗子豎著，這是有秩序的撤退。';
+          fbEl.className = 'qh-cs__fb is-bad';
+        }
+      };
+      const endRound = clean => {
+        rLock = true;
+        body.querySelectorAll('.qh-unit').forEach((b, i) => { if (!b.disabled && cards[i].r) b.classList.add('is-reveal'); b.disabled = true; });
+        if (clean && g.pop) g.pop('轍亂旗靡，逐之！', 'gold');
+        timer = setTimeout(nextRound, 1000);
+      };
+      const finishAll = () => {
+        if (over) return;
+        over = true;
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+        const p2 = 5 * Math.max(0, hits - wrongs) / 6;
+        const score = clamp(Math.round(p1 + p2), 0, 10);
+        const fbEl = body.querySelector('.qh-cs__fb');
+        if (fbEl) { fbEl.textContent = '追擊結束：追對 ' + hits + ' 支，誤入埋伏 ' + wrongs + ' 次。'; fbEl.className = 'qh-cs__fb is-good'; }
+        g.sfx(score >= 5 ? 'ok' : 'ng');
+        const result = { passed: score >= 5, score: score, max: 10, stops: stops, early: early, rt: rt, hits: hits, wrongs: wrongs };
+        timer = setTimeout(() => resolve(result), 1300);
+      };
+
+      btnStop.addEventListener('pointerdown', e => { e.preventDefault(); stop(); });
+      btnGo.addEventListener('pointerdown', e => { e.preventDefault(); go(); });
+      const onKey = e => {
+        if (e.repeat || phase !== 1) return;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { e.preventDefault(); stop(); }
+        else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.key === ' ') { e.preventDefault(); go(); }
+      };
+      document.addEventListener('keydown', onKey);
+      let lastT = performance.now();
+      const loop = now => {
+        const dt = Math.min(0.05, (now - lastT) / 1000);
+        lastT = now;
+        if (!over && !paused()) {
+          if (phase === 1) step(dt);
+          else if (phase === 2 && !rLock) {
+            fuse -= dt;
+            const fz = body.querySelector('.qh-fuse');
+            if (fz) { fz.querySelector('i').style.setProperty('--p', Math.max(0, 100 * fuse / fuseMax).toFixed(1) + '%'); fz.classList.toggle('is-warn', fuse < 2); }
+            if (fuse <= 0) endRound(false);
+          }
+        }
+        if (!over) raf = requestAnimationFrame(loop);
+      };
+      g.onCleanup(() => { over = true; cancelAnimationFrame(raf); clearTimeout(timer); document.removeEventListener('keydown', onKey); });
+      g.setStatus('三鼓');
+      paint();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+  // ───── 小遊戲三：九合諸侯（地圖戰略） ─────
+
+  const JH_STATES = [
+    { id: 'yan', name: '燕', x: 64, y: 10 },
+    { id: 'xing', name: '邢', x: 42, y: 23 },
+    { id: 'wei', name: '衛', x: 58, y: 37 },
+    { id: 'lu', name: '魯', x: 86, y: 57 },
+    { id: 'song', name: '宋', x: 68, y: 65, south: true },
+    { id: 'zheng', name: '鄭', x: 37, y: 52, south: true },
+    { id: 'chen', name: '陳', x: 56, y: 79, south: true },
+    { id: 'xu', name: '許', x: 22, y: 70, south: true },
+    { id: 'cai', name: '蔡', x: 39, y: 89, south: true }
+  ];
+  const JH_TURNS = [
+    { year: '前 681 年', title: '北杏之會', text: '齊桓公第一次會合諸侯。先用信義，把還沒表態的國家拉進盟約。', crisis: [] },
+    { year: '前 679 年', title: '鄄之會', text: '諸侯開始以齊國為首。楚國也在南方拉攏小國。', crisis: [] },
+    { year: '前 663 年', title: '山戎伐燕', text: '北方的山戎攻打燕國，燕國向齊國求救。', crisis: ['yan'] },
+    { year: '前 661 年', title: '狄人伐邢', text: '狄人攻打邢國。管仲：「戎狄豺狼，不可厭也；諸夏親暱，不可棄也。」', crisis: ['xing'] },
+    { year: '前 660 年', title: '狄人滅衛', text: '衛懿公好鶴，國人不肯替他作戰，狄人攻破衛都。衛國的遺民等著救援。', crisis: ['wei'] },
+    { year: '前 656 年', title: '伐楚・召陵', text: '最後一年：楚國全力北上，今年要拉攏兩個國家。召陵之會以前，盡量讓諸侯站在齊國這邊。', crisis: [], chuMoves: 2 }
+  ];
+  const JH_COST = { save: 15, keep: 10, ally: 12, attack: 22 };
+
+  function jiuheGame(body, g) {
+    return new Promise(resolve => {
+      const owner = {};
+      JH_STATES.forEach(s => { owner[s.id] = 'none'; });
+      owner.lu = 'qi';
+      owner.cai = 'chu';
+      let bing = 26, xin = 18, ap = 2, turn = -1, crisis = {}, targets = [], sel = null, fuse = 0, over = false, raf = 0, timer = 0, lock = true;
+      const logs = [];
+      body.innerHTML =
+        '<div class="qh-jh">' +
+        '<div class="qh-jh__bar"><span class="qh-jh__year"></span>' +
+        '<span class="qh-jh__res">兵力 <b data-r="bing"></b></span><span class="qh-jh__res">信義 <b data-r="xin"></b></span>' +
+        '<span class="qh-jh__res">行動 <span class="qh-jh__ap"><i></i><i></i></span></span><div class="qh-fuse"><i></i></div></div>' +
+        '<div class="qh-jh__main">' +
+        '<div class="qh-jh__map">' + jhMapBg() +
+        '<span class="qh-jh__home" style="left:86%;top:22%"><b style="color:#6a3f8a">齊</b>臨淄</span>' +
+        '<span class="qh-jh__home" style="left:12%;top:92%"><b style="color:#a3362c">楚</b></span>' +
+        '<span class="qh-jh__home" style="left:20%;top:42%"><b style="color:#a8843a;font-size:22px">周</b>王城</span>' +
+        JH_STATES.map(s => '<button type="button" class="qh-st" data-id="' + s.id + '" style="left:' + s.x + '%;top:' + s.y + '%">' + s.name + '</button>').join('') +
+        '</div>' +
+        '<div class="qh-jh__side"><div class="qh-jh__event"></div><div class="qh-jh__sel"></div>' +
+        '<div class="qh-jh__global"><button type="button" class="zh-btn" data-jh="farm">修內政<small>（兵+12、信+4）</small></button><button type="button" class="zh-btn zh-btn--quiet" data-jh="end">結束這一年</button></div>' +
+        '<div class="qh-jh__log" aria-live="polite"></div></div>' +
+        '</div>' +
+        '<div class="qh-jh__intro" hidden><div><small></small><h3></h3><p></p></div></div>' +
+        '</div>';
+      const $ = s => body.querySelector(s);
+      const nameOf = id => (JH_STATES.find(s => s.id === id) || { name: id }).name;
+      const race = g.race ? g.race({ me: '從齊的諸侯', rival: '從楚的諸侯', rivalColor: '#a83a2c', goal: '九國之中，讓更多國家站在齊國這邊' }) : null;
+      const count = who => JH_STATES.filter(s => owner[s.id] === who).length;
+      const log = text => { logs.unshift(text); if (logs.length > 8) logs.pop(); $('.qh-jh__log').innerHTML = logs.map(x => '<p>' + esc(x) + '</p>').join(''); };
+
+      const actionsFor = id => {
+        const o = owner[id], c = !!crisis[id], acts = [];
+        if (o === 'none' && c) acts.push({ act: 'save', label: '救', note: '兵 ' + JH_COST.save + '・歸附、信義 +8', ok: bing >= JH_COST.save });
+        if (o === 'none' && !c) acts.push({ act: 'ally', label: '盟', note: '信 ' + JH_COST.ally + '・結盟', ok: xin >= JH_COST.ally });
+        if (o === 'qi' && c) acts.push({ act: 'keep', label: '救', note: '兵 ' + JH_COST.keep + '・保住盟國、信義 +5', ok: bing >= JH_COST.keep });
+        if (o === 'chu') acts.push({ act: 'attack', label: '伐', note: '兵 ' + JH_COST.attack + '・打回中立、信義 -3', ok: bing >= JH_COST.attack });
+        return acts;
+      };
+      const statusOf = id => {
+        const o = owner[id];
+        let t = o === 'qi' ? '齊國的盟國' : o === 'chu' ? '楚國的盟國' : '還沒有表態';
+        if (crisis[id]) t += '・正遭戎狄攻擊';
+        if (targets.indexOf(id) > -1) t += '・楚國今年要來拉攏';
+        return t;
+      };
+      const paint = () => {
+        $('[data-r="bing"]').textContent = bing;
+        $('[data-r="xin"]').textContent = xin;
+        body.querySelectorAll('.qh-jh__ap i').forEach((el, i) => el.classList.toggle('is-on', i < ap));
+        body.querySelectorAll('.qh-st').forEach(b => {
+          const id = b.dataset.id;
+          b.className = 'qh-st' + (owner[id] === 'qi' ? ' is-qi' : owner[id] === 'chu' ? ' is-chu' : ' is-none') + (sel === id ? ' is-sel' : '') +
+            (targets.indexOf(id) > -1 ? ' is-target' : '') + (crisis[id] ? ' is-crisis' : '');
+          b.innerHTML = nameOf(id) + (crisis[id] ? '<em class="is-crisis">急</em>' : '') + (targets.indexOf(id) > -1 ? '<em class="is-target">楚將至</em>' : '');
+          b.setAttribute('aria-label', nameOf(id) + '：' + statusOf(id));
+        });
+        const selEl = $('.qh-jh__sel');
+        if (!sel) {
+          selEl.innerHTML = '<h3>點地圖上的國家</h3><p>紅色「急」：被戎狄攻擊，派兵去救。<br>「楚將至」：楚國今年要拉攏，先和它結盟。</p>';
+        } else {
+          const acts = actionsFor(sel);
+          selEl.innerHTML = '<h3>' + esc(nameOf(sel)) + '</h3><p>' + esc(statusOf(sel)) + '</p><div class="qh-jh__acts">' +
+            (acts.length ? acts.map(a => '<button type="button" class="zh-btn zh-btn--primary" data-act="' + a.act + '"' + (a.ok && ap > 0 && !lock ? '' : ' disabled') + '>' + a.label + ' <small>' + esc(a.note) + '</small></button>').join('') : '<p style="color:var(--text-dim)">已經是齊國的盟國，暫時不用行動。</p>') +
+            '</div>';
+          selEl.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => doAct(sel, b.dataset.act)));
+        }
+        $('[data-jh="farm"]').disabled = lock || ap <= 0;
+        $('[data-jh="end"]').disabled = lock;
+        if (race) { race.me(count('qi') / 9); race.rival(count('chu') / 9); }
+      };
+      const spend = () => { ap -= 1; if (ap <= 0) timer = setTimeout(endTurn, 500); };
+      const doAct = (id, act) => {
+        if (lock || ap <= 0 || over || paused()) return;
+        const n = nameOf(id);
+        if (act === 'save' && bing >= JH_COST.save) { bing -= JH_COST.save; owner[id] = 'qi'; delete crisis[id]; xin += 8; log('齊師救' + n + '，' + n + '國歸附。'); g.sfx('ok'); if (g.pop) g.pop(n + '歸附！', 'gold'); }
+        else if (act === 'keep' && bing >= JH_COST.keep) { bing -= JH_COST.keep; delete crisis[id]; xin += 5; log('齊師救' + n + '，盟國安定。'); g.sfx('ok'); if (g.pop) g.pop('救' + n + '！', 'ok'); }
+        else if (act === 'ally' && xin >= JH_COST.ally) {
+          xin -= JH_COST.ally; owner[id] = 'qi'; log('齊與' + n + '盟。'); g.sfx('ok');
+          if (targets.indexOf(id) > -1) { if (g.pop) g.pop('搶在楚國之前！', 'gold'); } else if (g.pop) g.pop('與' + n + '盟', 'ok');
+        }
+        else if (act === 'attack' && bing >= JH_COST.attack) { bing -= JH_COST.attack; owner[id] = 'none'; xin = Math.max(0, xin - 3); log('齊伐' + n + '，' + n + '國不再附楚。'); g.sfx('drum'); if (g.pop) g.pop('伐' + n + '！', 'ok'); }
+        else return;
+        if (g.combo) g.combo(count('qi'));
+        spend();
+        paint();
+      };
+      const farm = () => {
+        if (lock || ap <= 0 || over || paused()) return;
+        bing += 12; xin += 4;
+        log('修內政：官山海、作內政而寄軍令。');
+        g.sfx('click');
+        spend();
+        paint();
+      };
+      const endTurn = () => {
+        if (lock || over) return;
+        lock = true;
+        clearTimeout(timer);
+        Object.keys(crisis).forEach(id => {
+          const n = nameOf(id);
+          if (owner[id] === 'qi') { owner[id] = 'none'; xin = Math.max(0, xin - 8); log(n + '國求救無門，離開了盟約。'); }
+          else { xin = Math.max(0, xin - 3); log(n + '國遭戎狄蹂躪，齊國沒有出兵。'); }
+        });
+        crisis = {};
+        targets.forEach(id => {
+          const n = nameOf(id);
+          if (owner[id] === 'none') { owner[id] = 'chu'; log('楚國拉攏了' + n + '國。'); if (g.shake) g.shake(); }
+          else if (owner[id] === 'qi') {
+            if (bing >= 25) log('楚國想拉攏' + n + '國，忌憚齊軍而退。');
+            else { owner[id] = 'none'; log(n + '國在楚國的壓力下退出盟約。'); }
+          }
+        });
+        targets = [];
+        sel = null;
+        paint();
+        timer = setTimeout(nextTurn, 900);
+      };
+      const pickTargets = nMoves => {
+        const out = [];
+        for (let k = 0; k < nMoves; k++) {
+          let pool = JH_STATES.filter(s => s.south && owner[s.id] === 'none' && out.indexOf(s.id) === -1);
+          if (!pool.length) pool = JH_STATES.filter(s => s.south && owner[s.id] === 'qi' && out.indexOf(s.id) === -1);
+          if (!pool.length) break;
+          out.push(pool[Math.floor(g.rng() * pool.length)].id);
+        }
+        return out;
+      };
+      const nextTurn = () => {
+        if (over) return;
+        turn += 1;
+        if (turn >= JH_TURNS.length) { finish(); return; }
+        const T = JH_TURNS[turn];
+        if (turn > 0) { bing += 10; xin += 5; }
+        ap = 2;
+        crisis = {};
+        T.crisis.forEach(id => { crisis[id] = true; });
+        targets = pickTargets(T.chuMoves || 1);
+        $('.qh-jh__year').textContent = T.year + '・' + T.title + '（第 ' + (turn + 1) + ' / ' + JH_TURNS.length + ' 年）';
+        $('.qh-jh__event').innerHTML = '<b>' + esc(T.title) + '</b>' + esc(T.text);
+        g.setStatus('第 ' + (turn + 1) + ' / ' + JH_TURNS.length + ' 年');
+        const intro = $('.qh-jh__intro');
+        intro.querySelector('small').textContent = T.year + (turn > 0 ? '・兵力 +10、信義 +5' : '');
+        intro.querySelector('h3').textContent = T.title;
+        intro.querySelector('p').textContent = T.text;
+        intro.hidden = false;
+        paint();
+        timer = setTimeout(() => {
+          intro.hidden = true;
+          fuse = 20;
+          lock = false;
+          paint();
+        }, turn === 0 ? 2200 : 1500);
+      };
+      const finish = () => {
+        over = true;
+        lock = true;
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+        const qi = count('qi'), chu = count('chu');
+        const score = clamp(Math.round(qi * 1.2 - chu * 0.4 - 0.4), 0, 10);
+        const intro = $('.qh-jh__intro');
+        intro.querySelector('small').textContent = '前 656 年・召陵';
+        intro.querySelector('h3').textContent = '從齊 ' + qi + ' 國・從楚 ' + chu + ' 國';
+        intro.querySelector('p').textContent = qi >= 7 ? '九合諸侯，一匡天下。楚人遣屈完請盟。' : qi >= 5 ? '諸侯多從齊，楚國不得不派人求和。' : '諸侯各懷二心，齊國的號令打了折扣。';
+        intro.hidden = false;
+        g.sfx(qi >= 5 ? 'ok' : 'ng');
+        if (g.pop) g.pop(qi >= 7 ? '九合諸侯！' : '從齊 ' + qi + ' 國', qi >= 7 ? 'gold' : 'ok');
+        paint();
+        const result = { passed: qi >= 5 && qi > chu, score: score, max: 10, allies: qi, chu: chu };
+        timer = setTimeout(() => resolve(result), 1800);
+      };
+
+      body.querySelectorAll('.qh-st').forEach(b => b.addEventListener('click', () => {
+        if (over) return;
+        sel = b.dataset.id;
+        g.sfx('click');
+        paint();
+        if (window.innerWidth <= 860) { const el = $('.qh-jh__sel'); const r = el.getBoundingClientRect(); if (r.bottom > window.innerHeight) el.scrollIntoView({ block: 'end', behavior: 'smooth' }); }
+      }));
+      $('[data-jh="farm"]').addEventListener('click', farm);
+      $('[data-jh="end"]').addEventListener('click', () => { if (!lock) endTurn(); });
+      let lastT = performance.now();
+      const loop = now => {
+        const dt = Math.min(0.1, (now - lastT) / 1000);
+        lastT = now;
+        if (!over && !lock && !paused()) {
+          fuse -= dt;
+          const fz = $('.qh-jh__bar .qh-fuse');
+          fz.querySelector('i').style.setProperty('--p', Math.max(0, 100 * fuse / 20).toFixed(1) + '%');
+          fz.classList.toggle('is-warn', fuse < 5);
+          if (fuse <= 0) { log('時間到，這一年就這樣過去了。'); endTurn(); }
+        }
+        if (!over) raf = requestAnimationFrame(loop);
+      };
+      g.onCleanup(() => { over = true; cancelAnimationFrame(raf); clearTimeout(timer); });
+      paint();
+      nextTurn();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+  function jhMapBg() {
+    return '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path d="M76 0 L100 0 L100 40 C94 38 86 32 78 26 Z" fill="#d6c8e0" opacity=".7"/>' +
+      '<path d="M0 82 C20 78 40 84 60 92 L60 100 L0 100 Z" fill="#e2c4b0" opacity=".7"/>' +
+      '<path d="M6 0 C8 14 10 28 14 40 C24 44 34 42 44 40 C54 38 62 32 70 24 C78 16 86 8 96 2" fill="none" stroke="#6a8bb0" stroke-width="1.6" vector-effect="non-scaling-stroke" style="stroke-width:6px"/>' +
+      '<path d="M0 74 C8 80 16 88 24 100" fill="none" stroke="#6a8bb0" style="stroke-width:4px" vector-effect="non-scaling-stroke"/>' +
+      '</svg>';
+  }
+
+
+  // ═════════════════════════ 8. 結局與結算 ═════════════════════════
+
+  const ENDINGS = {
+    great: { id: 'great', title: '一匡天下', good: true, text: '九合諸侯，不以兵車，管仲之力也' },
+    good: { id: 'good', title: '春秋首霸', good: true, text: '齊桓公以霸，九合諸侯，一匡天下' },
+    bad: { id: 'bad', title: '霸業未竟', good: false, text: '諸侯雖會，而楚未服，霸業未竟' }
+  };
+
+  function onEnd(result, ctx) {
+    const s = ctx.state;
+    const e = ENDINGS[(result && result.key) || 'good'] || ENDINGS.good;
+    ZH.sfx('seal');
+    return ctx.banner(e.title, '齊桓稱霸・終')
+      .then(() => ctx.say([{ who: 'shiguan', text: '從莒道上的那一箭，到葵丘的那一拜，齊桓公走了三十多年。成就他的，是一個射過他的人，和一個懂得朋友的人。' }]))
+      .then(() => ZH.deleteSave(SID, MODE).catch(() => null))
+      .then(() => ZH.finishScenario(payload(s, e)));
+  }
+
+  function payload(s, ending) {
+    const f = s.flags;
+    const zheng = Number(f.zhengScore) || 0;
+    const chang = Number(f.changScore) || 0;
+    const jiu = Number(f.jiuScore) || 0;
+    const allies = Number(f.jiuAllies) || 0;
+    const played = id => (s.games || []).some(x => x.gameId === id && !x.skipped);
+    const strategy = clamp(Math.round(zheng * 3 + chang * 3 + jiu * 4), 0, 100);
+    const virtue = clamp(Math.round((s.meters.xin || 0) * 0.6 + (s.meters.guo || 0) * 0.4), 0, 100);
+
+    const deeds = ['齊襄公立，無常。鮑叔牙奉公子小白出奔莒，管夷吾、召忽奉公子糾奔魯。'];
+    deeds.push('無知弒襄公，國人殺無知。魯送公子糾，管仲遮莒道，射中小白帶鉤，小白詳死，遂先入，是為桓公。' + (played('qh_zhengxian') && zheng >= 8 ? '糾後六日乃至。' : ''));
+    deeds.push('魯師敗于乾時，殺子糾，召忽死之。鮑叔受管仲而薦之，桓公置射鉤而使管仲相。');
+    deeds.push('明年，齊師伐魯，戰于長勺。曹劌待齊人三鼓而擊之，視其轍亂，望其旗靡，乃逐之，齊師敗績。');
+    deeds.push('管仲任政，通貨積財，富國彊兵。盟于柯，桓公欲背曹沫之約，管仲因而信之，諸侯由是歸齊。');
+    deeds.push('北伐山戎以救燕，救邢存衛。' + (played('qh_jiuhe') ? (allies >= 7 ? '九合諸侯，一匡天下。' : allies >= 5 ? '諸侯多從之。' : '然諸侯猶有貳心。') : ''));
+    deeds.push('以諸侯之師侵蔡，遂伐楚，責包茅之貢。屈完及諸侯盟于召陵。');
+    deeds.push('會諸侯于葵丘，王使宰孔賜胙，命無下拜。桓公曰：「天威不違顏咫尺。」下，拜；登，受。');
+    deeds.push('管仲卒，桓公近易牙、開方、豎刁。桓公卒，五公子爭立。' + (ending.id === 'great' ? '然一匡天下之功，民到于今受其賜。' : ''));
+
+    return {
+      scenarioId: SID, mode: MODE, faction: '齊',
+      role: '齊桓公', roleKind: 'shijia', country: '齊',
+      bioTitle: '齊太公世家・桓公', bioOpening: '齊桓公小白，齊僖公之子也。',
+      ending: ending,
+      scoreStrategy: strategy, scoreVirtue: virtue,
+      turns: s.steps || 1,
+      durationSec: Math.min(5400, Math.round((Date.now() - (s.startedAt || Date.now())) / 1000)),
+      deeds: deeds,
+      anchors: s.anchors,
+      games: s.games,
+      codex: s.codex,
+      opener: '余讀管氏書，至「生我者父母，知我者鮑子也」，未嘗不歎鮑叔之能知人也。',
+      prompts: [
+        '齊桓公放下一箭之仇，任用管仲為相。如果你是他，你做得到嗎？「用人」和「記仇」之間，你怎麼取捨？',
+        '曹劌說「肉食者鄙，未能遠謀」，又等齊軍「三而竭」才出擊。生活中，有沒有「先忍住、看準時機」反而成功的經驗？',
+        '柯之盟是被人拿刀逼著答應的，管仲仍然主張守約。你認為被迫的承諾要不要遵守？為什麼？'
+      ]
+    };
+  }
+
+
+  // ═════════════════════════ 9. 開始 ═════════════════════════
+
+  const saveState = state => ZH.save(SID, MODE, { engine: state }).catch(() => null);
+
+  function startGame(saved) {
+    ROOT.innerHTML = '';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_intro',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP, scenes: SCENES,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd: onEnd, save: saveState
+    });
+    if (params.test) window.__ep = game;
+    game.start(saved || null);
+  }
+
+  function roleFace() {
+    const c = CHARACTERS.find(x => x.id === ROLE.who);
+    if (c && window.ART && ART.portrait) return '<span class="ep-seal has-art" aria-hidden="true">' + ART.portrait(c, { bust: true }) + '</span>';
+    return '<span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>';
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip">原典' + esc(META.source) + '</span><span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header>' +
+      '<section class="ep-start">' + roleFace() +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話寫前 686 年到前 643 年齊桓公稱霸的經過。他晚年收留的晉公子重耳，是第 4 話〈重耳流亡〉的主角。共 ' + ANCHOR_ORDER.length + ' 個史實錨點，約 40 分鐘。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave = () => ZH.load(SID, MODE).then(r => (r && r.ok && r.state && r.state.engine ? r.state : null)).catch(() => null);
+
+  ZH.ready(() => {
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), Promise.race([anchorsReady, ZH.sleep(8000)])]).then(([saved]) => {
+      ZH.loading(false);
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+</script>
+<script>ZH.ready(function(){ZH.textplay?.install("S_cq03_qihuan",null);});</script>
+</body>
+</html>

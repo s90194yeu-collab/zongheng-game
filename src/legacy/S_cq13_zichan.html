@@ -1,0 +1,334 @@
+<!-- 本話任務：把評語放回樂章；田界、水路與異議互證；民言可促成改政。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!-- 核心玩法 v2.0.0 接點；原文、錨點、收藏與舊局函式保留。 -->
+<!DOCTYPE html>
+<!--
+ Re:縱橫鼎業・春秋第十三話〈子產治鄭〉
+ 檔名：S_cq13_zichan.html　版本：v0.1.0（2026-10-13）
+ 依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story；
+       引擎自動帶入 Art_kit、Arena_js；本話 Side_cq13_games、S_cq13_zichan_data。
+ 12 原文錨點、12 圖鑑、3 必要體驗。首次成績與提示後完成分別保存。
+ 網址：?page=S_cq13_zichan。status planned，供教師核對與試玩。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題頁（各話共用的版型，通常不用改） ───────── */
+  .ep-title {
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 520px at 70% 0%, var(--ep-glow, rgba(196, 71, 58, .2)), transparent 65%),
+      radial-gradient(700px 600px at 0% 100%, rgba(224, 180, 76, .12), transparent 60%);
+  }
+  .ep-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width: min(1040px, 100%); margin: 0 auto; padding: 8px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 22px; align-content: start; }
+  .ep-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .ep-h1 { margin-top: 4px; font-size: clamp(46px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .ep-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ep-note { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, auto); gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: rgba(20, 26, 46, .82); box-shadow: var(--shadow);
+  }
+  .ep-seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--ep-color, #c4473a); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--ep-color, #c4473a);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--ep-color, #c4473a); background: rgba(11, 14, 29, .6);
+  }
+  .ep-seal.has-art { width: 96px; height: 124px; padding: 0; overflow: hidden; background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); }
+  .ep-seal.has-art .ck { width: 100%; height: 100%; }
+  .ep-start__name { font-family: var(--f-display); font-size: 22px; }
+  .ep-start__lead { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start__act { display: grid; gap: 8px; }
+  .ep-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .ep-point { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .7); }
+  .ep-point b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; color: var(--gilt); }
+  .ep-point span { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  @media (max-width: 860px) {
+    .ep-start { grid-template-columns: auto minmax(0, 1fr); }
+    .ep-start__act { grid-column: 1 / -1; }
+    .ep-seal.has-art { width: 72px; height: 94px; }
+  }
+
+  @media (max-width:860px){.ep-note,.ep-point span,.ep-kicker,.ep-start__lead{font-size:15px}.ep-title button{min-height:44px}.ep-chips{overflow-wrap:anywhere}.ep-h1{letter-spacing:.1em}
+    #ep-root .sty-title span,#ep-root .sty-m,#ep-root .sty-place span,#ep-root .sty-actor__name,#ep-root .sty-actor__tag,#ep-root .sty-say__more,#ep-root .sty-choice .zh-choice__text small,#ep-root .ar-race__goal,#ep-root .ar-lane span{font-size:15px}
+    #ep-root .sty-menu .zh-btn,#ep-root .sty-icon,#ep-root .sty-game__head .zh-btn{min-height:44px;min-width:44px}
+    #ep-root .ar-hud,#ep-root .ar-dim,#ep-root .ar-top li,#ep-root .ar-rank span{font-size:15px}
+    body.sty-on .za__meta,body.sty-on .sty-say__more,body.sty-on .sty-choice .zh-choice__text small{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+  // 1. 基本設定
+  const SID = 'S_cq13_zichan';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['zc_01','zc_02','zc_03','zc_04','zc_05','zc_06','zc_07','zc_08','zc_09','zc_10','zc_11','zc_12'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => []);
+  const META = ZH.findScenario(SID) || {id:SID,vol:'cq',ep:13,name:'子產治鄭',episode:'大家都在鄉校罵我，但我不拆',year:544,genre:'小國治理＋觀樂',source:'〈季札觀周樂〉、〈子產不毀鄉校〉、〈子產論政寬猛〉',guest:false,status:'planned'};
+  const ROLE = {who:'zichan',name:'子產',glyph:'產',color:'#2f8a72',title:'鄭國執政・小國的擔當',lead:'晉楚之間的小國，國內又有貴族相爭。接下國政後，你要劃田界、聽批評、公布刑書，也要承擔改革的阻力。序章先扮演季札。'};
+  const POINTS = [
+    {title:'聽歌知國',text:'扮演季札，把八則觀樂評語配回樂章，從音樂看政治。'},
+    {title:'田有封洫',text:'查各戶田冊、核回被挪界線並接通水道；田數與用水需求須分開看。'},
+    {title:'留下鄉校',text:'維持好制度、改正問題、查證傳聞，讓批評成為施政的依據。'},
+    {title:'寬猛相濟',text:'十二題原文判讀，連起改革、傾聽、法制與孔子的評價。'}
+  ];
+  // 2. 人物
+  const CHARACTERS = [
+    {id:'jizha',name:'季札',glyph:'札',color:'#2f6f8a',title:'序章・你是吳公子'},
+    {id:'zichan',name:'子產',glyph:'產',color:'#2f8a72',title:'主線・你是鄭國執政'},
+    {id:'zipi',name:'子皮',glyph:'皮',color:'#2f8a72',title:'鄭國上卿・罕虎'},
+    {id:'ranming',name:'然明',glyph:'明',color:'#73865c',title:'鄭國大夫'},
+    {id:'zidashu',name:'子大叔',glyph:'叔',color:'#548b80',title:'鄭國大夫・游吉'},
+    {id:'shuxiang',name:'叔向',glyph:'向',color:'#5b728a',title:'晉國大夫・來書者'},
+    {id:'jian',name:'鄭簡公',glyph:'鄭',color:'#2f8a72',title:'鄭國國君'},
+    {id:'musician',name:'魯國樂工',glyph:'樂',color:'#6f7f3f',title:'魯國樂工',art:{state:'魯',hat:'jin',prop:'zhu'}},
+    {id:'people',name:'輿人',glyph:'民',color:'#b58c52',title:'鄭國百姓',art:{state:'民',hat:'jin',jade:false,prop:'clod'}},
+    {id:'kongzi',name:'孔子',glyph:'孔',color:'#6f7f3f',title:'尾聲・魯國的仲尼'},
+    {id:'shiguan',name:'史官',glyph:'史',color:'#8a7350',title:'掌簡記言的史官',art:{state:'周',hat:'guan',prop:'scroll'}}
+  ];
+  // 3. 數值
+  const METERS = [
+    {id:'people',label:'民心',icon:'people',max:100,start:40,danger:30},
+    {id:'power',label:'國力',icon:'shield',max:100,start:40,danger:25},
+    {id:'opposition',label:'政敵',icon:'flame',max:100,start:50,danger:80,invert:true}
+  ];
+  // 4. 說明
+  const HELP = '<p><b>序章你是季札，主線你是子產。</b>從前544年的觀樂，到前522年的寬猛之論。</p>'+ 
+    '<p>點對話框繼續；自由抉擇影響民心、國力與政敵。原文錨點保留史實，所有路線都須讀完十二題。</p>'+
+    '<p>三項必要體驗都須親自操作。時間到或啟用提示，首次表現立即保存，再以無時限練習完成；不會由提示代做。</p>'+
+    '<p>遊戲的方格田地、議論分類與數值是教學推演。音效不是古樂復原；結局評語不改寫子產的生平。</p>'+
+    '<p>進入每個節點時自動存檔，中途離開會從該節點開頭接續。小遊戲完成紀錄與原文作答由共用平台保存。</p>';
+  // 5. 場景與節點
+  const SCENES = {
+    lu_music:{base:'hall',tod:'day',banner:'#6f7f3f',glyph:'魯'},
+    zheng_palace:{base:'palace',tod:'day',banner:'#2f8a72',glyph:'鄭'},
+    zheng_field:{base:'village',tod:'dawn',banner:'#2f8a72',glyph:'鄭'},
+    zheng_school:{base:'academy',tod:'day',banner:'#2f8a72',glyph:'鄭'},
+    zheng_room:{base:'room',tod:'night',banner:'#2f8a72',glyph:'鄭'},
+    sickroom:{base:'room',tod:'dusk',weather:'none',banner:'#2f8a72',glyph:'鄭'}
+  };
+  function firstOf(r){return r.firstResult || r;}
+  function remember(ctx,key,r){const f=firstOf(r);ctx.state.vars[key]={completed:!!r.completed,assisted:!!r.assisted,firstScore:Number(f.independentScore===undefined?f.score:f.independentScore)||0,firstPassed:!!f.passed};}
+  const NODES = {
+    n_intro:async ctx=>{
+      await ctx.chapter('你是季札','前544年・吳公子聘魯');await ctx.scene('lu_music',{place:'魯・殿堂',time:'前544年・白天'});ctx.cast(['jizha','musician']);
+      await ctx.say([{text:'諸侯相爭，禮樂卻仍保存著各國的記憶。你是吳公子季札，來到魯國。'},{who:'jizha',text:'我想看看周代的禮樂。曲調以外，還能聽見一國的處境嗎？',expr:'serious'},{who:'musician',text:'請坐。樂章和季札的評語已寫在簡上，你來把它們配回去。',expr:'happy'}]);return 'n_music';
+    },
+    n_music:async ctx=>{
+      const r=await ctx.minigame({id:'wen_zc_guanyue',title:'觀樂',goal:'先用教學配樂感受五聲，再把樂章與政治評語配合；節奏與判讀分開。',skip:false,help:'<p>看篇名與線索，點評語。前四章每章七秒，後四章四點五秒；整局五十秒。正確配對最多八分，連擊和速度各一分。五則正確算首次過關。</p><p>錯配會安排補讀。提示或時間到保存首次成績，之後無時限親自完成。</p>'},(body,g)=>ZH.games_cq13.guanyue(body,g));remember(ctx,'guanyue',r);
+      ctx.add('power',firstOf(r).score>=7?5:0);await ctx.say([{who:'jizha',text:'樂章不是只供人娛樂。我會把所見，放回國家的處境去讀。',expr:'serious'}]);return 'n_south';
+    },
+    n_south:async ctx=>{
+      await ctx.say([{who:'musician',text:'先讀季札對〈周南〉、〈召南〉的評語。',expr:'normal'}]);await ctx.anchor('zc_01');return 'n_zhengmusic';
+    },
+    n_zhengmusic:async ctx=>{
+      await ctx.say([{text:'樂工展開〈鄭〉的篇名簡。相同的「美哉」，接下來卻有不同的判斷。'},{who:'jizha',text:'別只看讚歎的開頭，把後面的百姓與政令也一起讀。',expr:'worried'}]);await ctx.anchor('zc_02');return 'n_shao';
+    },
+    n_shao:async ctx=>{
+      await ctx.say([{who:'musician',text:'接下來，舞〈韶箾〉。這是季札最後一則評語。',expr:'serious'}]);await ctx.anchor('zc_03');ctx.unlock('person:cq_jizha');ctx.unlock('idiom:tanweiguanzhi');ctx.unlock('text:jizhaguanyue');return 'n_meet';
+    },
+    n_meet:async ctx=>{
+      await ctx.scene('road',{place:'季札聘鄭之路',time:'前544年・黃昏',tod:'dusk'});ctx.cast(['jizha','zichan']);
+      await ctx.say([{text:'季札來到鄭國，見子產如舊相識。他送出縞帶，子產回贈紵衣。'},{who:'jizha',text:'執政的作風，會把整個國家帶向危險。這是我給你的提醒。',expr:'worried'},{who:'zichan',text:'國小而事多。我會把這番話記在心裡。',expr:'serious'}]);await ctx.anchor('zc_04');return 'n_takeoffice';
+    },
+    n_takeoffice:async ctx=>{
+      await ctx.chapter('你是子產','前543年・子皮授政');await ctx.scene('zheng_palace',{place:'鄭・宮城',time:'前543年・白天'});ctx.cast(['zichan','zipi','jian']);
+      await ctx.say([{text:'伯有之亂造成貴族死傷，鄭國需要重新安定。子皮把國政交給子產。'},{who:'zichan',text:'「國小而偪，族大寵多，不可為也。」',expr:'worried'},{who:'zipi',text:'「虎帥以聽，誰敢犯子？」',expr:'serious'},{who:'jian',text:'政令要能落到田野，不能只停在宮裡。',expr:'serious'}]);ctx.unlock('person:cq_zipi');ctx.unlock('person:cq_zichan');return 'n_plan';
+    },
+    n_plan:async ctx=>{
+      await ctx.scene('zheng_field',{place:'鄭・田野',time:'前543年・清晨'});ctx.cast(['zichan','people']);
+      await ctx.say([{text:'子產整頓城鄉與服制，也劃定田界、水溝和居民組織。'},{who:'people',text:'田界一改，誰得田、誰得水，都要說清楚。',expr:'worried'},{who:'zichan',text:'你先走到田間，再決定怎麼推行。',expr:'serious'}]);
+      const p=await ctx.choose({title:'改革從何處著手？',text:'這是施政推演；史實中的封洫仍會推行。',options:[{label:'勘查水路，核對各戶田冊',desc:'先掌握土地與用水，再說明改界。',value:'survey'},{label:'先照顧大族，求他們放行',desc:'阻力可能下降，小戶卻容易受損。',value:'favor'},{label:'立即改界，事後再說明',desc:'執行快，誤會也可能累積。',value:'rush'}]});
+      await ctx.say([{who:'shiguan',text:p==='survey'?'先看水路與田冊，至少知道爭議發生在哪裡。':p==='favor'?'大族點頭了，小戶卻不知道自己能分到什麼。':'界線畫得快，解釋跟不上，田邊的疑問越來越多。',expr:'serious'}]);ctx.flag('plan',p);ctx.add('people',p==='survey'?8:p==='favor'?-12:-6);ctx.add('opposition',p==='favor'?-8:6);return 'n_farm';
+    },
+    n_farm:async ctx=>{
+      const r=await ctx.minigame({id:'zc_fengxu',title:'封洫',goal:'親劃田界與連通水溝，依各戶田冊核界，接通用水，查核兩次異議。',skip:false,help:'<p>六乘六田地：選疏洫，點格子畫水溝；選戶甲至戶戊，再點格子劃田。水只能沿上下左右連通；每塊田須臨接有水的水溝。重劃可清空格子。</p><p>巡田會發現田界被挪動。選復界再點紅框，修回兩次，最後核驗田冊。七十秒，五戶三分、灌溉三分、復界兩分、速度兩分，核驗失誤扣分。所有條件完成才算過關。</p><p>提示會顯示一條可行水路，但不代做；首次表現會保留。</p>'},(body,g)=>ZH.games_cq13.fengxu(body,g));remember(ctx,'fengxu',r);
+      const f=firstOf(r);ctx.add('people',f.passed?12:-8);ctx.add('power',f.passed?16:5);ctx.add('opposition',f.passed?-5:12);
+      await ctx.say([{who:'people',text:r.assisted?'有些界線重劃過，田水終於接上了；我們仍要看往後的收成。':'田冊、水路、被挪的界線，都由你親自核過了。',expr:'normal'}]);return 'n_songfirst';
+    },
+    n_songfirst:async ctx=>{
+      await ctx.scene('market',{place:'鄭・市集',time:'從政一年・前542年前後',tod:'day'});ctx.cast(['zichan','people']);
+      await ctx.say([{text:'改革最初，百姓用歌謠表達強烈不滿。史書記下這些聲音，沒有替子產刪掉。'},{who:'zichan',text:'先讀他們怨的是什麼，別急著替我辯護。',expr:'serious'}]);await ctx.anchor('zc_05');return 'n_songlater';
+    },
+    n_songlater:async ctx=>{
+      await ctx.chapter('史官回望：三年後的歌','前541年前後・先看成效，再回到鄉校');await ctx.scene('village',{place:'鄭・田舍',time:'從政及三年・史官回望',tod:'dusk'});ctx.cast(['people','shiguan']);
+      await ctx.say([{text:'《左傳》在授政段落預敘數年的變化。三年後，百姓又唱起另一首歌。'},{who:'shiguan',text:'這是向後看成果，不是說鄉校事件發生在這首歌之後。',expr:'serious'}]);await ctx.anchor('zc_06');return 'n_school';
+    },
+    n_school:async ctx=>{
+      await ctx.chapter('回到前542年：鄉校還在','襄公三十一年・子產與然明');await ctx.scene('zheng_school',{place:'鄭・鄉校',time:'前542年・白天'});ctx.cast(['zichan','ranming']);
+      await ctx.say([{text:'百姓在鄉校談論執政得失。然明走來，提出拆毀鄉校的建議。'},{who:'ranming',text:'大家朝夕議論，政令還怎麼推？你要如何回覆？',expr:'worried'}]);await ctx.anchor('zc_07');ctx.unlock('person:cq_ranming');ctx.unlock('treasure:cq13_xiangxiao');return 'n_river';
+    },
+    n_river:async ctx=>{
+      await ctx.scene('river',{place:'鄭・河渠旁',time:'前542年・黃昏',tod:'dusk'});ctx.cast(['zichan','ranming']);
+      await ctx.say([{who:'ranming',text:'不堵住怨言，就不怕有一天收不住嗎？',expr:'worried'},{text:'子產用河水作比喻。讀原文時，要分清「防」與「道」。'}]);await ctx.anchor('zc_08');
+      await ctx.say([{who:'ranming',text:'我懂了。知道哪裡有問題，才有機會改。',expr:'serious'},{text:'《左傳》又記下仲尼聽聞此語的評價。仲尼在這裡只由史官轉述。'}]);return 'n_schoolgame';
+    },
+    n_schoolgame:async ctx=>{
+      await ctx.scene('zheng_school',{place:'鄭・鄉校',time:'前542年・白天'});ctx.cast(['zichan','people']);
+      const r=await ctx.minigame({id:'zc_xiangxiao',title:'鄉校議政',goal:'親自處理十二則議論：維持有效施政、改正問題、查證傳聞。',skip:false,help:'<p>點吾則行之：具體肯定有效施政；點吾則改之：指出實際問題；點查證：只有傳言、沒有依據。批評不是謠言。</p><p>前六則五秒、後六則三秒，總限時五十秒。正確率八分、連擊一分、低怨氣一分；八則正確為首次過關。錯分須親自補作，提示或時間到會保留首次表現。</p>'},(body,g)=>ZH.games_cq13.xiangxiao(body,g));remember(ctx,'xiangxiao',r);
+      ctx.add('people',firstOf(r).passed?18:-10);ctx.add('opposition',firstOf(r).passed?-12:12);return 'n_follow';
+    },
+    n_follow:async ctx=>{
+      await ctx.scene('zheng_room',{place:'鄭・子產書房',time:'鄉校議政後・夜'});ctx.cast(['zichan','zidashu']);
+      await ctx.say([{who:'zidashu',text:'議論收進來了，接著怎麼辦？',expr:'serious'},{who:'zichan',text:'留下聲音，只是第一步。得讓大家知道問題怎麼處理。',expr:'serious'}]);
+      const p=await ctx.choose({title:'議政後的施政推演',text:'選擇會影響執行品質，不改寫不毀鄉校的史實。',options:[{label:'核對稅冊，回覆改善期限',value:'respond',desc:'把批評轉成能追蹤的改進。'},{label:'先稱讚百姓，暫不處理',value:'delay',desc:'氣氛緩和，問題仍然留下。'},{label:'只讓支持者提出意見',value:'filter',desc:'聽起來順耳，缺少新的警訊。'}]});
+      await ctx.say([{who:'zidashu',text:p==='respond'?'田邊的問題有了回覆，大家能再來核對。':p==='delay'?'大家等著的不是好話，是問題何時處理。':'反對者不再進來；你也失去知道問題的機會。',expr:p==='respond'?'happy':'worried'}]);ctx.flag('school',p);ctx.add('people',p==='respond'?12:p==='delay'?-8:-15);ctx.add('power',p==='respond'?8:0);ctx.add('opposition',p==='filter'?15:p==='respond'?-5:3);return 'n_castlaw';
+    },
+    n_castlaw:async ctx=>{
+      await ctx.chapter('刑書公布','前536年・昭公六年');await ctx.scene('zheng_palace',{place:'鄭・宮城',time:'前536年・白天'});ctx.cast(['zichan','shuxiang']);
+      await ctx.say([{text:'鄭人鑄刑書，使刑法有公開可知的文字。畫面中的叔向代表來信，並非當面會談。'},{who:'shuxiang',text:'人們知道條文，就可能拿條文爭辯，禮制還守得住嗎？',expr:'worried'},{text:'叔向有他的憂慮；子產如何回信，請在原文錨點作答。'}]);await ctx.anchor('zc_09');ctx.unlock('person:cq_shuxiang');ctx.unlock('treasure:cq13_xingshu');return 'n_lawwork';
+    },
+    n_lawwork:async ctx=>{
+      await ctx.scene('market',{place:'鄭・刑書告示處',time:'前536年・黃昏',tod:'dusk'});ctx.cast(['zichan','people']);
+      await ctx.say([{who:'people',text:'條文看到了。有人看不懂，官吏又各說各的，怎麼辦？',expr:'worried'}]);
+      const p=await ctx.choose({title:'公開刑書後，如何施行？',text:'刑書已鑄；接著是教學推演中的執行安排。',options:[{label:'公開說明，核對官吏的執行',value:'explain',desc:'使條文與處理標準一致。'},{label:'立刻一律重罰，迅速立威',value:'harsh',desc:'有威嚇，卻可能造成新怨。'},{label:'只公布條文，各地自行解釋',value:'leave',desc:'節省安排，執行可能不一致。'}]});
+      await ctx.say([{who:'shiguan',text:p==='explain'?'讓人民看得懂，也讓執行者受到核對。':p==='harsh'?'威嚇不能取代公平與教導，百姓的疑慮增加了。':'同一份刑書，各地做法卻不同，爭議還是回到田間。',expr:'serious'}]);ctx.flag('law',p);ctx.add('people',p==='explain'?10:p==='harsh'?-15:-6);ctx.add('power',p==='explain'?12:p==='harsh'?4:-4);ctx.add('opposition',p==='explain'?-4:10);return 'n_sick';
+    },
+    n_sick:async ctx=>{
+      await ctx.chapter('交代國政','前522年・昭公二十年');await ctx.scene('sickroom',{place:'鄭・子產病室',time:'前522年・黃昏'});ctx.cast(['zichan','zidashu']);
+      await ctx.say([{text:'子產病重，告訴子大叔：自己死後，他必定接掌國政。'},{who:'zidashu',text:'我不願苛待百姓。寬厚就一定能治好嗎？',expr:'worried'},{who:'zichan',text:'先讀火與水的比喻，再想寬政為什麼難。',expr:'serious'}]);await ctx.anchor('zc_10');ctx.unlock('person:cq_zidashu');ctx.unlock('text:zichanlunzheng');return 'n_successor';
+    },
+    n_successor:async ctx=>{
+      await ctx.scene('market',{place:'鄭・子大叔接政後',time:'前522年後・白天'});ctx.cast(['zidashu','shiguan']);
+      await ctx.say([{text:'子產病了數月後去世。子大叔不忍用猛而過於寬，鄭國盜患增加；他後悔並加以整治。'},{who:'zidashu',text:'我原以為寬厚就夠了，卻忽略了規範與執行。',expr:'sad'},{who:'shiguan',text:'整治盜患的刑罰只作平實轉述。下一幕由孔子評議，不把強制手段做成操作。',expr:'serious'}]);return 'n_balance';
+    },
+    n_balance:async ctx=>{
+      await ctx.chapter('尾聲・仲尼的評語','寬與猛，怎樣相濟？');await ctx.scene('academy',{place:'魯・講席',time:'聽聞鄭政之後・白天',tod:'day',banner:'#6f7f3f',glyph:'魯'});ctx.cast(['kongzi','shiguan']);
+      await ctx.say([{text:'孔子回看子大叔的施政：寬與猛都不能一味用到底。'},{who:'kongzi',text:'讀這段話時，看看每一步是為了補救哪一種偏差。',expr:'serious'}]);await ctx.anchor('zc_11');ctx.unlock('idiom:kuanmengxiangji');return 'n_legacy';
+    },
+    n_legacy:async ctx=>{
+      await ctx.scene('academy',{place:'魯・講席',time:'仲尼聞子產卒・黃昏',tod:'dusk'});ctx.cast(['kongzi','shiguan']);
+      await ctx.say([{text:'《左傳》最後另記仲尼聽聞子產去世而落淚的評語。'},{who:'shiguan',text:'這一個「愛」字，是留給治國之人的回望。',expr:'sad'}]);await ctx.anchor('zc_12');return 'n_end';
+    },
+    n_end:async ctx=>{
+      const key=ctx.meter('people')<30||ctx.meter('opposition')>=85?'bad':ctx.meter('people')>=70&&ctx.meter('power')>=60?'great':'good';return ctx.end({type:'final',key});
+    }
+  };
+  // 6. 小遊戲實作在本頁末尾引入 Side_cq13_games；只在節點執行時使用。
+  // 7. 結局與結算
+  const ENDINGS = {
+    great:{id:'great',title:'古之遺愛',good:true,text:'田有封洫，鄉校不毀。古之遺愛，民思其德。'},
+    good:{id:'good',title:'寬猛相濟',good:true,text:'聞過而改，寬猛相濟。政有所未盡，亦知所歸。'},
+    bad:{id:'bad',title:'政寬民慢',good:false,text:'徒存政令，未得民心。寬猛失中，宜省其過。'}
+  };
+  function onEnd(result,ctx){const s=ctx.state,e=ENDINGS[result&&result.key]||ENDINGS.good;ZH.sfx('seal');return ctx.banner(e.title,'子產治鄭・終').then(()=>ctx.say([{who:'shiguan',text:'子產不毀鄉校、鑄刑書與病卒的史實不變。這一局的評語，回看的是你推行與聽取意見的表現。',expr:'serious'}])).then(()=>ZH.deleteSave(SID,MODE).catch(()=>null)).then(()=>ZH.finishScenario(payload(s,e)));}
+  function payload(s,ending){
+    const f=s.flags,v=s.vars,trial=['guanyue','fengxu','xiangxiao'].reduce((n,k)=>n+Number(v[k]&&v[k].firstScore||0),0)/30;
+    const goodChoices=[f.plan==='survey',f.school==='respond',f.law==='explain'].filter(Boolean).length;
+    const strategy=Math.round(ZH.clamp(25+goodChoices*15+trial*30,0,100));
+    const virtue=Math.round(ZH.clamp(20+goodChoices*15+s.meters.people*.25+(100-s.meters.opposition)*.15,0,100));
+    const deeds=['吳季札聘於魯，觀周樂；聘鄭，見子產，勉之以禮。','鄭子皮授政，子產辭以國小族大，子皮帥以聽之。'];
+    deeds.push(f.plan==='survey'?'先察水道，核田籍而定封洫。':f.plan==='favor'?'初徇大族，小民有怨，乃更省田政。':'初急於改界，田人疑之，乃復核其籍。');
+    deeds.push('從政一年，輿人怨之；及三年，誦其教養之功。','然明請毀鄉校，子產不許，以民言為師。');
+    deeds.push(f.school==='respond'?'聞民之病，省賦役而告其期。':f.school==='delay'?'雖聞民言，改政稍遲，猶知當省。':'初偏聽善己者，失其警戒，乃知納言之難。');
+    deeds.push('鄭人鑄刑書，叔向詒書，子產復書以救世。');
+    deeds.push(f.law==='explain'?'既明其法，復察吏治，求令行而民知。':f.law==='harsh'?'初急於威，民有疑懼，乃思寬猛之中。':'條文雖布，吏治未齊，猶須明其施行。');
+    deeds.push('子產有疾，告子大叔以寬猛之政。','子產卒，仲尼聞之出涕，稱古之遺愛。');
+    return {scenarioId:SID,mode:MODE,faction:'鄭',role:'子產',roleKind:'liezhuan',country:'鄭',bioTitle:'循吏列傳・子產',bioOpening:'子產者，鄭之列大夫也。',ending,scoreStrategy:strategy,scoreVirtue:virtue,turns:s.steps||1,durationSec:Math.min(5400,Math.round((Date.now()-(s.startedAt||Date.now()))/1000)),deeds,anchors:s.anchors,games:s.games,codex:s.codex,opener:'余讀〈子產論政寬猛〉，至仲尼聞之出涕，未嘗不歎子產之遺愛也。',prompts:['學校或班級裡，什麼地方像鄉校？如何讓批評得到回覆與改進？','寬與猛各在什麼情況有效？如何避免寬變放任、猛變苛刻？','改革最初被罵時，你會找哪些證據判斷要堅持還是調整？']};
+  }
+
+  // ═════════════════════════ 8. 開始（通常不用改；需要時加 scenes、initState） ═════════════════════════
+
+  const saveState = state => ZH.save(SID, MODE, { engine: state }).catch(() => null);
+
+  function startGame(saved) {
+    ROOT.innerHTML = '';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_intro',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP, scenes: SCENES,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd: onEnd, save: saveState
+    });
+    if (params.test) window.__ep = game;
+    game.start(saved || null);
+  }
+
+  function roleFace() {
+    const c = CHARACTERS.find(x => x.id === ROLE.who);
+    if (c && window.ART && ART.portrait) return '<span class="ep-seal has-art" aria-hidden="true">' + ART.portrait(c, { bust: true }) + '</span>';
+    return '<span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>';
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), META.year ? '前 ' + META.year + ' 年' : ''].filter(Boolean).join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip">原典' + esc(META.source) + '</span><span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header>' +
+      '<section class="ep-start">' + roleFace() +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個史實錨點。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave = () => ZH.load(SID, MODE).then(r => (r && r.ok && r.state && r.state.engine ? r.state : null)).catch(() => null);
+
+  ZH.ready(() => {
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), Promise.race([anchorsReady, ZH.sleep(8000)])]).then(([saved]) => {
+      ZH.loading(false);
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+</script>
+<?!= include('Side_cq13_games') ?>
+<script>ZH.ready(function(){ZH.textplay?.install("S_cq13_zichan",null);});</script>
+</body>
+</html>

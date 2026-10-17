@@ -1,0 +1,278 @@
+<!-- GameplayNative v2.0.0：沿用滎陽牌組及井陘五目標的實際規則；增添意圖、連鎖與新操作舞台。 -->
+<script>(function(w){'use strict';const bounded=n=>Math.max(0,Math.min(100,Math.round(Number(n)||0)));
+  const CARDS = {
+    intrigue: { name: '反間', gold: 20, ap: 1, doubt: 15, detail: '楚疑＋15', report: '資源交付，軍中流言再起；君臣信任受影響。' },
+    rumor: { name: '宣言', gold: 0, ap: 1, doubt: 8, detail: '楚疑＋8', report: '軍吏回報：言語傳開，對臣下的疑心增加。' },
+    guard: { name: '堅守', gold: 0, ap: 1, siege: 10, detail: '圍城－10', report: '防備重新配置，這一回合的圍城壓力下降。' },
+    supply: { name: '運糧', gold: 5, ap: 1, siege: 8, detail: '圍城－8', report: '預算用於供應，守城壓力下降。' },
+    buy: { name: '收買', gold: 10, ap: 1, draw: 2, detail: '抽兩張', report: '情報網多送來兩個可用方案；出牌仍要行動點。' },
+    funds: { name: '籌金', gold: 0, ap: 1, gain: 10, detail: '金＋10', report: '可回收的軍費重新調度，預算回到可用處。' },
+    scout: { name: '偵察', gold: 0, ap: 1, draw: 1, shield: 5, detail: '抽一張、本回合攻勢－5', report: '得知攻勢方向，多備一個方案，減少本回合壓力。' },
+    envoy: { name: '密使', gold: 10, ap: 1, doubt: 14, detail: '楚疑＋14', report: '密使帶消息往返，項王與臣下的疑慮加深。' },
+    transport: { name: '轉漕', gold: 0, ap: 1, siege: 6, gain: 6, detail: '圍城－6、金＋6', report: '供應路線整頓，壓力減少，部分預算回收。' },
+    feint: { name: '分兵牽制', gold: 0, ap: 2, siege: 20, once: true, detail: '圍城－20、全話限一次', report: '一次牽制已安排，圍城壓力下降；後續不能重複使用。' }
+  };
+  const STARTER_DECK = ['intrigue', 'rumor', 'rumor', 'guard', 'guard', 'supply', 'buy', 'funds', 'funds', 'scout'];
+  const REWARDS = ['envoy', 'transport', 'feint'];
+  const STAGES = [
+    { title: '第一局・反間', aim: '你要在傳播計策、維持城防與留存預算之間安排。', receiver: '楚軍將吏', response: '項王與諸將的信任' },
+    { title: '第二局・楚使將至', aim: '先準備情報、預算與防備，接待細節稍後再由你判斷。', receiver: '軍中與來使之前', response: '使者往返中的局勢' },
+    { title: '第三局・亞父見疑', aim: '信任已動搖，你仍要接續管理城防與預算。', receiver: '楚營回報', response: '項王與亞父的信任' }
+  ];
+
+const INTENTS=[{kind:0,name:'急攻城防',attack:12,text:'本輪強攻，優先安排堅守與運糧。'},{kind:1,name:'截斷軍費',attack:7,text:'壓力較低，但會損失軍費；偵察與籌金可保留後續。'},{kind:2,name:'查核流言',attack:8,text:'若未安排偵察，楚疑會回落；考慮證據與城防的順序。'}];
+  function shuffle(items, rng) {
+    const copy = items.slice();
+    for (let i = copy.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; }
+    return copy;
+  }
+  function createDeckModel(input, saved={}) {
+    const rs={value:(saved.rngState ?? input.seed)>>>0};const rng=()=>{rs.value=(Math.imul(rs.value,1664525)+1013904223)>>>0;return rs.value/4294967296;};
+    const deck = input.deck.slice();
+    const m = saved.m || { gold: bounded(input.gold), doubt: bounded(input.doubt), siege: bounded(input.siege) };
+    const state = { phase: 'intro', stage: input.stage, round: 0, m, hand: [], draw: saved.phase ? [] : shuffle(deck, rng), discard: [],
+      ap: 3, onceUsed: !!input.onceUsed, turnPlays: 0, shield: 0, doubtWork: 0, defenseWork: 0,
+      rounds: [], played: [], turnCards: [], comboEvents: [], intent: null, pending: -1, reward: null, score: null, before: null };
+    if(saved.phase){const restored={...saved};delete restored.feedback;delete restored.rngState;Object.assign(state,restored);state.m=m;rs.value=saved.rngState>>>0;}
+    const usable = id => { const c = CARDS[id]; return !!c && Math.max(0,c.gold-bonus(id).discount) <= m.gold && c.ap <= state.ap && !(c.once && state.onceUsed); };
+    function drawOne() {
+      if (!state.draw.length && state.discard.length) { state.draw = shuffle(state.discard, rng); state.discard = []; }
+      return state.draw.length ? state.draw.pop() : null;
+    }
+    function drawCards(count) { for (let i = 0; i < count; i++) { const id = drawOne(); if (id) state.hand.push(id); } }
+    function ensurePlayable() {
+      if (state.hand.some(usable)) return;
+      for (const pile of [state.draw, state.discard]) {
+        const at = pile.findIndex(usable);
+        if (at >= 0) { const replacement = pile.splice(at, 1)[0]; pile.push(state.hand.pop()); state.hand.push(replacement); return; }
+      }
+      throw new Error('本局牌組缺少可用方案');
+    }
+    function startRound() {
+      state.phase = 'plan'; state.ap = 3; state.turnPlays = 0; state.shield = 0; state.turnCards = []; state.pending = -1;
+      state.before = { ...m }; state.intent = INTENTS[(state.round + Math.floor(rng()*3)) % 3]; drawCards(5); ensurePlayable();
+    }
+    function bonus(id) { const last=state.turnCards.at(-1); return {doubt:last==='scout'&&['intrigue','rumor','envoy'].includes(id)?6:0,defense:last==='guard'&&['supply','transport'].includes(id)?6:0,discount:last==='funds'&&id==='intrigue'?5:0}; }
+    function preview(index) {
+      const c = CARDS[state.hand[index]];
+      if (!c) return null;
+      const b = bonus(state.hand[index]);
+      return { gold: bounded(m.gold - Math.max(0,c.gold-b.discount) + (c.gain || 0)), doubt: bounded(m.doubt + (c.doubt || 0)+b.doubt), siege: bounded(m.siege - (c.siege || 0)-b.defense) };
+    }
+    function play(index) {
+      if (state.phase !== 'plan' || !Number.isInteger(index) || !usable(state.hand[index])) return false;
+      const id = state.hand[index], c = CARDS[id], next = preview(index), combo = bonus(id);
+      state.hand.splice(index, 1); state.ap -= c.ap;
+      Object.assign(m, next); state.doubtWork += (c.doubt || 0)+combo.doubt; state.defenseWork += (c.siege || 0)+combo.defense; if(combo.doubt||combo.defense||combo.discount)state.comboEvents.push({round:state.round,id,...combo}); state.shield += c.shield || 0;
+      if (c.once) state.onceUsed = true;
+      state.discard.push(id); state.turnPlays++; state.turnCards.push(id); state.played.push(id); state.pending = -1;
+      drawCards(c.draw || 0); return true;
+    }
+    function endRound() {
+      if (state.phase !== 'plan' || !state.turnPlays) return false;
+      const intent = state.intent || INTENTS[0]; const attack = Math.max(0, intent.attack + state.round - state.shield); if(intent.kind===1)m.gold=bounded(m.gold-Math.max(0,8-state.shield)); if(intent.kind===2&&!state.turnCards.includes('scout'))m.doubt=bounded(m.doubt-6);
+      m.siege = bounded(m.siege + attack);
+      const checks = { intrigue: state.doubtWork >= 8 * (state.round + 1), defense: m.siege <= 60 };
+      state.rounds.push({ round: state.round + 1, before: { ...state.before }, after: { ...m }, attack, intentName:intent.name, shield: state.shield,
+        cards: state.turnCards.slice(), doubtWork: state.doubtWork, defenseWork: state.defenseWork, checks });
+      state.discard.push(...state.hand); state.hand = []; state.pending = -1; state.phase = 'report';
+      if (state.round === 2) {
+        state.finalChecks = { reserve: m.gold >= 10, pressure: m.siege <= 50, intrigue: state.doubtWork > 0, logistics: state.defenseWork >= 20 };
+        state.score = state.rounds.reduce((s, r) => s + Number(r.checks.intrigue) + Number(r.checks.defense), 0) +
+          Object.values(state.finalChecks).filter(Boolean).length;
+      }
+      return true;
+    }
+    function next() {
+      if (state.phase !== 'report') return false;
+      if (state.round < 2) { state.round++; startRound(); } else state.phase = 'reward';
+      return true;
+    }
+    function chooseReward(id) {
+      if (state.phase !== 'reward' || !REWARDS.includes(id)) return false;
+      state.reward = id; state.phase = 'finish'; return true;
+    }
+    function result() {
+      if (state.phase !== 'finish' || !state.reward || state.rounds.length !== 3) return null;
+      return { completed: true, passed: state.score >= 7, score: state.score, max: 10, deck: [...deck, state.reward],
+        ...m, onceUsed: state.onceUsed, rounds: state.rounds, played: state.played, reward: state.reward };
+    }
+    return { comboHint:()=>state.turnCards.at(-1)==='scout'?'查訪已到位：下一張反間類牌效果＋6。':state.turnCards.at(-1)==='guard'?'堅守已到位：下一張運糧／轉漕額外減壓6。':state.turnCards.at(-1)==='funds'?'籌金已到位：下一張反間減費5。':'偵察→反間、堅守→運糧、籌金→反間可連鎖。', state, usable, startRound, preview, play, endRound, next, chooseReward, result, snapshot:()=>({...state,rngState:rs.value}) };
+  }
+  const BOARD = { cols: 8, rows: 10, flags: [{ x: 7, y: 2, name: '北旗' }, { x: 7, y: 6, name: '南旗' }] };
+  const INITIAL_UNITS = [
+    { id: 'B1', name: '背水一隊', side: 'han', kind: 'infantry', x: 1, y: 3, hp: 6, move: 1 },
+    { id: 'B2', name: '背水二隊', side: 'han', kind: 'infantry', x: 1, y: 5, hp: 6, move: 1 },
+    { id: 'B3', name: '背水三隊', side: 'han', kind: 'infantry', x: 1, y: 7, hp: 6, move: 1 },
+    { id: 'G', name: '韓信、張耳旗鼓隊', side: 'han', kind: 'banner', x: 4, y: 5, hp: 6, move: 2 },
+    { id: 'K1', name: '輕騎一隊', side: 'han', kind: 'cavalry', x: 3, y: 1, hp: 4, move: 2 },
+    { id: 'K2', name: '輕騎二隊', side: 'han', kind: 'cavalry', x: 4, y: 1, hp: 4, move: 2 },
+    { id: 'Z1', name: '趙軍一隊', side: 'zhao', kind: 'zhao', x: 6, y: 2, hp: 4, move: 1 },
+    { id: 'Z2', name: '趙軍二隊', side: 'zhao', kind: 'zhao', x: 6, y: 3, hp: 4, move: 1 },
+    { id: 'Z3', name: '趙軍三隊', side: 'zhao', kind: 'zhao', x: 7, y: 4, hp: 4, move: 1 },
+    { id: 'Z4', name: '趙軍四隊', side: 'zhao', kind: 'zhao', x: 6, y: 5, hp: 4, move: 1 },
+    { id: 'Z5', name: '趙軍五隊', side: 'zhao', kind: 'zhao', x: 6, y: 6, hp: 4, move: 1 },
+    { id: 'Z6', name: '趙軍六隊', side: 'zhao', kind: 'zhao', x: 7, y: 7, hp: 4, move: 1 }
+  ];
+  const coord = (x, y) => String.fromCharCode(65 + x) + (y + 1);
+  const distance = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  const terrain = (x, y) => x === 0 ? 'river' : y <= 1 && x >= 2 && x <= 5 ? 'mountain' : x >= 6 && y >= 2 && y <= 7 ? 'camp' : 'plain';
+  const terrainName = key => ({ river: '河・不可通行', mountain: '山間道・輕騎可通行', camp: '趙壁營區', plain: '平地' })[key];
+  const inWaterArmy = u => u.hp > 0 && u.x === 1 && u.y >= 3 && u.y <= 7;
+  const GUIDE = [
+    [['G', 'move', 3, 4], ['G', 'raise'], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['end']],
+    [['G', 'move', 1, 4], ['G', 'retreat'], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['end']],
+    [['K2', 'move', 6, 1], ['K1', 'move', 5, 1], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']],
+    [['K2', 'move', 6, 3], ['K1', 'move', 7, 1], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']],
+    [['K1', 'move', 7, 2], ['K1', 'flag'], ['K2', 'move', 6, 5], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']],
+    [['K2', 'move', 7, 6], ['K2', 'flag'], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']]
+  ];
+  function createBattleModel(saved={}) {
+    const s = { phase: 'intro', turn: 1, units: [], raised: false, raisedTurn: 0, retreatOrdered: false,
+      enteredWater: false, held: 0, heldDone: false, flags: [null, null], first: null, assisted: false,
+      guideIndex: 0, orders: 0, totalOrders: 0, history: [], report: [], selected: null, mode: null, pending: null, returnPhase: null };
+    const unit = id => s.units.find(u => u.id === id);
+    const at = (x, y) => s.units.find(u => u.hp > 0 && u.x === x && u.y === y);
+    const campEmpty = () => s.units.filter(u => u.side === 'zhao').every(u => u.exited);
+    const guide = () => s.assisted ? (GUIDE[s.turn - 1] || [])[s.guideIndex] || null : null;
+    function reset() {
+      s.units = INITIAL_UNITS.map(u => ({ ...u, max: u.hp, moved: false, acted: false, guard: false, exposed: false, exited: false }));
+      s.turn = 1; s.raised = false; s.raisedTurn = 0; s.retreatOrdered = false; s.enteredWater = false;
+      s.held = 0; s.heldDone = false; s.flags = [null, null]; s.orders = 0; s.guideIndex = 0;
+      s.selected=null;s.mode=null;s.pending=null;s.history=[];s.report=[];s.outcome=null;
+    }
+    reset();if(Array.isArray(saved.units)&&saved.units.length)Object.assign(s,JSON.parse(JSON.stringify(saved)));
+    function pathFor(u, x, y, allowTarget) {
+      if (!u || u.hp <= 0 || x < 0 || x >= 8 || y < 0 || y >= 10) return null;
+      if (terrain(x, y) === 'river' || terrain(x, y) === 'mountain' && u.kind !== 'cavalry') return null;
+      const queue = [{ x: u.x, y: u.y, path: [] }], visited = new Set([u.x + ',' + u.y]);
+      for (let i = 0; i < queue.length; i++) {
+        const current = queue[i]; if (current.x === x && current.y === y) return current.path;
+        for (const [dx, dy] of [[-1, 0], [0, -1], [0, 1], [1, 0]]) {
+          const nx = current.x + dx, ny = current.y + dy, key = nx + ',' + ny;
+          if (nx < 0 || nx >= 8 || ny < 0 || ny >= 10 || visited.has(key)) continue;
+          const t = terrain(nx, ny), occupied = at(nx, ny);
+          if (t === 'river' || t === 'mountain' && u.kind !== 'cavalry' || occupied && occupied.id !== u.id && !(allowTarget && nx === x && ny === y)) continue;
+          visited.add(key); queue.push({ x: nx, y: ny, path: [...current.path, { x: nx, y: ny }] });
+        }
+      }
+      return null;
+    }
+    function objectives() { return { lured: s.raised && campEmpty(), retreat: s.retreatOrdered && s.enteredWater,
+      held: s.heldDone, north: !!s.flags[0], south: !!s.flags[1] }; }
+    const achieved = () => Object.values(objectives()).every(Boolean);
+    function snapshot(success) {
+      const losses = s.units.filter(u => u.side === 'han' && u.hp <= 0).length;
+      const exposed = s.units.filter(u => u.kind === 'cavalry' && u.exposed).length;
+      const goal = objectives(), efficiency = Math.max(0, 10 - Math.max(0, s.turn - 6) - losses * 2 - exposed);
+      return { success, score: success ? efficiency : Math.min(3, Object.values(goal).filter(Boolean).length), turns: s.turn,
+        losses, exposed, infantryCohesion: s.units.filter(u => u.kind === 'infantry').reduce((sum, u) => sum + u.hp, 0),
+        objectives: goal, orders: s.totalOrders, units: s.units.filter(u => u.side === 'han').map(u => ({ id: u.id, hp: u.hp, x: u.x, y: u.y })) };
+    }
+    function guideAllows(id, action, x, y) {
+      if (!s.assisted) return true;
+      const step = guide(); return !!step && step[0] === id && step[1] === action && (action !== 'move' || step[2] === x && step[3] === y);
+    }
+    function legal(id, action, x, y) {
+      const u = unit(id); if (s.phase !== 'plan' || !u || u.side !== 'han' || u.hp <= 0 || !guideAllows(id, action, x, y)) return false;
+      if (action === 'move') { const path = pathFor(u, x, y, false); return !u.moved && !!path && path.length > 0 && path.length <= u.move; }
+      if (u.acted) return false;
+      if (action === 'guard') return true;
+      if (action === 'attack') { const target = at(x, y); return !!target && target.side === 'zhao' && distance(u, target) === 1; }
+      if (action === 'raise') return u.kind === 'banner' && !s.raised;
+      if (action === 'retreat') return u.kind === 'banner' && s.raised && !s.retreatOrdered && s.turn > s.raisedTurn;
+      if (action === 'flag') { const i = BOARD.flags.findIndex(f => f.x === u.x && f.y === u.y); return u.kind === 'cavalry' && i >= 0 && !s.flags[i] && !s.flags.includes(id) && campEmpty(); }
+      return false;
+    }
+    function preview(id, action, x, y) {
+      if (!legal(id, action, x, y)) return null;
+      const u = unit(id), verbs = { guard: '固守，抵消下一敵階段首個損失', raise: '舉旗接戰，讓趙軍出壁追逐', retreat: '下佯退令，還須親自移回水上軍', flag: '拔趙幟、立漢赤幟' };
+      return { id, action, x, y, path: action === 'move' ? pathFor(u, x, y, false) : [], text: u.name + '：' +
+        (action === 'move' ? coord(u.x, u.y) + ' → ' + coord(x, y) : action === 'attack' ? '壓制' + at(x, y).name + '，隊勢－1' : verbs[action]) + '。' };
+    }
+    function exposure() {
+      if (campEmpty()) return;
+      for (const u of s.units.filter(v => v.kind === 'cavalry' && v.hp > 0 && !v.exposed && terrain(v.x, v.y) !== 'mountain')) {
+        if (s.units.some(z => z.side === 'zhao' && z.hp > 0 && distance(u, z) <= 2)) { u.exposed = true; s.report.push(u.name + '提前暴露；首次隱蔽紀錄已留下。'); }
+      }
+    }
+    function commit(p) {
+      if (!p || !legal(p.id, p.action, p.x, p.y)) return false;
+      const u = unit(p.id);
+      if (p.action === 'move') { u.x = p.x; u.y = p.y; u.moved = true; exposure(); }
+      else {
+        u.acted = true;
+        if (p.action === 'guard') u.guard = true;
+        else if (p.action === 'attack') { const target = at(p.x, p.y); target.hp = Math.max(0, target.hp - 1); }
+        else if (p.action === 'raise') { s.raised = true; s.raisedTurn = s.turn; }
+        else if (p.action === 'retreat') s.retreatOrdered = true;
+        else if (p.action === 'flag') { const i = BOARD.flags.findIndex(f => f.x === u.x && f.y === u.y); s.flags[i] = u.id; }
+      }
+      if (s.retreatOrdered && inWaterArmy(unit('G'))) s.enteredWater = true;
+      s.orders++; s.totalOrders++; if (s.assisted) s.guideIndex++;
+      s.history.push({ turn: s.turn, id: p.id, action: p.action, x: u.x, y: u.y }); s.pending = null; s.mode = null;
+      return true;
+    }
+    function enemyPhase() {
+      if (!s.raised) { s.report.push('趙軍仍守趙壁：尚未見大將旗鼓。'); return; }
+      const returning = s.flags.every(Boolean);
+      for (const z of s.units.filter(u => u.side === 'zhao' && u.hp > 0)) {
+        const exposed=s.units.filter(u=>u.side==='han'&&u.kind==='cavalry'&&u.hp>0&&u.exposed&&distance(z,u)<=3).sort((a,b)=>distance(z,a)-distance(z,b)); const target = exposed[0] || (unit('G').hp > 0 ? unit('G') : s.units.find(u => u.kind === 'infantry' && u.hp > 0));
+        const home = INITIAL_UNITS.find(u => u.id === z.id), aim = returning ? home : target;
+        const path = aim ? pathFor(z, aim.x, aim.y, !returning) : null;
+        if (path && path.length && (returning || path.length > 1)) {
+          const next = path[0], old = coord(z.x, z.y); z.x = next.x; z.y = next.y;
+          if (terrain(z.x, z.y) !== 'camp') z.exited = true;
+          s.report.push(z.id + '：' + old + ' → ' + coord(z.x, z.y) + (returning ? '，回望漢旗。' : '，追向旗鼓。'));
+        } else s.report.push(z.id + '：' + coord(z.x, z.y) + '停留，前路受阻。');
+        exposure();
+        if (returning) continue;
+        const adjacent = s.units.filter(u => u.side === 'han' && u.hp > 0 && distance(z, u) === 1 && (u.kind !== 'cavalry' || u.exposed));
+        adjacent.sort((a, b) => ({ banner: 0, infantry: 1, cavalry: 2 })[a.kind] - ({ banner: 0, infantry: 1, cavalry: 2 })[b.kind] || a.id.localeCompare(b.id));
+        const victim = adjacent[0]; if (!victim) continue;
+        let damage = s.assisted ? 0 : 1;
+        if (victim.guard && damage) { damage = 0; victim.guard = false; }
+        victim.hp = Math.max(0, victim.hp - damage);
+        s.report.push(z.id + '壓制' + victim.id + '：隊勢－' + damage + (victim.hp === 0 ? '，該隊退出本次推演。' : '。'));
+      }
+    }
+    const canEnd = () => s.phase === 'plan' && s.orders > 0 && (!s.assisted || guide() && guide()[0] === 'end');
+    function endTurn() {
+      if (!canEnd()) return false;
+      const guarded = s.units.filter(u => u.kind === 'infantry' && u.guard && inWaterArmy(u)).map(u => u.id);
+      s.report = []; enemyPhase();
+      const aliveInfantry = s.units.filter(u => u.kind === 'infantry' && u.hp > 0);
+      if (s.retreatOrdered && inWaterArmy(unit('G')) && aliveInfantry.filter(u => inWaterArmy(u) && guarded.includes(u.id)).length >= 2) { s.held++; if (s.held >= 3) s.heldDone = true; }
+      else if (!s.heldDone) s.held = 0;
+      const failed = unit('G').hp <= 0 || s.units.some(u => u.kind === 'cavalry' && u.hp <= 0) || aliveInfantry.length < 2 || s.turn >= 12;
+      if (achieved()) { if (!s.first) s.first = snapshot(true); s.phase = 'report'; s.outcome = 'success'; }
+      else if (failed && !s.assisted) { if (!s.first) s.first = snapshot(false); s.phase = 'repair'; s.outcome = 'failure'; }
+      else { s.phase = 'report'; s.outcome = null; }
+      s.selected = null; s.mode = null; s.pending = null; return true;
+    }
+    function start() { if (s.phase !== 'intro') return false; s.phase = 'plan'; return true; }
+    function next() {
+      if (s.phase !== 'report') return false;
+      if (s.outcome === 'success') { s.phase = 'finish'; return true; }
+      s.turn++; s.phase = 'plan'; s.orders = 0; s.guideIndex = 0; s.report = [];
+      s.units.forEach(u => { u.moved = false; u.acted = false; u.guard = false; }); return true;
+    }
+    function requestAssist() { if (!['plan', 'report'].includes(s.phase)) return false; s.returnPhase = s.phase; s.phase = 'assist'; return true; }
+    function cancelAssist() { if (s.phase !== 'assist') return false; s.phase = s.returnPhase; return true; }
+    function assist() {
+      if (!['repair', 'assist'].includes(s.phase)) return false;
+      if (!s.first) s.first = snapshot(false);
+      s.assisted = true; reset(); s.phase = 'plan'; return true;
+    }
+    function result() {
+      if (s.phase !== 'finish' || !achieved() || !s.first) return null;
+      return { completed: true, score: s.first.score, max: 10, passed: s.first.success && s.first.score >= 7,
+        assisted: s.assisted, first: s.first, completion: { turns: s.turn, objectives: objectives(), flags: s.flags.slice(),
+          held: s.held, orders: s.history.length }, morale: bounded(60 - 8 * s.first.losses - 2 * (18 - s.first.infantryCohesion)),
+        conceal: bounded(80 - 25 * s.first.exposed), renown: bounded(20 + 6 * s.first.score) };
+    }
+    return { state: s, unit, at, pathFor, campEmpty, objectives, achieved, guide, legal, preview, commit, canEnd, endTurn, start, next, requestAssist, cancelAssist, assist, result };
+  }
+
+
+w.GameplayNative={cards:createDeckModel,cardDefs:CARDS,starter:STARTER_DECK,rewards:REWARDS,stages:STAGES,tactics:createBattleModel,terrain,coord,guide:GUIDE};})(window);</script>

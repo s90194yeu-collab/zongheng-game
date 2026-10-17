@@ -1,0 +1,19 @@
+{
+  "name": "zongheng-game",
+  "private": true,
+  "version": "4.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "preview": "node scripts/serve.cjs",
+    "check": "node scripts/check.cjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "acorn": "8.19.0",
+    "esbuild": "0.28.2",
+    "three": "0.180.0"
+  },
+  "engines": { "node": ">=22" }
+}

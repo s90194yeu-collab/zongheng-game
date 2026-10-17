@@ -1,0 +1,2222 @@
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Art_kit.html
+ 版本：v0.1.6（2026-10-13）
+ 依賴：無（Eng_Story 會自動帶入；伺服器 Code.gs v0.1.5 起，頁面 include Eng_Story 時會先插入本檔）
+ 說明：全遊戲共用的美術工具，掛在 window.ART。
+   1. Q 版人物立繪（程式畫的 SVG，不用圖片檔）
+      ART.portrait(人物, { expr, bust })   人物就是劇本 CHARACTERS 裡的一筆 { id, name, glyph, color, title, art }
+      ART.chibi(外型, { expr, bust })       直接用外型畫
+      ART.specOf(人物)                      查外型：人物的 art 欄位 → 內建名冊（名字或代碼）→ 依名字與頭銜自動猜
+   2. 精細場景（1600×1000，貼齊底部，手機只看得到中間）
+      ART.scene(代碼, { tod, weather, banner, glyph, time })
+      ART.hasScene(代碼)、ART.sceneKeys
+ 人物外型（art 欄位，全部選填）：
+   state     國別衣色：周 晉 秦 楚 齊 魯 鄭 宋 衛 陳 蔡 吳 越 燕 趙 魏 韓 漢 中山 虞 虢 曹 狄 隨 戎 民 卒
+   robe／trim／belt   衣袍、衣緣、腰帶的色碼（state 之外想自訂時用）
+   hat       guan 冠｜mian 冕（王侯）｜jin 頭巾｜helmet 盔（紅纓）｜kui 鐵胄｜band 抹額｜li 斗笠｜feng 后妃高髻｜loose 披髮｜none 只有髮髻
+   grand     true：天子、皇帝的大冕          hatColor：冠帽顏色      plume：盔纓顏色
+   armor     true：穿甲（armorColor 甲色）   big：true 身材魁梧
+   beard     0 無｜1 八字鬍｜2 加山羊鬍｜3 長鬚｜4 滿臉虯髯
+   old       true：白髮老人                  female：true 女性（accent：髮飾顏色）
+   brow      'thick' 濃眉                    eyes：'sharp' 細長眼（精明、陰沉）｜'double' 重瞳
+   skin      膚色（預設 #ffe2c6；風吹日曬 #f3cfa6）   scar：true 臉上有刺字或傷痕
+   prop      bi 玉璧｜jue 玉玦｜scroll 竹簡｜map 地圖卷｜sword 佩劍｜ji 戟｜staff 杖｜oar 槳｜shield 盾｜bow 弓
+             cup 酒爵｜mirror 銅鏡｜hu 笏｜tally 虎符｜brush 筆｜zhu 筑｜clod 土塊
+   pose      'gong' 拱手（預設）｜'side' 雙手垂放      jade：false 不佩玉       motif：true 袍上金色團紋
+   expr      預設表情
+ 表情（expr）：normal 平常｜happy 開心｜surprised 驚訝｜sad 難過｜angry 生氣｜serious 嚴肅｜worried 擔心｜smirk 冷笑
+ 場景代碼：palace 宮殿外觀｜hall 殿內（court、throne）｜tent 軍帳內｜banquet 宴席｜camp 軍營｜field 原野｜road 道路
+           mountain 山與棧道｜river 江河渡口（ferry）｜night 夜晚城牆（wall）｜rain 雨｜city 城門（gate）｜market 市集
+           academy 學宮、書齋（school、study）｜village 村落｜battlefield 戰場（battle）｜garden 宮苑｜room 民宅室內（home）
+           cell 囚室（prison）｜shrine 叢祠、宗廟外（temple）｜forest 樹林｜snow 雪地、冰河（winter）
+ 時段（tod）：dawn 黎明｜day 白天｜dusk 黃昏｜night 夜。沒指定時，會從地點牌的時間文字猜（「夜」「黃昏」「黎明」……）。
+ 天氣（weather）：rain｜snow｜mist｜embers 火星｜fireflies 螢火｜leaves 落葉｜petals 花瓣｜none
+ v0.1.0：初版。春秋、戰國、楚漢約 230 位人物的名冊；22 個場景。
+ v0.1.1：補春秋篇第 4 話〈重耳流亡〉的人物（晉獻公、驪姬、宮之奇、虞公、寺人披、懷嬴、介之推之母……共 28 位）；國別加虞、虢、曹、狄。
+ v0.1.2：補春秋篇第 3 話〈齊桓稱霸〉的人物（公子小白、公子糾、魯莊公、曹劌、曹沫、屈完、宰孔……共 14 位）；齊桓公分壯年（qihuan）與晚年（qihuanold）兩種造型。
+ v0.1.3：補天下大地圖「楚漢逐鹿」的十八路諸侯與將相（司馬欣、魏豹、臧荼、田榮、田橫、吳芮、蒯通……共 34 位）。
+ v0.1.4：補春秋篇外包九話的人物（周幽王、褒姒、鄭莊公、武姜、季梁、子魚、向戌、子產、季札、伍子胥、孫武、
+         子路、子貢、顏回、老子、勾踐、夫差、范蠡……共 77 位）；國別加隨、戎。
+ v0.1.5：效能。循環動畫改成每 0.25 秒跳一格，全頁對齊同一個節拍（平常每秒只重畫 4 次，原本 60 次）；
+         小頭像（bust）不做呼吸擺動；較慢的裝置自動進入省電模式（ART.lite：只留眨眼、嘴型）。
+         網址加 ?lite=1 強制省電、?lite=0 強制完整。
+============================================================
+-->
+<style>
+  .ck { display: block; width: 100%; height: auto; overflow: visible; }
+  /* v0.1.5 效能：循環動畫改成「一格一格跳」，每格 0.25 秒（說話的嘴型、雨 0.125 秒），
+     ART 會把全頁的動畫對齊同一個節拍，畫面平常每秒只重畫 4 次（原本 60 次）。 */
+  .ck-eye { transform-box: view-box; animation: ck-blink 4.5s step-end infinite; }
+  .ck-breathe { animation: ck-breathe 3.5s steps(7) infinite; }
+  .ck-m2 { opacity: 0; }
+  .is-talk .ck-m2 { animation: ck-talk .25s steps(1) infinite; }
+  .is-talk .ck-m1 { animation: ck-talk .25s steps(1) infinite reverse; }
+  .ck-dangle { transform-box: view-box; animation: sc-sway 2s steps(4) infinite; }
+  .ck--bust .ck-breathe, .ck--bust .ck-dangle { animation: none; }   /* 對話框、名單裡的小頭像不晃 */
+  .sc { display: block; }
+  .sc-cloud { animation: sc-drift 40s steps(160) infinite alternate; }
+  .sc-cloud--slow { animation-duration: 70s; animation-timing-function: steps(280); }
+  .sc-sway { transform-box: view-box; animation: sc-sway 5s steps(10) infinite; }
+  .sc-sway--slow { animation-duration: 7s; animation-timing-function: steps(14); }
+  .sc-shimmer { animation: sc-shimmer 2.5s steps(5) infinite; }
+  .sc-twinkle { animation: sc-shimmer 4s steps(8) infinite; }
+  .sc-leaf { transform-box: fill-box; animation: sc-fall 8s steps(16) infinite; }
+  .sc-birds { animation: sc-fly 38s steps(152) infinite; }
+  .sc-wave { transform-box: view-box; animation: sc-wave 2.5s steps(5) infinite; }
+  .sc-flicker { transform-box: view-box; animation: sc-flicker .5s steps(2) infinite alternate; }
+  .sc-smoke { animation: sc-rise 9s steps(36) infinite alternate; }
+  .sc-bob { animation: sc-bob 4s steps(8) infinite; }
+  .sc-rain { animation: sc-rain .5s steps(4) infinite; }
+  .sc-snow { animation: sc-snow 9s steps(36) infinite; }
+  .sc-embers circle { animation: sc-ember 8s steps(16) infinite; }
+  .sc-fireflies circle { animation: sc-firefly 5s steps(10) infinite; }
+  @keyframes ck-blink { 0% { transform: scaleY(1); } 94.4444% { transform: scaleY(.1); } }
+  @keyframes ck-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1.6px); } }
+  @keyframes ck-talk { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes sc-drift { from { transform: translateX(0); } to { transform: translateX(60px); } }
+  @keyframes sc-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+  @keyframes sc-shimmer { 0%, 100% { opacity: .9; } 50% { opacity: .55; } }
+  @keyframes sc-fall { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 50% { transform: translate(130px, 190px) rotate(270deg); opacity: 1; } 100% { transform: translate(260px, 380px) rotate(540deg); opacity: 0; } }
+  @keyframes sc-fly { from { transform: translate(-200px, 20px); } to { transform: translate(900px, -60px); } }
+  @keyframes sc-wave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-3deg) scaleX(.96); } }
+  @keyframes sc-flicker { from { transform: scale(1, 1); opacity: 1; } to { transform: scale(.92, 1.08); opacity: .85; } }
+  @keyframes sc-rise { from { transform: translateY(0); opacity: .9; } to { transform: translateY(-30px); opacity: .5; } }
+  @keyframes sc-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+  @keyframes sc-rain { from { transform: translate(0, -60px); } to { transform: translate(-16px, 0); } }
+  @keyframes sc-snow { from { transform: translate(0, -100px); } to { transform: translate(40px, 100px); } }
+  @keyframes sc-ember { 0% { transform: translate(0, 0); opacity: 0; } 50% { transform: translate(20px, -210px); opacity: 1; } 100% { transform: translate(40px, -420px); opacity: 0; } }
+  @keyframes sc-firefly { 0%, 100% { opacity: .1; transform: translate(0, 0); } 50% { opacity: 1; transform: translate(14px, -10px); } }
+  /* 省電模式（html.zh-lite）：較慢的裝置自動開啟（ART.lite），只留眨眼與說話的嘴型 */
+  .zh-lite .ck-breathe, .zh-lite .ck-dangle, .zh-lite .sc-cloud, .zh-lite .sc-sway, .zh-lite .sc-shimmer, .zh-lite .sc-twinkle, .zh-lite .sc-leaf,
+  .zh-lite .sc-birds, .zh-lite .sc-wave, .zh-lite .sc-flicker, .zh-lite .sc-smoke, .zh-lite .sc-bob, .zh-lite .sc-rain, .zh-lite .sc-snow,
+  .zh-lite .sc-embers circle, .zh-lite .sc-fireflies circle { animation: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .ck-eye, .ck-breathe, .ck-dangle, .sc-cloud, .sc-sway, .sc-shimmer, .sc-twinkle, .sc-leaf, .sc-birds, .sc-wave, .sc-flicker,
+    .sc-smoke, .sc-bob, .sc-rain, .sc-snow, .sc-embers circle, .sc-fireflies circle, .is-talk .ck-m2, .is-talk .ck-m1 { animation: none !important; }
+  }
+</style>
+<script>
+(function (global) {
+  'use strict';
+  if (global.ART && global.ART.version) return;   // 已經載入過
+  // ═══════════════════════════ 小工具 ═══════════════════════════
+
+  const LINE = '#3b2620';
+  let UID = 0;
+
+  function hexRgb(hex) {
+    let h = String(hex || '#888888').trim().replace('#', '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    const n = parseInt(h.slice(0, 6), 16);
+    if (isNaN(n)) return [136, 136, 136];
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function rgbHex(r, g, b) {
+    const f = v => Math.max(0, Math.min(255, Math.round(v)));
+    return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+  }
+  /** 變亮（amt > 0）或變暗（amt < 0），amt 介於 -1～1 */
+  function shade(hex, amt) {
+    const c = hexRgb(hex);
+    const f = v => amt < 0 ? v * (1 + amt) : v + (255 - v) * amt;
+    return rgbHex(f(c[0]), f(c[1]), f(c[2]));
+  }
+  /** 兩色混合，t = 0 為 a，1 為 b */
+  function mix(a, b, t) {
+    const x = hexRgb(a), y = hexRgb(b);
+    return rgbHex(x[0] + (y[0] - x[0]) * t, x[1] + (y[1] - x[1]) * t, x[2] + (y[2] - x[2]) * t);
+  }
+  function toHsl(hex) {
+    const c = hexRgb(hex).map(v => v / 255);
+    const max = Math.max(c[0], c[1], c[2]), min = Math.min(c[0], c[1], c[2]);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === c[0]) h = (c[1] - c[2]) / d + (c[1] < c[2] ? 6 : 0);
+      else if (max === c[1]) h = (c[2] - c[0]) / d + 2;
+      else h = (c[0] - c[1]) / d + 4;
+      h /= 6;
+    }
+    return [h, s, l];
+  }
+  function fromHsl(h, s, l) {
+    if (!s) return rgbHex(l * 255, l * 255, l * 255);
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const f = t => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    return rgbHex(f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255);
+  }
+  /** 把任何顏色調成「衣袍」的深淺：亮度約 0.36～0.46，彩度不超過 0.55 */
+  function robeTone(hex) {
+    const c = toHsl(hex);
+    return fromHsl(c[0], Math.min(c[1], 0.55), Math.max(0.3, Math.min(0.46, c[2] * 0.72)));
+  }
+  function hash(str) {
+    let h = 2166136261;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  function rng(seed) {
+    let x = (seed >>> 0) % 2147483646 + 1;
+    return () => { x = (x * 16807) % 2147483647; return (x - 1) / 2147483646; };
+  }
+  const mirror = d => d.replace(/(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)/g, (m, x, y) => (200 - Number(x)) + ' ' + y);
+  const P = (d, fill, sw, extra) => '<path d="' + d + '" fill="' + fill + '"' + (sw ? ' stroke="' + LINE + '" stroke-width="' + sw + '"' : '') + (extra || '') + '/>';
+
+
+  // ═══════════════════════════ 五官 ═══════════════════════════
+
+  function eye(cx, cy, s, kind) {
+    const dark = '#2a1a17';
+    const side = cx < 100 ? -1 : 1;
+    if (kind === 'happy') return '<path d="M' + (cx - 10) + ' ' + (cy + 3) + ' Q' + cx + ' ' + (cy - 10) + ' ' + (cx + 10) + ' ' + (cy + 3) + '" fill="none" stroke="' + dark + '" stroke-width="3.6" stroke-linecap="round"/>';
+    if (kind === 'surprised') {
+      return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="10.5" ry="12.5" fill="#fffaf2" stroke="' + dark + '" stroke-width="2.6"/>' +
+        '<circle cx="' + cx + '" cy="' + (cy + 1) + '" r="4.6" fill="' + dark + '"/><circle cx="' + (cx + 1.6) + '" cy="' + (cy - 1) + '" r="1.6" fill="#fff"/>';
+    }
+    let h = '<g class="ck-eye" style="transform-origin:' + cx + 'px ' + cy + 'px">';
+    if (s.eyes === 'sharp') {
+      // 細長、上眼瞼斜：精明或陰沉的人
+      h += '<path d="M' + (cx - 11) + ' ' + (cy + 1) + ' Q' + cx + ' ' + (cy - 9) + ' ' + (cx + 11) + ' ' + (cy - 3) + ' Q' + (cx + 4) + ' ' + (cy + 8) + ' ' + (cx - 11) + ' ' + (cy + 1) + ' Z" fill="#fffaf2"/>' +
+        '<ellipse cx="' + (cx + side * 1.5) + '" cy="' + (cy) + '" rx="5.4" ry="6" fill="' + s.eyeColor + '"/><circle cx="' + (cx + side * 1.5) + '" cy="' + cy + '" r="2.8" fill="' + dark + '"/>' +
+        '<circle cx="' + (cx + side * 1.5 + 2) + '" cy="' + (cy - 2.5) + '" r="1.6" fill="#fff"/>' +
+        '<path d="M' + (cx - 12) + ' ' + (cy + 1) + ' Q' + cx + ' ' + (cy - 10.5) + ' ' + (cx + 12.5) + ' ' + (cy - 3.5) + '" fill="none" stroke="' + dark + '" stroke-width="3.6" stroke-linecap="round"/>';
+    } else {
+      h += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="10" ry="12.5" fill="' + dark + '"/>';
+      if (s.eyes === 'double') {
+        // 重瞳：一眼兩個瞳仁
+        h += '<ellipse cx="' + cx + '" cy="' + (cy + 3) + '" rx="8" ry="8.4" fill="' + s.eyeColor + '"/>' +
+          '<circle cx="' + (cx - 3.2) + '" cy="' + (cy + 4) + '" r="2.7" fill="' + dark + '"/><circle cx="' + (cx + 3.2) + '" cy="' + (cy + 4) + '" r="2.7" fill="' + dark + '"/>';
+      } else {
+        h += '<ellipse cx="' + cx + '" cy="' + (cy + 3.5) + '" rx="7.2" ry="8" fill="' + s.eyeColor + '"/>' +
+          '<ellipse cx="' + cx + '" cy="' + (cy + 6) + '" rx="5" ry="4" fill="' + shade(s.eyeColor, 0.35) + '" opacity=".7"/>';
+      }
+      h += '<circle cx="' + (cx + 3.4) + '" cy="' + (cy - 4.6) + '" r="4" fill="#fff"/>' +
+        '<circle cx="' + (cx - 3.6) + '" cy="' + (cy + 5) + '" r="1.8" fill="#fff" opacity=".9"/>' +
+        '<path d="M' + (cx - 11.5) + ' ' + (cy - 8) + ' Q' + cx + ' ' + (cy - 17.5) + ' ' + (cx + 11.5) + ' ' + (cy - 8) + '" fill="none" stroke="' + dark + '" stroke-width="3.4" stroke-linecap="round"/>';
+    }
+    if (s.female) h += '<path d="M' + (cx + side * 10) + ' ' + (cy - 9) + ' l' + (side * 5) + ' -4" stroke="' + dark + '" stroke-width="2.6" stroke-linecap="round"/>';
+    if (kind === 'angry') {
+      const k = -side;
+      h += '<path d="M' + (cx - 13) + ' ' + (cy - 15) + ' L' + (cx + 13) + ' ' + (cy - 15) + ' L' + (cx + 13 * k) + ' ' + (cy - 5) + ' Z" fill="' + s.skin + '"/>' +
+        '<path d="M' + (cx - 11 * k) + ' ' + (cy - 12) + ' L' + (cx + 11 * k) + ' ' + (cy - 5) + '" stroke="' + dark + '" stroke-width="3" stroke-linecap="round"/>';
+    }
+    if (kind === 'worried' || kind === 'sad') {
+      // 下垂的上眼瞼
+      h += '<path d="M' + (cx - 12) + ' ' + (cy - 14) + ' L' + (cx + 12) + ' ' + (cy - 14) + ' L' + (cx + 12 * side) + ' ' + (cy - 7) + ' Z" fill="' + s.skin + '"/>';
+    }
+    return h + '</g>';
+  }
+
+  function brows(s, kind) {
+    const c = s.old ? '#e8e2d6' : shade(s.hair, -0.1);
+    const thick = s.brow === 'thick';
+    const w = s.old ? 4.2 : thick ? 5.6 : 3.2;
+    const L = {
+      normal: 'M63 98 Q74 92 86 96', happy: 'M63 96 Q74 89 86 94', serious: 'M63 98 L86 98',
+      angry: 'M63 92 L87 101', sad: 'M63 101 L86 93', worried: 'M63 100 Q72 94 86 92', surprised: 'M63 90 Q74 83 86 88',
+      smirk: 'M63 97 Q74 92 86 95'
+    }[kind] || 'M63 98 Q74 92 86 96';
+    const R = kind === 'smirk' ? 'M137 93 Q126 92 114 99' : mirror(L);
+    let h = '<path d="' + L + '" fill="none" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round"/>' +
+      '<path d="' + R + '" fill="none" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round"/>';
+    if (s.old) h += '<path d="M62 98 q-4 4 -3 9 M138 98 q4 4 3 9" stroke="' + c + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    return h;
+  }
+
+  function mouth(kind) {
+    const c = '#6b2a26';
+    switch (kind) {
+      case 'happy': return '<path d="M90 139 Q100 154 110 139 Z" fill="#7a2c2c" stroke="' + c + '" stroke-width="1.6" stroke-linejoin="round"/><path d="M94.5 147 Q100 151.5 105.5 147 Q100 143.5 94.5 147" fill="#e9817a"/>';
+      case 'sad': return '<path d="M93 146 Q100 140 107 146" fill="none" stroke="' + c + '" stroke-width="2.6" stroke-linecap="round"/>';
+      case 'worried': return '<path d="M93 144 Q97 141 100 143 Q104 145 107 142" fill="none" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round"/>';
+      case 'angry': return '<path d="M92 147 Q100 140 108 147 Z" fill="#7a2c2c" stroke="' + c + '" stroke-width="1.6"/><path d="M94 144.5 L106 144.5" stroke="#fff" stroke-width="2"/>';
+      case 'surprised': return '<ellipse cx="100" cy="145" rx="4.6" ry="5.8" fill="#7a2c2c" stroke="' + c + '" stroke-width="1.4"/>';
+      case 'serious': return '<path d="M94 143 L106 143" stroke="' + c + '" stroke-width="2.6" stroke-linecap="round"/>';
+      case 'smirk': return '<path d="M92 143 Q101 146 108 138" fill="none" stroke="' + c + '" stroke-width="2.6" stroke-linecap="round"/>';
+      default: return '<g class="ck-mouth"><path class="ck-m1" d="M93 141 Q100 147 107 141" fill="none" stroke="' + c + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<ellipse class="ck-m2" cx="100" cy="143" rx="4.4" ry="3.6" fill="#7a2c2c"/></g>';
+    }
+  }
+
+
+  // ═══════════════════════════ 頭髮與冠帽 ═══════════════════════════
+
+  const HAIR_CAP = 'M37 110 C32 58 66 31 100 31 C134 31 168 58 163 110 C158 93 150 81 138 75 C130 85 116 87 106 77 C103 83 97 83 94 77 C84 87 70 85 62 75 C50 81 42 93 37 110 Z';
+  const FRINGE_F = 'M37 110 C32 56 66 31 100 31 C134 31 168 56 163 110 C152 97 142 93 134 99 C127 88 117 85 109 93 C105 85 95 85 91 93 C83 85 73 88 66 99 C58 93 48 97 37 110 Z';
+  const LOCK_L = 'M40 98 C34 120 38 142 48 152 C47 134 49 118 55 104 Z';
+  const FACE = 'M38 108 C38 62 68 42 100 42 C132 42 162 62 162 108 C162 146 136 170 100 170 C64 170 38 146 38 108 Z';
+
+  function hairBack(s) {
+    const hb = s.old ? '#cfc9be' : shade(s.hair, -0.12);
+    if (s.female) {
+      return '<path d="M44 100 C30 168 34 226 50 262 C70 270 130 270 150 262 C166 226 170 168 156 100 Z" fill="' + hb + '" stroke="' + LINE + '" stroke-width="2.4"/>';
+    }
+    if (s.hat === 'none' || s.hat === 'guan' || s.hat === 'mian' || s.hat === 'band') {
+      return '<circle cx="100" cy="30" r="16" fill="' + (s.old ? '#d9d4ca' : s.hair) + '" stroke="' + LINE + '" stroke-width="2.4"/>';
+    }
+    if (s.hat === 'loose') {
+      // 披髮（隱士、狂士）
+      return '<path d="M42 96 C34 150 40 196 56 214 C70 206 130 206 144 214 C160 196 166 150 158 96 Z" fill="' + hb + '" stroke="' + LINE + '" stroke-width="2.4"/>';
+    }
+    return '';
+  }
+
+  function hairFront(s) {
+    const hc = s.old ? '#d9d4ca' : s.hair;
+    let h = P(s.female ? FRINGE_F : HAIR_CAP, hc, 2.4, ' stroke-linejoin="round"') +
+      P(LOCK_L, hc, 2.2) + P(mirror(LOCK_L), hc, 2.2) +
+      '<path d="M58 54 C78 41 122 41 142 54" fill="none" stroke="' + shade(hc, 0.35) + '" stroke-width="5" stroke-linecap="round" opacity=".55"/>';
+    if (s.female && s.hat !== 'feng') {
+      h += '<circle cx="74" cy="36" r="15" fill="' + hc + '" stroke="' + LINE + '" stroke-width="2.4"/><circle cx="126" cy="36" r="15" fill="' + hc + '" stroke="' + LINE + '" stroke-width="2.4"/>' +
+        '<path d="M126 22 l14 -10" stroke="#d8b24a" stroke-width="3" stroke-linecap="round"/><circle cx="141" cy="11" r="3.6" fill="#7fb8a0" stroke="' + LINE + '" stroke-width="1.2"/>' +
+        '<g class="ck-dangle" style="transform-origin:141px 12px"><path d="M141 14 v14" stroke="#d8b24a" stroke-width="1.4"/><circle cx="141" cy="30" r="3" fill="#c0392b"/><circle cx="141" cy="37" r="2.4" fill="#e8d9a8"/></g>' +
+        '<circle cx="64" cy="44" r="4" fill="' + (s.accent || '#c0392b') + '" stroke="' + LINE + '" stroke-width="1.2"/>';
+    }
+    if (s.hat === 'loose') {
+      h += '<path d="M44 92 C40 118 42 140 50 156 M156 92 C160 118 158 140 150 156" stroke="' + shade(hc, -0.2) + '" stroke-width="2" fill="none" opacity=".6"/>';
+    }
+    return h;
+  }
+
+  function hat(s) {
+    const c = s.hatColor || '#3b2a20';
+    switch (s.hat) {
+      case 'guan':
+        return P('M85 36 C84 22 91 11 100 11 C109 11 116 22 115 36 Z', c, 2.4, ' stroke-linejoin="round"') +
+          '<path d="M86 31 H114" stroke="' + shade(c, 0.3) + '" stroke-width="2.4"/>' +
+          '<path d="M73 23 H127" stroke="#e2cf94" stroke-width="3.2" stroke-linecap="round"/><circle cx="73" cy="23" r="3.2" fill="#7fb8a0" stroke="' + LINE + '" stroke-width="1.2"/><circle cx="127" cy="23" r="3.2" fill="#7fb8a0" stroke="' + LINE + '" stroke-width="1.2"/>';
+      case 'mian': {
+        const grand = !!s.grand;
+        const board = grand ? 'M44 16 L156 9 L158 20 L46 27 Z' : 'M50 17 L150 11 L152 20 L52 26 Z';
+        let h = P('M84 38 C84 26 91 19 100 19 C109 19 116 26 116 38 Z', c, 2.4) +
+          P(board, c, 2.4, ' stroke-linejoin="round"') +
+          '<path d="' + (grand ? 'M46 24 L157 17' : 'M52 23 L151 17') + '" stroke="' + (grand ? '#d8b24a' : '#c0392b') + '" stroke-width="' + (grand ? 2.6 : 2) + '"/>';
+        const xs = grand ? [50, 60, 70, 80, 120, 130, 140, 150] : [60, 72, 84, 116, 128, 140];
+        xs.forEach((x, i) => {
+          const y0 = (grand ? 25 : 24) - (x - 50) * (grand ? 0.062 : 0.06);
+          const n = grand ? 5 : 4;
+          h += '<path d="M' + x + ' ' + y0 + ' V' + (y0 + 6 + n * 6.5) + '" stroke="#e2cf94" stroke-width="1.2"/>';
+          for (let k = 0; k < n; k++) h += '<circle cx="' + x + '" cy="' + (y0 + 6 + k * 6.5) + '" r="2.5" fill="' + ['#7fb8a0', '#c0392b', '#f3ead2', '#d8b24a'][(k + i) % 4] + '"/>';
+        });
+        if (grand) h += '<path d="M100 19 V11" stroke="#d8b24a" stroke-width="3"/><circle cx="100" cy="9" r="4" fill="#d8b24a" stroke="' + LINE + '" stroke-width="1.2"/>';
+        return h;
+      }
+      case 'jin':
+        return P('M38 96 C38 50 70 29 100 29 C130 29 162 50 162 96 C144 82 122 77 100 77 C78 77 56 82 38 96 Z', c, 2.4, ' stroke-linejoin="round"') +
+          '<path d="M50 74 C80 60 120 60 150 74" stroke="' + shade(c, -0.18) + '" stroke-width="3" fill="none"/>' +
+          P('M100 30 C92 18 84 16 80 22 C86 26 94 28 100 30 C106 28 114 26 120 22 C116 16 108 18 100 30 Z', c, 2.2);
+      case 'helmet': {
+        const pl = s.plume || '#c0392b';
+        return P('M36 100 C36 46 68 24 100 24 C132 24 164 46 164 100 L152 102 C148 70 128 54 100 54 C72 54 52 70 48 102 Z', c, 2.4, ' stroke-linejoin="round"') +
+          '<path d="M100 24 V54" stroke="' + shade(c, 0.35) + '" stroke-width="3"/>' +
+          '<path d="M58 66 C78 58 122 58 142 66" stroke="' + shade(c, 0.25) + '" stroke-width="2.4" fill="none" opacity=".8"/>' +
+          P('M100 24 C96 8 104 0 112 2 C106 8 104 14 100 24 Z', pl, 1.8) +
+          '<path d="M100 24 C92 10 84 8 80 12 C88 14 94 18 100 24 Z" fill="' + shade(pl, -0.2) + '" stroke="' + LINE + '" stroke-width="1.6"/>';
+      }
+      case 'kui': {
+        // 鐵胄：分片的盔頂＋護頰
+        let h = P('M34 104 C34 48 66 22 100 22 C134 22 166 48 166 104 L156 106 C152 72 130 56 100 56 C70 56 48 72 44 106 Z', c, 2.4, ' stroke-linejoin="round"');
+        [70, 85, 100, 115, 130].forEach(x => { h += '<path d="M' + x + ' ' + (x === 100 ? 23 : 27) + ' Q' + (x + (x - 100) * 0.25) + ' 40 ' + (x + (x - 100) * 0.35) + ' 58" stroke="' + shade(c, 0.3) + '" stroke-width="1.8" fill="none" opacity=".8"/>'; });
+        h += P('M36 100 C30 120 34 140 44 152 L54 146 C50 132 48 118 48 104 Z', shade(c, 0.08), 2.2) + P(mirror('M36 100 C30 120 34 140 44 152 L54 146 C50 132 48 118 48 104 Z'), shade(c, 0.08), 2.2);
+        h += '<circle cx="100" cy="21" r="5" fill="' + shade(c, 0.4) + '" stroke="' + LINE + '" stroke-width="1.6"/>';
+        return h;
+      }
+      case 'band': {
+        // 頭巾（紅巾、士卒的抹額）
+        const bc = s.hatColor || '#b8352b';
+        return '<path d="M40 82 C70 70 130 70 160 82 L160 93 C130 82 70 82 40 93 Z" fill="' + bc + '" stroke="' + LINE + '" stroke-width="2.2"/>' +
+          '<path d="M158 86 C170 92 176 104 172 116 C166 108 160 100 154 94 Z" fill="' + bc + '" stroke="' + LINE + '" stroke-width="2"/>' +
+          '<path d="M93 18 H107" stroke="#e2cf94" stroke-width="3" stroke-linecap="round"/>';
+      }
+      case 'li':
+        // 斗笠
+        return '<path d="M14 84 L100 22 L186 84 C150 92 50 92 14 84 Z" fill="' + (s.hatColor || '#c9a45a') + '" stroke="' + LINE + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+          '<path d="M40 82 L100 32 M70 86 L100 30 M130 86 L100 30 M160 82 L100 32" stroke="#8a6a36" stroke-width="1.4" opacity=".7"/>' +
+          '<path d="M18 84 C52 92 148 92 182 84" stroke="#8a6a36" stroke-width="2" fill="none"/>' +
+          '<path d="M44 94 C46 130 54 156 60 168 M156 94 C154 130 146 156 140 168" stroke="#6b4a2c" stroke-width="1.4" fill="none"/>';
+      case 'feng': {
+        // 后妃的高髻與金飾
+        const hc = s.hair;
+        let h = '<path d="M70 44 C62 14 86 0 100 2 C114 0 138 14 130 44 C120 34 80 34 70 44 Z" fill="' + hc + '" stroke="' + LINE + '" stroke-width="2.4"/>' +
+          '<path d="M76 30 C88 20 112 20 124 30" stroke="#d8b24a" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+          '<circle cx="100" cy="21" r="5" fill="' + (s.accent || '#c0392b') + '" stroke="' + LINE + '" stroke-width="1.4"/>';
+        [[72, 32, -1], [128, 32, 1]].forEach(p => {
+          h += '<path d="M' + p[0] + ' ' + p[1] + ' l' + (p[2] * 22) + ' -12" stroke="#d8b24a" stroke-width="3" stroke-linecap="round"/>' +
+            '<g class="ck-dangle" style="transform-origin:' + (p[0] + p[2] * 22) + 'px ' + (p[1] - 12) + 'px"><path d="M' + (p[0] + p[2] * 22) + ' ' + (p[1] - 12) + ' v16" stroke="#d8b24a" stroke-width="1.4"/><circle cx="' + (p[0] + p[2] * 22) + '" cy="' + (p[1] + 6) + '" r="3" fill="#7fb8a0"/><circle cx="' + (p[0] + p[2] * 22) + '" cy="' + (p[1] + 12) + '" r="2.4" fill="#f3ead2"/></g>';
+        });
+        return h;
+      }
+      case 'loose':
+        return '<path d="M78 40 C90 34 110 34 122 40" stroke="' + shade(s.hair, 0.3) + '" stroke-width="3" fill="none" opacity=".6"/>';
+      default:
+        return '<path d="M93 18 H107" stroke="#e2cf94" stroke-width="3" stroke-linecap="round"/>';
+    }
+  }
+
+  function beard(s) {
+    if (!s.beard) return '';
+    const c = s.old ? '#e9e4da' : s.hair;
+    if (s.beard >= 4) {
+      // 滿臉虯髯
+      return '<path d="M46 128 C52 150 68 170 84 178 C90 192 96 198 100 200 C104 198 110 192 116 178 C132 170 148 150 154 128 C146 142 136 150 124 152 C116 146 108 148 100 150 C92 148 84 146 76 152 C64 150 54 142 46 128 Z" fill="' + c + '" stroke="' + LINE + '" stroke-width="2"/>' +
+        '<path d="M62 150 l4 8 M76 162 l3 9 M124 162 l-3 9 M138 150 l-4 8 M100 170 v14" stroke="' + shade(c, 0.3) + '" stroke-width="1.6" opacity=".7"/>' +
+        '<path d="M84 136 C90 130 97 132 100 136 C103 132 110 130 116 136 C110 142 104 141 100 139 C96 141 90 142 84 136 Z" fill="' + c + '" stroke="' + LINE + '" stroke-width="1.6"/>';
+    }
+    let h = '<path d="M86 136 C91 132 97 133 100 137 C103 133 109 132 114 136 C111 141 104 141 100 139 C96 141 89 141 86 136 Z" fill="' + c + '" stroke="' + LINE + '" stroke-width="1.6"/>';
+    if (s.beard >= 2) {
+      const len = s.beard >= 3 ? 214 : 190;
+      h += '<path d="M88 154 C90 172 95 ' + (len - 12) + ' 100 ' + len + ' C105 ' + (len - 12) + ' 110 172 112 154 C104 159 96 159 88 154 Z" fill="' + c + '" stroke="' + LINE + '" stroke-width="2"/>' +
+        '<path d="M100 160 V' + (len - 10) + '" stroke="' + shade(c, -0.15) + '" stroke-width="1.4" opacity=".7"/>';
+    }
+    return h;
+  }
+
+
+  // ═══════════════════════════ 身體、衣袍、鎧甲、道具 ═══════════════════════════
+
+  const ROBE = 'M66 178 C78 166 122 166 134 178 L156 268 C150 280 50 280 44 268 Z';
+  const SLEEVE_GONG = 'M70 180 C48 188 36 216 40 242 C44 258 64 262 80 250 C92 240 98 222 100 206 L86 192 Z';
+  const SLEEVE_SIDE = 'M70 180 C52 188 42 214 44 248 C45 260 58 266 72 262 C78 250 80 224 82 198 Z';
+  const TORSO = 'M64 178 C78 167 122 167 136 178 L143 226 C120 234 80 234 57 226 Z';
+  const PAULDRON = 'M70 176 C52 176 40 190 40 210 C48 210 58 206 66 200 C72 194 76 186 76 180 Z';
+
+  // 立在身旁的長物（在袖子後面畫）
+  function backProp(s) {
+    const L = LINE;
+    switch (s.prop) {
+      case 'sword':
+        return '<g transform="rotate(-24 150 232)"><rect x="146" y="196" width="9" height="74" rx="3" fill="#4a2f22" stroke="' + L + '" stroke-width="2"/><rect x="140" y="190" width="21" height="7" rx="2" fill="#d8b24a" stroke="' + L + '" stroke-width="1.6"/><rect x="147" y="170" width="7" height="21" rx="2" fill="#6b4a2c" stroke="' + L + '" stroke-width="1.6"/><circle cx="150.5" cy="168" r="4.6" fill="#d8b24a" stroke="' + L + '" stroke-width="1.6"/></g>';
+      case 'ji':
+        // 戟：長柄＋戈刃＋矛頭
+        return '<g><rect x="150" y="40" width="7" height="244" rx="3" fill="#6b4a2c" stroke="' + L + '" stroke-width="2"/>' +
+          '<path d="M153.5 4 L160 30 L153.5 42 L147 30 Z" fill="#c9ced6" stroke="' + L + '" stroke-width="2" stroke-linejoin="round"/>' +
+          '<path d="M157 50 L186 42 L188 50 L160 60 Z" fill="#c9ced6" stroke="' + L + '" stroke-width="2" stroke-linejoin="round"/>' +
+          '<path d="M150 46 h7" stroke="#c0392b" stroke-width="5"/><path d="M152 50 q-8 10 -4 22 M156 50 q-4 12 2 22" stroke="#c0392b" stroke-width="2.4" fill="none"/></g>';
+      case 'staff':
+        return '<g><path d="M154 70 C152 140 156 220 152 284" stroke="#6b4a2c" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M154 70 C152 140 156 220 152 284" stroke="#8a6440" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+          '<path d="M150 72 C142 60 150 50 160 56 C166 62 160 72 154 70 Z" fill="#6b4a2c" stroke="' + L + '" stroke-width="2"/></g>';
+      case 'oar':
+        return '<g><path d="M156 60 L150 250" stroke="#8a6440" stroke-width="6" stroke-linecap="round"/><path d="M146 240 C138 262 144 284 150 288 C158 284 162 262 156 240 Z" fill="#a07a50" stroke="' + L + '" stroke-width="2"/></g>';
+      default:
+        return '';
+    }
+  }
+
+  // 拿在手上的東西（在袖子前面畫）
+  function handProp(s) {
+    const L = LINE;
+    switch (s.prop) {
+      case 'bi':
+        return '<circle cx="100" cy="198" r="17" fill="#8cc4a8" stroke="' + L + '" stroke-width="2.4"/><circle cx="100" cy="198" r="11" fill="none" stroke="#5f9c82" stroke-width="2"/>' +
+          '<circle cx="100" cy="198" r="5" fill="' + s.robe + '" stroke="' + L + '" stroke-width="1.8"/><path d="M88 190 q4 -5 10 -6" stroke="#e6f6ee" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+      case 'jue':
+        // 玉玦：有缺口的玉環
+        return '<path d="M114 186 A17 17 0 1 0 116 204" fill="none" stroke="' + L + '" stroke-width="16" stroke-linecap="butt"/><path d="M114 186 A17 17 0 1 0 116 204" fill="none" stroke="#8cc4a8" stroke-width="11.5" stroke-linecap="butt"/>' +
+          '<path d="M88 190 q4 -5 10 -6" stroke="#e6f6ee" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+      case 'scroll':
+        return '<g transform="rotate(-8 100 200)"><rect x="76" y="188" width="48" height="24" rx="4" fill="#d9bf86" stroke="' + L + '" stroke-width="2"/>' +
+          '<path d="M84 190 V210 M92 190 V210 M100 190 V210 M108 190 V210 M116 190 V210" stroke="#a9874e" stroke-width="1.4"/><path d="M76 200 H124" stroke="#8a5a2a" stroke-width="2"/></g>';
+      case 'map':
+        return '<g transform="rotate(-10 100 200)"><rect x="66" y="190" width="68" height="20" rx="10" fill="#e8d6a8" stroke="' + L + '" stroke-width="2"/><ellipse cx="66" cy="200" rx="5" ry="10" fill="#c9b07a" stroke="' + L + '" stroke-width="1.6"/>' +
+          '<path d="M96 190 V210 M104 190 V210" stroke="#b8352b" stroke-width="3"/><path d="M80 196 h10 M112 204 h12" stroke="#a08850" stroke-width="1.6"/></g>';
+      case 'clod':
+        return '<path d="M84 200 C82 188 92 180 102 182 C114 180 120 190 116 200 C114 210 90 212 84 200 Z" fill="#8a6440" stroke="' + L + '" stroke-width="2.2"/><circle cx="96" cy="192" r="2" fill="#6b4a2c"/><circle cx="106" cy="197" r="1.6" fill="#6b4a2c"/>';
+      case 'cup':
+        // 青銅爵
+        return '<g><path d="M86 186 L118 182 L114 202 C108 208 94 208 90 202 Z" fill="#7a8f6a" stroke="' + L + '" stroke-width="2" stroke-linejoin="round"/><path d="M118 182 L130 178 L120 190 Z" fill="#7a8f6a" stroke="' + L + '" stroke-width="1.6"/>' +
+          '<path d="M92 204 L88 216 M102 207 L102 218 M112 204 L116 216" stroke="' + L + '" stroke-width="2.4" stroke-linecap="round"/><path d="M92 192 h20" stroke="#a9c09a" stroke-width="1.6"/><path d="M96 184 v-8 M108 183 v-8" stroke="' + L + '" stroke-width="2"/></g>';
+      case 'mirror':
+        return '<g><circle cx="100" cy="196" r="19" fill="#c7a25a" stroke="' + L + '" stroke-width="2.4"/><circle cx="100" cy="196" r="14" fill="#e8d9a8"/><path d="M90 188 q6 -6 14 -6" stroke="#fffaf0" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="100" cy="196" r="3" fill="#c7a25a"/></g>';
+      case 'hu':
+        // 笏
+        return '<path d="M94 160 L106 160 L108 214 L92 214 Z" fill="#efe2bf" stroke="' + L + '" stroke-width="2" stroke-linejoin="round"/>';
+      case 'tally':
+        // 虎符
+        return '<g><path d="M84 200 C84 190 92 186 100 188 C108 184 118 186 120 194 L124 192 L122 202 C116 208 92 210 84 200 Z" fill="#d8b24a" stroke="' + L + '" stroke-width="2"/><path d="M90 196 l4 -2 M100 194 l4 2 M110 194 l2 4" stroke="#8a6a20" stroke-width="1.6"/></g>';
+      case 'brush':
+        return '<g transform="rotate(30 100 196)"><rect x="97" y="164" width="6" height="40" rx="2" fill="#7a5a3a" stroke="' + L + '" stroke-width="1.6"/><path d="M96 204 C96 214 100 222 100 222 C100 222 104 214 104 204 Z" fill="#2a1a17"/></g>';
+      case 'zhu':
+        // 筑：橫抱的長匣與弦
+        return '<g transform="rotate(-6 100 204)"><rect x="46" y="194" width="108" height="20" rx="5" fill="#8a5a36" stroke="' + L + '" stroke-width="2"/><path d="M52 200 H148 M52 204 H148 M52 208 H148" stroke="#f0dfb0" stroke-width="1"/><rect x="70" y="190" width="5" height="28" rx="2" fill="#5a3a22"/><circle cx="150" cy="204" r="4" fill="#d8b24a"/></g>';
+      case 'shield':
+        return '<g><path d="M30 196 C30 182 46 176 60 178 C74 176 86 184 86 196 L84 252 C78 270 40 270 34 252 Z" fill="#8a3a2c" stroke="' + L + '" stroke-width="2.4"/><path d="M38 198 C38 190 48 186 58 187 C68 186 78 190 78 198 L76 248 C72 260 44 260 40 248 Z" fill="none" stroke="#d8b24a" stroke-width="2"/>' +
+          '<circle cx="58" cy="222" r="8" fill="#d8b24a" stroke="' + L + '" stroke-width="1.8"/></g>';
+      case 'bow':
+        return '<g><path d="M44 150 C20 196 20 236 44 284" stroke="#6b4a2c" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M44 150 L44 284" stroke="#e8d9b0" stroke-width="1.4"/></g>';
+      default:
+        return '';
+    }
+  }
+
+  function armor(s) {
+    const a = s.armorColor || '#5a3f30';
+    const id = 'cka' + s.uid;
+    return '<defs><pattern id="' + id + '" width="12" height="9" patternUnits="userSpaceOnUse"><rect x="0.6" y="0.6" width="10.8" height="7.8" rx="2" fill="' + a + '" stroke="' + shade(a, -0.4) + '" stroke-width="1"/>' +
+      '<path d="M2 2.4 H10" stroke="' + shade(a, 0.35) + '" stroke-width="1" opacity=".7"/><circle cx="6" cy="6.2" r=".9" fill="' + shade(a, 0.5) + '"/></pattern></defs>' +
+      P(TORSO, a, 2.4, ' stroke-linejoin="round"') + '<path d="' + TORSO + '" fill="url(#' + id + ')"/>' +
+      '<path d="M66 196 C86 202 114 202 134 196" stroke="' + (s.trim || '#e8d9b0') + '" stroke-width="3" fill="none" opacity=".85"/>' +
+      '<path d="M88 168 L112 168 L100 186 Z" fill="' + s.robe + '" stroke="' + LINE + '" stroke-width="1.8"/>';
+  }
+  function pauldrons(s) {
+    const a = s.armorColor || '#5a3f30';
+    const id = 'cka' + s.uid;
+    let h = '';
+    [PAULDRON, mirror(PAULDRON)].forEach(d => {
+      h += P(d, a, 2.2, ' stroke-linejoin="round"') + '<path d="' + d + '" fill="url(#' + id + ')"/>';
+    });
+    h += '<path d="M44 204 C52 202 62 196 68 190 M156 204 C148 202 138 196 132 190" stroke="' + shade(a, 0.4) + '" stroke-width="1.6" fill="none" opacity=".7"/>';
+    return h;
+  }
+
+  function body(s) {
+    const robe = s.robe, trim = s.trim, dark = shade(robe, -0.22);
+    const sideProps = { ji: 1, staff: 1, oar: 1, shield: 1, bow: 1 };
+    const pose = sideProps[s.prop] ? 'side' : (s.prop === 'sword' || !s.prop ? (s.pose || (s.armor ? 'side' : 'gong')) : 'hold');
+    let h = '';
+    // 鞋
+    h += '<ellipse cx="80" cy="278" rx="13" ry="6.5" fill="' + (s.armor ? '#3a2a20' : '#2e211b') + '" stroke="' + LINE + '" stroke-width="2"/><ellipse cx="120" cy="278" rx="13" ry="6.5" fill="' + (s.armor ? '#3a2a20' : '#2e211b') + '" stroke="' + LINE + '" stroke-width="2"/>';
+    h += backProp(s);
+    // 袍
+    h += P(ROBE, robe, 2.4, ' stroke-linejoin="round"') +
+      '<path d="M120 172 L148 266 C146 272 132 275 118 276 Z" fill="' + dark + '" opacity=".35"/>' +
+      '<defs><pattern id="ckp' + s.uid + '" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 5 L5 0 L10 5 L5 10 Z" fill="' + shade(trim, -0.28) + '"/></pattern></defs>' +
+      '<path d="M48 262 C64 270 136 270 152 262 L156 268 C150 280 50 280 44 268 Z" fill="' + trim + '" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<path d="M48 262 C64 270 136 270 152 262 L156 268 C150 280 50 280 44 268 Z" fill="url(#ckp' + s.uid + ')" opacity=".55"/>';
+    if (s.motif) {
+      // 袍上的金色團紋（帝王）
+      [[70, 244], [130, 244], [100, 256], [62, 210], [138, 210]].forEach(p => {
+        h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" fill="none" stroke="' + (s.motifColor || '#d8b24a') + '" stroke-width="1.6" opacity=".8"/><circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.6" fill="' + (s.motifColor || '#d8b24a') + '" opacity=".8"/>';
+      });
+    }
+    if (s.armor) {
+      h += armor(s);
+    } else {
+      // 交領右衽
+      h += '<path d="M88 168 L112 168 L100 190 Z" fill="#f6efe0"/>' +
+        P('M106 166 L117 170 L92 216 L84 210 Z', trim, 2, ' stroke-linejoin="round"') +
+        P('M94 166 L84 170 L99 190 L103 184 Z', trim, 2, ' stroke-linejoin="round"');
+    }
+    // 腰帶與綬
+    h += P('M58 222 C80 228 120 228 142 222 L143 233 C120 239 80 239 57 233 Z', s.belt, 2) +
+      P('M94 234 L90 262 L97 262 L99 236 Z M106 234 L110 260 L103 261 L101 236 Z', s.belt, 1.6);
+    if (s.jade !== false) h += '<circle cx="100" cy="244" r="6" fill="#7fb8a0" stroke="' + LINE + '" stroke-width="1.6"/><circle cx="100" cy="244" r="2" fill="' + dark + '"/>';
+    // 袖子與手
+    const sl = pose === 'side' ? SLEEVE_SIDE : SLEEVE_GONG;
+    h += P(sl, robe, 2.4, ' stroke-linejoin="round"') + P(mirror(sl), shade(robe, -0.08), 2.4, ' stroke-linejoin="round"');
+    const fold = pose === 'side' ? 'M58 210 Q60 232 64 246 M66 200 Q68 222 70 236' : 'M52 214 Q58 234 72 244 M60 204 Q68 222 82 230';
+    h += '<path d="' + fold + '" stroke="' + shade(robe, -0.3) + '" stroke-width="2" fill="none" opacity=".6"/>' +
+      '<path d="' + mirror(fold) + '" stroke="' + shade(robe, -0.34) + '" stroke-width="2" fill="none" opacity=".6"/>';
+    if (s.armor) h += pauldrons(s);
+    if (pose === 'side') {
+      h += '<circle cx="62" cy="262" r="7" fill="' + s.skin + '" stroke="' + LINE + '" stroke-width="2"/><circle cx="138" cy="262" r="7" fill="' + s.skin + '" stroke="' + LINE + '" stroke-width="2"/>';
+      if (s.prop === 'ji' || s.prop === 'staff' || s.prop === 'oar') h += '<circle cx="152" cy="238" r="7.5" fill="' + s.skin + '" stroke="' + LINE + '" stroke-width="2"/>';
+    } else {
+      h += '<path d="M82 196 C88 208 96 212 100 212 C104 212 112 208 118 196" fill="none" stroke="' + trim + '" stroke-width="7" stroke-linecap="round"/>' +
+        '<ellipse cx="100" cy="206" rx="13" ry="9.5" fill="' + s.skin + '" stroke="' + LINE + '" stroke-width="2"/>' +
+        '<path d="M90 203 Q100 198 110 203" fill="none" stroke="' + shade(s.skin, -0.25) + '" stroke-width="1.6"/>';
+    }
+    h += handProp(s);
+    if (s.big) h = '<g transform="translate(100 278) scale(1.14 1.02) translate(-100 -278)">' + h + '</g>';
+    return h;
+  }
+
+  function face(s, expr) {
+    const skinD = shade(s.skin, -0.12);
+    let h = '<ellipse cx="38" cy="116" rx="7" ry="10" fill="' + skinD + '" stroke="' + LINE + '" stroke-width="2"/><ellipse cx="162" cy="116" rx="7" ry="10" fill="' + skinD + '" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<rect x="91" y="158" width="18" height="16" fill="' + skinD + '"/>' +
+      P(FACE, s.skin, 2.4) +
+      '<clipPath id="ckf' + s.uid + '"><path d="' + FACE + '"/></clipPath>' +
+      '<g clip-path="url(#ckf' + s.uid + ')"><path d="' + (s.female ? FRINGE_F : HAIR_CAP) + '" transform="translate(0 7)" fill="' + shade(s.skin, -0.2) + '" opacity=".5"/></g>';
+    if (s.old) h += '<path d="M56 128 q6 4 12 2 M132 130 q6 2 12 -2" stroke="' + skinD + '" stroke-width="1.8" fill="none"/>';
+    if (s.scar) h += '<path d="M128 100 l10 18 M131 106 l-4 2 M135 112 l-4 2" stroke="#b56a5a" stroke-width="2" stroke-linecap="round"/>';
+    const blush = s.female ? 0.5 : 0.34;
+    h += '<ellipse cx="64" cy="137" rx="10.5" ry="5.6" fill="#ff8a8a" opacity="' + blush + '"/><ellipse cx="136" cy="137" rx="10.5" ry="5.6" fill="#ff8a8a" opacity="' + blush + '"/>';
+    const ek = { happy: 'happy', surprised: 'surprised', angry: 'angry', sad: 'sad', worried: 'worried' }[expr] || 'normal';
+    h += '<g class="ck-eyes">' + eye(76, 119, s, ek) + eye(124, 119, s, ek) + '</g>';
+    h += brows(s, expr);
+    h += '<path d="M99 128 Q101.5 130.5 99 132" fill="none" stroke="' + shade(s.skin, -0.3) + '" stroke-width="1.6" stroke-linecap="round"/>';
+    if (expr === 'sad') h += '<path d="M136 128 C133 134 133 138 136 139 C139 138 139 134 136 128 Z" fill="#9fd3f0" stroke="#5a8fb0" stroke-width="1"/>';
+    if (expr === 'worried') h += '<path d="M150 90 c3 4 3 8 0 10 c-3 -2 -3 -6 0 -10 Z" fill="#bfe3f7" stroke="#5a8fb0" stroke-width="1"/>';
+    if (expr === 'angry') h += '<path d="M150 82 l6 -6 m-2 8 l7 -2 m-9 -4 l2 -8" stroke="#c0392b" stroke-width="2.4" stroke-linecap="round"/>';
+    h += mouth(expr);
+    return h;
+  }
+
+  const EXPRS = ['normal', 'happy', 'surprised', 'sad', 'angry', 'serious', 'worried', 'smirk'];
+
+  /**
+   * 畫一個 Q 版人物，回傳 SVG 字串。
+   * spec：見檔頭「人物設定」；opt：{ expr, bust（只畫胸像）, cls }
+   */
+  function chibi(spec, opt) {
+    const s = Object.assign({ skin: '#ffe2c6', hair: '#2b2220', eyeColor: '#6a4632', robe: '#5b7fa8', trim: '#e8d9b0', belt: '#7a2e26', hat: 'guan' }, spec || {});
+    if (s.female && s.hat === 'guan') s.hat = 'none';
+    UID += 1;
+    s.uid = UID;
+    const o = opt || {};
+    const expr = EXPRS.indexOf(o.expr) > -1 ? o.expr : (EXPRS.indexOf(s.expr) > -1 ? s.expr : 'normal');
+    const vb = o.bust ? '28 0 144 186' : '0 0 200 300';
+    const back = s.female ? hairBack(s) : '';
+    return '<svg class="ck' + (o.bust ? ' ck--bust' : '') + (o.cls ? ' ' + o.cls : '') + '" viewBox="' + vb + '"' + (o.bust ? ' style="overflow:hidden"' : '') + ' xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+      '<g class="ck-all" stroke-linecap="round">' +
+      (o.bust ? '' : '<ellipse cx="100" cy="284" rx="' + (s.big ? 70 : 62) + '" ry="9" fill="#000" opacity=".22"/>') +
+      '<g class="ck-breathe">' + back + (s.female ? '' : hairBack(s)) + body(s) +
+      '<g class="ck-head">' + face(s, expr) + beard(s) + hairFront(s) + hat(s) + '</g></g></g></svg>';
+  }
+  // ═══════════════════════════ 國別衣色與人物名冊 ═══════════════════════════
+
+  /** 國別的衣袍主色（Q 版人物的袍色）。劇本的人物可以用 art: { state: '楚' } 指定 */
+  const STATE = {
+    周: '#a8843a', 晉: '#4f7fb0', 秦: '#3d4352', 楚: '#a83a2c', 齊: '#7f5598', 魯: '#6f7f3f', 鄭: '#2f8a72', 宋: '#8a6a4a',
+    衛: '#5f8a7a', 陳: '#8a5a4a', 蔡: '#6a6a8a', 吳: '#2f6f8a', 越: '#3f7f5a', 燕: '#2f7486', 趙: '#a8622c', 魏: '#4a8a52',
+    韓: '#56689e', 漢: '#b8862e', 中山: '#6a5a8a', 虞: '#6f6a9a', 虢: '#7a8a4a', 曹: '#9a5a6a', 狄: '#a0703a',
+    隨: '#8a7a42', 戎: '#9a6a3a',
+    民: '#86704e', 卒: '#6a5a48'
+  };
+  const TRIM = { 秦: '#c9a24a', 楚: '#e8c36a', 漢: '#f0dcaa', 周: '#f0dcaa' };
+  const BELT = { 秦: '#2a2a30' };
+
+  const CAST = {};
+  /** 登錄人物：names 是名字、別名、代碼（逗號分隔）；spec 是外型 */
+  function R(names, spec) {
+    const sp = Object.assign({}, spec);
+    if (sp.st) {
+      if (!sp.robe) sp.robe = STATE[sp.st] || STATE.民;
+      if (!sp.trim && TRIM[sp.st]) sp.trim = TRIM[sp.st];
+      if (!sp.belt && BELT[sp.st]) sp.belt = BELT[sp.st];
+    }
+    names.split(',').forEach(n => { const k = n.trim(); if (k) CAST[k] = sp; });
+  }
+
+  // 常用組合
+  const KING = { hat: 'mian', beard: 1 };
+  const GEN = { hat: 'helmet', armor: true, beard: 1, brow: 'thick', prop: 'sword' };
+  const SOLDIER = { hat: 'kui', armor: true, jade: false };
+  const ELDER = { old: true, beard: 3 };
+  const OFFICIAL = { hat: 'guan', beard: 1 };
+  const LADY = { female: true, hat: 'none' };
+  const QUEEN = { female: true, hat: 'feng' };
+  const PEASANT = { hat: 'jin', jade: false, skin: '#f3cfa6', robe: '#86704e', belt: '#5a4030' };
+  const X = function () { return Object.assign.apply(null, [{}].concat(Array.prototype.slice.call(arguments))); };
+
+  // ───── 史官與通用角色 ─────
+  R('史官,shiguan,太史公', X(ELDER, { hat: 'guan', robe: '#7a5f3e', prop: 'brush', jade: false }));
+  R('太史,taishi', X(ELDER, { st: '秦', hat: 'guan', prop: 'brush' }));
+
+  // ───── 第一卷 春秋篇 ─────
+  R('重耳,公子重耳,chonger', { st: '晉', hat: 'guan' });
+  R('晉文公,文公,wengong', X(KING, { st: '晉', beard: 2 }));
+  R('子犯,狐偃,舅犯,zifan', { robe: '#3f7a5a', hat: 'guan', beard: 2, prop: 'bi' });
+  R('趙衰,zhaocui', { robe: '#3f7f86', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('介之推,介子推,jiezhitui', { robe: '#8a7350', hat: 'jin', pose: 'side', jade: false });
+  R('齊姜,qijiang', X(LADY, { robe: '#8a5aa0' }));
+  R('楚成王,chucheng', X(KING, { st: '楚', beard: 2 }));
+  R('五鹿野人,野人,yeren', X(PEASANT, { robe: '#7a7046', prop: 'clod', expr: 'happy' }));
+  R('先軫,原軫,xianzhen', X(GEN, { st: '晉' }));
+  R('欒枝,luanzhi', X(GEN, { st: '晉', beard: 2 }));
+  R('胥臣,xuchen', X(GEN, { st: '晉', beard: 2 }));
+  R('郤縠', X(GEN, { st: '晉', beard: 2 }));
+  R('郤溱', X(GEN, { st: '晉', beard: 1 }));
+  R('狐毛', X(GEN, { st: '晉', beard: 2 }));
+  R('軍吏,junli', X(SOLDIER, { st: '晉' }));
+  R('周襄王,襄王,xiangwang', { st: '周', hat: 'mian', grand: true, beard: 2, motif: true });
+  R('王子帶,太叔帶', { st: '周', hat: 'guan', beard: 1, eyes: 'sharp' });
+  R('展喜,zhanxi', { st: '魯', hat: 'guan', beard: 1, prop: 'hu' });
+  R('展禽,柳下惠', X(ELDER, { st: '魯', hat: 'guan' }));
+  R('魯僖公', X(KING, { st: '魯' }));
+  R('齊孝公,qixiao', X(KING, { st: '齊' }));
+  R('子玉,成得臣,ziyu', X(GEN, { st: '楚', beard: 2, eyes: 'sharp' }));
+  R('宛春,wanchun', { st: '楚', hat: 'guan', beard: 1 });
+  R('鬭勃,鬥勃,doubo', { st: '楚', hat: 'guan', beard: 2 });
+  R('秦穆公,穆公,繆公,mugong', X(KING, { st: '秦', beard: 2 }));
+  R('百里奚,bailixi', X(ELDER, { st: '秦', hat: 'guan', prop: 'staff' }));
+  R('子桑,公孫枝,zisang', { st: '秦', hat: 'guan', beard: 2 });
+  R('丕豹,pibao', { robe: '#8a4a3a', hat: 'guan', beard: 1, brow: 'thick' });
+  R('晉惠公,夷吾,huigong', X(KING, { st: '晉', eyes: 'sharp' }));
+  R('慶鄭,qingzheng', { st: '晉', hat: 'guan', beard: 2, brow: 'thick' });
+  R('虢射,guoshe', { st: '晉', hat: 'guan', beard: 1, eyes: 'sharp' });
+  R('韓簡,hanjian', { st: '晉', hat: 'guan', beard: 2 });
+  R('陰飴甥,呂甥,yinyisheng', { st: '晉', hat: 'guan', beard: 2, prop: 'hu' });
+  R('卜偃,buyan', X(ELDER, { robe: '#4a4a6a', hat: 'jin' }));
+  R('杞子,qizi', { st: '秦', hat: 'guan', beard: 1, eyes: 'sharp' });
+  R('蹇叔,jianshu', X(ELDER, { st: '秦', hat: 'guan', prop: 'staff' }));
+  R('蹇叔之子,jianzi', X(SOLDIER, { st: '秦', hat: 'helmet' }));
+  R('孟明,孟明視,百里孟明視,mengming', X(GEN, { st: '秦' }));
+  R('西乞術,xiqi', X(GEN, { st: '秦', beard: 2 }));
+  R('白乙丙,baiyi', X(GEN, { st: '秦', beard: 0 }));
+  R('王孫滿,wangsunman', { st: '周', hat: 'guan', prop: 'hu' });
+  R('弦高,xiangao', { robe: '#2f8a72', hat: 'jin', beard: 1, jade: false, belt: '#5a4030' });
+  R('夥計,huoji', X(PEASANT, { robe: '#5f8a6a' }));
+  R('鄭穆公,公子蘭,zhengbo', X(KING, { st: '鄭' }));
+  R('鄭襄公', X(KING, { st: '鄭', beard: 2 }));
+  R('鄭文公', X(KING, { st: '鄭', beard: 2, old: true }));
+  R('燭之武,zhuzhiwu', X(ELDER, { st: '鄭', hat: 'guan', prop: 'staff' }));
+  R('佚之狐,yizhihu', { st: '鄭', hat: 'guan', beard: 2 });
+  R('皇武子,huangwuzi', { st: '鄭', hat: 'guan', beard: 2 });
+  R('晉襄公,xianggong', { hat: 'mian', robe: '#2c2c30', trim: '#8a8a8a', belt: '#1a1a1a' });
+  R('文嬴,wenying', X(QUEEN, { robe: '#7a4a6a' }));
+  R('陽處父,yangchufu', { st: '晉', hat: 'guan', beard: 1 });
+  R('楚莊王,莊王,zhuang', X(KING, { st: '楚', brow: 'thick' }));
+  R('伍舉,wuju', { st: '楚', hat: 'guan', beard: 2 });
+  R('蘇從,sucong', { st: '楚', hat: 'guan', beard: 1, brow: 'thick' });
+  R('孫叔敖,sunshu', { robe: '#5f7a5a', hat: 'guan', beard: 2, jade: false });
+  R('鬭越椒,鬥越椒,伯棼,yuejiao', X(GEN, { st: '楚', eyes: 'sharp', expr: 'smirk' }));
+  R('荀林父,xunlinfu', X(GEN, { st: '晉', beard: 2 }));
+  R('先縠,xianhu', X(GEN, { st: '晉', expr: 'angry' }));
+  R('伍參,wucan', { st: '楚', hat: 'guan', expr: 'smirk' });
+  R('潘黨,pandang', X(GEN, { st: '楚' }));
+  R('楚兵,chubing', X(SOLDIER, { st: '楚' }));
+  R('晉兵,jinbing', X(SOLDIER, { st: '晉' }));
+  R('秦兵,秦軍', X(SOLDIER, { st: '秦', hatColor: '#2a2a30' }));
+  R('郤克,郤獻子,xike', X(GEN, { st: '晉', beard: 2 }));
+  R('解張,jiezhang', X(SOLDIER, { st: '晉', hat: 'band', hatColor: '#4f7fb0' }));
+  R('鄭丘緩,huan', X(GEN, { st: '晉', beard: 0 }));
+  R('齊頃公,qinggong', X(KING, { st: '齊', beard: 0, expr: 'smirk' }));
+  R('逢丑父,choufu', X(GEN, { st: '齊' }));
+  R('韓厥,hanjue', X(GEN, { st: '晉', beard: 2 }));
+  R('晉厲公,ligong', X(KING, { st: '晉' }));
+  R('呂相,lvxiang', { st: '晉', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('秦桓公,huangong', X(KING, { st: '秦', beard: 2 }));
+  R('范文子,士燮,fanwenzi', X(ELDER, { st: '晉', hat: 'guan' }));
+  R('孔子,仲尼,kongzi', X(ELDER, { robe: '#6f7f3f', hat: 'guan', prop: 'scroll' }));
+  R('言偃,子游,yanyan', { robe: '#6f7f3f', hat: 'guan', prop: 'scroll' });
+  R('周公', X(ELDER, { st: '周', hat: 'mian' }));
+  // 第 4 話〈重耳流亡〉（v0.1.1 補）
+  R('晉獻公,獻公,jinxian', X(KING, { st: '晉', beard: 3, old: true }));
+  R('驪姬,liji', X(QUEEN, { robe: '#9a3f5f', eyes: 'sharp' }));
+  R('申生,太子申生,shensheng', { robe: '#5a86b8', hat: 'guan', beard: 0 });
+  R('寺人披,勃鞮,寺人勃鞮,sirenpi', { robe: '#5a5468', hat: 'jin', hatColor: '#2a2630', beard: 0, eyes: 'sharp', prop: 'sword', jade: false });
+  R('荀息,xunxi', { st: '晉', hat: 'guan', beard: 2, prop: 'bi' });
+  R('宮之奇,gongzhiqi', { st: '虞', hat: 'guan', beard: 2, prop: 'hu' });
+  R('虞公,yugong', X(KING, { st: '虞', beard: 1 }));
+  R('井伯,jingbo', { st: '虞', hat: 'guan', beard: 1 });
+  R('虢公,虢公醜,guogong', X(KING, { st: '虢', beard: 2 }));
+  R('季隗,jikui', X(LADY, { st: '狄', accent: '#e0b44c' }));
+  R('叔隗,shukui', X(LADY, { st: '狄', accent: '#6fb0a0' }));
+  R('齊桓公,桓公,qihuan', X(KING, { st: '齊', beard: 2 }));
+  R('齊桓公（晚年）,qihuanold', X(KING, { st: '齊', beard: 3, old: true }));
+  R('管仲,管夷吾,guanzhong', { st: '齊', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('鮑叔牙,鮑叔,baoshu', { robe: '#4f6f96', trim: '#e8d9b0', hat: 'guan', beard: 2, brow: 'thick' });
+  R('衛文公', X(KING, { st: '衛', beard: 2 }));
+  R('曹共公,caogong', X(KING, { st: '曹', eyes: 'sharp', expr: 'smirk' }));
+  R('僖負羈,xifuji', { st: '曹', hat: 'guan', beard: 1 });
+  R('僖負羈之妻,xifujiqi', X(LADY, { robe: '#7a5a7a', accent: '#e0b44c' }));
+  R('宋襄公,songxiang', X(KING, { st: '宋', beard: 1 }));
+  R('叔詹,shuzhan', { st: '鄭', hat: 'guan', beard: 2 });
+  R('懷嬴,huaiying', X(LADY, { robe: '#4a4f66', trim: '#c9a24a', accent: '#c9a24a' }));
+  R('頭須,豎頭須,toux', { robe: '#7a6a52', hat: 'jin', beard: 0, jade: false, skin: '#f3cfa6' });
+  R('介之推之母,介母,jiemu', X(ELDER, { female: true, hat: 'none', beard: 0, robe: '#7a6a50', jade: false }));
+  R('郤芮,xirui', { st: '晉', hat: 'guan', beard: 2, eyes: 'sharp' });
+  R('晉懷公,子圉,huaigong', X(KING, { st: '晉', beard: 0 }));
+  R('公子縶,zizhi', { st: '秦', hat: 'guan', beard: 1 });
+  R('顛頡,dianjie', X(GEN, { st: '晉' }));
+  R('魏犫,魏武子,weichou', X(GEN, { st: '晉', beard: 2, big: true }));
+  // 第 3 話〈齊桓稱霸〉（v0.1.2 補）
+  R('公子小白,小白,xiaobai', { st: '齊', hat: 'guan', beard: 0 });
+  R('公子糾,子糾,jiu', { robe: '#6a5a88', hat: 'guan', beard: 1 });
+  R('召忽,shaohu', { robe: '#8a4a5a', hat: 'guan', beard: 2, brow: 'thick' });
+  R('齊襄公,qixiang', X(KING, { st: '齊', eyes: 'sharp' }));
+  R('公孫無知,無知,wuzhi', { st: '齊', hat: 'guan', beard: 1, eyes: 'sharp', expr: 'smirk' });
+  R('高傒,gaoxi', X(ELDER, { st: '齊', hat: 'guan' }));
+  R('隰朋,xipeng', { st: '齊', hat: 'guan', beard: 1 });
+  R('魯莊公,luzhuang', X(KING, { st: '魯' }));
+  R('曹劌,caogui', { robe: '#6f7f3f', hat: 'jin', hatColor: '#3a4020', beard: 1, jade: false });
+  R('曹沫,caomo', X(GEN, { st: '魯', beard: 1 }));
+  R('曹劌的同鄉,鄉人,xiangren', X(PEASANT, { robe: '#7a7046' }));
+  R('屈完,quwan', { st: '楚', hat: 'guan', beard: 2, prop: 'hu' });
+  R('楚使,chushi', { st: '楚', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('宰孔,zaikong', X(ELDER, { st: '周', hat: 'guan', prop: 'hu' }));
+  // 春秋篇外包九話（v0.1.4 補）
+  // 序章〈平王東遷〉
+  R('周幽王,幽王,youwang', { st: '周', hat: 'mian', grand: true, beard: 1, eyes: 'sharp', motif: true });
+  R('褒姒,baosi', X(QUEEN, { robe: '#b0485a', accent: '#e8c36a' }));
+  R('申后,shenhouq', X(QUEEN, { robe: '#6a5a88', accent: '#c9a24a' }));
+  R('太子宜臼,宜臼,yijiu', { st: '周', hat: 'guan', beard: 0 });
+  R('周平王,平王,pingwang', { st: '周', hat: 'mian', grand: true, beard: 0, motif: true });
+  R('伯陽甫,伯陽父,boyangfu', X(ELDER, { st: '周', hat: 'guan', prop: 'scroll' }));
+  R('虢石父,guoshifu', { st: '虢', hat: 'guan', beard: 2, eyes: 'sharp', expr: 'smirk' });
+  R('申侯,shenhou', X(KING, { robe: '#7a6a4a', beard: 2, brow: 'thick' }));
+  R('秦襄公,qinxiang', X(KING, { st: '秦', armor: true, beard: 2, brow: 'thick', prop: 'sword' }));
+  R('鄭武公,zhengwu', X(KING, { st: '鄭', beard: 2 }));
+  R('晉文侯,jinwenhou', X(KING, { st: '晉', beard: 2 }));
+  R('犬戎首領,quanrong', { st: '戎', hat: 'loose', beard: 4, armor: true, big: true, brow: 'thick', prop: 'bow', jade: false });
+  // 第 1 話〈鄭莊小霸〉
+  R('鄭莊公,莊公,寤生,zhengzhuang', X(KING, { st: '鄭', beard: 2, eyes: 'sharp' }));
+  R('武姜,姜氏,wujiang', X(QUEEN, { robe: '#7a4a6a', accent: '#c9a24a' }));
+  R('共叔段,大叔段,京城大叔,gongshuduan', { st: '鄭', robe: '#3f9a7a', hat: 'guan', beard: 0, brow: 'thick', prop: 'sword' });
+  R('祭仲,祭足,zhaizhong', { st: '鄭', hat: 'guan', beard: 3, prop: 'hu' });
+  R('公子呂,子封,gongzilv', X(GEN, { st: '鄭' }));
+  R('潁考叔,yingkaoshu', { st: '鄭', hat: 'jin', beard: 1, skin: '#f3cfa6', jade: false, prop: 'cup' });
+  R('周桓王,桓王,huanwang', { st: '周', hat: 'mian', grand: true, beard: 1, motif: true });
+  R('祝聃,zhudan', X(GEN, { st: '鄭', prop: 'bow' }));
+  // 第 2 話〈漢東小國〉
+  R('季梁,jiliang', { st: '隨', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('隨侯,suihou', X(KING, { st: '隨' }));
+  R('少師,shaoshi', { st: '隨', hat: 'guan', beard: 0, eyes: 'sharp', expr: 'smirk', motif: true });
+  R('楚武王,熊通,chuwu', X(KING, { st: '楚', beard: 3, brow: 'thick', armor: true }));
+  R('鬬伯比,鬥伯比,doubobi', X(ELDER, { st: '楚', hat: 'guan', prop: 'map' }));
+  R('熊率且比,xiongshuai', { st: '楚', hat: 'guan', beard: 2 });
+  R('薳章,weizhang', { st: '楚', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('鬬丹,鬥丹,doudan', X(GEN, { st: '楚' }));
+  // 第 6 話〈宋襄圖霸〉（宋襄公已在名冊）
+  R('子魚,目夷,公子目夷,muyi', { st: '宋', hat: 'guan', beard: 2, brow: 'thick' });
+  R('公孫固,大司馬固,gongsungu', X(GEN, { st: '宋', beard: 2 }));
+  // 第 12 話〈晉楚之間〉
+  R('向戌,xiangxu', { st: '宋', hat: 'guan', beard: 2, prop: 'hu', motif: true });
+  R('戎子駒支,駒支,juzhi', { st: '戎', hat: 'band', beard: 3, jade: false, skin: '#f3cfa6' });
+  R('范宣子,士匄,fanxuanzi', { st: '晉', hat: 'guan', beard: 2, eyes: 'sharp', motif: true, prop: 'hu' });
+  R('子產,公孫僑,zichan', { st: '鄭', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('子西,公孫夏,zixi', { st: '鄭', hat: 'guan', beard: 1 });
+  R('趙文子,趙武,趙孟,zhaowenzi', { st: '晉', hat: 'guan', beard: 1, motif: true });
+  R('韓宣子,韓起,hanxuanzi', { st: '晉', hat: 'guan', beard: 1 });
+  R('屈建,令尹子木,子木,qujian', { st: '楚', hat: 'guan', beard: 2, armor: true });
+  R('陳文子,chenwenzi', X(ELDER, { st: '齊', hat: 'guan' }));
+  R('叔向,羊舌肸,shuxiang', { st: '晉', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('子罕,樂喜,zihan', X(ELDER, { st: '宋', hat: 'guan', prop: 'brush' }));
+  // 第 13 話〈子產治鄭〉
+  R('季札,延陵季子,公子札,jizha', { st: '吳', hat: 'guan', beard: 1, prop: 'sword' });
+  R('子皮,罕虎,zipi', { st: '鄭', hat: 'guan', beard: 2, brow: 'thick' });
+  R('然明,ranming', { st: '鄭', hat: 'guan', beard: 1 });
+  R('子大叔,游吉,zidashu', { st: '鄭', hat: 'guan', beard: 1 });
+  R('鄭簡公,jiangong', X(KING, { st: '鄭', beard: 0 }));
+  // 第 14 話〈吳師入郢〉
+  R('伍子胥,伍員,子胥,wuzixu', { st: '吳', hat: 'guan', beard: 3, brow: 'thick', eyes: 'sharp', prop: 'sword' });
+  R('伍奢', X(ELDER, { st: '楚', hat: 'guan' }));
+  R('伍尚,wushang', { st: '楚', hat: 'guan', beard: 1 });
+  R('楚平王,chuping', X(KING, { st: '楚', beard: 2, eyes: 'sharp' }));
+  R('費無忌,費無極,feiwuji', { st: '楚', hat: 'guan', beard: 1, eyes: 'sharp', expr: 'smirk' });
+  R('公子勝,白公勝,gongzisheng', { st: '楚', hat: 'none', beard: 0 });
+  R('江上漁父,jiangyufu', X(ELDER, { hat: 'li', robe: '#6a7a6a', prop: 'oar', jade: false, skin: '#f3cfa6' }));
+  R('吳王僚,王僚,wangliao', X(KING, { st: '吳', beard: 2, armor: true }));
+  R('公子光,gongziguang', { st: '吳', hat: 'guan', beard: 1, eyes: 'sharp' });
+  R('吳王闔閭,闔閭,闔廬,helv', X(KING, { st: '吳', beard: 2, brow: 'thick' }));
+  R('專諸,zhuanzhu', { robe: '#6a5a48', hat: 'jin', beard: 1, brow: 'thick', jade: false, big: true });
+  R('孫武,sunwu', { st: '吳', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('申包胥,shenbaoxu', { st: '楚', hat: 'guan', beard: 2 });
+  R('秦哀公,qinai', X(KING, { st: '秦', beard: 2 }));
+  R('楚昭王,chuzhao', X(KING, { st: '楚', beard: 0 }));
+  // 第 15 話〈孔子周遊〉（孔子已在名冊）
+  R('子路,仲由,zilu', { st: '魯', hat: 'helmet', beard: 2, brow: 'thick', prop: 'sword', big: true });
+  R('子貢,端木賜,zigong', { st: '衛', hat: 'guan', beard: 0, eyes: 'sharp', motif: true });
+  R('顏回,顏淵,yanhui', { st: '魯', robe: '#8a8a7a', hat: 'jin', beard: 0, jade: false });
+  R('冉有,冉求,ranyou', { st: '魯', hat: 'guan', beard: 1 });
+  R('老子,老聃,李耳,laozi', X(ELDER, { robe: '#5a6a7a', hat: 'jin', prop: 'staff' }));
+  R('季桓子,jihuanzi', { st: '魯', hat: 'guan', beard: 2, motif: true });
+  R('衛靈公,weiling', X(KING, { st: '衛', beard: 2 }));
+  R('桓魋,司馬桓魋,huantui', X(GEN, { st: '宋', expr: 'angry' }));
+  R('長沮,changju', X(PEASANT, { beard: 2 }));
+  R('桀溺,jieni', X(PEASANT, ELDER, { hat: 'jin' }));
+  R('楚狂接輿,接輿,jieyu', { robe: '#6a5a7a', hat: 'loose', beard: 2, jade: false, expr: 'smirk' });
+  // 第 17 話〈吳越春秋〉
+  R('勾踐,句踐,越王勾踐,越王句踐,goujian', X(KING, { st: '越', beard: 1, eyes: 'sharp' }));
+  R('夫差,吳王夫差,fuchai', X(KING, { st: '吳', beard: 1, brow: 'thick' }));
+  R('范蠡,陶朱公,fanli', { st: '越', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('文種,大夫種,wenzhong', { st: '越', hat: 'guan', beard: 2, prop: 'hu' });
+  R('伯嚭,太宰嚭,bopi', { st: '吳', hat: 'guan', beard: 1, eyes: 'sharp', expr: 'smirk', motif: true });
+
+  // ───── 第三卷 楚漢篇 ─────
+  R('秦始皇,始皇,始皇帝,秦始皇帝,qinshihuang,shihuang', { st: '秦', hat: 'mian', grand: true, motif: true, beard: 1, brow: 'thick', eyes: 'sharp' });
+  R('秦王政,嬴政,秦王,qinwang,yingzheng', X(KING, { st: '秦', brow: 'thick', eyes: 'sharp' }));
+  R('李斯,lisi', { st: '秦', hat: 'guan', beard: 1, prop: 'hu' });
+  R('趙高,zhaogao', { st: '秦', hat: 'guan', beard: 0, eyes: 'sharp', expr: 'smirk', skin: '#fbe8d6' });
+  R('扶蘇,公子扶蘇,fusu', { robe: '#4a5a6a', trim: '#c9a24a', hat: 'guan' });
+  R('蒙恬,mengtian', X(GEN, { st: '秦', beard: 2 }));
+  R('胡亥,秦二世,二世,huhai', X(KING, { st: '秦', beard: 0, expr: 'smirk' }));
+  R('王綰,wangwan', X(ELDER, { st: '秦', hat: 'guan', prop: 'hu' }));
+  R('淳于越,chunyuyue', X(ELDER, { robe: '#6a5a7a', hat: 'guan', prop: 'scroll' }));
+  R('張良,子房,留侯,zhangliang', { robe: '#4f6f9a', hat: 'guan', beard: 0, prop: 'scroll', skin: '#fff0e0' });
+  R('圯上老人,黃石公,老人,laoren,huangshigong', X(ELDER, { robe: '#7a6a52', hat: 'jin', hatColor: '#5a4a3a', prop: 'staff', jade: false }));
+  R('陳勝,陳涉,chensheng', { robe: '#86704e', hat: 'band', beard: 1, brow: 'thick', jade: false, skin: '#f3cfa6' });
+  R('吳廣,wuguang', { robe: '#7a6a4a', hat: 'band', beard: 1, jade: false, skin: '#f3cfa6' });
+  R('將尉,尉,jiangwei', X(GEN, { st: '秦', eyes: 'sharp', expr: 'angry' }));
+  R('卜者,buzhe', X(ELDER, { robe: '#5a4a6a', hat: 'jin', beard: 2 }));
+  R('賈誼,賈生,jiayi', { st: '漢', hat: 'guan', prop: 'scroll' });
+  R('項羽,項籍,項王,霸王,西楚霸王,xiangyu,xiangji', { st: '楚', hat: 'helmet', armor: true, armorColor: '#4a2f2a', beard: 0, brow: 'thick', eyes: 'double', big: true, prop: 'ji' });
+  R('項梁,xiangliang', X(GEN, { st: '楚', beard: 2 }));
+  R('宋義,songyi', { st: '楚', hat: 'guan', beard: 2, eyes: 'sharp' });
+  R('范增,亞父,fanzeng', X(ELDER, { st: '楚', hat: 'guan', prop: 'jue' }));
+  R('章邯,zhanghan', X(GEN, { st: '秦', beard: 2 }));
+  R('劉邦,沛公,劉季,liubang,peigong', { st: '漢', hat: 'guan', hatColor: '#6b4a2c', beard: 2 });
+  R('漢王,漢高祖,高祖,高帝,漢帝,hanwang,gaozu', { st: '漢', hat: 'mian', grand: true, motif: true, beard: 2 });
+  R('樊噲,fankuai', { st: '漢', hat: 'helmet', armor: true, beard: 4, brow: 'thick', big: true, prop: 'shield', skin: '#f3cfa6' });
+  R('項伯,xiangbo', { st: '楚', hat: 'guan', beard: 2 });
+  R('項莊,xiangzhuang', X(GEN, { st: '楚', beard: 0 }));
+  R('曹無傷,caowushang', { st: '漢', hat: 'guan', beard: 1, eyes: 'sharp' });
+  R('蕭何,xiaohe', { st: '漢', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('韓信,淮陰侯,hanxin', X(GEN, { st: '漢', beard: 0, expr: 'serious' }));
+  R('陳平,chenping', { st: '漢', hat: 'guan', beard: 0, expr: 'smirk', skin: '#fff0e0' });
+  R('虞姬,虞美人,yuji', X(LADY, { robe: '#b8576a', trim: '#f3d9a8', accent: '#f3b8c4' }));
+  R('烏江亭長,亭長,tingzhang', X(PEASANT, { beard: 2, prop: 'oar', hat: 'li' }));
+  R('呂后,呂雉,呂太后,lvhou', X(QUEEN, { robe: '#6a3a5a', eyes: 'sharp' }));
+  R('戚夫人', X(LADY, { robe: '#c06a8a' }));
+  R('張耳,zhanger', { robe: '#5a6a8a', hat: 'guan', beard: 2 });
+  R('陳餘,chenyu', { robe: '#6a5a4a', hat: 'guan', beard: 1 });
+  R('李左車,lizuoche', { robe: '#5a6a4a', hat: 'guan', beard: 2 });
+  R('酈食其,酈生,lishiqi', X(ELDER, { robe: '#7a5a3a', hat: 'guan', prop: 'cup' }));
+  R('太公,劉太公,taigong', X(ELDER, PEASANT));
+  R('曹參,caoshen', X(GEN, { st: '漢', beard: 2 }));
+  R('周勃,zhoubo', X(GEN, { st: '漢', beard: 2 }));
+  R('灌嬰,guanying', X(GEN, { st: '漢' }));
+  R('夏侯嬰,滕公,xiahouying', X(SOLDIER, { st: '漢', hat: 'band', hatColor: '#b8862e', beard: 1 }));
+  R('紀信,jixin', X(GEN, { st: '漢' }));
+  R('英布,黥布,yingbu', X(GEN, { robe: '#5a4a3a', beard: 2, scar: true }));
+  R('彭越,pengyue', X(GEN, { robe: '#5a5a3a', hat: 'band', hatColor: '#3a3a2a', beard: 2 }));
+  R('漂母,piaomu', X(LADY, { old: true, robe: '#8a7a5a', jade: false }));
+  R('鍾離眛,鍾離昧,zhonglimei', X(GEN, { st: '楚', beard: 2 }));
+  R('龍且,longju', X(GEN, { st: '楚', beard: 2 }));
+  R('楚懷王,懷王,義帝,huaiwang', X(KING, { st: '楚', beard: 0 }));
+  R('呂馬童,lvmatong', X(GEN, { st: '漢', beard: 1 }));
+  R('魏無知,weiwuzhi', { st: '漢', hat: 'guan', beard: 1 });
+  R('殷通,yintong', { st: '秦', hat: 'guan', beard: 1, eyes: 'sharp' });
+  // 天下大地圖「楚漢逐鹿」的十八路諸侯與將相（v0.1.3 補）
+  R('季布,jibu', X(GEN, { st: '楚', beard: 2, expr: 'serious' }));
+  R('項聲,xiangsheng', X(GEN, { st: '楚', beard: 1 }));
+  R('曹咎,caojiu', X(GEN, { st: '楚', beard: 2, brow: 'normal' }));
+  R('周殷,zhouyin', X(GEN, { st: '楚', beard: 2, armorColor: '#5a3a30' }));
+  R('武涉,wushe', { st: '楚', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('周苛,zhouke', { st: '漢', hat: 'guan', beard: 2, expr: 'serious' });
+  R('盧綰,luwan', { st: '漢', hat: 'guan', beard: 1 });
+  R('韓王信,hanwangxin', X(GEN, { st: '韓', beard: 1 }));
+  R('隨何,suihe', { st: '漢', hat: 'guan', beard: 1, prop: 'scroll', expr: 'smirk' });
+  R('陸賈,lujia', { st: '漢', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('章平,zhangping', X(GEN, { st: '秦', beard: 1 }));
+  R('司馬欣,塞王,simaxin', X(KING, { st: '秦', beard: 2, robe: '#8f96aa' }));
+  R('董翳,翟王,dongyi', X(KING, { st: '秦', beard: 1, robe: '#9a8f7a' }));
+  R('魏豹,西魏王,weibao', X(KING, { st: '魏', beard: 1, eyes: 'sharp' }));
+  R('柏直,boji', X(GEN, { st: '魏', beard: 2 }));
+  R('申陽,河南王,shenyang', X(KING, { robe: '#b07a4a', trim: '#f0dcaa', beard: 1 }));
+  R('韓成,韓王成,hancheng', X(KING, { st: '韓', beard: 0 }));
+  R('司馬卬,殷王,simaang', X(KING, { robe: '#8a5a8a', beard: 2 }));
+  R('趙歇,趙王歇,代王,zhaoxie', X(KING, { st: '趙', beard: 1 }));
+  R('臧荼,燕王,zangtu', X(KING, { st: '燕', beard: 2, eyes: 'sharp' }));
+  R('韓廣,遼東王,hanguang', X(KING, { robe: '#3f5f7a', beard: 1 }));
+  R('田都,tiandu', X(GEN, { st: '齊', beard: 1 }));
+  R('田巿,膠東王,tianshi', X(KING, { robe: '#9a6ab0', beard: 0 }));
+  R('田安,濟北王,tianan', X(KING, { robe: '#6a4a8a', beard: 1 }));
+  R('田榮,tianrong', X(GEN, { st: '齊', beard: 2, armorColor: '#4a3a5a', eyes: 'sharp' }));
+  R('田橫,tianheng', X(GEN, { st: '齊', beard: 2, expr: 'serious' }));
+  R('田廣,tianguang', X(KING, { st: '齊', beard: 0 }));
+  R('吳芮,番君,衡山王,wurui', X(KING, { st: '越', beard: 2 }));
+  R('梅鋗,meijuan', X(GEN, { st: '越', beard: 1 }));
+  R('共敖,臨江王,gongao', X(KING, { robe: '#8a6a4a', trim: '#e8c36a', beard: 2 }));
+  R('王陵,wangling', X(GEN, { robe: '#7a6a52', beard: 2 }));
+  R('蒯通,蒯徹,kuaitong', { robe: '#5a5a7a', hat: 'guan', beard: 2, prop: 'scroll', eyes: 'sharp', expr: 'smirk' });
+  R('叔孫通,shusuntong', X(ELDER, { robe: '#6a5a3a', hat: 'guan', prop: 'hu' }));
+  R('靳歙,jinxi', X(GEN, { st: '漢', beard: 1 }));
+
+  // ───── 第二卷 戰國篇 ─────
+  R('智伯,知伯,智瑤,荀瑤,zhibo', { robe: '#5a5a7a', hat: 'guan', beard: 2, eyes: 'sharp', expr: 'smirk' });
+  R('趙襄子,襄子,毋卹,zhaoxiangzi', { st: '趙', hat: 'guan', beard: 1, expr: 'serious' });
+  R('張孟談,zhangmengtan', { st: '趙', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('韓康子,hankangzi', { st: '韓', hat: 'guan', beard: 2 });
+  R('魏桓子,weihuanzi', { st: '魏', hat: 'guan', beard: 2 });
+  R('段規,duangui', { st: '韓', hat: 'guan', beard: 1 });
+  R('任章,renzhang', { st: '魏', hat: 'guan', beard: 1 });
+  R('絺疵,chici', { robe: '#5a5a7a', hat: 'guan', beard: 2, eyes: 'sharp' });
+  R('豫讓,yurang', { robe: '#3f3f46', hat: 'jin', hatColor: '#2a2a2e', beard: 2, prop: 'sword', jade: false });
+  R('司馬光,臣光,simaguang', X(ELDER, { robe: '#5a4a3a', hat: 'guan', prop: 'brush' }));
+  R('魏文侯,文侯,weiwenhou', X(KING, { st: '魏', beard: 2 }));
+  R('李悝,李克,likui,like', { st: '魏', hat: 'guan', beard: 2, prop: 'scroll' });
+  R('翟璜,dihuang', { st: '魏', hat: 'guan', beard: 2 });
+  R('魏成子,魏成,weichengzi', { st: '魏', hat: 'guan', beard: 1 });
+  R('吳起,wuqi', X(GEN, { st: '魏', eyes: 'sharp' }));
+  R('樂羊,yueyang', X(GEN, { st: '魏', beard: 2 }));
+  R('西門豹,ximenbao', { st: '魏', hat: 'guan', beard: 1, prop: 'brush', expr: 'serious' });
+  R('段干木,duanganmu', X(ELDER, { robe: '#7a6a52', hat: 'jin', jade: false }));
+  R('子夏,zixia', X(ELDER, { robe: '#6f7f3f', hat: 'guan', prop: 'scroll' }));
+  R('大巫嫗,巫嫗,巫婆,dawuyu', X(LADY, { old: true, robe: '#5a3a6a', eyes: 'sharp', expr: 'smirk' }));
+  R('三老,sanlao', X(ELDER, PEASANT, { robe: '#7a6a4a' }));
+  R('秦孝公,孝公,xiaogong', X(KING, { st: '秦' }));
+  R('商鞅,衛鞅,商君,公孫鞅,shangyang,weiyang', { st: '秦', hat: 'guan', beard: 1, eyes: 'sharp', prop: 'scroll', expr: 'serious' });
+  R('公叔座,公叔痤,gongshuzuo', X(ELDER, { st: '魏', hat: 'guan' }));
+  R('魏惠王,梁惠王,惠王,weihuiwang', X(KING, { st: '魏', beard: 2 }));
+  R('景監,jingjian', { st: '秦', hat: 'guan', beard: 0, skin: '#fbe8d6' });
+  R('甘龍,ganlong', X(ELDER, { st: '秦', hat: 'guan', prop: 'hu' }));
+  R('杜摯,duzhi', { st: '秦', hat: 'guan', beard: 2, prop: 'hu' });
+  R('公子虔,gongziqian', { st: '秦', hat: 'guan', beard: 2, expr: 'angry' });
+  R('趙良,zhaoliang', { robe: '#5a6a5a', hat: 'guan', beard: 2 });
+  R('秦惠王,秦惠文王,太子駟,qinhuiwang', X(KING, { st: '秦' }));
+  R('鄒忌,騶忌,zouji', { st: '齊', hat: 'guan', beard: 1, prop: 'mirror' });
+  R('齊威王,威王,qiweiwang', X(KING, { st: '齊', beard: 2 }));
+  R('徐公,城北徐公,xugong', { robe: '#4f7fb0', hat: 'guan', beard: 1, expr: 'happy' });
+  R('鄒忌之妻,妻', X(LADY, { robe: '#a8576a' }));
+  R('妾', X(LADY, { robe: '#c08a6a' }));
+  R('淳于髡,chunyukun', { st: '齊', hat: 'guan', beard: 2, expr: 'smirk' });
+  R('孟子,孟軻,mengzi', X(ELDER, { robe: '#6f7f3f', hat: 'guan', prop: 'scroll' }));
+  R('齊宣王,宣王,qixuanwang', X(KING, { st: '齊' }));
+  R('荀子,荀卿,xunzi', X(ELDER, { robe: '#5a6a7a', hat: 'guan', prop: 'scroll' }));
+  R('孫臏,sunbin', { robe: '#3f5a4a', hat: 'guan', beard: 1, prop: 'scroll', expr: 'serious' });
+  R('龐涓,pangjuan', X(GEN, { st: '魏', eyes: 'sharp' }));
+  R('田忌,tianji', X(GEN, { st: '齊', beard: 2 }));
+  R('蘇秦,季子,suqin', { robe: '#6a5a48', hat: 'guan', beard: 1, prop: 'scroll' });
+  R('蘇秦之嫂,嫂', X(LADY, { robe: '#8a6a4a', jade: false }));
+  R('蘇秦之妻,suqinqi', X(LADY, { robe: '#7a6a5a', jade: false }));
+  R('蘇秦之父', X(ELDER, PEASANT, { robe: '#7a6a52' }));
+  R('蘇秦之母', X(LADY, { old: true, robe: '#7a5a4a', jade: false }));
+  R('張儀,zhangyi', { st: '秦', hat: 'guan', beard: 1, eyes: 'sharp', expr: 'smirk' });
+  R('司馬錯,simacuo', X(GEN, { st: '秦', beard: 2 }));
+  R('趙肅侯,zhaosuhou', X(KING, { st: '趙', beard: 2 }));
+  R('屈原,屈平,靈均,quyuan', { robe: '#3f6f5a', trim: '#e8d9b0', hat: 'guan', hatColor: '#2a3a30', beard: 2, prop: 'sword' });
+  R('楚懷王熊槐,楚王,chuwang', X(KING, { st: '楚' }));
+  R('上官大夫,靳尚,shangguan', { st: '楚', hat: 'guan', beard: 1, eyes: 'sharp', expr: 'smirk' });
+  R('鄭袖,zhengxiu', X(QUEEN, { robe: '#8a3a5a', eyes: 'sharp' }));
+  R('子蘭,令尹子蘭,zilan', { st: '楚', hat: 'guan', expr: 'smirk' });
+  R('漁父,漁夫,yufu', X(ELDER, PEASANT, { hat: 'li', prop: 'oar', expr: 'happy' }));
+  R('趙武靈王,武靈王,wulingwang', { st: '趙', hat: 'helmet', plume: '#d8b24a', armor: true, armorColor: '#6a4a2a', beard: 1, brow: 'thick', prop: 'bow' });
+  R('肥義,feiyi', { st: '趙', hat: 'guan', beard: 2 });
+  R('公子成,gongzicheng', X(ELDER, { st: '趙', hat: 'guan' }));
+  R('燕昭王,昭王,yanzhaowang', X(KING, { st: '燕' }));
+  R('郭隗,guowei', X(ELDER, { st: '燕', hat: 'guan' }));
+  R('樂毅,yueyi', X(GEN, { st: '燕', beard: 2, expr: 'serious' }));
+  R('燕惠王,yanhuiwang', X(KING, { st: '燕', beard: 0, expr: 'smirk' }));
+  R('騎劫,qijie', X(GEN, { st: '燕', eyes: 'sharp' }));
+  R('田單,tiandan', X(GEN, { st: '齊', beard: 2 }));
+  R('齊湣王,湣王,qiminwang', X(KING, { st: '齊', expr: 'angry' }));
+  R('孟嘗君,田文,薛公,mengchangjun', { st: '齊', hat: 'guan', beard: 1 });
+  R('馮諼,馮驩,fengxuan', { robe: '#7a6a52', hat: 'guan', hatColor: '#5a4a3a', beard: 2, prop: 'sword', expr: 'smirk' });
+  R('秦昭王,秦昭襄王,qinzhaowang', X(KING, { st: '秦', beard: 2 }));
+  R('雞鳴客', X(PEASANT, { robe: '#6a6a5a', expr: 'happy' }));
+  R('狗盜客', X(PEASANT, { robe: '#5a5a4a', expr: 'smirk' }));
+  R('門客', X(PEASANT, { robe: '#6a6a5a' }));
+  R('幸姬', X(LADY, { robe: '#b86a8a' }));
+  R('藺相如,linxiangru', { st: '趙', hat: 'guan', beard: 1, prop: 'bi' });
+  R('廉頗,lianpo', X(GEN, { st: '趙', old: true, beard: 3 }));
+  R('趙惠文王,趙王,zhaowang', X(KING, { st: '趙' }));
+  R('繆賢,miaoxian', { st: '趙', hat: 'guan', beard: 0, skin: '#fbe8d6' });
+  R('觸讋,觸龍,左師,chulong', X(ELDER, { st: '趙', hat: 'guan', prop: 'staff' }));
+  R('趙太后,太后,zhaotaihou', X(QUEEN, { old: true, robe: '#6a4a6a' }));
+  R('長安君,changanjun', { st: '趙', hat: 'guan', beard: 0 });
+  R('趙括,zhaokuo', X(GEN, { st: '趙', beard: 0, expr: 'smirk' }));
+  R('白起,武安君,baiqi', X(GEN, { st: '秦', hat: 'kui', hatColor: '#2a2a30', beard: 2, eyes: 'sharp' }));
+  R('趙孝成王,zhaoxiaocheng', X(KING, { st: '趙', beard: 0 }));
+  R('趙括之母,括母', X(LADY, { old: true, robe: '#6a5a4a' }));
+  R('呂不韋,文信侯,lvbuwei', { robe: '#9a7a3a', trim: '#f0dcaa', hat: 'guan', beard: 2, expr: 'smirk' });
+  R('異人,子楚,莊襄王,yiren,zichu', { st: '秦', hat: 'guan', beard: 0 });
+  R('鄭國,水工鄭國,zhengguo', X(PEASANT, { st: '韓', beard: 2 }));
+  R('毛遂,maosui', { st: '趙', hat: 'guan', beard: 1, prop: 'sword' });
+  R('平原君,趙勝,pingyuanjun', { st: '趙', hat: 'guan', beard: 1 });
+  R('楚考烈王,kaoliewang', X(KING, { st: '楚' }));
+  R('信陵君,魏公子,公子無忌,魏無忌,xinlingjun', { st: '魏', hat: 'guan', beard: 1 });
+  R('侯嬴,侯生,houying', X(ELDER, { robe: '#6a5a48', hat: 'jin', jade: false }));
+  R('朱亥,zhuhai', { robe: '#6a4a3a', hat: 'jin', beard: 4, brow: 'thick', big: true, jade: false, skin: '#f3cfa6' });
+  R('如姬,ruji', X(QUEEN, { robe: '#9a4a6a' }));
+  R('晉鄙,jinbi', X(GEN, { st: '魏', beard: 2 }));
+  R('魏安釐王,魏王,weiwang', X(KING, { st: '魏' }));
+  R('魯仲連,魯連,luzhonglian', { st: '齊', hat: 'guan', beard: 2, expr: 'happy' });
+  R('新垣衍,xinyuanyan', { st: '魏', hat: 'guan', beard: 1 });
+  R('荊軻,荊卿,jingke', { robe: '#3f4a5a', hat: 'none', beard: 1, prop: 'map', expr: 'serious' });
+  R('太子丹,燕太子丹,taizidan', { st: '燕', hat: 'guan', beard: 0 });
+  R('樊於期,fanwuqi', X(GEN, { robe: '#4a4a52', beard: 2 }));
+  R('秦舞陽,秦武陽,qinwuyang', { robe: '#4a5a6a', hat: 'band', hatColor: '#2a2a30', beard: 0, jade: false });
+  R('高漸離,gaojianli', { robe: '#5a5a4a', hat: 'jin', beard: 1, prop: 'zhu' });
+  R('田光,tianguang', X(ELDER, { st: '燕', hat: 'guan' }));
+  R('夏無且,xiawuju', X(ELDER, { st: '秦', hat: 'guan' }));
+  R('唐雎,唐且,tangju', X(ELDER, { robe: '#5a6a5a', hat: 'guan', prop: 'sword' }));
+  R('安陵君,anlingjun', X(KING, { robe: '#5a6a5a', hat: 'guan' }));
+  R('陳軫,chenzhen', { st: '齊', hat: 'guan', beard: 1, expr: 'smirk', prop: 'scroll' });
+  R('昭陽,zhaoyang', X(GEN, { st: '楚', beard: 2 }));
+  R('扁鵲,秦越人,bianque', { robe: '#4a7a6a', hat: 'jin', hatColor: '#2f5a4a', beard: 2, jade: false });
+  R('蔡桓公,桓侯,caihuangong', X(KING, { st: '蔡', expr: 'smirk' }));
+
+  // 依名字與頭銜猜外型（名冊裡沒有的人物）
+  function autoSpec(c) {
+    const name = String(c.name || ''), title = String(c.title || ''), t = name + '｜' + title;
+    const h = hash(c.id || name);
+    const sp = { hat: 'guan', beard: h % 3, jade: true };
+    sp.robe = c.color ? robeTone(c.color) : STATE.民;
+    const state = Object.keys(STATE).find(k => k.length === 1 && (title.indexOf(k + '國') > -1 || title.indexOf(k + '將') > -1 || title.indexOf(k + '大夫') > -1 || title.indexOf(k + '王') > -1));
+    if (state && !c.color) sp.robe = STATE[state];
+    if (/夫人|王后|太后|皇后|姬|妃|公主|女子|婦|妻|嫂|姊|妹|母(?!弟)|嫗/.test(t)) {
+      sp.female = true; sp.hat = /后|夫人|妃|公主/.test(t) ? 'feng' : 'none'; sp.beard = 0;
+    }
+    if (/老|叟|翁|父老|亞父|太后|三老|長者/.test(t)) { sp.old = true; sp.beard = sp.female ? 0 : 3; }
+    if (!sp.female) {
+      if (/天子|皇帝|始皇/.test(t)) { sp.hat = 'mian'; sp.grand = true; sp.motif = true; }
+      else if (/(王|公|侯|伯)$/.test(name) || /^.君$/.test(name) || /國君$/.test(title) || /(^|・)(.{1,2}王|.{1,2}侯|.{1,2}伯)$/.test(title)) sp.hat = 'mian';
+      if (/將|帥|尉|校|武士|勇士|騎/.test(t)) { sp.hat = 'helmet'; sp.armor = true; sp.brow = 'thick'; sp.prop = 'sword'; }
+      else if (/兵|卒|士卒|衛士|守衛|戍|哨|軍$/.test(t)) { sp.hat = 'kui'; sp.armor = true; sp.jade = false; sp.beard = h % 2; }
+      else if (/農|漁|樵|夥計|屠|傭|野人|百姓|僕|御者|商|販|工|匠|卜|巫|門客|舍人|父老|鄉|里人|戍卒|徒/.test(t)) {
+        sp.hat = /漁|樵/.test(t) ? 'li' : 'jin'; sp.jade = false; sp.skin = '#f3cfa6'; if (!c.color) sp.robe = STATE.民;
+      }
+      if (/史|博士|謀士|說客|師/.test(t) && sp.hat === 'guan') sp.prop = 'scroll';
+    }
+    if (/你/.test(title)) sp.beard = Math.min(sp.beard || 0, 1);
+    return sp;
+  }
+
+  /** 某個劇本人物的外型：art 欄位 → 名冊（代碼、名字）→ 自動猜 */
+  function specOf(c) {
+    if (!c) return autoSpec({});
+    const base = CAST[c.id] || CAST[c.name] || (c.name ? CAST[String(c.name).replace(/（.*?）|\(.*?\)/g, '')] : null) || autoSpec(c);
+    const sp = Object.assign({}, base);
+    const art = c.art || {};
+    if (art.state && STATE[art.state]) { sp.robe = STATE[art.state]; if (TRIM[art.state]) sp.trim = TRIM[art.state]; }
+    return Object.assign(sp, art);
+  }
+  // ═══════════════════════════ 場景：共用零件 ═══════════════════════════
+  // 座標系：viewBox 0 0 1600 1000，以 xMidYMax slice 貼齊底部。
+  // 電腦（16:9）會切掉上方約 180；手機直式只看得到中間約 x 540～1060，所以重點放中間。
+
+  const TOD = {
+    dawn: { sky: ['#2c3462', '#6f6596', '#e09a80', '#f7d3a4'], glow: '#ffe1b0', sun: [1180, 600, 60], mtn: ['#9284a8', '#71699a', '#4f557e'], cloud: ['#f5c9b4', '#a87a96'], tint: '#ffc2a8', tintOp: 0.22, stars: 0.25 },
+    day: { sky: ['#4f86c0', '#80aedb', '#c5def0', '#eef2e6'], glow: '#fffbe8', sun: [1290, 150, 54], mtn: ['#a9bccb', '#89a2b4', '#6a8596'], cloud: ['#ffffff', '#c9d8e8'], tint: '#ffffff', tintOp: 0, stars: 0 },
+    dusk: { sky: ['#28345f', '#5f4f86', '#d98063', '#f4b375'], glow: '#fff1c8', sun: [1120, 600, 66], mtn: ['#8c7aa6', '#6d6194', '#47507a'], cloud: ['#f6c7b0', '#b77b8e'], tint: '#ff9a6a', tintOp: 0.28, stars: 0.5 },
+    night: { sky: ['#050918', '#0d1636', '#18264f', '#24345f'], glow: '#f2e3b0', moon: [1250, 190, 46], mtn: ['#29345a', '#1f2849', '#151c36'], cloud: ['#3a4670', '#222c4e'], tint: '#26346e', tintOp: 0.7, stars: 1 }
+  };
+
+  function Kit(seed, key) {
+    this.r = rng(seed || 7);
+    this.key = key;
+    this.n = 0;
+    this.defs = '';
+  }
+  Kit.prototype.id = function (name) { this.n += 1; return 'sc' + this.key + this.n + '_' + name; };
+  Kit.prototype.lin = function (stops, x1, y1, x2, y2) {
+    const id = this.id('g');
+    this.defs += '<linearGradient id="' + id + '" x1="' + (x1 || 0) + '" y1="' + (y1 || 0) + '" x2="' + (x2 === undefined ? 0 : x2) + '" y2="' + (y2 === undefined ? 1 : y2) + '">' +
+      stops.map((s, i) => '<stop offset="' + (Array.isArray(s) ? s[0] : i / Math.max(1, stops.length - 1)) + '" stop-color="' + (Array.isArray(s) ? s[1] : s) + '"' + (Array.isArray(s) && s[2] !== undefined ? ' stop-opacity="' + s[2] + '"' : '') + '/>').join('') + '</linearGradient>';
+    return 'url(#' + id + ')';
+  };
+  Kit.prototype.rad = function (cx, cy, r, stops) {
+    const id = this.id('r');
+    this.defs += '<radialGradient id="' + id + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" gradientUnits="userSpaceOnUse">' +
+      stops.map(s => '<stop offset="' + s[0] + '" stop-color="' + s[1] + '" stop-opacity="' + (s[2] === undefined ? 1 : s[2]) + '"/>').join('') + '</radialGradient>';
+    return 'url(#' + id + ')';
+  };
+  Kit.prototype.glow = function (x, y, r, color, op) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + this.rad(x, y, r, [[0, color, op === undefined ? 0.55 : op], [0.4, color, (op === undefined ? 0.55 : op) * 0.35], [1, color, 0]]) + '"/>';
+  };
+
+  /** 天空：漸層、星、日月、光暈、雲 */
+  Kit.prototype.sky = function (T, opt) {
+    const o = opt || {};
+    const r = this.r;
+    const y1 = o.horizon || 760;
+    let h = '<rect width="1600" height="' + (y1 + 40) + '" fill="' + this.lin([[0, T.sky[0]], [0.42, T.sky[1]], [0.72, T.sky[2]], [1, T.sky[3]]], 0, 0, 0, 1) + '"/>';
+    if (T.stars) {
+      h += '<g class="sc-twinkle">';
+      for (let i = 0; i < 70 * T.stars; i++) h += '<circle cx="' + (r() * 1600).toFixed(0) + '" cy="' + (r() * (y1 * 0.5)).toFixed(0) + '" r="' + (0.8 + r() * 1.6).toFixed(1) + '" fill="#fff6dc" opacity="' + (0.3 + r() * 0.6).toFixed(2) + '"/>';
+      h += '</g>';
+    }
+    if (T.sun && !o.noSun) {
+      const s = T.sun;
+      h += this.glow(s[0], s[1], s[2] * 6, T.glow, 0.75) + '<circle cx="' + s[0] + '" cy="' + s[1] + '" r="' + s[2] + '" fill="' + T.glow + '"/>';
+    }
+    if (T.moon && !o.noSun) {
+      const m = T.moon;
+      h += this.glow(m[0], m[1], m[2] * 5, '#cfd8ff', 0.4) + '<circle cx="' + m[0] + '" cy="' + m[1] + '" r="' + m[2] + '" fill="#f6edc8"/>' +
+        '<circle cx="' + (m[0] - 12) + '" cy="' + (m[1] - 8) + '" r="9" fill="#e6dab0" opacity=".6"/><circle cx="' + (m[0] + 14) + '" cy="' + (m[1] + 10) + '" r="6" fill="#e6dab0" opacity=".5"/>';
+    }
+    if (!o.noCloud) {
+      h += this.cloud(140, 250, 320, T.cloud[0], T.cloud[1]) + this.cloud(620, 170, 400, T.cloud[0], T.cloud[1], 'sc-cloud sc-cloud--slow') +
+        this.cloud(1180, 290, 300, T.cloud[0], T.cloud[1]) + this.cloud(1430, 130, 240, T.cloud[0], T.cloud[1], 'sc-cloud sc-cloud--slow');
+    }
+    return h;
+  };
+
+  Kit.prototype.cloud = function (x, y, w, light, dark, cls) {
+    const r = w / 6;
+    const blobs = [[0, 0, 1.2], [1.4, -0.6, 1.5], [2.9, -0.2, 1.3], [4.1, 0.3, 1], [2, 0.6, 1.2]];
+    let base = '', top = '';
+    blobs.forEach(b => {
+      base += '<ellipse cx="' + (x + b[0] * r).toFixed(0) + '" cy="' + (y + b[1] * r + r * 0.25).toFixed(0) + '" rx="' + (b[2] * r * 1.15).toFixed(0) + '" ry="' + (b[2] * r * 0.8).toFixed(0) + '"/>';
+      top += '<ellipse cx="' + (x + b[0] * r - r * 0.15).toFixed(0) + '" cy="' + (y + b[1] * r - r * 0.12).toFixed(0) + '" rx="' + (b[2] * r * 0.95).toFixed(0) + '" ry="' + (b[2] * r * 0.6).toFixed(0) + '"/>';
+    });
+    return '<g class="' + (cls || 'sc-cloud') + '"><g fill="' + dark + '" opacity=".9">' + base + '</g><g fill="' + light + '" opacity=".95">' + top + '</g></g>';
+  };
+
+  Kit.prototype.ridge = function (y0, amp, step, fill, op) {
+    const r = this.r;
+    let d = 'M0 1000 L0 ' + y0;
+    let x = 0;
+    let y = y0;
+    while (x < 1600) {
+      const nx = x + step * (0.6 + r() * 0.8);
+      const ny = y0 - r() * amp;
+      d += ' Q' + ((x + nx) / 2).toFixed(0) + ' ' + (Math.min(y, ny) - amp * 0.35 * r()).toFixed(0) + ' ' + nx.toFixed(0) + ' ' + ny.toFixed(0);
+      x = nx; y = ny;
+    }
+    return '<path d="' + d + ' L1600 1000 Z" fill="' + fill + '"' + (op !== undefined ? ' opacity="' + op + '"' : '') + '/>';
+  };
+  Kit.prototype.mist = function (y, h, color, op) {
+    return '<rect x="0" y="' + y + '" width="1600" height="' + h + '" fill="' + this.lin([[0, color, 0], [0.5, color, op || 0.5], [1, color, 0]]) + '"/>';
+  };
+  Kit.prototype.hills = function (T) {
+    return this.ridge(560, 130, 150, T.mtn[0], 0.6) + this.ridge(610, 90, 120, T.mtn[1], 0.8) + this.mist(560, 120, T.sky[3], 0.45) + this.ridge(660, 50, 90, T.mtn[2]);
+  };
+
+  /** 地面：起伏的上緣＋漸層 */
+  Kit.prototype.ground = function (y, c1, c2, wav) {
+    const w = wav === undefined ? 18 : wav;
+    return '<path d="M0 1000 V' + (y + w) + ' C260 ' + (y - w) + ' 520 ' + (y + w) + ' 800 ' + y + ' S1340 ' + (y - w) + ' 1600 ' + (y + w * 0.6) + ' V1000 Z" fill="' + this.lin([c1, c2]) + '"/>';
+  };
+  Kit.prototype.grass = function (x0, x1, y0, y1, n, colors, hmax) {
+    const r = this.r;
+    let h = '<g stroke-linecap="round" fill="none">';
+    for (let i = 0; i < n; i++) {
+      const x = x0 + (x1 - x0) * r(), y = y0 + (y1 - y0) * r(), hh = (hmax || 26) * (0.5 + r() * 0.7);
+      const c = colors[i % colors.length];
+      h += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' q' + (-4 - r() * 4).toFixed(1) + ' ' + (-hh * 0.6).toFixed(1) + ' ' + (-8 + r() * 4).toFixed(1) + ' ' + (-hh).toFixed(1) +
+        ' M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' q' + (2).toFixed(1) + ' ' + (-hh * 0.7).toFixed(1) + ' ' + (3 + r() * 5).toFixed(1) + ' ' + (-hh * 1.1).toFixed(1) +
+        ' M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' q' + (5).toFixed(1) + ' ' + (-hh * 0.4).toFixed(1) + ' ' + (10 + r() * 4).toFixed(1) + ' ' + (-hh * 0.7).toFixed(1) + '" stroke="' + c + '" stroke-width="' + (2 + r() * 1.4).toFixed(1) + '"/>';
+    }
+    return h + '</g>';
+  };
+  Kit.prototype.flowers = function (x0, x1, y0, y1, n, colors) {
+    const r = this.r;
+    let h = '';
+    for (let i = 0; i < n; i++) {
+      const x = x0 + (x1 - x0) * r(), y = y0 + (y1 - y0) * r();
+      h += '<circle cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" r="' + (2.5 + r() * 2.5).toFixed(1) + '" fill="' + colors[i % colors.length] + '"/>';
+    }
+    return h;
+  };
+
+  // ───── 樹 ─────
+  Kit.prototype.pine = function (x, y, s, c) {
+    const col = c || ['#2f4a34', '#3d5e40', '#4f7350'];
+    let h = '<g><path d="M' + (x - 8 * s) + ' ' + y + ' C' + (x - 4 * s) + ' ' + (y - 100 * s) + ' ' + (x + 6 * s) + ' ' + (y - 180 * s) + ' ' + (x - 2 * s) + ' ' + (y - 260 * s) + ' L' + (x + 8 * s) + ' ' + (y - 260 * s) + ' C' + (x + 14 * s) + ' ' + (y - 170 * s) + ' ' + (x + 8 * s) + ' ' + (y - 90 * s) + ' ' + (x + 12 * s) + ' ' + y + ' Z" fill="#4a3426"/>';
+    const tiers = [[-260, 70], [-215, 95], [-170, 120], [-125, 140]];
+    tiers.forEach((t, i) => {
+      const ty = y + t[0] * s, w = t[1] * s, side = i % 2 ? 1 : -1;
+      h += '<path d="M' + (x - w) + ' ' + (ty + 24 * s) + ' Q' + (x + side * 20 * s) + ' ' + (ty - 30 * s) + ' ' + (x + w) + ' ' + (ty + 24 * s) + ' Q' + x + ' ' + (ty + 10 * s) + ' ' + (x - w) + ' ' + (ty + 24 * s) + ' Z" fill="' + col[0] + '"/>' +
+        '<path d="M' + (x - w * 0.8) + ' ' + (ty + 14 * s) + ' Q' + (x + side * 16 * s) + ' ' + (ty - 30 * s) + ' ' + (x + w * 0.7) + ' ' + (ty + 12 * s) + ' Z" fill="' + col[1] + '"/>' +
+        '<path d="M' + (x - w * 0.4) + ' ' + (ty + 2 * s) + ' Q' + (x + side * 6 * s) + ' ' + (ty - 22 * s) + ' ' + (x + w * 0.35) + ' ' + (ty + 2 * s) + ' Z" fill="' + col[2] + '" opacity=".8"/>';
+    });
+    return h + '</g>';
+  };
+  Kit.prototype.broad = function (x, y, s, c) {
+    const col = c || ['#3f5a32', '#557a3e', '#6f9a50'];
+    const r = this.r;
+    let h = '<g><path d="M' + (x - 12 * s) + ' ' + y + ' C' + (x - 6 * s) + ' ' + (y - 80 * s) + ' ' + (x - 16 * s) + ' ' + (y - 140 * s) + ' ' + (x - 4 * s) + ' ' + (y - 190 * s) + ' L' + (x + 8 * s) + ' ' + (y - 190 * s) + ' C' + (x + 10 * s) + ' ' + (y - 130 * s) + ' ' + (x + 6 * s) + ' ' + (y - 70 * s) + ' ' + (x + 14 * s) + ' ' + y + ' Z" fill="#4a3426"/>' +
+      '<path d="M' + x + ' ' + (y - 120 * s) + ' L' + (x - 40 * s) + ' ' + (y - 170 * s) + ' M' + x + ' ' + (y - 140 * s) + ' L' + (x + 46 * s) + ' ' + (y - 186 * s) + '" stroke="#4a3426" stroke-width="' + (6 * s) + '" stroke-linecap="round"/>';
+    const blobs = [[0, -230, 90], [-70, -200, 70], [70, -205, 74], [-30, -270, 66], [40, -265, 64], [0, -180, 60]];
+    blobs.forEach(b => { h += '<circle cx="' + (x + b[0] * s).toFixed(0) + '" cy="' + (y + b[1] * s).toFixed(0) + '" r="' + (b[2] * s).toFixed(0) + '" fill="' + col[0] + '"/>'; });
+    blobs.forEach(b => { h += '<circle cx="' + (x + b[0] * s - 10 * s).toFixed(0) + '" cy="' + (y + b[1] * s - 12 * s).toFixed(0) + '" r="' + (b[2] * s * 0.72).toFixed(0) + '" fill="' + col[1] + '"/>'; });
+    for (let i = 0; i < 10; i++) h += '<circle cx="' + (x + (r() - 0.5) * 160 * s).toFixed(0) + '" cy="' + (y + (-290 + r() * 110) * s).toFixed(0) + '" r="' + ((12 + r() * 16) * s).toFixed(0) + '" fill="' + col[2] + '" opacity=".75"/>';
+    return h + '</g>';
+  };
+  Kit.prototype.bare = function (x, y, s, c) {
+    const col = c || '#4a3a30';
+    const r = this.r;
+    let h = '<g stroke="' + col + '" stroke-linecap="round" fill="none">';
+    h += '<path d="M' + x + ' ' + y + ' C' + (x - 6 * s) + ' ' + (y - 80 * s) + ' ' + (x + 8 * s) + ' ' + (y - 150 * s) + ' ' + x + ' ' + (y - 230 * s) + '" stroke-width="' + (14 * s) + '"/>';
+    for (let i = 0; i < 9; i++) {
+      const by = y - (90 + i * 16) * s, side = i % 2 ? 1 : -1, len = (60 + r() * 70) * s;
+      h += '<path d="M' + x + ' ' + by.toFixed(0) + ' q' + (side * len * 0.5).toFixed(0) + ' ' + (-len * 0.3).toFixed(0) + ' ' + (side * len).toFixed(0) + ' ' + (-len * 0.7).toFixed(0) + '" stroke-width="' + ((5 - i * 0.35) * s).toFixed(1) + '"/>';
+    }
+    return h + '</g>';
+  };
+  Kit.prototype.willow = function (x, y, s) {
+    const r = this.r;
+    let h = '<g class="sc-sway" style="transform-origin:' + x + 'px ' + (y - 300 * s) + 'px">';
+    h += '<path d="M' + (x - 22 * s) + ' ' + y + ' C' + (x - 10 * s) + ' ' + (y - 120 * s) + ' ' + (x - 30 * s) + ' ' + (y - 220 * s) + ' ' + (x + 6 * s) + ' ' + (y - 310 * s) +
+      ' L' + (x + 26 * s) + ' ' + (y - 300 * s) + ' C' + (x + 10 * s) + ' ' + (y - 200 * s) + ' ' + (x + 30 * s) + ' ' + (y - 110 * s) + ' ' + (x + 28 * s) + ' ' + y + ' Z" fill="#4a3426"/>';
+    h += '<ellipse cx="' + (x + 10 * s) + '" cy="' + (y - 320 * s) + '" rx="' + (190 * s) + '" ry="' + (80 * s) + '" fill="#3f5a32" opacity=".9"/>' +
+      '<ellipse cx="' + (x - 40 * s) + '" cy="' + (y - 340 * s) + '" rx="' + (120 * s) + '" ry="' + (54 * s) + '" fill="#557a3e"/>' +
+      '<ellipse cx="' + (x + 70 * s) + '" cy="' + (y - 346 * s) + '" rx="' + (110 * s) + '" ry="' + (48 * s) + '" fill="#668f48"/>';
+    for (let i = 0; i < 30; i++) {
+      const bx = x - 170 * s + i * 11.5 * s + r() * 8;
+      const by = y - 330 * s + r() * 30 * s;
+      const len = (120 + r() * 170) * s;
+      const sw = (r() - 0.5) * 40 * s;
+      h += '<path d="M' + bx.toFixed(0) + ' ' + by.toFixed(0) + ' C' + (bx + sw).toFixed(0) + ' ' + (by + len * 0.4).toFixed(0) + ' ' + (bx - sw * 0.6).toFixed(0) + ' ' + (by + len * 0.7).toFixed(0) + ' ' + (bx + sw * 0.3).toFixed(0) + ' ' + (by + len).toFixed(0) + '" stroke="' + ['#557a3e', '#6f9a50', '#86b060', '#4a6a36'][i % 4] + '" stroke-width="' + (2.4 * s).toFixed(1) + '" fill="none" opacity=".9"/>';
+    }
+    return h + '</g>';
+  };
+  Kit.prototype.reeds = function (x0, x1, y, h0, n) {
+    const r = this.r;
+    let h = '<g class="sc-sway sc-sway--slow" style="transform-origin:' + ((x0 + x1) / 2) + 'px ' + y + 'px">';
+    for (let i = 0; i < (n || 24); i++) {
+      const x = x0 + (x1 - x0) * r();
+      const hh = h0 * (0.6 + r() * 0.6);
+      const bend = (r() - 0.3) * 30;
+      h += '<path d="M' + x.toFixed(0) + ' ' + y + ' Q' + (x + bend * 0.4).toFixed(0) + ' ' + (y - hh * 0.6).toFixed(0) + ' ' + (x + bend).toFixed(0) + ' ' + (y - hh).toFixed(0) + '" stroke="' + ['#5d6e3a', '#7a8a48', '#4a5a2e'][i % 3] + '" stroke-width="' + (2 + r() * 2).toFixed(1) + '" fill="none" stroke-linecap="round"/>';
+      if (r() > 0.6) h += '<ellipse cx="' + (x + bend).toFixed(0) + '" cy="' + (y - hh).toFixed(0) + '" rx="4" ry="12" fill="#6b4a2c" transform="rotate(' + (bend * 0.6).toFixed(0) + ' ' + (x + bend).toFixed(0) + ' ' + (y - hh).toFixed(0) + ')"/>';
+    }
+    return h + '</g>';
+  };
+  Kit.prototype.rock = function (x, y, w, c) {
+    const col = c || '#6b6f74';
+    return '<path d="M' + (x - w) + ' ' + y + ' C' + (x - w * 0.9) + ' ' + (y - w * 0.6) + ' ' + (x - w * 0.2) + ' ' + (y - w * 0.8) + ' ' + (x + w * 0.3) + ' ' + (y - w * 0.55) + ' C' + (x + w * 0.8) + ' ' + (y - w * 0.4) + ' ' + (x + w) + ' ' + (y - w * 0.15) + ' ' + (x + w) + ' ' + y + ' Z" fill="' + col + '" stroke="' + shade(col, -0.35) + '" stroke-width="2"/>' +
+      '<path d="M' + (x - w * 0.6) + ' ' + (y - w * 0.45) + ' Q' + (x - w * 0.1) + ' ' + (y - w * 0.7) + ' ' + (x + w * 0.3) + ' ' + (y - w * 0.5) + '" stroke="' + shade(col, 0.3) + '" stroke-width="3" fill="none" opacity=".6"/>';
+  };
+
+  // ───── 建築 ─────
+  /** 屋頂：中國式翹簷（cx 中心、y 簷口、w 寬、h 高） */
+  Kit.prototype.roof = function (cx, y, w, h, col, edge) {
+    const x0 = cx - w / 2, x1 = cx + w / 2, ov = w * 0.06;
+    const c = col || '#2f2a33';
+    const ec = edge || '#c9a24a';
+    return '<path d="M' + (x0 - ov) + ' ' + (y - 14) + ' Q' + (x0 + w * 0.08) + ' ' + (y + 2) + ' ' + (x0 + w * 0.2) + ' ' + y + ' L' + (x1 - w * 0.2) + ' ' + y + ' Q' + (x1 - w * 0.08) + ' ' + (y + 2) + ' ' + (x1 + ov) + ' ' + (y - 14) +
+      ' L' + (x1 - w * 0.16) + ' ' + (y - h) + ' L' + (x0 + w * 0.16) + ' ' + (y - h) + ' Z" fill="' + c + '"/>' +
+      '<path d="M' + (x0 - ov) + ' ' + (y - 14) + ' Q' + (x0 + w * 0.08) + ' ' + (y + 2) + ' ' + (x0 + w * 0.2) + ' ' + y + ' L' + (x1 - w * 0.2) + ' ' + y + ' Q' + (x1 - w * 0.08) + ' ' + (y + 2) + ' ' + (x1 + ov) + ' ' + (y - 14) + '" stroke="' + ec + '" stroke-width="3" fill="none" opacity=".75"/>' +
+      '<path d="M' + (x0 + w * 0.16 - 8) + ' ' + (y - h) + ' H' + (x1 - w * 0.16 + 8) + '" stroke="' + shade(c, -0.3) + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M' + (x0 + w * 0.16 - 6) + ' ' + (y - h - 2) + ' q-6 -16 6 -22 M' + (x1 - w * 0.16 + 6) + ' ' + (y - h - 2) + ' q6 -16 -6 -22" stroke="' + shade(c, -0.3) + '" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      this.tiles(cx, y, w, h, c);
+  };
+  Kit.prototype.tiles = function (cx, y, w, h, c) {
+    let s = '<g stroke="' + shade(c, 0.18) + '" stroke-width="1.6" opacity=".55">';
+    const n = Math.round(w / 26);
+    for (let i = 1; i < n; i++) {
+      const t = i / n;
+      const xb = cx - w / 2 + w * 0.2 + (w * 0.6) * t, xt = cx - w / 2 + w * 0.16 + (w * 0.68) * t;
+      s += '<path d="M' + xb.toFixed(0) + ' ' + (y - 2) + ' L' + xt.toFixed(0) + ' ' + (y - h + 4) + '"/>';
+    }
+    return s + '</g>';
+  };
+  /** 一座殿：台基、柱、牆、門窗、屋頂（雙簷可選） */
+  Kit.prototype.hall = function (cx, base, w, opt) {
+    const o = opt || {};
+    const wallH = o.wallH || w * 0.22;
+    const col = o.column || '#9a2f24';
+    const wall = o.wall || '#e9dcc0';
+    let h = '';
+    // 台基
+    const pw = w * 1.12, ph = o.plinth || 40;
+    h += '<rect x="' + (cx - pw / 2) + '" y="' + (base - ph) + '" width="' + pw + '" height="' + ph + '" fill="#cdbf9f"/><rect x="' + (cx - pw / 2) + '" y="' + (base - ph) + '" width="' + pw + '" height="6" fill="#e6dbc0"/>' +
+      '<path d="M' + (cx - pw / 2) + ' ' + (base - ph * 0.45) + ' H' + (cx + pw / 2) + '" stroke="#a89878" stroke-width="2"/>';
+    // 牆與柱
+    const top = base - ph - wallH;
+    h += '<rect x="' + (cx - w / 2) + '" y="' + top + '" width="' + w + '" height="' + wallH + '" fill="' + wall + '"/>';
+    const nCol = o.columns || 6;
+    for (let i = 0; i < nCol; i++) {
+      const x = cx - w / 2 + 6 + i * (w - 12 - 16) / (nCol - 1);
+      h += '<rect x="' + x.toFixed(0) + '" y="' + top + '" width="16" height="' + wallH + '" fill="' + col + '"/><rect x="' + x.toFixed(0) + '" y="' + top + '" width="5" height="' + wallH + '" fill="' + shade(col, 0.25) + '" opacity=".6"/>';
+      if (i < nCol - 1) {
+        const x2 = cx - w / 2 + 6 + (i + 1) * (w - 12 - 16) / (nCol - 1);
+        const mid = (x + 16 + x2) / 2, dw = (x2 - x - 16) * 0.8;
+        // 格扇門
+        h += '<rect x="' + (mid - dw / 2).toFixed(0) + '" y="' + (top + wallH * 0.18).toFixed(0) + '" width="' + dw.toFixed(0) + '" height="' + (wallH * 0.82).toFixed(0) + '" fill="' + shade(col, -0.25) + '"/>' +
+          '<g stroke="' + shade(wall, -0.1) + '" stroke-width="1.6" opacity=".55">';
+        for (let k = 1; k < 4; k++) h += '<path d="M' + (mid - dw / 2 + dw * k / 4).toFixed(0) + ' ' + (top + wallH * 0.2).toFixed(0) + ' V' + (top + wallH * 0.6).toFixed(0) + '"/>';
+        for (let k = 1; k < 4; k++) h += '<path d="M' + (mid - dw / 2).toFixed(0) + ' ' + (top + wallH * 0.2 + wallH * 0.1 * k).toFixed(0) + ' H' + (mid + dw / 2).toFixed(0) + '"/>';
+        h += '</g>';
+      }
+    }
+    // 斗拱的橫枋
+    h += '<rect x="' + (cx - w / 2 - 6) + '" y="' + (top - 14) + '" width="' + (w + 12) + '" height="16" fill="' + (o.beam || '#2f5a54') + '"/>' +
+      '<g fill="#c9a24a" opacity=".7">' + Array.from({ length: Math.round(w / 40) }, (_, i) => '<rect x="' + (cx - w / 2 + 10 + i * 40) + '" y="' + (top - 11) + '" width="18" height="10" rx="2"/>').join('') + '</g>';
+    h += this.roof(cx, top - 12, w * 1.28, w * 0.2, o.roof, o.edge);
+    if (o.double) {
+      const t2 = top - 12 - w * 0.2;
+      h += '<rect x="' + (cx - w * 0.33) + '" y="' + (t2 - w * 0.07) + '" width="' + (w * 0.66) + '" height="' + (w * 0.07) + '" fill="' + wall + '"/>' +
+        '<rect x="' + (cx - w * 0.33) + '" y="' + (t2 - w * 0.07) + '" width="' + (w * 0.66) + '" height="' + (w * 0.07) + '" fill="' + shade(col, -0.2) + '" opacity=".45"/>' +
+        this.roof(cx, t2 - w * 0.07, w * 0.86, w * 0.15, o.roof, o.edge);
+    }
+    return h;
+  };
+  /** 台階 */
+  Kit.prototype.stairs = function (cx, y0, y1, w0, w1, col) {
+    const n = 8;
+    let h = '<path d="M' + (cx - w0 / 2) + ' ' + y0 + ' L' + (cx + w0 / 2) + ' ' + y0 + ' L' + (cx + w1 / 2) + ' ' + y1 + ' L' + (cx - w1 / 2) + ' ' + y1 + ' Z" fill="' + (col || '#d6c9a8') + '"/>';
+    for (let i = 1; i < n; i++) {
+      const t = i / n, y = y0 + (y1 - y0) * t, w = w0 + (w1 - w0) * t;
+      h += '<path d="M' + (cx - w / 2).toFixed(0) + ' ' + y.toFixed(0) + ' H' + (cx + w / 2).toFixed(0) + '" stroke="#a89878" stroke-width="2"/>';
+    }
+    return h + '<path d="M' + (cx - 14) + ' ' + y0 + ' L' + (cx - w1 * 0.08) + ' ' + y1 + ' L' + (cx + w1 * 0.08) + ' ' + y1 + ' L' + (cx + 14) + ' ' + y0 + ' Z" fill="#bcae8c" opacity=".7"/>';
+  };
+  /** 城牆＋雉堞 */
+  Kit.prototype.wall = function (x0, x1, y, hgt, col) {
+    const c = col || '#8a8274';
+    let h = '<rect x="' + x0 + '" y="' + y + '" width="' + (x1 - x0) + '" height="' + hgt + '" fill="' + c + '"/>' +
+      '<rect x="' + x0 + '" y="' + y + '" width="' + (x1 - x0) + '" height="' + hgt + '" fill="' + this.lin([[0, '#000', 0], [1, '#000', 0.25]]) + '"/>';
+    // 夯土層線
+    h += '<g stroke="' + shade(c, -0.15) + '" stroke-width="1.6" opacity=".6">';
+    for (let yy = y + 18; yy < y + hgt; yy += 18) h += '<path d="M' + x0 + ' ' + yy + ' H' + x1 + '"/>';
+    h += '</g>';
+    for (let x = x0; x < x1 - 10; x += 34) h += '<rect x="' + x + '" y="' + (y - 16) + '" width="22" height="18" fill="' + shade(c, 0.05) + '"/>';
+    return h + '<rect x="' + x0 + '" y="' + (y - 2) + '" width="' + (x1 - x0) + '" height="5" fill="' + shade(c, -0.2) + '"/>';
+  };
+  /** 城門樓 */
+  Kit.prototype.gate = function (cx, y, w, hgt, col, roof) {
+    const c = col || '#8a8274';
+    let h = '<rect x="' + (cx - w / 2) + '" y="' + (y - hgt) + '" width="' + w + '" height="' + hgt + '" fill="' + shade(c, 0.04) + '"/>' +
+      '<g stroke="' + shade(c, -0.15) + '" stroke-width="1.6" opacity=".6">';
+    for (let yy = y - hgt + 18; yy < y; yy += 18) h += '<path d="M' + (cx - w / 2) + ' ' + yy + ' H' + (cx + w / 2) + '"/>';
+    h += '</g><path d="M' + (cx - w * 0.16) + ' ' + y + ' V' + (y - hgt * 0.5) + ' Q' + cx + ' ' + (y - hgt * 0.78) + ' ' + (cx + w * 0.16) + ' ' + (y - hgt * 0.5) + ' V' + y + ' Z" fill="#1e1a1c"/>' +
+      '<path d="M' + (cx - w * 0.16) + ' ' + y + ' V' + (y - hgt * 0.5) + ' Q' + cx + ' ' + (y - hgt * 0.78) + ' ' + (cx + w * 0.16) + ' ' + (y - hgt * 0.5) + ' V' + y + '" stroke="' + shade(c, 0.25) + '" stroke-width="5" fill="none"/>';
+    // 樓
+    h += this.hall(cx, y - hgt, w * 0.62, { plinth: 8, columns: 5, wallH: w * 0.11, roof: roof, wall: '#d8c9a8' });
+    return h;
+  };
+  /** 旗：pole 底在 (x, y)，高 h；glyph 寫字 */
+  Kit.prototype.banner = function (x, y, h, color, glyph, flip) {
+    const d = flip ? -1 : 1;
+    const c = color || '#a3362c';
+    let s = '<path d="M' + x + ' ' + y + ' V' + (y - h) + '" stroke="#3a2a20" stroke-width="6" stroke-linecap="round"/><circle cx="' + x + '" cy="' + (y - h - 4) + '" r="6" fill="#c9a24a"/>';
+    s += '<g class="sc-wave" style="transform-origin:' + x + 'px ' + (y - h + 40) + 'px">' +
+      '<path d="M' + x + ' ' + (y - h + 6) + ' C' + (x + d * 40) + ' ' + (y - h - 4) + ' ' + (x + d * 70) + ' ' + (y - h + 14) + ' ' + (x + d * 110) + ' ' + (y - h + 4) + ' L' + (x + d * 104) + ' ' + (y - h + 96) + ' C' + (x + d * 70) + ' ' + (y - h + 108) + ' ' + (x + d * 40) + ' ' + (y - h + 90) + ' ' + x + ' ' + (y - h + 100) + ' Z" fill="' + c + '"/>' +
+      '<path d="M' + x + ' ' + (y - h + 100) + ' L' + (x + d * 12) + ' ' + (y - h + 120) + ' L' + (x + d * 24) + ' ' + (y - h + 98) + ' L' + (x + d * 40) + ' ' + (y - h + 118) + ' L' + (x + d * 54) + ' ' + (y - h + 96) + '" fill="' + c + '"/>' +
+      '<path d="M' + x + ' ' + (y - h + 12) + ' C' + (x + d * 40) + ' ' + (y - h + 2) + ' ' + (x + d * 70) + ' ' + (y - h + 20) + ' ' + (x + d * 104) + ' ' + (y - h + 10) + '" stroke="#e8c36a" stroke-width="3" fill="none" opacity=".8"/>';
+    if (glyph) s += '<text class="country-glyph" x="' + (x + d * 54) + '" y="' + (y - h + 68) + '" text-anchor="middle" font-size="46" font-weight="700" fill="#f6ead0" font-family="\'Noto Serif TC\',\'Noto Serif CJK TC\',\'Songti TC\',serif">' + String(glyph).slice(0, 1).replace(/[<&>]/g, '') + '</text>';
+    return s + '</g>';
+  };
+  Kit.prototype.tentOut = function (cx, by, w, hgt, col) {
+    const c = col || '#cdb48a';
+    return '<g><path d="M' + (cx - w / 2) + ' ' + by + ' L' + cx + ' ' + (by - hgt) + ' L' + (cx + w / 2) + ' ' + by + ' Z" fill="' + c + '"/>' +
+      '<path d="M' + cx + ' ' + (by - hgt) + ' L' + (cx + w / 2) + ' ' + by + ' L' + (cx + w * 0.18) + ' ' + by + ' Z" fill="' + shade(c, -0.2) + '"/>' +
+      '<path d="M' + (cx - w * 0.1) + ' ' + by + ' L' + cx + ' ' + (by - hgt * 0.5) + ' L' + (cx + w * 0.1) + ' ' + by + ' Z" fill="#2a1d14"/>' +
+      '<path d="M' + cx + ' ' + (by - hgt) + ' v-18" stroke="#3a2a20" stroke-width="4"/>' +
+      '<path d="M' + (cx - w / 2 - 20) + ' ' + (by + 4) + ' L' + (cx - w / 2 + 10) + ' ' + (by - 20) + ' M' + (cx + w / 2 + 20) + ' ' + (by + 4) + ' L' + (cx + w / 2 - 10) + ' ' + (by - 20) + '" stroke="#6b5230" stroke-width="2"/></g>';
+  };
+  Kit.prototype.torch = function (x, y, hgt) {
+    const h0 = hgt || 120;
+    return '<path d="M' + x + ' ' + y + ' V' + (y - h0) + '" stroke="#3a2a20" stroke-width="7"/><path d="M' + (x - 12) + ' ' + (y - h0) + ' h24 l-6 14 h-12 Z" fill="#5a4030"/>' +
+      '<g class="sc-flicker" style="transform-origin:' + x + 'px ' + (y - h0) + 'px"><path d="M' + x + ' ' + (y - h0 - 44) + ' C' + (x + 16) + ' ' + (y - h0 - 20) + ' ' + (x + 12) + ' ' + (y - h0) + ' ' + x + ' ' + (y - h0) + ' C' + (x - 12) + ' ' + (y - h0) + ' ' + (x - 16) + ' ' + (y - h0 - 20) + ' ' + x + ' ' + (y - h0 - 44) + ' Z" fill="#ffb347"/>' +
+      '<path d="M' + x + ' ' + (y - h0 - 26) + ' C' + (x + 7) + ' ' + (y - h0 - 12) + ' ' + (x + 6) + ' ' + (y - h0 - 2) + ' ' + x + ' ' + (y - h0 - 2) + ' C' + (x - 6) + ' ' + (y - h0 - 2) + ' ' + (x - 7) + ' ' + (y - h0 - 12) + ' ' + x + ' ' + (y - h0 - 26) + ' Z" fill="#fff1b8"/></g>';
+  };
+  Kit.prototype.fire = function (x, y, s) {
+    const k = s || 1;
+    return '<g><path d="M' + (x - 40 * k) + ' ' + y + ' L' + (x + 40 * k) + ' ' + (y - 14 * k) + ' M' + (x - 40 * k) + ' ' + (y - 14 * k) + ' L' + (x + 40 * k) + ' ' + y + '" stroke="#4a3020" stroke-width="' + (9 * k) + '" stroke-linecap="round"/>' +
+      '<g class="sc-flicker" style="transform-origin:' + x + 'px ' + y + 'px"><path d="M' + x + ' ' + (y - 90 * k) + ' C' + (x + 34 * k) + ' ' + (y - 50 * k) + ' ' + (x + 30 * k) + ' ' + (y - 6 * k) + ' ' + x + ' ' + (y - 6 * k) + ' C' + (x - 30 * k) + ' ' + (y - 6 * k) + ' ' + (x - 34 * k) + ' ' + (y - 50 * k) + ' ' + x + ' ' + (y - 90 * k) + ' Z" fill="#ff8a3a"/>' +
+      '<path d="M' + (x + 4 * k) + ' ' + (y - 56 * k) + ' C' + (x + 18 * k) + ' ' + (y - 34 * k) + ' ' + (x + 14 * k) + ' ' + (y - 8 * k) + ' ' + x + ' ' + (y - 8 * k) + ' C' + (x - 14 * k) + ' ' + (y - 8 * k) + ' ' + (x - 14 * k) + ' ' + (y - 30 * k) + ' ' + (x + 4 * k) + ' ' + (y - 56 * k) + ' Z" fill="#ffe08a"/></g></g>';
+  };
+  Kit.prototype.lantern = function (x, y, col) {
+    const c = col || '#c0392b';
+    return '<path d="M' + x + ' ' + (y - 40) + ' V' + (y - 22) + '" stroke="#3a2a20" stroke-width="2"/><ellipse cx="' + x + '" cy="' + y + '" rx="17" ry="22" fill="' + c + '"/>' +
+      '<path d="M' + (x - 17) + ' ' + y + ' H' + (x + 17) + ' M' + x + ' ' + (y - 22) + ' V' + (y + 22) + '" stroke="' + shade(c, -0.25) + '" stroke-width="1.6"/><rect x="' + (x - 8) + '" y="' + (y - 26) + '" width="16" height="5" fill="#3a2a20"/><rect x="' + (x - 8) + '" y="' + (y + 21) + '" width="16" height="5" fill="#3a2a20"/>' +
+      '<path d="M' + x + ' ' + (y + 26) + ' v14" stroke="#e8c36a" stroke-width="2"/>';
+  };
+  /** 銅燈架 */
+  Kit.prototype.candle = function (x, y, hgt) {
+    const h0 = hgt || 150;
+    return '<path d="M' + (x - 26) + ' ' + y + ' L' + x + ' ' + (y - 20) + ' L' + (x + 26) + ' ' + y + '" fill="none" stroke="#7a6a3a" stroke-width="6" stroke-linecap="round"/><path d="M' + x + ' ' + (y - 16) + ' V' + (y - h0) + '" stroke="#8a7a46" stroke-width="7"/>' +
+      '<path d="M' + (x - 20) + ' ' + (y - h0) + ' h40 l-6 10 h-28 Z" fill="#8a7a46"/>' +
+      '<g class="sc-flicker" style="transform-origin:' + x + 'px ' + (y - h0) + 'px"><path d="M' + x + ' ' + (y - h0 - 34) + ' C' + (x + 10) + ' ' + (y - h0 - 16) + ' ' + (x + 8) + ' ' + (y - h0 - 2) + ' ' + x + ' ' + (y - h0 - 2) + ' C' + (x - 8) + ' ' + (y - h0 - 2) + ' ' + (x - 10) + ' ' + (y - h0 - 16) + ' ' + x + ' ' + (y - h0 - 34) + ' Z" fill="#ffcf6a"/></g>';
+  };
+  /** 青銅鼎 */
+  Kit.prototype.ding = function (cx, y, s) {
+    const k = s || 1;
+    const c = '#6f7f5a';
+    return '<g><path d="M' + (cx - 60 * k) + ' ' + (y - 90 * k) + ' H' + (cx + 60 * k) + ' C' + (cx + 62 * k) + ' ' + (y - 40 * k) + ' ' + (cx + 40 * k) + ' ' + (y - 24 * k) + ' ' + cx + ' ' + (y - 22 * k) + ' C' + (cx - 40 * k) + ' ' + (y - 24 * k) + ' ' + (cx - 62 * k) + ' ' + (y - 40 * k) + ' ' + (cx - 60 * k) + ' ' + (y - 90 * k) + ' Z" fill="' + c + '" stroke="#3a4030" stroke-width="2.4"/>' +
+      '<path d="M' + (cx - 44 * k) + ' ' + (y - 34 * k) + ' L' + (cx - 50 * k) + ' ' + y + ' M' + cx + ' ' + (y - 22 * k) + ' V' + y + ' M' + (cx + 44 * k) + ' ' + (y - 34 * k) + ' L' + (cx + 50 * k) + ' ' + y + '" stroke="' + c + '" stroke-width="' + (10 * k) + '" stroke-linecap="round"/>' +
+      '<path d="M' + (cx - 46 * k) + ' ' + (y - 90 * k) + ' v' + (-24 * k) + ' h' + (16 * k) + ' v' + (24 * k) + ' M' + (cx + 30 * k) + ' ' + (y - 90 * k) + ' v' + (-24 * k) + ' h' + (16 * k) + ' v' + (24 * k) + '" fill="none" stroke="' + c + '" stroke-width="' + (6 * k) + '"/>' +
+      '<path d="M' + (cx - 50 * k) + ' ' + (y - 70 * k) + ' H' + (cx + 50 * k) + '" stroke="#a9b88a" stroke-width="' + (3 * k) + '" stroke-dasharray="' + (8 * k) + ' ' + (5 * k) + '" opacity=".8"/>' +
+      '<path d="M' + (cx - 40 * k) + ' ' + (y - 84 * k) + ' q' + (10 * k) + ' ' + (30 * k) + ' ' + (20 * k) + ' ' + (44 * k) + '" stroke="#c6d4a8" stroke-width="' + (3 * k) + '" fill="none" opacity=".5"/></g>';
+  };
+  /** 屏風 */
+  Kit.prototype.screen = function (cx, y, w, hgt, col) {
+    const c = col || '#2a1d1a';
+    const n = 5, pw = w / n;
+    let h = '';
+    for (let i = 0; i < n; i++) {
+      const x = cx - w / 2 + i * pw;
+      h += '<rect x="' + x + '" y="' + (y - hgt) + '" width="' + (pw - 4) + '" height="' + hgt + '" fill="' + c + '" stroke="#c9a24a" stroke-width="3"/>' +
+        '<path d="M' + (x + 12) + ' ' + (y - hgt * 0.55) + ' q' + (pw * 0.2) + ' ' + (-30) + ' ' + (pw * 0.4) + ' 0 t' + (pw * 0.4) + ' 0" stroke="#c9a24a" stroke-width="3" fill="none" opacity=".75"/>' +
+        '<circle cx="' + (x + pw / 2 - 2) + '" cy="' + (y - hgt * 0.78) + '" r="' + (pw * 0.16) + '" fill="none" stroke="#c9a24a" stroke-width="2.4" opacity=".7"/>' +
+        '<path d="M' + (x + 10) + ' ' + (y - hgt * 0.25) + ' h' + (pw - 24) + '" stroke="#b8352b" stroke-width="4" opacity=".7"/>';
+    }
+    return h;
+  };
+  /** 几案 */
+  Kit.prototype.table = function (cx, y, w, col) {
+    const c = col || '#5a2f22';
+    return '<rect x="' + (cx - w / 2) + '" y="' + (y - 34) + '" width="' + w + '" height="14" rx="3" fill="' + c + '"/><rect x="' + (cx - w / 2) + '" y="' + (y - 34) + '" width="' + w + '" height="4" fill="' + shade(c, 0.3) + '" opacity=".7"/>' +
+      '<path d="M' + (cx - w / 2 + 12) + ' ' + (y - 20) + ' V' + y + ' M' + (cx + w / 2 - 12) + ' ' + (y - 20) + ' V' + y + '" stroke="' + shade(c, -0.25) + '" stroke-width="8"/>';
+  };
+  /** 帷幔（上方的布簾） */
+  Kit.prototype.drape = function (x0, x1, y, depth, col) {
+    const c = col || '#7a1f1f';
+    const n = Math.max(2, Math.round((x1 - x0) / 220));
+    const xs = [];
+    for (let i = 0; i <= n; i++) xs.push(x0 + (x1 - x0) * i / n);
+    let edge = 'M' + x0 + ' ' + y;
+    for (let i = 0; i < n; i++) edge += ' Q' + ((xs[i] + xs[i + 1]) / 2).toFixed(0) + ' ' + (y + depth) + ' ' + xs[i + 1].toFixed(0) + ' ' + y;
+    let back = '';
+    for (let i = n; i > 0; i--) back += ' Q' + ((xs[i] + xs[i - 1]) / 2).toFixed(0) + ' ' + (y + depth) + ' ' + xs[i - 1].toFixed(0) + ' ' + y;
+    let h = '<path d="M' + x0 + ' 0 H' + x1 + ' V' + y + back + ' Z" fill="' + c + '"/>' +
+      '<path d="' + edge + '" stroke="#c9a24a" stroke-width="4" fill="none" opacity=".7"/>';
+    let folds = '<g stroke="' + shade(c, -0.3) + '" stroke-width="3" opacity=".5">';
+    for (let i = 0; i < n; i++) folds += '<path d="M' + ((xs[i] + xs[i + 1]) / 2).toFixed(0) + ' 0 V' + (y + depth * 0.5) + '"/>';
+    h += folds + '</g><g fill="#c9a24a">';
+    xs.forEach(x => { h += '<path d="M' + x.toFixed(0) + ' ' + y + ' v40" stroke="#c9a24a" stroke-width="3"/><circle cx="' + x.toFixed(0) + '" cy="' + (y + 44) + '" r="6"/>'; });
+    return h + '</g>';
+  };
+  Kit.prototype.column = function (x, y0, y1, w, col) {
+    const c = col || '#8a2a20';
+    return '<rect x="' + (x - w / 2) + '" y="' + y0 + '" width="' + w + '" height="' + (y1 - y0) + '" fill="' + c + '"/><rect x="' + (x - w / 2 + 6) + '" y="' + y0 + '" width="' + (w * 0.22) + '" height="' + (y1 - y0) + '" fill="' + shade(c, 0.28) + '" opacity=".55"/>' +
+      '<rect x="' + (x - w / 2) + '" y="' + y0 + '" width="' + w + '" height="' + (y1 - y0) + '" fill="' + this.lin([[0, '#000', 0], [0.7, '#000', 0], [1, '#000', 0.35]], 0, 0, 1, 0) + '"/>' +
+      '<rect x="' + (x - w / 2 - 10) + '" y="' + (y1 - 22) + '" width="' + (w + 20) + '" height="22" rx="4" fill="#bfae8a"/>';
+  };
+  /** 竹簡架 */
+  Kit.prototype.shelf = function (x, y, w, hgt) {
+    let h = '<rect x="' + x + '" y="' + (y - hgt) + '" width="' + w + '" height="' + hgt + '" fill="#4a2f22"/>';
+    const rows = 4, rh = hgt / rows;
+    const r = this.r;
+    for (let i = 0; i < rows; i++) {
+      const yy = y - hgt + i * rh;
+      h += '<rect x="' + x + '" y="' + (yy + rh - 6) + '" width="' + w + '" height="6" fill="#6b4a2c"/>';
+      for (let bx = x + 8; bx < x + w - 30; bx += 30 + r() * 10) {
+        const bh = rh * (0.5 + r() * 0.3);
+        h += '<rect x="' + bx.toFixed(0) + '" y="' + (yy + rh - 6 - bh).toFixed(0) + '" width="26" height="' + bh.toFixed(0) + '" rx="10" fill="' + ['#d9bf86', '#c9a86a', '#e3cf98'][Math.floor(r() * 3)] + '"/>' +
+          '<path d="M' + (bx + 2).toFixed(0) + ' ' + (yy + rh - 6 - bh * 0.5).toFixed(0) + ' h22" stroke="#8a5a2a" stroke-width="2"/>';
+      }
+    }
+    return h + '<rect x="' + x + '" y="' + (y - hgt) + '" width="' + w + '" height="' + hgt + '" fill="none" stroke="#2e1d14" stroke-width="5"/>';
+  };
+  Kit.prototype.hut = function (x, y, s) {
+    return '<g><path d="M' + (x - 60 * s) + ' ' + y + ' V' + (y - 50 * s) + ' H' + (x + 60 * s) + ' V' + y + ' Z" fill="#b89a6a" stroke="#5a4428" stroke-width="2"/>' +
+      '<path d="M' + (x - 80 * s) + ' ' + (y - 46 * s) + ' Q' + x + ' ' + (y - 120 * s) + ' ' + (x + 80 * s) + ' ' + (y - 46 * s) + ' Z" fill="#c9a45a" stroke="#6b5230" stroke-width="2"/>' +
+      '<path d="M' + (x - 70 * s) + ' ' + (y - 52 * s) + ' Q' + x + ' ' + (y - 104 * s) + ' ' + (x + 70 * s) + ' ' + (y - 52 * s) + '" stroke="#e2c47a" stroke-width="2" fill="none" opacity=".7"/>' +
+      '<rect x="' + (x - 14 * s) + '" y="' + (y - 34 * s) + '" width="' + (28 * s) + '" height="' + (34 * s) + '" fill="#4a3624"/></g>';
+  };
+  Kit.prototype.fence = function (x0, x1, y, hgt) {
+    let h = '<g stroke="#6b5230" stroke-linecap="round">';
+    for (let x = x0; x <= x1; x += 26) h += '<path d="M' + x + ' ' + y + ' V' + (y - hgt) + '" stroke-width="6"/>';
+    return h + '<path d="M' + x0 + ' ' + (y - hgt * 0.7) + ' H' + x1 + ' M' + x0 + ' ' + (y - hgt * 0.35) + ' H' + x1 + '" stroke-width="4"/></g>';
+  };
+  Kit.prototype.wheel = function (x, y, r0, rot) {
+    let h = '<g transform="rotate(' + (rot || 0) + ' ' + x + ' ' + y + ')"><circle cx="' + x + '" cy="' + y + '" r="' + r0 + '" fill="none" stroke="#4a3020" stroke-width="7"/><circle cx="' + x + '" cy="' + y + '" r="7" fill="#4a3020"/>';
+    for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5; h += '<path d="M' + x + ' ' + y + ' L' + (x + Math.cos(a) * r0).toFixed(0) + ' ' + (y + Math.sin(a) * r0).toFixed(0) + '" stroke="#4a3020" stroke-width="3"/>'; }
+    return h + '</g>';
+  };
+  Kit.prototype.birds = function (x, y, n) {
+    let h = '<g class="sc-birds" fill="none" stroke="#2b2433" stroke-width="3" stroke-linecap="round">';
+    for (let i = 0; i < (n || 4); i++) h += '<path d="M' + (x + i * 34 + (i % 2) * 10) + ' ' + (y + (i % 3) * 14) + ' q8 -8 16 0 q8 -8 16 0"/>';
+    return h + '</g>';
+  };
+  Kit.prototype.vignette = function (op) {
+    return '<rect width="1600" height="1000" fill="' + this.rad(800, 560, 1000, [[0.55, '#000', 0], [1, '#0b0e1d', op || 0.55]]) + '"/>';
+  };
+  /** 時段的整體色調（只蓋在地景上，不蓋天空與燈火） */
+  Kit.prototype.tint = function (T, top) {
+    if (!T.tintOp) return '';
+    const t = top || 0;
+    const a = Math.max(0, (t - 160) / 1000), b = Math.min(1, (t + 60) / 1000);
+    const fill = t ? this.lin([[0, T.tint, 0], [a, T.tint, 0], [b, T.tint, T.tintOp], [1, T.tint, T.tintOp]]) : T.tint;
+    return '<rect x="0" y="0" width="1600" height="1000" fill="' + fill + '"' + (t ? '' : ' opacity="' + T.tintOp + '"') + ' style="mix-blend-mode:multiply"/>';
+  };
+  // ───── 天氣與飄浮物 ─────
+  Kit.prototype.weather = function (kind) {
+    const r = this.r;
+    let h = '';
+    if (kind === 'rain') {
+      h += '<rect width="1600" height="1000" fill="#1d2633" opacity=".28"/><g class="sc-rain" stroke="#c8d6ea" stroke-width="2" opacity=".55" stroke-linecap="round">';
+      for (let i = 0; i < 140; i++) { const x = r() * 1700 - 50, y = r() * 1000 - 100; h += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' l-10 ' + (34 + r() * 20).toFixed(0) + '"/>'; }
+      h += '</g>';
+    } else if (kind === 'snow') {
+      h += '<g class="sc-snow" fill="#ffffff">';
+      for (let i = 0; i < 110; i++) h += '<circle cx="' + (r() * 1600).toFixed(0) + '" cy="' + (r() * 1000 - 100).toFixed(0) + '" r="' + (1.6 + r() * 3).toFixed(1) + '" opacity="' + (0.5 + r() * 0.5).toFixed(2) + '"/>';
+      h += '</g>';
+    } else if (kind === 'mist') {
+      h += this.mist(560, 260, '#e8eef4', 0.55) + this.mist(780, 220, '#e8eef4', 0.4);
+    } else if (kind === 'embers') {
+      h += '<g class="sc-embers" fill="#ffb347">';
+      for (let i = 0; i < 40; i++) h += '<circle style="animation-delay:-' + (Math.floor(r() * 32) / 4) + 's" cx="' + (r() * 1600).toFixed(0) + '" cy="' + (700 + r() * 300).toFixed(0) + '" r="' + (1.6 + r() * 2.4).toFixed(1) + '"/>';
+      h += '</g>';
+    } else if (kind === 'fireflies') {
+      h += '<g class="sc-fireflies" fill="#f4f0a0">';
+      for (let i = 0; i < 26; i++) h += '<circle style="animation-delay:-' + (Math.floor(r() * 20) / 4) + 's" cx="' + (r() * 1600).toFixed(0) + '" cy="' + (560 + r() * 380).toFixed(0) + '" r="' + (2 + r() * 2).toFixed(1) + '"/>';
+      h += '</g>';
+    } else if (kind === 'leaves' || kind === 'petals') {
+      const c = kind === 'petals' ? '#f3b8c4' : '#c9a24a';
+      h += '<g fill="' + c + '">';
+      for (let i = 0; i < 12; i++) h += '<ellipse class="sc-leaf" style="animation-delay:-' + (i * 1.25) + 's" cx="' + (100 + r() * 1300).toFixed(0) + '" cy="' + (380 + r() * 200).toFixed(0) + '" rx="6" ry="2.8"/>';
+      h += '</g>';
+    }
+    return h;
+  };
+  // ═══════════════════════════ 場景庫 ═══════════════════════════
+  // 每個場景：{ tod: 預設時段, indoor: 是否室內, draw(k, T, o) → SVG 內容 }
+  // o：{ tod, weather, banner（旗色）, glyph（旗上的字）, seed }
+
+  const SCENE_DEFS = {};
+  const def = (key, tod, draw, extra) => { SCENE_DEFS[key] = Object.assign({ tod: tod, draw: draw }, extra || {}); };
+
+  // ───────── 宮殿外觀 ─────────
+  def('palace', 'day', (k, T, o) => {
+    let h = k.sky(T) + k.ridge(600, 110, 150, T.mtn[0], 0.55) + k.mist(560, 110, T.sky[3], 0.4);
+    // 遠處城牆與樹
+    h += k.wall(0, 1600, 620, 40, '#9a9080');
+    for (let i = 0; i < 9; i++) h += k.broad(60 + i * 190 + (i % 2) * 40, 640, 0.32, ['#4a6040', '#5d7a4a', '#73905a']);
+    // 兩側闕樓
+    [300, 1300].forEach(x => {
+      h += '<rect x="' + (x - 60) + '" y="460" width="120" height="240" fill="#d8c9a8"/><rect x="' + (x - 60) + '" y="460" width="120" height="240" fill="' + k.lin([[0, '#000', 0], [1, '#000', 0.2]]) + '"/>' +
+        k.roof(x, 470, 190, 46, '#3a3036') + '<rect x="' + (x - 46) + '" y="404" width="92" height="40" fill="#e9dcc0"/>' + k.roof(x, 410, 150, 38, '#3a3036');
+    });
+    // 正殿與台基
+    h += '<path d="M260 760 H1340 L1300 700 H300 Z" fill="#cdbf9f"/><path d="M300 700 H1300" stroke="#e8dcc0" stroke-width="5"/>';
+    h += k.hall(800, 700, 560, { double: true, plinth: 34, columns: 8, roof: '#2c2a33' });
+    h += k.stairs(800, 700, 800, 150, 300);
+    // 廣場鋪石
+    h += '<path d="M0 760 H1600 V1000 H0 Z" fill="' + k.lin(['#b8ab8c', '#8f8468']) + '"/>';
+    let g = '<g stroke="#7d735a" stroke-width="2" opacity=".55">';
+    for (let i = -8; i <= 8; i++) g += '<path d="M' + (800 + i * 60) + ' 760 L' + (800 + i * 200) + ' 1000"/>';
+    [790, 830, 880, 940].forEach(y => { g += '<path d="M0 ' + y + ' H1600"/>'; });
+    h += g + '</g>';
+    h += k.stairs(800, 760, 1000, 300, 520, '#cbbd9c');
+    // 旗與燈
+    h += k.banner(190, 900, 300, o.banner || '#a3362c', o.glyph) + k.banner(1410, 900, 300, o.banner || '#a3362c', o.glyph, true);
+    h += k.tint(T, 380);
+    if (o.tod === 'night' || o.tod === 'dusk') {
+      [560, 700, 900, 1040].forEach(x => { h += k.glow(x, 590, 90, '#ffcf6a', 0.5) + k.lantern(x, 590); });
+      h += k.glow(800, 640, 260, '#ffcf6a', 0.25);
+    }
+    return h;
+  });
+
+  // ───────── 殿內（朝堂、王座） ─────────
+  def('hall', 'day', (k, T, o) => {
+    const night = o.tod === 'night';
+    let h = '<rect width="1600" height="1000" fill="' + k.lin([night ? '#1d1216' : '#3a221c', night ? '#2a1a18' : '#5a3424']) + '"/>';
+    // 後牆格窗與光束
+    for (let i = 0; i < 4; i++) {
+      const x = 260 + i * 330;
+      h += '<rect x="' + x + '" y="170" width="170" height="260" fill="' + (night ? '#1b2448' : '#e9d9a8') + '" opacity="' + (night ? 0.9 : 0.55) + '"/>';
+      let gr = '<g stroke="#3a2018" stroke-width="5">';
+      for (let a = 1; a < 5; a++) gr += '<path d="M' + (x + a * 34) + ' 170 V430"/>';
+      for (let b = 1; b < 6; b++) gr += '<path d="M' + x + ' ' + (170 + b * 43) + ' H' + (x + 170) + '"/>';
+      h += gr + '</g><rect x="' + x + '" y="170" width="170" height="260" fill="none" stroke="#2a150f" stroke-width="10"/>';
+      if (!night) h += '<path d="M' + x + ' 430 L' + (x - 120) + ' 1000 H' + (x + 240) + ' L' + (x + 170) + ' 430 Z" fill="#ffe8b0" opacity=".07"/>';
+    }
+    // 樑與帷幔
+    h += '<rect x="0" y="0" width="1600" height="70" fill="#24140f"/><rect x="0" y="70" width="1600" height="18" fill="#2f5a54"/>' +
+      '<g fill="#c9a24a" opacity=".6">' + Array.from({ length: 32 }, (_, i) => '<rect x="' + (i * 50 + 10) + '" y="74" width="26" height="10" rx="2"/>').join('') + '</g>';
+    h += k.drape(0, 1600, 120, 70, '#7a1f1f');
+    // 地面
+    h += '<path d="M0 640 H1600 V1000 H0 Z" fill="' + k.lin(['#4a2c1e', '#2a180f']) + '"/>';
+    let fl = '<g stroke="#5f3a26" stroke-width="2" opacity=".6">';
+    for (let i = -8; i <= 8; i++) fl += '<path d="M' + (800 + i * 70) + ' 640 L' + (800 + i * 210) + ' 1000"/>';
+    [690, 760, 850, 960].forEach(y => { fl += '<path d="M0 ' + y + ' H1600"/>'; });
+    h += fl + '</g>';
+    // 中央紅毯
+    h += '<path d="M700 640 H900 L1040 1000 H560 Z" fill="#7a1f1f"/><path d="M712 640 H888 L1020 1000 H580 Z" fill="none" stroke="#c9a24a" stroke-width="4" opacity=".7"/>';
+    // 王座台：台、屏風、座
+    h += '<path d="M520 640 H1080 L1060 590 H540 Z" fill="#5a2f22"/><path d="M540 590 H1060" stroke="#c9a24a" stroke-width="4"/>' +
+      '<path d="M590 590 H1010 L996 556 H604 Z" fill="#6b3a28"/>';
+    h += k.screen(800, 556, 420, 260, '#1e1416');
+    h += '<rect x="700" y="470" width="200" height="86" rx="10" fill="#7a1f1f" stroke="#c9a24a" stroke-width="4"/><rect x="680" y="530" width="240" height="26" rx="6" fill="#5a2f22" stroke="#c9a24a" stroke-width="3"/>';
+    // 柱
+    [130, 430, 1170, 1470].forEach((x, i) => { h += k.column(x, 88, i === 0 || i === 3 ? 1000 : 700, i === 0 || i === 3 ? 92 : 62, '#8a2a20'); });
+    // 鼎與燈
+    h += k.ding(480, 690, 0.9) + k.ding(1120, 690, 0.9);
+    h += k.candle(330, 760, 190) + k.candle(1270, 760, 190);
+    h += k.glow(330, 570, 160, '#ffcf6a', night ? 0.5 : 0.25) + k.glow(1270, 570, 160, '#ffcf6a', night ? 0.5 : 0.25);
+    if (night) h += '<rect width="1600" height="1000" fill="#0a0e24" opacity=".35"/>' + k.glow(800, 520, 420, '#ffcf6a', 0.18);
+    // 香煙
+    h += '<g class="sc-smoke" fill="none" stroke="#e8dccc" stroke-width="4" opacity=".25"><path d="M480 600 c-20 -40 20 -60 0 -110 c-16 -40 14 -60 4 -100"/><path d="M1120 600 c20 -40 -20 -60 0 -110 c16 -40 -14 -60 -4 -100"/></g>';
+    return h;
+  }, { indoor: true });
+
+  // ───────── 軍帳內 ─────────
+  def('tent', 'night', (k, T, o) => {
+    let h = '<rect width="1600" height="1000" fill="' + k.rad(800, 420, 900, [[0, '#7a5230'], [0.55, '#4a3018'], [1, '#1c120b']]) + '"/>';
+    // 帳布摺痕
+    let f = '<g stroke="#2a1a0e" stroke-width="3" opacity=".45" fill="none">';
+    for (let i = 0; i <= 16; i++) f += '<path d="M' + (800 + (i - 8) * 30) + ' 0 L' + (i * 100) + ' 640"/>';
+    h += f + '</g><path d="M0 0 L800 90 L1600 0 V120 L800 160 L0 120 Z" fill="#2a1a0e" opacity=".55"/>';
+    // 帳門（右側）看到夜營
+    h += '<path d="M1180 640 L1290 220 L1400 640 Z" fill="#0d1430"/>' + k.fire(1290, 600, 0.5) + '<path d="M1200 640 L1260 520 L1320 640 Z" fill="#1a1530" opacity=".9"/>' +
+      '<path d="M1170 640 C1200 420 1250 300 1290 210 C1270 330 1250 470 1230 640 Z" fill="#6a4628"/><path d="M1410 640 C1380 420 1330 300 1290 210 C1310 330 1330 470 1350 640 Z" fill="#5a3a20"/>';
+    // 地面＋地毯
+    h += '<path d="M0 640 H1600 V1000 H0 Z" fill="' + k.lin(['#3a2614', '#1c120a']) + '"/>' +
+      '<path d="M420 700 H1180 L1300 1000 H300 Z" fill="#6a2a20"/><path d="M450 716 H1150 L1262 990 H338 Z" fill="none" stroke="#c9a24a" stroke-width="5" opacity=".6"/>';
+    // 中柱
+    h += '<rect x="788" y="0" width="24" height="640" fill="#4a3020"/><rect x="792" y="0" width="6" height="640" fill="#7a5a3a" opacity=".6"/>';
+    // 地圖案
+    h += '<rect x="560" y="560" width="480" height="30" rx="4" fill="#5a3a22"/><path d="M590 590 V660 M1010 590 V660" stroke="#3a2414" stroke-width="12"/>' +
+      '<path d="M580 520 L1020 520 L1040 566 L560 566 Z" fill="#d9c08a"/><path d="M640 530 q60 20 120 0 t120 10 M700 552 q40 -14 90 0" stroke="#8a5a2a" stroke-width="3" fill="none"/><circle cx="880" cy="540" r="6" fill="#b8352b"/><circle cx="700" cy="546" r="6" fill="#2a4a8a"/>';
+    // 兵器架（左）
+    h += '<rect x="120" y="360" width="16" height="300" fill="#4a3020"/><rect x="300" y="360" width="16" height="300" fill="#4a3020"/><rect x="110" y="420" width="220" height="12" fill="#5a3a22"/><rect x="110" y="560" width="220" height="12" fill="#5a3a22"/>';
+    [160, 210, 260].forEach((x, i) => { h += '<path d="M' + x + ' 650 V' + (300 - i * 20) + '" stroke="#6b4a2c" stroke-width="7"/><path d="M' + x + ' ' + (300 - i * 20) + ' l-9 -30 l9 -14 l9 14 Z" fill="#c9ced6"/>'; });
+    // 鎧甲架（右前）
+    h += '<path d="M1460 660 V420" stroke="#4a3020" stroke-width="10"/><path d="M1390 440 H1530 L1510 580 H1410 Z" fill="#5a3f30"/><g stroke="#2e1f16" stroke-width="2" opacity=".7">' + [460, 480, 500, 520, 540, 560].map(y => '<path d="M1400 ' + y + ' H1520"/>').join('') + '</g>' +
+      '<path d="M1420 400 C1420 360 1500 360 1500 400 L1490 440 H1430 Z" fill="#3a3036"/>';
+    // 吊燈
+    h += '<path d="M800 160 V250" stroke="#3a2a20" stroke-width="3"/>' + k.glow(800, 280, 340, '#ffcf6a', 0.4) + '<path d="M770 250 H830 L820 290 H780 Z" fill="#8a7a46"/><g class="sc-flicker" style="transform-origin:800px 250px"><path d="M800 214 c10 14 10 30 0 36 c-10 -6 -10 -22 0 -36 Z" fill="#ffd27a"/></g>';
+    h += k.glow(560, 600, 200, '#ffb347', 0.2) + k.glow(1040, 600, 200, '#ffb347', 0.2);
+    return h;
+  }, { indoor: true });
+
+  // ───────── 宴席 ─────────
+  def('banquet', 'night', (k, T, o) => {
+    let h = '<rect width="1600" height="1000" fill="' + k.rad(800, 380, 950, [[0, '#7a4424'], [0.5, '#4a2614'], [1, '#170d08']]) + '"/>';
+    h += '<rect x="0" y="0" width="1600" height="60" fill="#24140f"/>' + k.drape(0, 1600, 90, 60, '#6a1a1a');
+    // 後方主位：屏風＋高台
+    h += k.screen(800, 520, 520, 230, '#22161a') + '<path d="M500 520 H1100 L1080 560 H520 Z" fill="#5a2f22"/>';
+    h += '<path d="M0 560 H1600 V1000 H0 Z" fill="' + k.lin(['#4a2a18', '#22140b']) + '"/>';
+    let fl = '<g stroke="#5f3a26" stroke-width="2" opacity=".5">';
+    for (let i = -8; i <= 8; i++) fl += '<path d="M' + (800 + i * 70) + ' 560 L' + (800 + i * 220) + ' 1000"/>';
+    h += fl + '</g>';
+    // 柱
+    [90, 1510].forEach(x => { h += k.column(x, 60, 1000, 86, '#7a2420'); });
+    // 席位：兩側斜排的几案＋坐墊
+    const seat = (cx, y, s) => '<ellipse cx="' + cx + '" cy="' + (y + 18 * s) + '" rx="' + (70 * s) + '" ry="' + (16 * s) + '" fill="#7a1f1f" opacity=".85"/>' + k.table(cx, y, 150 * s, '#4a2418') +
+      '<ellipse cx="' + (cx - 30 * s) + '" cy="' + (y - 38 * s) + '" rx="' + (16 * s) + '" ry="' + (6 * s) + '" fill="#c9a24a"/><path d="M' + (cx + 20 * s) + ' ' + (y - 36 * s) + ' l' + (6 * s) + ' ' + (-20 * s) + ' h' + (16 * s) + ' l' + (6 * s) + ' ' + (20 * s) + ' Z" fill="#6f7f5a"/>';
+    h += seat(800, 600, 1.1);
+    [[330, 680, 1], [250, 820, 1.2], [1270, 680, 1], [1350, 820, 1.2]].forEach(p => { h += seat(p[0], p[1], p[2]); });
+    // 酒樽與燈
+    h += '<g><path d="M760 760 C750 700 850 700 840 760 C836 800 764 800 760 760 Z" fill="#6f7f5a" stroke="#3a4030" stroke-width="3"/><ellipse cx="800" cy="712" rx="38" ry="8" fill="#3a4030"/><path d="M768 740 H832" stroke="#a9b88a" stroke-width="3" stroke-dasharray="8 5"/></g>';
+    h += k.candle(560, 600, 170) + k.candle(1040, 600, 170) + k.glow(560, 430, 200, '#ffcf6a', 0.45) + k.glow(1040, 430, 200, '#ffcf6a', 0.45) + k.glow(800, 560, 420, '#ffb347', 0.18);
+    return h;
+  }, { indoor: true });
+
+  // ───────── 軍營（外景） ─────────
+  def('camp', 'dusk', (k, T, o) => {
+    let h = k.sky(T) + k.hills(T);
+    h += k.ground(700, '#6a6a42', '#2f3320', 14);
+    const fc = o.banner || '#a3362c';
+    // 遠方營帳
+    for (let i = 0; i < 14; i++) h += k.tentOut(40 + i * 120 + (i % 2) * 30, 712 - (i % 3) * 4, 90, 70, '#bfa478');
+    // 柵欄（寨牆）
+    let ps = '<g fill="#5a4028">';
+    for (let x = 0; x < 1600; x += 22) ps += '<path d="M' + x + ' 780 V' + (720 - (x % 44 ? 0 : 8)) + ' l9 -14 l9 14 V780 Z"/>';
+    h += ps + '</g><path d="M0 742 H1600 M0 766 H1600" stroke="#3a2818" stroke-width="5"/>';
+    // 營門（中間缺口）＋近處大帳
+    h += '<path d="M650 780 H950 V700 H650 Z" fill="' + k.lin(['#6a6a42', '#4a4a30']) + '"/>';
+    h += k.tentOut(800, 760, 360, 230, '#d4bc8e');
+    h += k.tentOut(330, 820, 300, 200, '#c8ad80') + k.tentOut(1290, 830, 320, 210, '#c8ad80');
+    // 旗
+    h += k.banner(600, 790, 330, fc, o.glyph) + k.banner(1000, 790, 330, fc, o.glyph, true) + k.banner(120, 900, 260, fc, o.glyph) + k.banner(1480, 900, 260, fc, o.glyph, true);
+    // 兵器架
+    h += '<g stroke="#4a3020" stroke-width="6">' + [1120, 1150, 1180].map((x, i) => '<path d="M' + x + ' 900 L' + (x + 40 - i * 40) + ' 700"/>').join('') + '</g>';
+    h += k.grass(0, 1600, 900, 1000, 60, ['#4a5530', '#5d6a3a', '#3a4426'], 30);
+    h += k.tint(T, 520);
+    h += k.fire(470, 900, 0.9) + k.glow(470, 860, 220, '#ffb347', o.tod === 'day' ? 0.15 : 0.5) + k.fire(1140, 930, 0.7) + k.glow(1140, 900, 180, '#ffb347', o.tod === 'day' ? 0.12 : 0.45);
+    if (o.tod !== 'day') h += k.weather('embers');
+    return h;
+  });
+
+  // ───────── 原野 ─────────
+  def('field', 'day', (k, T, o) => {
+    let h = k.sky(T) + k.hills(T);
+    h += '<path d="M0 1000 V700 C300 660 520 720 820 690 S1300 650 1600 690 V1000 Z" fill="#7d8e4c"/>';
+    for (let i = 0; i < 5; i++) h += k.hut(200 + i * 300 + (i % 2) * 60, 704 - (i % 2) * 6, 0.32);
+    h += '<path d="M0 1000 V770 C260 740 560 790 820 760 S1340 730 1600 772 V1000 Z" fill="' + k.lin(['#6f8a44', '#3f5228']) + '"/>';
+    h += k.broad(160, 800, 0.95) + k.broad(1460, 790, 1.05) + k.broad(1250, 760, 0.55);
+    h += '<path d="M640 1000 C700 900 760 830 800 770 L850 770 C840 830 840 900 900 1000 Z" fill="#a9905e" opacity=".6"/>';
+    h += k.grass(0, 1600, 820, 1000, 90, ['#5d7a3a', '#7a9a48', '#4a6a2e'], 34) + k.flowers(0, 1600, 830, 1000, 40, ['#f4e1a0', '#f0b8c8', '#ffffff']);
+    h += k.birds(980, 330, 4);
+    h += k.tint(T, 520);
+    return h;
+  });
+
+  // ───────── 道路 ─────────
+  def('road', 'day', (k, T, o) => {
+    let h = k.sky(T) + k.ridge(600, 160, 170, T.mtn[0], 0.6) + k.ridge(640, 110, 130, T.mtn[1], 0.85) + k.mist(600, 110, T.sky[3], 0.4);
+    h += '<path d="M0 1000 V700 C400 680 1200 690 1600 700 V1000 Z" fill="' + k.lin(['#8a8a52', '#4a4a2c']) + '"/>';
+    h += '<path d="M760 700 C770 720 740 760 700 820 C640 900 560 960 480 1000 H1120 C1040 950 960 880 920 820 C880 760 840 720 840 700 Z" fill="' + k.lin(['#b49a6a', '#8a7048']) + '"/>';
+    h += '<path d="M800 700 C790 760 720 860 640 1000 M820 700 C840 770 900 880 980 1000" stroke="#6f5a3a" stroke-width="3" fill="none" opacity=".6"/>';
+    [[300, 760, 0.6], [1300, 760, 0.6], [140, 860, 0.95], [1480, 860, 0.95], [560, 720, 0.32], [1040, 720, 0.32]].forEach((t, i) => { h += (i % 2 ? k.broad(t[0], t[1], t[2]) : k.pine(t[0], t[1], t[2])); });
+    // 里程石
+    h += '<path d="M1100 900 V840 q20 -16 40 0 V900 Z" fill="#8a8a84" stroke="#4a4a44" stroke-width="2"/>';
+    h += k.grass(0, 1600, 880, 1000, 60, ['#6a7a3a', '#86964a', '#4a5a2e'], 28);
+    h += k.birds(620, 360, 3);
+    h += k.tint(T, 540);
+    return h;
+  });
+
+  // ───────── 山與棧道 ─────────
+  def('mountain', 'day', (k, T, o) => {
+    let h = k.sky(T, { noCloud: false }) + k.ridge(520, 260, 180, T.mtn[0], 0.55) + k.mist(480, 160, T.sky[3], 0.5);
+    // 谷底：遠山腳、河
+    h += '<rect x="0" y="640" width="1600" height="360" fill="' + k.lin(['#7a8a6a', '#4a5a40']) + '"/>' +
+      '<path d="M640 700 C700 760 760 820 760 1000 H880 C860 860 900 760 980 700 Z" fill="' + k.lin(['#9ab8c8', '#5a7a90']) + '"/>' +
+      '<path d="M700 740 h40 M820 800 h50 M780 900 h40" stroke="#e8f2fa" stroke-width="3" opacity=".5" class="sc-shimmer"/>';
+    // 左右峭壁
+    h += '<path d="M0 1000 V180 C80 200 140 260 200 300 C260 360 320 380 360 460 C400 540 420 620 520 700 L540 1000 Z" fill="' + k.lin(['#5a6474', '#2c323e'], 0, 0, 1, 0) + '"/>' +
+      '<path d="M1600 1000 V140 C1520 180 1460 230 1410 300 C1360 380 1300 420 1270 500 C1240 580 1180 660 1100 720 L1080 1000 Z" fill="' + k.lin(['#2c323e', '#5a6474'], 0, 0, 1, 0) + '"/>';
+    h += '<g stroke="#7a8494" stroke-width="3" opacity=".45" fill="none"><path d="M60 300 C120 400 100 520 180 620 M240 380 C280 480 260 580 340 680 M1520 260 C1480 380 1500 520 1430 620 M1380 400 C1340 500 1360 600 1280 700"/></g>';
+    // 瀑布
+    h += '<path d="M1290 300 C1296 400 1300 520 1296 720" stroke="#e8f2fa" stroke-width="16" opacity=".75" class="sc-shimmer"/>';
+    // 棧道：沿著左壁的木板路
+    h += '<path d="M120 520 C260 560 420 620 560 690 L560 710 C420 642 260 582 120 542 Z" fill="#8a6440" stroke="#4a3220" stroke-width="2"/>';
+    let pl = '<g stroke="#4a3220" stroke-width="3">';
+    for (let i = 0; i < 16; i++) { const x = 130 + i * 28, y = 523 + i * 11.4; pl += '<path d="M' + x + ' ' + y + ' l-4 26"/>'; }
+    h += pl + '</g><g stroke="#5a3e26" stroke-width="5">';
+    for (let i = 0; i < 6; i++) { const x = 150 + i * 80, y = 540 + i * 32; h += '<path d="M' + x + ' ' + y + ' l-30 60"/>'; }
+    h += '</g><path d="M120 500 C260 540 420 600 560 670" stroke="#6b4a2c" stroke-width="3" fill="none"/>';
+    // 谷底小路
+    h += '<path d="M520 1000 C560 940 600 900 640 880 L700 900 C680 940 660 970 650 1000 Z M1080 1000 C1040 940 1000 900 960 880 L900 900 C920 940 940 970 950 1000 Z" fill="' + k.lin(['#6a7454', '#3a4430']) + '"/>';
+    h += k.pine(380, 360, 0.5) + k.pine(1340, 330, 0.55) + k.pine(250, 960, 1.1) + k.pine(1420, 980, 1.2);
+    h += k.mist(640, 200, '#e8eef4', 0.35);
+    h += k.birds(720, 260, 3);
+    h += k.tint(T, 120);
+    return h;
+  });
+
+  // ───────── 江河渡口 ─────────
+  def('river', 'dusk', (k, T, o) => {
+    const night = o.tod === 'night';
+    let h = k.sky(T) + k.ridge(560, 120, 140, T.mtn[0], 0.55) + k.ridge(600, 90, 120, T.mtn[1], 0.72) + k.mist(560, 110, T.sky[3], 0.5) + k.ridge(640, 50, 90, T.mtn[2]);
+    h += '<path d="M0 652 Q400 640 800 648 T1600 646 V664 H0 Z" fill="' + shade(T.mtn[2], -0.15) + '"/>';
+    // 河面
+    h += '<rect x="0" y="660" width="1600" height="200" fill="' + k.lin([mix(T.sky[3], '#7a8aa0', 0.3), mix(T.sky[2], '#5a6a8a', 0.5), '#2c3a5e']) + '"/>';
+    const sx = T.sun ? T.sun[0] : T.moon[0];
+    h += '<g class="sc-shimmer">';
+    for (let i = 0; i < 16; i++) { const w = 120 - i * 5; h += '<rect x="' + (sx - w / 2 + (k.r() - 0.5) * 20).toFixed(0) + '" y="' + (668 + i * 10) + '" width="' + w + '" height="2.6" rx="1.3" fill="' + (night ? '#f2e3b0' : '#fff1c8') + '" opacity="' + (0.8 - i * 0.04).toFixed(2) + '"/>'; }
+    h += '</g><g stroke="#ffe9c8" stroke-linecap="round" opacity=".3">';
+    for (let i = 0; i < 36; i++) { const x = k.r() * 1600, y = 680 + k.r() * 170, w = 20 + k.r() * 60; h += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' h' + w.toFixed(0) + '" stroke-width="' + (1 + k.r() * 1.5).toFixed(1) + '"/>'; }
+    h += '</g>';
+    // 帆船
+    h += '<g class="sc-bob"><path d="M470 700 h90 l-14 14 h-62 z" fill="#3a2a2a"/><path d="M512 700 V630" stroke="#3a2a2a" stroke-width="3"/><path d="M514 634 Q548 664 514 696 Z" fill="#e8d2b0"/><path d="M510 640 Q486 668 510 694 Z" fill="#d9bf9a"/></g>';
+    // 近岸
+    h += '<path d="M0 1000 V812 C200 780 420 800 620 790 C860 778 1080 806 1300 792 C1440 784 1540 796 1600 790 V1000 Z" fill="' + k.lin(['#6a7a42', '#4a5a32', '#2b3420']) + '"/>' +
+      '<path d="M560 1000 C620 930 700 880 760 812 L840 810 C800 870 760 940 760 1000 Z" fill="#9a7c52" opacity=".7"/>';
+    // 渡口棧橋
+    h += '<path d="M1210 806 L1560 790 L1560 808 L1210 826 Z" fill="#8a6440" stroke="#4a3220" stroke-width="2"/>';
+    for (let i = 0; i < 10; i++) h += '<path d="M' + (1230 + i * 34) + ' ' + (805 - i * 1.6).toFixed(1) + ' v18" stroke="#5a3e26" stroke-width="2"/>';
+    [1240, 1360, 1480].forEach(x => { h += '<rect x="' + x + '" y="' + (790 - (x - 1210) * 0.045).toFixed(0) + '" width="12" height="70" fill="#4a3220"/>'; });
+    h += k.willow(230, 830, 1.05);
+    h += k.rock(460, 880, 44) + k.rock(1110, 900, 36);
+    h += k.reeds(0, 260, 1000, 150) + k.reeds(1350, 1600, 1000, 170) + k.reeds(880, 1040, 820, 70, 14);
+    h += k.birds(700, 300, 4);
+    h += k.tint(T, 640);
+    if (night) h += k.weather('fireflies');
+    else h += k.weather('leaves');
+    return h;
+  });
+
+  // ───────── 夜晚城牆 ─────────
+  def('night', 'night', (k, T, o) => {
+    let h = k.sky(T, { noCloud: true }) + k.cloud(300, 260, 300, T.cloud[0], T.cloud[1]) + k.cloud(980, 200, 260, T.cloud[0], T.cloud[1], 'sc-cloud sc-cloud--slow');
+    h += k.ridge(640, 80, 140, T.mtn[1], 0.8);
+    h += k.wall(0, 1600, 560, 260, '#4a4a58');
+    h += k.gate(800, 820, 380, 260, '#4a4a58', '#1e1c26');
+    h += k.tint(T, 360);
+    // 城上火把
+    [180, 420, 1180, 1420].forEach(x => { h += k.glow(x, 470, 120, '#ffb347', 0.55) + k.torch(x, 560, 70); });
+    h += k.glow(800, 520, 200, '#ffcf6a', 0.3) + k.lantern(700, 540) + k.lantern(900, 540);
+    // 城門內透出的光
+    h += '<path d="M739 820 V690 Q800 618 861 690 V820 Z" fill="#ffcf6a" opacity=".18"/>';
+    // 前景：壕溝與草
+    h += '<path d="M0 820 H1600 V860 H0 Z" fill="#141a30"/><path d="M0 860 C400 850 1200 870 1600 856 V1000 H0 Z" fill="' + k.lin(['#1c2436', '#0c1020']) + '"/>';
+    h += k.grass(0, 1600, 900, 1000, 60, ['#1f2a2a', '#2a3636', '#18201f'], 34);
+    h += k.reeds(0, 300, 1000, 160) + k.reeds(1320, 1600, 1000, 170);
+    return h;
+  });
+
+  // ───────── 雨 ─────────
+  def('rain', 'day', (k, T, o) => {
+    const T2 = Object.assign({}, T, { sky: ['#2a323d', '#3f4a57', '#55616d', '#6b7680'], sun: null, moon: null, stars: 0, cloud: ['#5a6470', '#3a434e'] });
+    let h = k.sky(T2) + k.cloud(-60, 200, 620, '#4a535e', '#323a44') + k.cloud(700, 140, 700, '#4a535e', '#323a44') + k.cloud(1200, 240, 500, '#4a535e', '#323a44');
+    h += k.ridge(620, 100, 140, '#4a5560', 0.7) + k.mist(600, 140, '#8a96a2', 0.5);
+    h += '<path d="M0 1000 V700 C400 670 1200 700 1600 690 V1000 Z" fill="' + k.lin(['#55603e', '#2a3220']) + '"/>';
+    h += '<path d="M700 700 C690 780 600 900 500 1000 H1100 C1000 900 910 780 900 700 Z" fill="#6a5a40" opacity=".8"/>';
+    // 水窪
+    [[640, 930, 120], [980, 880, 80], [820, 980, 160]].forEach(p => { h += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="' + p[2] + '" ry="' + (p[2] * 0.16).toFixed(0) + '" fill="#8a98a8" opacity=".5"/>'; });
+    h += k.hut(260, 760, 0.7) + k.hut(1340, 770, 0.6) + k.broad(1500, 880, 0.9, ['#2f4028', '#3d5232', '#4a6038']) + k.broad(110, 900, 0.8, ['#2f4028', '#3d5232', '#4a6038']);
+    h += k.reeds(0, 300, 1000, 130) + k.reeds(1300, 1600, 1000, 140);
+    if (o.tod === 'night') h += '<rect width="1600" height="1000" fill="#0a1024" opacity=".45"/>';
+    h += k.weather('rain');
+    return h;
+  }, { weather: 'rain' });
+
+  // ───────── 城門（白天外景） ─────────
+  def('city', 'day', (k, T, o) => {
+    let h = k.sky(T) + k.ridge(600, 120, 160, T.mtn[0], 0.5);
+    h += k.wall(0, 1600, 520, 260, '#9a9080');
+    h += k.gate(800, 780, 420, 300, '#9a9080');
+    h += k.banner(560, 520, 160, o.banner || '#a3362c', o.glyph) + k.banner(1040, 520, 160, o.banner || '#a3362c', o.glyph, true);
+    // 護城河、橋、路
+    h += '<path d="M0 780 H1600 V820 H0 Z" fill="#4a6a7a"/><path d="M0 786 H1600" stroke="#8ab0c0" stroke-width="2" opacity=".6"/>';
+    h += '<path d="M720 780 H880 L900 830 H700 Z" fill="#8a6440"/>';
+    h += '<path d="M0 820 H1600 V1000 H0 Z" fill="' + k.lin(['#8a8a52', '#55552e']) + '"/>';
+    h += '<path d="M700 820 H900 L1100 1000 H500 Z" fill="' + k.lin(['#b49a6a', '#8a7048']) + '"/>';
+    h += k.broad(160, 900, 1, ['#4a6040', '#5d7a4a', '#73905a']) + k.broad(1440, 910, 1.05, ['#4a6040', '#5d7a4a', '#73905a']) + k.pine(340, 840, 0.5) + k.pine(1260, 840, 0.5);
+    h += k.grass(0, 1600, 900, 1000, 50, ['#6a7a3a', '#86964a'], 26);
+    h += k.tint(T, 360);
+    if (o.tod === 'night' || o.tod === 'dusk') [600, 1000].forEach(x => { h += k.glow(x, 460, 110, '#ffb347', 0.5) + k.torch(x, 520, 60); });
+    return h;
+  });
+
+  // ───────── 市集 ─────────
+  def('market', 'day', (k, T, o) => {
+    let h = k.sky(T, { noSun: o.tod === 'day' });
+    // 遠處城門
+    h += k.wall(0, 1600, 470, 140, '#a09684') + k.gate(800, 610, 260, 170, '#a09684');
+    // 街道（透視）
+    h += '<path d="M0 610 H1600 V1000 H0 Z" fill="' + k.lin(['#b7a481', '#8a7a5a']) + '"/>';
+    h += '<path d="M700 610 H900 L1300 1000 H300 Z" fill="' + k.lin(['#c9b48c', '#a08a62']) + '"/>';
+    // 兩側攤棚
+    const stall = (x, y, w, s, col, flip) => {
+      const d = flip ? -1 : 1;
+      let st = '<rect x="' + (x - w / 2) + '" y="' + (y - 110 * s) + '" width="' + w + '" height="' + (110 * s) + '" fill="#6b4a2c"/>' +
+        '<path d="M' + (x - w / 2 - 20 * s) + ' ' + (y - 110 * s) + ' L' + (x + w / 2 + 20 * s) + ' ' + (y - 110 * s) + ' L' + (x + w / 2 + 6 * s) + ' ' + (y - 160 * s) + ' L' + (x - w / 2 - 6 * s) + ' ' + (y - 160 * s) + ' Z" fill="' + col + '"/>';
+      for (let i = 0; i < 6; i++) st += '<path d="M' + (x - w / 2 - 20 * s + i * (w + 40 * s) / 6).toFixed(0) + ' ' + (y - 110 * s) + ' q' + (w / 12).toFixed(0) + ' ' + (14 * s).toFixed(0) + ' ' + ((w + 40 * s) / 6).toFixed(0) + ' 0" fill="' + shade(col, 0.15) + '"/>';
+      st += '<rect x="' + (x - w / 2 + 6) + '" y="' + (y - 50 * s) + '" width="' + (w - 12) + '" height="' + (16 * s) + '" fill="#8a6440"/>';
+      // 貨物
+      for (let i = 0; i < 5; i++) {
+        const gx = x - w / 2 + 20 + i * (w - 40) / 4;
+        st += i % 2 ? '<circle cx="' + gx + '" cy="' + (y - 60 * s) + '" r="' + (12 * s) + '" fill="' + ['#d8b24a', '#b8352b', '#7fb8a0'][i % 3] + '"/>' : '<rect x="' + (gx - 12 * s) + '" y="' + (y - 78 * s) + '" width="' + (24 * s) + '" height="' + (28 * s) + '" rx="4" fill="#a07a50"/>';
+      }
+      st += '<path d="M' + (x + d * (w / 2 + 10)) + ' ' + (y - 160 * s) + ' V' + y + '" stroke="#4a3020" stroke-width="' + (6 * s) + '"/>';
+      return st;
+    };
+    h += stall(560, 680, 120, 0.55, '#a3362c') + stall(1040, 680, 120, 0.55, '#2f6f8a', true);
+    h += stall(400, 760, 200, 0.8, '#c9a24a') + stall(1200, 760, 200, 0.8, '#7a3a6a', true);
+    h += stall(170, 900, 300, 1.1, '#3f7f5a') + stall(1430, 900, 300, 1.1, '#a3362c', true);
+    // 幌子（招牌旗）
+    const sign = (x, y, txt, col) => '<path d="M' + x + ' ' + (y - 150) + ' V' + y + '" stroke="#4a3020" stroke-width="5"/><g class="sc-wave" style="transform-origin:' + x + 'px ' + (y - 150) + 'px"><rect x="' + (x + 3) + '" y="' + (y - 148) + '" width="44" height="96" fill="' + col + '"/>' +
+      '<text class="country-glyph" x="' + (x + 25) + '" y="' + (y - 86) + '" text-anchor="middle" font-size="34" font-weight="700" fill="#f6ead0" font-family="\'Noto Serif TC\',\'Noto Serif CJK TC\',serif">' + txt + '</text></g>';
+    h += sign(310, 760, '酒', '#7a1f1f') + sign(1290, 760, '布', '#2f5a6a') + sign(620, 640, '鹽', '#5a4a2a');
+    // 遠處人群剪影
+    let crowd = '<g fill="#5a4a3a" opacity=".55">';
+    for (let i = 0; i < 14; i++) { const x = 640 + i * 24 + (k.r() - 0.5) * 10, y = 640 + (i % 3) * 6; crowd += '<circle cx="' + x.toFixed(0) + '" cy="' + (y - 26) + '" r="7"/><path d="M' + (x - 9).toFixed(0) + ' ' + y + ' Q' + x.toFixed(0) + ' ' + (y - 30) + ' ' + (x + 9).toFixed(0) + ' ' + y + ' Z"/>'; }
+    h += crowd + '</g>';
+    h += k.tint(T, 360);
+    if (o.tod === 'night' || o.tod === 'dusk') [400, 560, 1040, 1200].forEach(x => { h += k.glow(x, 580, 90, '#ffcf6a', 0.5) + k.lantern(x, 580); });
+    return h;
+  });
+
+  // ───────── 學宮、書齋 ─────────
+  def('academy', 'day', (k, T, o) => {
+    const night = o.tod === 'night';
+    let h = '<rect width="1600" height="1000" fill="' + k.lin(['#3a2a20', '#5a4030']) + '"/>';
+    // 後方大開口看到庭院
+    h += '<rect x="520" y="180" width="560" height="420" fill="' + (night ? '#121a36' : '#a9c9d8') + '"/>';
+    if (!night) h += '<rect x="520" y="440" width="560" height="160" fill="#7a9a5a"/>' + k.broad(640, 600, 0.6) + k.pine(960, 600, 0.55) + '<path d="M520 520 H1080" stroke="#a9a090" stroke-width="10"/>';
+    else h += '<circle cx="960" cy="280" r="34" fill="#f6edc8"/>' + k.pine(700, 600, 0.6, ['#1a2a24', '#22342c', '#2a4034']);
+    h += '<rect x="520" y="180" width="560" height="420" fill="none" stroke="#2a1a12" stroke-width="16"/><path d="M800 180 V600" stroke="#2a1a12" stroke-width="10"/>';
+    // 兩側書架
+    h += k.shelf(60, 640, 380, 440) + k.shelf(1160, 640, 380, 440);
+    // 樑
+    h += '<rect x="0" y="0" width="1600" height="90" fill="#2a1a12"/><rect x="0" y="90" width="1600" height="16" fill="#2f5a54"/><rect x="0" y="150" width="1600" height="24" fill="#3a2418"/>';
+    // 地板與講席
+    h += '<path d="M0 640 H1600 V1000 H0 Z" fill="' + k.lin(['#6b4a30', '#3a2818']) + '"/>';
+    let fl = '<g stroke="#4a3020" stroke-width="2" opacity=".5">';
+    for (let y = 680; y < 1000; y += 50) fl += '<path d="M0 ' + y + ' H1600"/>';
+    h += fl + '</g>';
+    h += '<rect x="640" y="600" width="320" height="40" rx="6" fill="#5a2f22"/><path d="M640 606 H960" stroke="#c9a24a" stroke-width="3"/>';
+    // 一列列的席與案
+    [[300, 800], [800, 820], [1300, 800], [200, 960], [1400, 960]].forEach(p => {
+      h += '<ellipse cx="' + p[0] + '" cy="' + (p[1] + 14) + '" rx="90" ry="16" fill="#8a7a4a" opacity=".8"/>' + k.table(p[0], p[1], 170, '#4a2a1c') +
+        '<g transform="rotate(-6 ' + p[0] + ' ' + (p[1] - 40) + ')"><rect x="' + (p[0] - 30) + '" y="' + (p[1] - 48) + '" width="60" height="16" rx="3" fill="#d9bf86"/><path d="M' + (p[0] - 20) + ' ' + (p[1] - 48) + ' v16 M' + (p[0] - 6) + ' ' + (p[1] - 48) + ' v16 M' + (p[0] + 8) + ' ' + (p[1] - 48) + ' v16" stroke="#a9874e" stroke-width="1.6"/></g>';
+    });
+    h += k.candle(470, 700, 150) + k.candle(1130, 700, 150) + k.glow(470, 540, 160, '#ffcf6a', night ? 0.5 : 0.2) + k.glow(1130, 540, 160, '#ffcf6a', night ? 0.5 : 0.2);
+    if (night) h += '<rect width="1600" height="1000" fill="#0a0e24" opacity=".3"/>';
+    return h;
+  }, { indoor: true });
+
+  // ───────── 村落、田舍 ─────────
+  def('village', 'day', (k, T, o) => {
+    let h = k.sky(T) + k.hills(T);
+    h += '<path d="M0 1000 V690 C400 660 1200 690 1600 680 V1000 Z" fill="' + k.lin(['#8a9a52', '#5a6a34']) + '"/>';
+    // 田壟
+    let rows = '<g stroke="#6a7a3a" stroke-width="4" opacity=".7">';
+    for (let i = 0; i < 12; i++) rows += '<path d="M' + (200 + i * 40) + ' 700 L' + (i * 60 - 200) + ' 1000"/>';
+    for (let i = 0; i < 12; i++) rows += '<path d="M' + (1100 + i * 40) + ' 700 L' + (1200 + i * 90) + ' 1000"/>';
+    h += rows + '</g>';
+    h += k.hut(700, 740, 0.9) + k.hut(930, 730, 0.7) + k.hut(1220, 720, 0.5) + k.hut(420, 716, 0.45);
+    h += '<g class="sc-smoke" fill="none" stroke="#e8e8e0" stroke-width="5" opacity=".35"><path d="M690 650 c-14 -30 14 -50 0 -80 c-10 -30 10 -46 2 -70"/></g>';
+    h += k.fence(540, 860, 820, 46) + k.willow(1420, 860, 0.9) + k.broad(160, 860, 0.9);
+    h += '<path d="M780 1000 C800 900 790 830 800 780 L840 780 C850 840 880 920 920 1000 Z" fill="#a9905e" opacity=".55"/>';
+    h += k.grass(0, 1600, 860, 1000, 70, ['#5d7a3a', '#7a9a48', '#4a6a2e'], 30) + k.flowers(0, 1600, 870, 1000, 26, ['#f4e1a0', '#ffffff']);
+    h += k.birds(520, 330, 3);
+    h += k.tint(T, 520);
+    return h;
+  });
+
+  // ───────── 戰場 ─────────
+  def('battlefield', 'dusk', (k, T, o) => {
+    const T2 = Object.assign({}, T, { sky: T.sky.map(c => mix(c, '#7a2a1a', 0.25)) });
+    let h = k.sky(T2) + k.ridge(600, 100, 160, T.mtn[0], 0.6);
+    // 遠方軍陣（戈矛如林）
+    let army = '<g stroke="#2a2026" stroke-width="2.4">';
+    for (let x = 0; x < 1600; x += 9) army += '<path d="M' + x + ' 660 V' + (618 - (x % 27 ? 0 : 10)) + '"/>';
+    h += army + '</g><rect x="0" y="640" width="1600" height="30" fill="#2a2026"/>';
+    h += k.banner(260, 650, 120, o.banner || '#a3362c', null) + k.banner(1320, 650, 120, '#2f4a7a', null, true);
+    h += k.mist(600, 140, '#c8a080', 0.5);
+    h += '<path d="M0 1000 V680 C400 660 1200 690 1600 670 V1000 Z" fill="' + k.lin(['#6a5a3a', '#2a2218']) + '"/>';
+    // 斷輪、插地的戈、倒下的旗
+    h += k.wheel(380, 860, 60, 20) + k.wheel(1240, 900, 70, -12);
+    h += '<g stroke="#4a3020" stroke-width="6">' + [[520, 940, 470, 760], [1080, 960, 1130, 770], [700, 900, 680, 790], [960, 930, 990, 800]].map(l => '<path d="M' + l[0] + ' ' + l[1] + ' L' + l[2] + ' ' + l[3] + '"/>').join('') + '</g>';
+    h += '<path d="M200 960 L420 900 L430 940 L240 990 Z" fill="' + (o.banner || '#a3362c') + '" opacity=".85"/>';
+    // 煙
+    let smoke = '<g class="sc-smoke" fill="#5a4a48">';
+    [[300, 640], [1260, 630]].forEach(c => { for (let i = 0; i < 9; i++) smoke += '<circle cx="' + (c[0] + i * 14 + (k.r() - 0.5) * 30).toFixed(0) + '" cy="' + (c[1] - i * 42).toFixed(0) + '" r="' + (40 + i * 9).toFixed(0) + '" opacity="' + (0.22 - i * 0.02).toFixed(2) + '"/>'; });
+    h += smoke + '</g>';
+    h += k.grass(0, 1600, 900, 1000, 50, ['#5a4a2a', '#6a5a3a'], 26);
+    h += k.tint(T, 560);
+    h += k.fire(300, 720, 0.6) + k.fire(1260, 720, 0.7) + k.weather('embers');
+    return h;
+  });
+
+  // ───────── 宮苑 ─────────
+  def('garden', 'day', (k, T, o) => {
+    let h = k.sky(T) + k.ridge(600, 100, 150, T.mtn[0], 0.5);
+    h += k.wall(0, 1600, 600, 70, '#c8bca0');
+    h += '<path d="M0 670 H1600 V1000 H0 Z" fill="' + k.lin(['#7a9a5a', '#4a6a34']) + '"/>';
+    // 池塘與荷
+    h += '<ellipse cx="800" cy="840" rx="520" ry="110" fill="' + k.lin(['#6a9ab0', '#3a6a80']) + '"/><ellipse cx="800" cy="840" rx="520" ry="110" fill="none" stroke="#8a8a7a" stroke-width="8"/>';
+    for (let i = 0; i < 12; i++) { const x = 360 + k.r() * 880, y = 800 + k.r() * 80; h += '<ellipse cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" rx="26" ry="9" fill="#4a8a4a"/>' + (i % 3 === 0 ? '<path d="M' + x.toFixed(0) + ' ' + (y - 4).toFixed(0) + ' q-8 -20 0 -26 q8 6 0 26" fill="#f3b8c4"/>' : ''); }
+    // 拱橋
+    h += '<path d="M560 800 Q800 640 1040 800" stroke="#c8b898" stroke-width="26" fill="none"/><path d="M560 790 Q800 630 1040 790" stroke="#9a2f24" stroke-width="5" fill="none"/>';
+    for (let i = 0; i < 9; i++) { const t = i / 8, x = 560 + 480 * t, y = 790 - 160 * 4 * t * (1 - t) * 0.92; h += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' v-26" stroke="#9a2f24" stroke-width="4"/>'; }
+    // 亭
+    h += '<rect x="1250" y="560" width="14" height="140" fill="#9a2f24"/><rect x="1386" y="560" width="14" height="140" fill="#9a2f24"/>' + k.roof(1325, 566, 260, 70, '#2c2a33') + '<rect x="1240" y="700" width="170" height="16" fill="#c8b898"/>';
+    h += k.willow(240, 840, 0.95) + k.rock(1140, 960, 70, '#8a8a84') + k.rock(420, 990, 50, '#8a8a84');
+    h += k.flowers(0, 1600, 920, 1000, 30, ['#f3b8c4', '#ffffff', '#f4e1a0']);
+    h += k.tint(T, 520);
+    if (o.tod === 'night') h += k.weather('fireflies');
+    else h += k.weather('petals');
+    return h;
+  });
+
+  // ───────── 民宅室內 ─────────
+  def('room', 'day', (k, T, o) => {
+    const night = o.tod === 'night';
+    let h = '<rect width="1600" height="1000" fill="' + k.lin(['#6a5038', '#4a3424']) + '"/>';
+    // 牆面土坯紋理
+    h += '<g fill="#5a422e" opacity=".5">' + Array.from({ length: 30 }, () => '<ellipse cx="' + (k.r() * 1600).toFixed(0) + '" cy="' + (k.r() * 620).toFixed(0) + '" rx="' + (30 + k.r() * 60).toFixed(0) + '" ry="' + (8 + k.r() * 10).toFixed(0) + '"/>').join('') + '</g>';
+    // 窗
+    h += '<rect x="980" y="220" width="300" height="220" fill="' + (night ? '#141c3a' : '#cfe0e8') + '"/>' + (night ? '<circle cx="1180" cy="290" r="26" fill="#f6edc8"/>' : '');
+    let gr = '<g stroke="#3a2618" stroke-width="7">';
+    for (let i = 1; i < 6; i++) gr += '<path d="M' + (980 + i * 50) + ' 220 V440"/>';
+    h += gr + '</g><rect x="980" y="220" width="300" height="220" fill="none" stroke="#2e1d12" stroke-width="14"/>';
+    if (!night) h += '<path d="M980 440 L860 1000 H1240 L1280 440 Z" fill="#fff1c8" opacity=".08"/>';
+    // 樑、地
+    h += '<rect x="0" y="0" width="1600" height="70" fill="#3a2618"/><rect x="0" y="120" width="1600" height="22" fill="#4a3020"/>';
+    h += '<path d="M0 640 H1600 V1000 H0 Z" fill="' + k.lin(['#7a6040', '#4a3828']) + '"/>';
+    // 織布機（左）
+    h += '<g stroke="#5a3a22" stroke-width="10" stroke-linecap="round"><path d="M180 700 V420 M420 700 V420 M170 430 H430 M200 560 L420 610"/></g>' +
+      '<rect x="200" y="470" width="200" height="90" fill="#efe2bf" opacity=".85"/><g stroke="#c9b48c" stroke-width="2">' + [490, 510, 530, 550].map(y => '<path d="M200 ' + y + ' H400"/>').join('') + '</g>';
+    // 灶與陶罐（右）
+    h += '<path d="M1300 700 V560 H1520 V700 Z" fill="#7a5a3a"/><path d="M1300 560 H1520 L1500 530 H1320 Z" fill="#8a6a4a"/><ellipse cx="1410" cy="540" rx="60" ry="16" fill="#2a2018"/>';
+    h += '<path d="M620 700 C600 640 700 640 680 700 Z M720 700 C710 620 820 620 800 700 Z" fill="#a0603a" stroke="#5a3020" stroke-width="3"/>';
+    h += '<ellipse cx="800" cy="860" rx="300" ry="50" fill="#8a7a4a" opacity=".7"/>' + k.table(800, 860, 260, '#5a3a24');
+    h += k.candle(520, 700, 110) + k.glow(520, 590, 180, '#ffcf6a', night ? 0.55 : 0.15);
+    if (night) h += '<rect width="1600" height="1000" fill="#0a0e24" opacity=".4"/>' + k.glow(520, 590, 260, '#ffcf6a', 0.3);
+    return h;
+  }, { indoor: true });
+
+  // ───────── 囚室 ─────────
+  def('cell', 'night', (k, T, o) => {
+    let h = '<rect width="1600" height="1000" fill="' + k.lin(['#2a2a30', '#1a1a20']) + '"/>';
+    // 石牆
+    let st = '<g stroke="#121216" stroke-width="4" fill="#33333b">';
+    for (let row = 0; row < 9; row++) for (let c = 0; c < 9; c++) {
+      const x = c * 200 - (row % 2) * 100, y = row * 74;
+      st += '<rect x="' + x + '" y="' + y + '" width="196" height="70" rx="8" fill="' + ['#34343c', '#2e2e36', '#3a3a42'][(row + c) % 3] + '"/>';
+    }
+    h += st + '</g>';
+    // 高窗＋月光
+    h += '<rect x="720" y="150" width="160" height="110" fill="#1c2850"/><g stroke="#0e0e12" stroke-width="10"><path d="M760 150 V260 M800 150 V260 M840 150 V260"/></g>';
+    h += '<path d="M720 260 L560 1000 H1080 L880 260 Z" fill="#bcd0ff" opacity=".1"/>';
+    h += '<path d="M0 700 H1600 V1000 H0 Z" fill="' + k.lin(['#2a2620', '#141210']) + '"/>';
+    // 稻草
+    let straw = '<g stroke="#a08a4a" stroke-width="3" opacity=".7">';
+    for (let i = 0; i < 70; i++) { const x = 980 + k.r() * 520, y = 820 + k.r() * 120; straw += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + ' l' + ((k.r() - 0.5) * 50).toFixed(0) + ' ' + ((k.r() - 0.5) * 16).toFixed(0) + '"/>'; }
+    h += straw + '</g><path d="M60 1000 V560 M140 1000 V560 M220 1000 V560 M300 1000 V560" stroke="#1a1a1e" stroke-width="18"/>';
+    h += '<path d="M1460 700 v-60 h40 v60 Z" fill="#5a4a3a"/>';
+    return h;
+  }, { indoor: true });
+
+  // ───────── 叢祠、宗廟外 ─────────
+  def('shrine', 'night', (k, T, o) => {
+    let h = k.sky(T) + k.ridge(620, 90, 140, T.mtn[1], 0.85);
+    h += '<path d="M0 1000 V700 C400 680 1200 700 1600 690 V1000 Z" fill="' + k.lin(['#4a5a3a', '#1e2618']) + '"/>';
+    // 林
+    for (let i = 0; i < 8; i++) h += k.broad(80 + i * 210, 720 + (i % 2) * 10, 0.7 + (i % 3) * 0.1, ['#2a3a26', '#34462e', '#3f5436']);
+    // 小祠
+    h += '<rect x="660" y="560" width="280" height="170" fill="#8a7a62"/><rect x="740" y="610" width="120" height="120" fill="#2a1a12"/>' + k.roof(800, 566, 380, 90, '#3a3036');
+    h += '<path d="M620 740 H980 L1000 770 H600 Z" fill="#a09070"/>';
+    h += '<path d="M700 1000 C740 900 770 820 790 770 H830 C840 820 880 900 940 1000 Z" fill="#7a6a4a" opacity=".6"/>';
+    h += k.tint(T, 420);
+    h += k.glow(800, 660, 150, '#ffcf6a', 0.5) + k.lantern(720, 600) + k.lantern(880, 600);
+    h += k.grass(0, 1600, 880, 1000, 60, ['#2a3a26', '#3a4a30'], 34);
+    if (o.tod === 'night') h += k.weather('fireflies');
+    return h;
+  });
+
+  // ───────── 樹林 ─────────
+  def('forest', 'day', (k, T, o) => {
+    let h = k.sky(T, { noSun: true }) + k.mist(400, 300, T.sky[3], 0.5);
+    for (let i = 0; i < 12; i++) h += k.pine(i * 140 + 20 + (k.r() - 0.5) * 50, 660 + k.r() * 30, 0.5 + k.r() * 0.35, ['#5a7a70', '#6a8a7e', '#7a9a8c']);
+    h += k.mist(480, 220, T.sky[3], 0.55);
+    for (let i = 0; i < 9; i++) h += k.pine(i * 190 + 60 + (k.r() - 0.5) * 60, 700 + k.r() * 20, 0.7 + k.r() * 0.3, ['#3a5a48', '#4a6a56', '#5a7a64']);
+    h += k.mist(520, 200, T.sky[3], 0.45);
+    h += '<path d="M0 1000 V700 C400 680 1200 700 1600 690 V1000 Z" fill="' + k.lin(['#4a6034', '#26341c']) + '"/>';
+    h += '<path d="M720 700 C700 800 640 900 560 1000 H1040 C960 900 900 800 880 700 Z" fill="#8a7450" opacity=".6"/>';
+    h += k.pine(200, 980, 1.25) + k.pine(1400, 990, 1.3) + k.broad(420, 880, 0.9) + k.broad(1180, 870, 0.85);
+    // 林間光束
+    if (o.tod !== 'night') h += '<g fill="#fff6d0" opacity=".08"><path d="M600 0 L760 0 L560 1000 L380 1000 Z"/><path d="M980 0 L1080 0 L1000 1000 L860 1000 Z"/></g>';
+    h += k.grass(0, 1600, 880, 1000, 70, ['#3f5a2e', '#5a7a3a'], 34);
+    h += k.tint(T, 0);
+    if (o.tod === 'night') h += k.weather('fireflies');
+    return h;
+  });
+
+  // ───────── 雪 ─────────
+  def('snow', 'day', (k, T, o) => {
+    const T2 = Object.assign({}, T, { sky: o.tod === 'night' ? T.sky : ['#8a9aae', '#aab8c8', '#cdd6de', '#e6eaee'], sun: null, cloud: ['#e8ecf0', '#b8c2cc'] });
+    let h = k.sky(T2) + k.ridge(600, 140, 160, '#c8d0da', 0.85) + k.ridge(640, 90, 120, '#aab4c0', 0.9);
+    // 結冰的河
+    h += '<path d="M0 690 H1600 V770 H0 Z" fill="' + k.lin(['#9ab0c4', '#7890a8']) + '"/><g stroke="#e8f0f8" stroke-width="2" opacity=".6"><path d="M100 720 h200 M500 740 h260 M1000 712 h180 M1300 750 h220"/></g>';
+    h += '<path d="M0 1000 V770 C400 750 1200 780 1600 760 V1000 Z" fill="' + k.lin(['#f2f4f6', '#c8d0da']) + '"/>';
+    h += k.bare(220, 860, 1.1, '#3a3038') + k.bare(1400, 850, 1.2, '#3a3038') + k.bare(1080, 760, 0.55, '#4a4048');
+    h += '<path d="M180 640 q40 -10 80 0 M1360 620 q50 -12 90 0" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>';
+    h += k.reeds(560, 760, 780, 70, 12);
+    if (o.tod === 'night') h += '<rect width="1600" height="1000" fill="#0a1024" opacity=".45"/>';
+    h += k.weather('snow');
+    return h;
+  }, { weather: 'snow' });
+
+  // 別名
+  const SCENE_ALIAS = { court: 'hall', throne: 'hall', gate: 'city', wall: 'night', interior: 'room', home: 'room', house: 'room', jail: 'cell', prison: 'cell', temple: 'shrine', school: 'academy', study: 'academy', farm: 'village', battle: 'battlefield', winter: 'snow', ferry: 'river', woods: 'forest' };
+
+  const TOD_WORDS = [
+    [/夜|晚上|入夜|夜半|深夜|三更|更深|月下|月夜/, 'night'],
+    [/黃昏|傍晚|日暮|暮|夕|日落|薄暮/, 'dusk'],
+    [/黎明|拂曉|清晨|晨|天亮|破曉|旦|早上|日出/, 'dawn'],
+    [/正午|白天|日中|午|晌/, 'day']
+  ];
+  /** 從地點牌的時間文字猜時段：「夜」→ night、「黃昏」→ dusk…… */
+  function guessTod(text) {
+    const s = String(text || '');
+    for (let i = 0; i < TOD_WORDS.length; i++) if (TOD_WORDS[i][0].test(s)) return TOD_WORDS[i][1];
+    return '';
+  }
+  function guessWeather(text) {
+    const s = String(text || '');
+    if (/雨/.test(s)) return 'rain';
+    if (/雪/.test(s)) return 'snow';
+    if (/霧/.test(s)) return 'mist';
+    return '';
+  }
+
+  const SCENE_CACHE = {};
+  /**
+   * 畫一個場景，回傳完整的 SVG 字串（1600×1000，貼齊底部）。
+   * key：場景代碼；opt：{ tod: 'dawn'|'day'|'dusk'|'night', weather: 'rain'|'snow'|'mist'|'embers'|'fireflies'|'leaves'|'petals'|'none', banner: 旗色, glyph: 旗上的字, time: 地點牌時間（用來猜時段） }
+   */
+  function scene(key, opt) {
+    const o = Object.assign({}, opt || {});
+    const k0 = SCENE_ALIAS[key] || key;
+    const d = SCENE_DEFS[k0];
+    if (!d) return '';
+    o.tod = ['dawn', 'day', 'dusk', 'night'].indexOf(o.tod) > -1 ? o.tod : (guessTod(o.time) || d.tod);
+    if (d.indoor && o.tod !== 'night') o.tod = guessTod(o.time) === 'night' ? 'night' : o.tod;
+    const wx = o.weather || guessWeather(o.time) || '';
+    const ck = k0 + '|' + o.tod + '|' + wx + '|' + (o.banner || '') + '|' + (o.glyph || '') + '|' + (o.seed || '');
+    if (SCENE_CACHE[ck]) return SCENE_CACHE[ck];
+    const kit = new Kit((o.seed || 0) + hash(k0) % 9973, k0.slice(0, 3) + (++UID));
+    const T = TOD[o.tod];
+    let body = d.draw(kit, T, o);
+    if (wx && wx !== 'none' && wx !== d.weather) body += kit.weather(wx);
+    body += kit.vignette(d.indoor ? 0.62 : 0.5);
+    const svg = '<svg class="sc" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs>' + kit.defs + '</defs>' + body + '</svg>';
+    SCENE_CACHE[ck] = svg;
+    return svg;
+  }
+  function hasScene(key) { return !!SCENE_DEFS[SCENE_ALIAS[key] || key]; }
+
+  // ═══════════════════════════ 對外介面 ═══════════════════════════
+
+  const PORTRAIT_CACHE = {};
+  /** 畫劇本人物（有快取：同一人物、同一表情只畫一次） */
+  function portrait(c, opt) {
+    const o = opt || {};
+    const key = (c && (c.id || c.name) || '?') + '|' + (o.expr || '') + '|' + (o.bust ? 1 : 0) + '|' + (c && c.art ? JSON.stringify(c.art) : '');
+    if (!PORTRAIT_CACHE[key]) PORTRAIT_CACHE[key] = chibi(specOf(c), o);
+    return PORTRAIT_CACHE[key];
+  }
+
+  // ───── 省電模式（v0.1.5） ─────
+  // 在這台裝置上每 15 秒取樣 2 秒的畫面更新間隔；連續兩次中位數超過 34 毫秒（不到 30 幀），
+  // 就在 <html> 加上 zh-lite（只留眨眼與說話嘴型），並記住七天。網址 ?lite=1 強制開、?lite=0 強制關（會記住）。
+  const LITE_KEY = 'zh:lite';
+  function setLite(on, how) {
+    document.documentElement.classList.toggle('zh-lite', !!on);
+    if (how) { try { global.localStorage.setItem(LITE_KEY, JSON.stringify({ on: !!on, t: Date.now(), forced: how === 'forced' })); } catch (err) { /* 不能存就算了 */ } }
+  }
+  function initLite() {
+    let q = null, saved = null;
+    // Apps Script 的網址參數由頁面放在 ZH_BOOT.params；本機測試時才看 location.search
+    try { const bp = global.ZH_BOOT && global.ZH_BOOT.params; q = bp && bp.lite !== undefined ? String(bp.lite) : new URLSearchParams(global.location.search).get('lite'); } catch (err) { q = null; }
+    if (q === '1' || q === '0') { setLite(q === '1', 'forced'); return; }
+    try { saved = JSON.parse(global.localStorage.getItem(LITE_KEY) || 'null'); } catch (err) { saved = null; }
+    if (saved && (saved.forced || (saved.on && Date.now() - saved.t < 7 * 864e5))) { setLite(saved.on); return; }
+    let slow = 0, tries = 0;
+    const sample = () => {
+      if (document.documentElement.classList.contains('zh-lite') || tries > 40) return;
+      if (document.hidden || !document.querySelector('.sc, .ck')) { setTimeout(sample, 15000); return; }   // 沒有動畫就不用量
+      tries += 1;
+      const t = [];
+      const t0 = global.performance.now();
+      const loop = now => {
+        t.push(now);
+        if (now - t0 < 2000) { global.requestAnimationFrame(loop); return; }
+        if (!document.hidden && t.length > 5) {
+          const g = [];
+          for (let i = 1; i < t.length; i++) g.push(t[i] - t[i - 1]);
+          g.sort((a, b) => a - b);
+          slow = g[Math.floor(g.length / 2)] > 34 ? slow + 1 : 0;
+          if (slow >= 2) { setLite(true, 'auto'); return; }
+        }
+        setTimeout(sample, slow ? 1500 : 15000);
+      };
+      global.requestAnimationFrame(loop);
+    };
+    setTimeout(sample, 2500);
+  }
+  // ───── 動畫對齊同一個節拍（v0.1.5） ─────
+  // CSS 動畫各自從「元素放進畫面的那一刻」起算；把 ART 的動畫開始時間對齊到 0.25 秒的格子，
+  // 全頁的眨眼、呼吸、雲、火光就會在同一格一起換，瀏覽器每秒只要畫 4 次。
+  const BEAT = 250;
+  let syncQueued = false;
+  function syncAnims() {
+    syncQueued = false;
+    if (!document.getAnimations) return;
+    document.getAnimations().forEach(a => {
+      if (a._zs || !a.animationName || !/^(ck|sc)-/.test(a.animationName)) return;
+      const st = a.startTime;
+      if (st === null || st === undefined) return;   // 還沒開始：下一格再對
+      a._zs = 1;
+      try { a.startTime = Math.floor(st / BEAT) * BEAT; } catch (err) { /* 舊瀏覽器不能改就算了 */ }
+    });
+  }
+  function queueSync() {
+    if (syncQueued) return;
+    syncQueued = true;
+    // 等兩格：新放進的動畫要到下一次繪製才有開始時間
+    global.requestAnimationFrame(() => global.requestAnimationFrame(syncAnims));
+  }
+  function initSync() {
+    if (!global.MutationObserver || !document.getAnimations) return;
+    new MutationObserver(list => {
+      for (const m of list) {
+        if (m.type === 'attributes') { queueSync(); return; }
+        for (const n of m.addedNodes) {
+          if (n.nodeType === 1 && (n.matches('svg.ck, svg.sc') || n.querySelector('svg.ck, svg.sc'))) { queueSync(); return; }
+        }
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    queueSync();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { initLite(); initSync(); }); else { initLite(); initSync(); }
+
+  global.ART = {
+    version: 'v0.1.5',
+    lite: on => setLite(on, 'forced'),
+    chibi: chibi,
+    portrait: portrait,
+    specOf: specOf,
+    scene: scene,
+    hasScene: hasScene,
+    sceneKeys: Object.keys(SCENE_DEFS),
+    guessTod: guessTod,
+    EXPRS: EXPRS,
+    STATE: STATE,
+    CAST: CAST,
+    shade: shade,
+    mix: mix,
+    robeTone: robeTone
+  };
+})(window);
+</script>

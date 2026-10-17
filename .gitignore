@@ -1,0 +1,17 @@
+node_modules/
+dist/
+qa-preview/
+gas-private-source/
+src/legacy/*.gs
+!src/legacy/code.gs
+!src/legacy/*_data.gs
+.env
+.env.*
+!.env.example
+private-data/
+*.log
+supabase/.temp/
+supabase/.branches/
+.DS_Store
+qa/*.png
+qa/*-failed.json

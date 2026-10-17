@@ -1,0 +1,1464 @@
+<!-- 本話任務：亡鄭厚晉、存鄭利秦、晉將闕秦，組成從秦國立場出發的說服。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：S_cq08_weizheng.html
+ 版本：v0.4.0（2026-10-08）
+ 依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Art_kit、Arena_js、Eng_SLG（v0.2.0）、Eng_Stealth（v0.2.0）、
+       Side_cq08_qin（秦國篇）、Side_cq08_jin（晉國篇）
+       伺服器 Code.gs（樣板變數）、Save.gs、Log.gs、AnchorBank.gs、ResultApi.gs（api_getScenarioProgress）
+ 說明：第一卷 第 8 話「秦晉圍鄭」（教學關・訪客開放）。
+       主玩法：非對稱三方 SLG＋夜縋潛行。原典：〈燭之武退秦師〉。
+   鄭國篇・第一幕「圍城之急」：
+     鄭國一城孤守，每夜三道令。修城、安民撐住城池；夜探、朝議蒐集
+     說服秦伯的「論據」；求楚、見晉、夜襲、流言是看似可行的險棋。
+     史實錨點：圍鄭原因（wz_01）、佚之狐薦燭之武（wz_02）、鄭伯請燭之武（wz_03）。
+     燭之武答應出使後，玩家決定哪一夜縋城：越晚論據越多，城也越危險。
+   鄭國篇・第二幕「夜縋」（v0.2.0 新增）：
+     縋城出使（wz_04）→ 潛行：垂降城牆、避開晉軍崗哨、渡過氾水到秦營
+     → 帳中說秦伯（wz_05～wz_11）：每段說辭是一個錨點，手上有對應的論據，
+       「秦伯心意」多加一些 → 秦伯說（wz_12）→ 子犯請擊（wz_13）→ 微夫人之力（wz_14）
+     → 結局依秦伯心意分三種：一言退秦、小國存續、險中求存，接著到結算頁。
+     每一段都會存檔；中途離開，下次從同一段接著玩。潛行成績記為小遊戲 stl_yezhui。
+   v0.3.0：陣營篇章拆成獨立檔案（Side_cq08_qin＝秦國篇），共用資料放在 ZH.wz。
+     秦國篇、晉國篇在鄭國篇完成後開放（教師帳號直接開放）；判斷方式：
+     這台裝置上完成過，或伺服器 ScenarioLog 有鄭國篇的非失敗結局。
+     各篇各存一份檔：鄭國篇 history、秦國篇 history:qin。
+     從首頁「繼續遊戲」進來時，直接接續那一篇。
+   v0.3.1：加入晉國篇（Side_cq08_jin，存檔 history:jin）。
+   v0.4.0：換新美術。Q 版立繪的對話框；朝議、請燭之武、縋城、帳中說秦伯、子犯請擊、解圍
+           都改在精細場景的「舞台」上演出（Eng_SLG v0.2.0 的 ctx.scene）；標題頁換成夜色中的新鄭與三位國君。
+           夜縋改成挑戰賽（ZH.stealth.challenge：挑戰卡、排行、最多三次），潛行裡的燭之武與晉軍是 Q 版人物。
+           共用的 stage、layer 放在 ZH.wz，秦國篇、晉國篇也用。沒有 Art_kit 時一切照舊。
+ 網址：?page=S_cq08_weizheng（測試可加 &seed=數字 固定亂數；&test=1 開啟潛行測試介面）
+============================================================
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題與選擇勢力 ───────── */
+  .wz-title {
+    position: relative; isolation: isolate;
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 500px at 50% 0%, rgba(224, 180, 76, .16), transparent 65%),
+      radial-gradient(700px 600px at 100% 100%, rgba(74, 156, 138, .14), transparent 60%);
+  }
+  .wz-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .wz-title__main { width: min(1080px, 100%); margin: 0 auto; padding: 14px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 26px; align-content: start; }
+  .wz-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .wz-h1 { margin-top: 4px; font-size: clamp(48px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .wz-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .wz-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .wz-factions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .wz-fac {
+    position: relative; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px;
+    padding: 18px 18px 16px; border-radius: 14px; border: 1px solid var(--line-soft); border-top: 5px solid var(--fc);
+    background: linear-gradient(180deg, var(--fs), rgba(20, 26, 46, .85) 45%);
+  }
+  .wz-fac--zheng { --fc: #3f9d84; --fs: rgba(63, 157, 132, .2); }
+  .wz-fac--qin { --fc: #5b5e6b; --fs: rgba(91, 94, 107, .25); }
+  .wz-fac--jin { --fc: #c4473a; --fs: rgba(196, 71, 58, .2); }
+  .wz-fac__head { display: flex; align-items: center; gap: 14px; }
+  .wz-fac__seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--fc); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--fc);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--fc); background: rgba(11, 14, 29, .6);
+  }
+  .wz-fac--qin .wz-fac__seal { color: #c9ccd8; }
+  /* v0.4.0：標題頁的夜景與國君頭像 */
+  .wz-hero { position: absolute; left: 0; right: 0; top: 0; height: min(560px, 78vh); z-index: -1; overflow: hidden; pointer-events: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent); mask-image: linear-gradient(180deg, #000 55%, transparent); }
+  .wz-hero svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .62; }
+  .wz-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11, 14, 29, .88), rgba(11, 14, 29, .35) 60%, rgba(11, 14, 29, .1)); }
+  .wz-fac__seal.is-art { width: 72px; height: 88px; padding: 0; overflow: hidden; font-size: 0; border-radius: 10px;
+    background: radial-gradient(circle at 50% 40%, #fffaf0, #e3d0a4); box-shadow: 0 0 0 3px var(--night-2), 0 0 0 5px var(--fc); border-width: 0; }
+  .wz-fac__seal.is-art .ck { width: 100%; height: 100%; }
+  .wz-act__face { width: 104px; height: 134px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 2px solid var(--gilt);
+    background: radial-gradient(circle at 50% 40%, #fffaf0, #e3d0a4); box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+  .wz-act__face .ck { width: 100%; height: 100%; }
+  .wz-fac__name { font-family: var(--f-display); font-size: 24px; }
+  .wz-fac__ruler { font-size: 13.5px; color: var(--text-dim); }
+  .wz-fac__lead { font-family: var(--f-display); font-size: 17px; line-height: 1.7; }
+  .wz-fac ul { margin: 0; padding-left: 1.2em; font-size: 14px; color: var(--text-dim); line-height: 1.75; }
+  .wz-fac__act { display: grid; gap: 8px; }
+  .wz-fac.is-locked { opacity: .72; }
+  .wz-fac__lock { font-size: 13.5px; color: var(--text-dim); text-align: center; padding: 10px; border: 1px dashed var(--line-soft); border-radius: 10px; }
+  .wz-note { font-size: 14px; color: var(--text-dim); }
+
+  /* ───────── 第一幕結束 ───────── */
+  .wz-act { position: fixed; inset: 0; z-index: 50; overflow-y: auto; display: grid; place-items: center; padding: 20px 16px; background: radial-gradient(120% 80% at 50% 0%, #27314f, #0a0c1a 75%); animation: zh-fade-in .5s ease both; }
+  .wz-act__card { width: min(680px, 100%); display: grid; gap: 18px; text-align: center; }
+  .wz-act__title { font-size: clamp(40px, 8vw, 64px); letter-spacing: .3em; }
+  .wz-act__line { font-family: var(--f-display); font-size: 20px; color: var(--gilt); }
+  .wz-act .zh-slip { text-align: left; font-size: 16px; }
+  .wz-act dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px; margin: 0; background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: 12px; overflow: hidden; }
+  .wz-act dl div { background: var(--night-2); padding: 10px 12px; }
+  .wz-act dt { font-size: 13px; color: var(--text-dim); }
+  .wz-act dd { margin: 0; font-family: var(--f-display); font-size: 22px; }
+  .wz-act__args { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .wz-act .zh-row { justify-content: center; }
+
+  /* ───────── 第二幕：秦伯心意 ───────── */
+  .wz-pers {
+    position: absolute; left: 0; right: 0; top: 12px; margin: 0 auto; z-index: 4;
+    width: min(440px, calc(100% - 120px)); padding: 10px 14px 12px; border-radius: 12px; pointer-events: none;
+    background: rgba(12, 16, 32, .9); border: 1px solid var(--gilt); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); color: var(--text);
+    animation: zh-rise .4s ease both;
+  }
+  .wz-pers__head { display: flex; align-items: baseline; gap: 10px; }
+  .wz-pers__head b { font-family: var(--f-display); font-size: 17px; letter-spacing: .12em; }
+  .wz-pers__num { font-size: 13px; color: var(--text-dim); }
+  .wz-pers__stage { margin-left: auto; font-family: var(--f-display); font-size: 18px; color: var(--gilt); }
+  .wz-pers__stage { display: inline-block; }
+  .wz-pers__stage.is-up { animation: wz-up .6s cubic-bezier(.2, 1.6, .4, 1) both; }
+  @keyframes wz-up { from { opacity: 0; transform: scale(1.7); } to { opacity: 1; transform: none; } }
+  .wz-pers__bar { position: relative; height: 12px; margin-top: 8px; border-radius: 999px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+  .wz-pers__bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: inherit; background: linear-gradient(90deg, #6b6f80, #c9a24a 55%, #f0d27a); transition: width .9s ease; }
+  .wz-pers__args { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .wz-pers__args span { font-size: 12.5px; padding: 1px 8px; border-radius: 999px; border: 1px dashed var(--line-soft); color: var(--text-dim); }
+  .wz-pers__args span.is-have { border-style: solid; border-color: var(--gilt); color: var(--gilt); }
+  .wz-pers__args span.is-used { background: rgba(224, 180, 76, .22); color: #f6e6b8; }
+  .wz-pers__gain { display: inline-block; font-family: var(--f-display); font-size: 18px; color: #f0d27a; animation: wz-gain 1.6s ease both; }
+  @keyframes wz-gain { 0% { opacity: 0; transform: translateY(8px); } 20% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+
+  @media (max-width: 860px) {
+    .wz-factions { grid-template-columns: minmax(0, 1fr); }
+    .wz-pers { left: 8px; right: 56px; top: 8px; width: auto; margin: 0; padding: 8px 12px 10px; }
+    .wz-pers__args { display: none; }
+    .slg-stage .wz-pers { right: 8px; }
+    .slg-stage:has(.wz-pers) .slg-stage__place { display: none; }
+    .wz-hero { height: 420px; }
+  }
+</style>
+</head>
+<body>
+<div id="wz-root"></div>
+
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Art_kit') ?>
+<?!= include('Arena_js') ?>
+<?!= include('Eng_SLG') ?>
+<?!= include('Eng_Stealth') ?>
+<script>
+(function () {
+  'use strict';
+
+  const SID = 'S_cq08_weizheng';
+  const MODE = 'history';
+  const ROOT = document.getElementById('wz-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const TUTORIAL_KEY = 'tut:slg:weizheng';
+  const ARG = '論據';
+  const CN = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => []);
+  const hasArt = () => !!(window.ART && window.ART.portrait);
+
+  // ── 舞台（Eng_SLG v0.2.0 ＋ Art_kit；沒有時不做事，照舊在地圖上對話） ──
+  const FLAG = { zheng: '#3f9d84', qin: '#3b3d46', jin: '#c4473a' };
+  const GLYPH = { zheng: '鄭', qin: '秦', jin: '晉' };
+  /** o：{ base 場景, who 旗號的國別, place 地點牌, time 小字, cast 台上人物, tod, expr } */
+  function stage(ctx, o) {
+    if (!ctx.scene) return Promise.resolve();
+    const w = o.who;
+    return ctx.scene(Object.assign({ tod: 'night', banner: w ? FLAG[w] : undefined, glyph: w ? GLYPH[w] : undefined, faction: w }, o));
+  }
+  /** 浮層（秦伯心意、利害帳、答子犯）放在哪裡：舞台開著時放舞台上，否則放地圖上 */
+  function layer(ctx, sel) {
+    const host = ctx.layerEl ? ctx.layerEl() : ctx.mapEl();
+    if (host) document.querySelectorAll(sel).forEach(b => { if (b.parentNode !== host) b.remove(); });
+    return host;
+  }
+
+
+  // ═════════════════════════ 劇本資料 ═════════════════════════
+
+  const FACTIONS = [
+    { id: 'zheng', name: '鄭', title: '鄭國', color: '#3f9d84', role: '一座孤城，兵少糧薄' },
+    { id: 'jin', name: '晉', title: '晉國', color: '#c4473a', role: '霸主之師，舊怨在身' },
+    { id: 'qin', name: '秦', title: '秦國', color: '#3b3d46', role: '千里遠征，糧道漫長' }
+  ];
+  const OTHERS = [
+    { id: 'zhou', name: '周', color: '#b08a3a' },
+    { id: 'chu', name: '楚', color: '#7a5a8c' },
+    { id: 'xu', name: '許', color: '#8a6d45' }
+  ];
+
+  const MAP = {
+    width: 1000, height: 700, focus: 'xinzheng',
+    terrain: [
+      { kind: 'region', faction: 'jin', d: 'M0 0H1000V140C900 172 780 200 640 198S400 214 280 232 90 214 0 222Z' },
+      { kind: 'region', faction: 'qin', d: 'M0 236C40 238 86 250 110 270S130 352 72 402 0 430 0 430Z' },
+      { kind: 'region', faction: 'zheng', d: 'M392 372C426 318 566 306 634 352S712 470 664 540 482 596 424 548 360 426 392 372Z' },
+      { kind: 'river', label: '黃河', at: '58%', width: 13, d: 'M-20 232C120 214 250 252 380 230S620 204 760 222 920 176 1020 150' },
+      { kind: 'river', label: '洧水', at: '36%', width: 7, d: 'M330 446C420 456 470 502 540 497S690 562 1020 600' },
+      { kind: 'river', label: '氾水', at: '20%', width: 6, d: 'M622 292C650 330 690 352 724 420S760 470 790 500' },
+      { kind: 'mountain', d: 'M292 452l20-30 20 30M322 446l24-38 24 38M356 454l18-26 18 26M300 404l16-22 16 22' },
+      { kind: 'mountain', d: 'M66 326l18-28 18 28M96 318l22-34 22 34M130 326l16-24 16 24M150 300l14-20 14 20' },
+      { kind: 'mountain', d: 'M520 116l20-30 20 30M552 110l24-36 24 36M590 118l18-26 18 26' },
+      { kind: 'road', d: 'M520 470L485 330' },
+      { kind: 'road', d: 'M520 470Q600 430 690 385' },
+      { kind: 'road', d: 'M485 330Q430 292 380 272T225 330' },
+      { kind: 'road', d: 'M225 330Q140 300 40 252' },
+      { kind: 'road', d: 'M520 470Q500 540 470 610' }
+    ],
+    labels: [
+      { text: '晉', x: 650, y: 112, faction: 'jin', size: 70 },
+      { text: '秦', x: 56, y: 372, faction: 'qin', size: 54 },
+      { text: '鄭', x: 622, y: 520, faction: 'zheng', size: 58 },
+      { text: '楚', x: 640, y: 664, size: 46, opacity: .4 }
+    ],
+    nodes: [
+      { id: 'xinzheng', name: '新鄭', sub: '鄭都', kind: 'city', faction: 'zheng', x: 520, y: 470, meter: 'wall',
+        note: '鄭國的都城，也是鄭國僅有的依靠。北有晉軍、東北有秦軍，兩面受敵。' },
+      { id: 'hanling', name: '函陵', sub: '晉軍', kind: 'camp', faction: 'jin', x: 485, y: 330,
+        note: '晉軍主力紮營在新鄭北邊的函陵。營中虛實，要派斥候夜探才知道。' },
+      { id: 'fanan', name: '氾南', sub: '秦軍', kind: 'camp', faction: 'qin', x: 690, y: 385,
+        note: '秦軍紮營在氾水之南，與晉軍分開。營中虛實，要派斥候夜探才知道。' },
+      { id: 'hulao', name: '制', sub: '虎牢關', kind: 'pass', faction: 'zheng', x: 378, y: 270,
+        note: '鄭國西北的險關，東西往來的要道。' },
+      { id: 'luoyi', name: '洛邑', sub: '周天子', kind: 'far', faction: 'zhou', x: 225, y: 330,
+        note: '周天子所在。到了春秋時代，天子已經管不動諸侯。' },
+      { id: 'yong', name: '往秦・雍', kind: 'far', faction: 'qin', x: 44, y: 250,
+        note: '秦國都城雍，距鄭一千多里，中間隔著晉國。' },
+      { id: 'jiang', name: '往晉・絳', kind: 'far', faction: 'jin', x: 382, y: 64,
+        note: '晉國都城絳，在黃河以北。' },
+      { id: 'xu', name: '許', kind: 'far', faction: 'xu', x: 470, y: 612,
+        note: '鄭國南方的小國，依附楚國。' },
+      { id: 'chu', name: '往楚', kind: 'far', faction: 'chu', x: 560, y: 672,
+        note: '楚國在南方。兩年前，楚軍在城濮敗給了晉國。' }
+    ]
+  };
+
+  const RESOURCES = [
+    { id: 'wall', label: '城防', icon: 'wall', max: 100, start: 70, danger: 25 },
+    { id: 'food', label: '糧草', icon: 'food', max: 100, start: 60, danger: 15 },
+    { id: 'morale', label: '民心', icon: 'morale', max: 100, start: 65, danger: 20 }
+  ];
+
+  const METERS = [
+    { id: 'jinWrath', label: '晉侯怒氣', faction: 'jin', reveal: s => !!s.flags.scoutJin, hint: '夜探晉營後顯示' },
+    { id: 'qinWill', label: '秦軍戰意', faction: 'qin', reveal: s => !!s.flags.scoutQin, hint: '夜探秦營後顯示' }
+  ];
+
+  const CHARACTERS = [
+    { id: 'zhengbo', name: '鄭文公', faction: 'zheng', glyph: '鄭', title: '鄭伯・你', codex: 'person:cq_zhengwengong' },
+    { id: 'yizhihu', name: '佚之狐', faction: 'zheng', glyph: '狐', codex: 'person:cq_yizhihu',
+      title: s => (s.flags.yizhihu ? '舉薦燭之武' : '鄭國大夫') },
+    { id: 'zhuzhiwu', name: '燭之武', faction: 'zheng', glyph: '燭', codex: 'person:cq_zhuzhiwu',
+      show: s => !!s.flags.yizhihu, title: s => (s.flags.accepted ? '答應縋城出使' : '年老，多年不受重用') },
+    { id: 'jinwengong', name: '晉文公', faction: 'jin', glyph: '晉', title: '晉侯・諸侯之長', codex: 'person:cq_jinwengong' },
+    { id: 'zifan', name: '子犯', faction: 'jin', glyph: '犯', title: '晉國謀臣', codex: 'person:cq_zifan',
+      known: s => !!s.flags.scoutJin, unknownName: '晉營謀臣', hint: '夜探晉營可以看清楚' },
+    { id: 'qinmugong', name: '秦穆公', faction: 'qin', glyph: '秦', title: '秦伯・遠征之師', codex: 'person:cq_qinmugong' }
+  ];
+
+  const SPEAKERS = {
+    '史官': { glyph: '史' },
+    '斥候': { glyph: '斥', faction: 'zheng' },
+    '群臣': { glyph: '臣', faction: 'zheng' },
+    '使者': { glyph: '使', faction: 'zheng' },
+    '守將': { glyph: '守', faction: 'zheng' },
+    '秦兵': { glyph: '兵', faction: 'qin' },
+    '秦大夫': { glyph: '夫', faction: 'qin' }
+  };
+
+  // 論據 5 條（說服秦伯用）；軍情是了解局勢的情報
+  const INTEL = [
+    { id: 'split', kind: ARG, title: '秦晉分營', text: '晉軍駐在函陵，秦軍駐在氾南，兩軍各自紮營。只要能出得了城，就有機會單獨見到秦伯。' },
+    { id: 'noGrudge', kind: ARG, title: '秦鄭無怨', text: '晉國圍鄭，是為了舊日的無禮和鄭國依附楚國；這些都是晉國的帳，秦國和鄭國其實沒有仇。' },
+    { id: 'far', kind: ARG, title: '千里遠征', text: '秦國在西，鄭國在東，中間隔著晉國。秦軍的糧道要穿過晉國的地界，就算打下鄭國，也很難守住。' },
+    { id: 'past', kind: ARG, title: '晉有前科', text: '秦營老卒說：從前有一位晉國國君答應割地給秦國，一回國就反悔，還築牆防秦。秦國人到現在都記得。' },
+    { id: 'ambition', kind: ARG, title: '晉志未已', text: '晉將私下議論：拿下鄭國之後，晉國的霸業還要往西推。而西邊，正是秦國。' },
+    { id: 'jinArmy', kind: '軍情', title: '晉師之盛', text: '晉文公親自領兵，子犯隨軍調度。這場戰爭的苦主是晉國，怒氣也最盛。' },
+    { id: 'marriage', kind: '軍情', title: '秦晉之好', text: '晉侯的夫人是秦伯的女兒，兩國世代聯姻。挑撥親情沒有用，要讓秦伯自己算清楚利害。' },
+    { id: 'chuWeak', kind: '軍情', title: '楚不可恃', text: '楚國兩年前在城濮大敗給晉國，不會為了鄭國再與晉國開戰。' },
+    { id: 'jinNo', kind: '軍情', title: '晉侯不納', text: '晉侯對鄭國的舊怨未消。派人去說晉國，只會碰釘子。' }
+  ];
+
+  const HELP =
+    '<p><b>目標</b>：撐過圍城，並讓燭之武出城說服秦伯。城防、糧草、民心任何一項歸零，鄭國就撐不下去；六個教學行動期內出城；原文沒有固定圍城夜數。</p>' +
+    '<p style="margin-top:10px"><b>每期三道令</b>：修城、安民可以保命；夜探敵營、召開朝議可以蒐集情報。「險棋」看起來可行，結果卻不一定。</p>' +
+    '<p style="margin-top:10px"><b>論據</b>：情報分成「論據」和「軍情」。論據共五條，越多，之後說服秦伯越有把握；但多留一夜，城就多受一夜的攻擊。</p>' +
+    '<p style="margin-top:10px"><b>非對稱</b>：晉兵強怒盛，秦軍千里遠征。敵方的怒氣、戰意要夜探之後才看得到。</p>' +
+    '<p style="margin-top:10px"><b>史實錨點</b>：劇情走到史書記載的關鍵時刻，會停下來請你選擇。選錯會先走一段歧路，再回到史書。</p>' +
+    '<p style="margin-top:10px"><b>第二幕〈夜縋〉</b>：燭之武垂降出城，避開晉軍崗哨潛行到秦營，再到帳中說服秦伯。每一段說辭都是一個史實錨點；手上有對應的論據，秦伯更容易被說動。</p>';
+
+  const TUTORIAL = [
+    { el: 'res', title: '鄭國的三條命脈', text: '城防、糧草、民心。任何一項歸零，鄭國就撐不下去。晉、秦每一夜都會攻城，糧草每一夜都在消耗。' },
+    { el: 'map', title: '帛書地圖', text: '北邊函陵是晉軍，東北氾南是秦軍，中間的新鄭就是你的都城。可以拖曳、縮放地圖；點一下營寨，可以看說明、直接下令。' },
+    { el: 'side', title: '三方勢力', text: '晉兵強、怒氣盛，秦軍千里遠征，鄭國只有一座城。敵方的虛實要「夜探」之後才看得到。' },
+    { el: 'cmd', title: '每期三道令', text: '修城、安民保命；夜探、朝議找出破局的辦法。「險棋」要想清楚再下。' },
+    { el: 'intel-tab', title: '情報與論據', text: '五條論據蒐集得越多，之後出城說服秦伯越有把握。' },
+    { el: 'end', title: '結束此夜', text: '令下完了就按這裡。夜裡晉、秦會攻城，天亮後再換你下令。' }
+  ];
+
+
+  // ═════════════════════════ 指令 ═════════════════════════
+
+  const COMMANDS = [
+    {
+      id: 'repair', label: '修城', group: '守城', cost: 1, desc: '城防 +8，糧草 −2。',
+      run(ctx) {
+        ctx.add('wall', 8, { at: 'xinzheng' });
+        ctx.add('food', -2);
+        ctx.log('連夜修補城牆，城防 +8。', 'good');
+        return ctx.fx.pulse('xinzheng', '#3f9d84');
+      }
+    },
+    {
+      id: 'calm', label: '安民', group: '守城', cost: 1, desc: '開倉賑濟百姓。民心 +8，糧草 −5。',
+      run(ctx) {
+        ctx.add('morale', 8, { at: 'xinzheng' });
+        ctx.add('food', -5);
+        ctx.log('開倉賑濟百姓，民心 +8。', 'good');
+        return ctx.fx.pulse('xinzheng', '#e0b44c');
+      }
+    },
+    {
+      id: 'scout', label: '夜探', group: '探查', cost: 1, targets: ['hanling', 'fanan'],
+      desc: '派斥候摸黑接近敵營，可能帶回情報，也可能回不來。',
+      run: scout
+    },
+    {
+      id: 'council', label: '朝議', group: '探查', cost: 1, desc: '召集群臣商議對策。',
+      enabled: s => ((s.flags.council || 0) < 2 ? true : '群臣已經說不出新的辦法了。'),
+      run: council
+    },
+    {
+      id: 'askZhu', label: '請燭之武', group: '破局', cost: 1, key: true,
+      visible: s => !!s.flags.yizhihu && !s.flags.accepted,
+      desc: '依佚之狐的建議，請燭之武出城去見秦伯。',
+      run: askZhu
+    },
+    {
+      id: 'depart', label: '今夜縋城', group: '破局', cost: 'all', key: true, action: '決定出城',
+      visible: s => !!s.flags.accepted,
+      desc: s => '讓燭之武今夜出城。手上論據 ' + argCount(s) + ' / 5；多等一夜可以再探，但城防會繼續流失。',
+      run: depart
+    },
+    {
+      id: 'chu', label: '遣使求楚', group: '險棋', cost: 1, risk: true,
+      visible: s => !s.flags.chuSent, desc: '派使者向南方的楚國求援。糧草 −3。',
+      run(ctx) {
+        ctx.add('food', -3);
+        ctx.flag('chuSent', ctx.state.turn);
+        ctx.log('派使者南下向楚國求援。');
+        return ctx.say([{ who: '使者', text: '臣這就出發。往返楚國，少說也要兩夜。' }]);
+      }
+    },
+    {
+      id: 'jinEnvoy', label: '遣使見晉侯', group: '險棋', cost: 1, risk: true, targets: ['hanling'],
+      visible: s => !s.flags.jinEnvoy, desc: '派使者到函陵，向晉侯請和。',
+      run(ctx) {
+        ctx.flag('jinEnvoy', 1);
+        return ctx.fx.pulse('hanling', '#c4473a')
+          .then(() => ctx.say([
+            { who: '使者', text: '晉侯不肯見臣。子犯在營門前傳話：「鄭伯當年怎麼對待流亡在外的公子，晉侯沒有忘記。」' },
+            { who: 'zhengbo', text: '……晉國是苦主，去求晉國，正好撞在刀口上。' }
+          ]))
+          .then(() => {
+            ctx.add('morale', -3, { at: 'xinzheng' });
+            ctx.vary('jinWrath', 5);
+            ctx.log('遣使見晉侯，被拒於營門之外。民心 −3。', 'bad');
+            return ctx.gainIntel('jinNo');
+          });
+      }
+    },
+    {
+      id: 'sortie', label: '出城夜襲', group: '險棋', cost: 1, risk: true, targets: ['hanling'],
+      desc: '趁夜出城，突擊函陵的晉營。',
+      run(ctx) {
+        ctx.flag('sortie', (ctx.flag('sortie') || 0) + 1);
+        const win = ctx.rng() < 0.3;
+        return ctx.fx.volley('xinzheng', 'hanling', { faction: 'zheng', count: 5 }).then(() => {
+          if (win) {
+            ctx.flag('sortieWin', 1);
+            ctx.add('morale', 4, { at: 'xinzheng' });
+            ctx.vary('jinWrath', 8);
+            ctx.log('夜襲燒了晉營外圍的糧車，城中一陣歡呼；晉侯更怒了。', 'good');
+            return ctx.say([{ who: '守將', text: '燒了晉軍幾輛糧車！只是……晉營裡的火把，比剛才更多了。' }]);
+          }
+          ctx.add('morale', -6, { at: 'xinzheng' });
+          ctx.add('wall', -4);
+          ctx.vary('jinWrath', 10);
+          ctx.log('夜襲撞上晉軍的埋伏，折損大半，晉軍順勢攻城。民心 −6，城防 −4。', 'bad');
+          return ctx.say([{ who: '守將', text: '晉軍早有防備！出城的弟兄……回來的不到一半。' }]);
+        });
+      }
+    },
+    {
+      id: 'rumor', label: '散布流言', group: '險棋', cost: 1, risk: true, targets: ['fanan'],
+      visible: s => !!s.flags.scoutQin,
+      desc: '派人混進秦營，散布「秦國在替晉國賣命」的說法。',
+      run(ctx) {
+        ctx.flag('rumor', (ctx.flag('rumor') || 0) + 1);
+        ctx.vary('qinWill', -6);
+        const caught = ctx.rng() < 0.35;
+        return ctx.fx.pulse('fanan', '#3b3d46').then(() => {
+          if (caught) {
+            ctx.vary('jinWrath', 10);
+            ctx.state.vars.jinBoost = 4;
+            ctx.log('流言被晉軍查出源頭，晉侯大怒，下令明夜加緊攻城。', 'bad');
+            return ctx.say([{ who: '斥候', text: '糟了，晉軍抓到我們的人，問出了流言是從城裡放出去的！' }]);
+          }
+          ctx.log('秦營裡開始有人交頭接耳。');
+          return ctx.say([{ who: '斥候', text: '話已經傳開了，秦營裡有人在交頭接耳。只是……這種手段，秦伯要是知道了，會怎麼看鄭國？' }]);
+        });
+      }
+    }
+  ];
+
+  function scout(ctx, target) {
+    const qin = target === 'fanan';
+    const key = qin ? 'scoutQin' : 'scoutJin';
+    const n = ctx.flag(key) || 0;
+    const fail = n >= 1 && ctx.rng() < 0.22;
+    return ctx.fx.pulse(target, '#2b2418').then(() => {
+      if (fail) {
+        ctx.add('morale', -3, { at: 'xinzheng' });
+        ctx.log('派往' + (qin ? '秦營' : '晉營') + '的斥候沒有回來。民心 −3。', 'bad');
+        return ctx.say([{ who: 'zhengbo', text: '天快亮了，斥候還沒回來……恐怕是被巡哨抓住了。' }]);
+      }
+      ctx.flag(key, n + 1);
+      if (qin) {
+        ctx.node('fanan', { note: '秦軍：千里遠征，糧道要穿過晉國的地界。戰意 ' + Math.round(ctx.state.vars.qinWill) + '。', badge: String(Math.round(ctx.state.vars.qinWill)), badgeColor: '#3b3d46' });
+        if (n === 0) {
+          ctx.unlock('person:cq_qinmugong');
+          return ctx.say([{ who: '斥候', text: '秦營的士兵在抱怨：從雍城到這裡走了一千多里，糧車還得穿過晉國的地界。有人說，就算打下鄭國，好處也落不到秦國頭上。' }])
+            .then(() => ctx.gainIntel('far'));
+        }
+        if (n === 1) {
+          ctx.unlock('treasure:banzhu');
+          return ctx.say([{ who: '斥候', text: '營中有個老兵說起舊事：從前秦國幫一位晉國國君回國即位，那位國君答應割地給秦國，結果一回國就反悔，還連夜築牆防著秦國。' }])
+            .then(() => ctx.gainIntel('past'));
+        }
+        ctx.log('秦營鼓聲稀落，秦軍戰意大約 ' + Math.round(ctx.state.vars.qinWill) + '。');
+        return ctx.say([{ who: '斥候', text: '秦營的鼓聲一夜比一夜稀落。秦軍的戰意，大約只剩 ' + Math.round(ctx.state.vars.qinWill) + '。' }]);
+      }
+      ctx.node('hanling', { note: '晉軍：晉文公親征，子犯隨軍。晉侯怒氣 ' + Math.round(ctx.state.vars.jinWrath) + '。', badge: String(Math.round(ctx.state.vars.jinWrath)), badgeColor: '#7a2a1c' });
+      if (n === 0) {
+        ctx.unlock('person:cq_jinwengong');
+        ctx.unlock('person:cq_zifan');
+        ctx.unlock('idiom:qinjinzhihao');
+        return ctx.say([
+          { who: '斥候', text: '晉營旌旗連綿，晉侯親自坐鎮，子犯在帳前調度。營中都在說：這一回要好好教訓鄭國。' },
+          { who: '斥候', text: '還聽說，晉侯的夫人正是秦伯的女兒——秦、晉兩國是姻親。' }
+        ]).then(() => ctx.gainIntel('jinArmy')).then(() => ctx.gainIntel('marriage'));
+      }
+      if (n === 1) {
+        return ctx.say([{ who: '斥候', text: '幾名晉將在火堆旁議論：拿下鄭國之後，霸業還要往西推。說到「西邊」，他們都笑了。' }])
+          .then(() => ctx.gainIntel('ambition'));
+      }
+      ctx.log('晉軍攻勢不減，晉侯怒氣大約 ' + Math.round(ctx.state.vars.jinWrath) + '。');
+      return ctx.say([{ who: '斥候', text: '晉軍的攻勢沒有減弱，晉侯的怒氣大約是 ' + Math.round(ctx.state.vars.jinWrath) + '。' }]);
+    });
+  }
+
+  function council(ctx) {
+    const n = ctx.flag('council') || 0;
+    ctx.flag('council', n + 1);
+    const court = { base: 'hall', who: 'zheng', place: '新鄭・鄭伯宮中', time: '朝議', cast: n === 0 ? ['zhengbo', '群臣', 'yizhihu'] : ['zhengbo', '群臣'] };
+    if (n === 0) {
+      ctx.log('召開朝議，群臣意見分歧。');
+      return stage(ctx, court).then(() => ctx.say([
+        { who: '群臣', text: '「晉國兵強，不如派人向楚國求救！」「兩個大國夾攻，不如開城請和，保住宗廟！」', expr: 'worried' },
+        { who: 'zhengbo', text: '……吵了一整夜，沒有一個辦法說得通。', expr: 'sad' },
+        { who: 'yizhihu', text: '（大夫佚之狐站在班末，若有所思，始終沒有開口。）', expr: 'serious' }
+      ]));
+    }
+    ctx.log('再開朝議，有人提醒楚國不可依靠。');
+    return stage(ctx, court).then(() => ctx.say([{ who: '群臣', text: '楚國兩年前才在城濮大敗給晉國，如今自顧不暇，恐怕不會來救。', expr: 'worried' }]))
+      .then(() => ctx.gainIntel('chuWeak'));
+  }
+
+  function askZhu(ctx) {
+    return stage(ctx, { base: 'hall', who: 'zheng', place: '新鄭・鄭伯宮中', time: '第' + CN[Math.min(ctx.state.turn, 12)] + '夜', cast: ['zhengbo', 'zhuzhiwu'] })
+      .then(() => ctx.say([
+        { text: '鄭伯派人請來燭之武。老人拄著杖，慢慢走上殿來。' },
+        { who: 'zhengbo', text: '寡人想請先生出城，去見秦伯。', expr: 'worried' },
+        { who: 'zhuzhiwu', text: '臣之壯也，猶不如人；今老矣，無能為也已。', expr: 'sad' }
+      ]))
+      .then(() => ctx.anchor('wz_03'))
+      .then(() => {
+        ctx.flag('accepted', ctx.state.turn);
+        ctx.unlock('person:cq_zhuzhiwu');
+        ctx.log('燭之武答應出使秦營。', 'good');
+        const n = argCount(ctx.state);
+        return ctx.say([
+          { who: 'zhuzhiwu', text: '……既然國君這麼說，老臣就走這一趟。', expr: 'serious' },
+          { who: 'zhuzhiwu', text: n >= 5
+            ? '秦、晉兩軍的虛實，老臣心裡已經有數。哪一夜出城，請國君定奪。'
+            : '只是見了秦伯，老臣要說些什麼？我們對秦、晉兩軍知道得越多，老臣說起話來越有分量。（目前論據 ' + n + ' / 5）' }
+        ]);
+      })
+      .then(() => ZH.toast('新的令：今夜縋城', 'ok'));
+  }
+
+  function depart(ctx) {
+    const n = argCount(ctx.state);
+    const warn = n < 3 ? '論據太少，見了秦伯恐怕說不動他。' : n < 5 ? '再探一兩夜，或許能多掌握幾條論據；但城防每一夜都在流失。' : '五條論據齊備。';
+    return ctx.choose({
+      title: '今夜縋城？',
+      text: '燭之武手上有 ' + n + ' / 5 條論據。' + warn,
+      options: [
+        { label: '今夜就出城', desc: '第一幕結束，接著是夜縋出城。', value: true },
+        { label: '再等一夜', desc: '收回這道令，繼續蒐集情報或守城。', value: false }
+      ]
+    }).then(go => {
+      if (!go) return { refund: true };
+      ctx.flag('departed', ctx.state.turn);
+      ctx.log('燭之武今夜縋城出使。', 'good');
+      return stage(ctx, { base: 'night', who: 'zheng', place: '新鄭城頭', time: '三更', cast: ['zhengbo', 'zhuzhiwu'] })
+        .then(() => ctx.say([
+          { who: 'zhengbo', text: '鄭國的存亡，就拜託先生了。', expr: 'worried' },
+          { who: 'zhuzhiwu', text: '老臣去去就回。', expr: 'serious' }
+        ])).then(() => ctx.end({ type: 'act1' }));
+    });
+  }
+
+
+  // ═════════════════════════ 事件 ═════════════════════════
+
+  const EVENTS = [
+    {
+      id: 'prologue', phase: 'start', when: s => s.turn === 1,
+      run(ctx) {
+        ctx.unlock('person:cq_zhengwengong');
+        return stage(ctx, { base: 'night', who: 'zheng', place: '新鄭城頭', time: '第一夜', cast: ['zhengbo'] })
+          .then(() => ctx.say([
+            { text: '魯僖公三十年，西元前 630 年九月。晉文公與秦穆公合兵，包圍了鄭國的都城新鄭。' },
+            { who: 'zhengbo', text: '晉、秦兩個大國同時兵臨城下……寡人只有這一座城。', expr: 'worried' },
+            { who: '史官', text: '鄭伯且慢。要守住國家，得先弄清楚——他們為什麼而來？' }
+          ]))
+          .then(() => ctx.anchor('wz_01'))
+          .then(() => Promise.all([ctx.fx.pulse('hanling', '#c4473a'), ctx.fx.pulse('fanan', '#3b3d46')]))
+          .then(() => ctx.say([{ text: '晉軍駐紮在北邊的函陵，秦軍駐紮在東北的氾南——兩軍沒有紮在一起。' }]))
+          .then(() => ctx.gainIntel('split'))
+          .then(() => {
+            if (ZH.local.get(TUTORIAL_KEY, false)) return;
+            ZH.local.set(TUTORIAL_KEY, true);
+            return ctx.coach(TUTORIAL);
+          });
+      }
+    },
+    {
+      // 第一夜過去，史官記下這件事：解鎖《春秋》《左傳》
+      id: 'chronicle', phase: 'end', when: s => s.turn === 1,
+      run(ctx) {
+        ctx.unlock('classic:chunqiu');
+        ctx.unlock('text:zuozhuan');
+        return stage(ctx, { base: 'academy', tod: 'night', place: '魯國・史官的書齋', cast: ['史官'] })
+          .then(() => ctx.say([
+            { who: '史官', text: '魯國的史官在竹簡上記下六個字：「晉人、秦人圍鄭。」' },
+            { who: '史官', text: '至於這幾夜城裡城外發生了什麼，要等《左傳》來細說。', expr: 'smirk' }
+          ]));
+      }
+    },
+    {
+      id: 'chuReply', phase: 'start', when: s => !!s.flags.chuSent && s.turn >= s.flags.chuSent + 2,
+      run(ctx) {
+        ctx.add('morale', -6, { at: 'xinzheng' });
+        ctx.log('使者回報：楚國不肯出兵。民心 −6。', 'bad');
+        return stage(ctx, { base: 'hall', who: 'zheng', place: '新鄭・鄭伯宮中', cast: ['zhengbo', '使者'] })
+          .then(() => ctx.say([
+            { who: '使者', text: '楚王說：「城濮一戰，楚國元氣未復，不能為了鄭國再與晉國開戰。」', expr: 'sad' },
+            { who: 'zhengbo', text: '連楚國也靠不住了……', expr: 'sad' }
+          ])).then(() => ctx.gainIntel('chuWeak'));
+      }
+    },
+    {
+      id: 'yizhihu', phase: 'start',
+      when: s => (s.turn >= (s._textplayV===3?2:3) && (s.flags.council || 0) >= 1) || s.turn >= (s._textplayV===3?3:5),
+      run(ctx) {
+        return stage(ctx, { base: 'hall', who: 'zheng', place: '新鄭・鄭伯宮中', time: '第' + CN[Math.min(ctx.state.turn, 12)] + '夜', cast: ['zhengbo', 'yizhihu'] })
+          .then(() => ctx.say([
+            { text: '這一夜，大夫佚之狐求見鄭伯。' },
+            { who: 'yizhihu', text: '國危矣！', expr: 'worried' }
+          ]))
+          .then(() => ctx.anchor('wz_02'))
+          .then(() => {
+            ctx.flag('yizhihu', ctx.state.turn);
+            ctx.unlock('person:cq_yizhihu');
+            ctx.log('佚之狐建議請燭之武去見秦君。', 'good');
+            return ctx.say([
+              { who: 'yizhihu', text: '圍鄭是晉國的舊怨，秦國只是被拉來的盟友。秦軍一退，晉軍就成了孤軍。' },
+              { who: 'zhengbo', text: '燭之武……寡人已經很多年沒有召見他了。', expr: 'worried' }
+            ]);
+          })
+          .then(() => ctx.gainIntel('noGrudge'))
+          .then(() => ZH.toast('新的令：請燭之武', 'ok'));
+      }
+    },
+    {
+      id: 'wallLow', phase: 'start', when: s => s.res.wall <= 30,
+      run(ctx) {
+        return ctx.say([{ who: '守將', text: '城牆多處崩塌，弟兄們輪班修補也趕不上。再這樣下去，撐不了幾夜了！' }]);
+      }
+    },
+    {
+      id: 'foodLow', phase: 'start', when: s => s.res.food <= 15,
+      run(ctx) {
+        return ctx.say([{ who: '守將', text: '糧倉快見底了。糧草一斷，民心就會潰散。' }]);
+      }
+    },
+    {
+      id: 'nudgeZhu', phase: 'start', when: s => !!s.flags.yizhihu && !s.flags.accepted && s.turn >= (s._textplayV===3?4:7),
+      run(ctx) {
+        return ctx.say([{ who: 'yizhihu', text: '國君，燭之武那邊……不能再等了。' }]);
+      }
+    },
+    {
+      id: 'hurry', phase: 'start', when: s => !!s.flags.accepted && s.turn >= (s._textplayV===3?5:9),
+      run(ctx) {
+        return ctx.say([{ who: 'zhuzhiwu', text: '再拖下去，城就守不住了。國君，請讓老臣早點出城吧。' }]);
+      }
+    },
+    {
+      id: 'lastNight', phase: 'start', when: s => s.turn === (s._textplayV===3?6:12),
+      run(ctx) {
+        return ctx.say([{ text: '第十二夜。城中的人都知道，這是最後能撐的一夜了。' }]);
+      }
+    }
+  ];
+
+
+  // ═════════════════════════ 敵方行動與結算 ═════════════════════════
+
+  function ai(ctx) {
+    const v = ctx.state.vars;
+    const jinDmg = 5 + Math.floor(ctx.rng() * 4) + (v.jinWrath >= 90 ? 2 : 0) + (v.jinBoost || 0);
+    v.jinBoost = 0;
+    return ctx.fx.volley('hanling', 'xinzheng', { faction: 'jin', count: 7 }).then(() => {
+      ctx.add('wall', -jinDmg, { at: 'xinzheng' });
+      ctx.log('晉軍連夜攻城，城防 −' + jinDmg + '。', 'bad');
+      const will = v.qinWill;
+      if (will >= 50) {
+        const d = 3 + Math.floor(ctx.rng() * 3);
+        return ctx.fx.volley('fanan', 'xinzheng', { faction: 'qin', count: 5 }).then(() => {
+          ctx.add('wall', -d, { at: 'xinzheng' });
+          ctx.log('秦軍助攻，城防 −' + d + '。', 'bad');
+        });
+      }
+      if (will >= 30) {
+        ctx.add('wall', -1, { at: 'xinzheng' });
+        ctx.fx.float('fanan', '擂鼓', '#efe2bf');
+        ctx.log('秦軍只在營外擂鼓，沒有真正攻城。');
+        return ctx.wait(500);
+      }
+      ctx.fx.float('fanan', '按兵不動', '#efe2bf');
+      ctx.log('秦營按兵不動。', 'good');
+      return ctx.wait(500);
+    });
+  }
+
+  function upkeep(ctx) {
+    const s = ctx.state;
+    ctx.add('food', -4);
+    ctx.add('morale', s.res.wall < 30 ? -5 : -2);
+    if (s.res.food <= 0) {
+      ctx.add('morale', -8, { at: 'xinzheng' });
+      ctx.log('城中斷糧，人心惶惶。民心 −8。', 'bad');
+    }
+    ctx.vary('qinWill', -2);
+    if (s.flags.scoutQin) ctx.node('fanan', { badge: String(Math.round(s.vars.qinWill)) });
+    if (s.flags.scoutJin) ctx.node('hanling', { badge: String(Math.round(s.vars.jinWrath)) });
+    ctx.log('城中又熬過一夜，消耗糧草 4。');
+  }
+
+  function check(s) {
+    if (s.res.wall <= 0) return { type: 'ending', ending: ENDINGS.fall };
+    if (s.res.morale <= 0) return { type: 'ending', ending: ENDINGS.surrender };
+    if (s.turn > (s._textplayV===3?6:12)) return { type: 'ending', ending: ENDINGS.exhausted };
+    return null;
+  }
+
+  const ENDINGS = {
+    fall: { id: 'fall', title: '鄭國城破', good: false, text: '晉、秦之師入新鄭，鄭遂亡。' },
+    surrender: { id: 'surrender', title: '開城請降', good: false, text: '鄭人困於圍城，開門請降於晉。' },
+    exhausted: { id: 'exhausted', title: '力竭城陷', good: false, text: '圍城之急，城中力竭，晉、秦之師入鄭。' }
+  };
+
+
+  // ═════════════════════════ 計分與列傳 ═════════════════════════
+
+  function argCount(s) {
+    return s.intel.filter(id => (INTEL.find(i => i.id === id) || {}).kind === ARG).length;
+  }
+
+  function scores(s) {
+    const c = s.cmdCount || {};
+    const forks = (c.chu || 0) + (c.jinEnvoy || 0) + (c.sortie || 0) + (c.rumor || 0);
+    const nights = Math.min(s.turn, 12);
+    const strategy = Math.round(20 + argCount(s) * 12 + s.res.wall * 0.2 - forks * 6 - Math.max(0, nights - 6) * 3);
+    // 德望：照顧百姓加分；散布流言、輕率夜襲扣分（不用陰謀、不白白犧牲士卒）
+    const virtue = Math.round(35 + s.res.morale * 0.4 + (c.calm || 0) * 5 - (c.rumor || 0) * 10 - (c.sortie || 0) * 5);
+    return { strategy: Math.max(0, Math.min(100, strategy)), virtue: Math.max(0, Math.min(100, virtue)) };
+  }
+
+  function deeds(s) {
+    const f = s.flags;
+    const nights = Math.min(s.turn, 12);
+    const list = ['晉侯、秦伯圍鄭，晉軍函陵，秦軍氾南。'];
+    if (f.council) list.push('鄭伯與群臣謀於朝，或請求救於楚，或請開城請和，議不能決。');
+    if (f.scoutQin) list.push('夜遣斥候窺秦營，知秦師千里遠來，士有歸心。');
+    if (f.scoutJin) list.push('又窺晉營，見晉師之盛。');
+    if (f.chuSent) list.push('嘗遣使求救於楚，楚不應。');
+    if (f.jinEnvoy) list.push('嘗遣使見晉侯，晉侯不納。');
+    if (f.sortie) list.push('嘗出城夜襲晉營，' + (f.sortieWin ? '焚其糧車，而晉怒益甚。' : '不利而還。'));
+    if (f.rumor) list.push('又使人散流言於秦營。');
+    if (f.yizhihu) list.push('佚之狐言於鄭伯曰：「國危矣！若使燭之武見秦君，師必退。」公從之。');
+    if (f.accepted) list.push('燭之武辭以老，鄭伯引咎自責，武乃許之。');
+    list.push('凡被圍' + CN[nights] + '夜。');
+    return list;
+  }
+
+  function payload(s, ending) {
+    const sc = scores(s);
+    return {
+      scenarioId: SID, mode: MODE, faction: '鄭',
+      role: '鄭文公', roleKind: 'shijia', country: '鄭',
+      ending: ending,
+      scoreStrategy: sc.strategy, scoreVirtue: sc.virtue,
+      turns: Math.min(s.turn, 12),
+      durationSec: Math.min(5400, Math.round((Date.now() - (s.vars.startedAt || Date.now())) / 1000)), // 分次遊玩時最多記 90 分鐘
+      deeds: deeds(s),
+      anchors: s.anchors,
+      games: [],
+      codex: s.codex,
+      opener: '余讀《左氏春秋》至秦晉圍鄭，未嘗不歎小國之危也。',
+      prompts: ending.good === false ? [
+        '這一局鄭國沒有撐下去。你覺得關鍵的失誤在哪一夜？',
+        '史書上，鄭國靠什麼化解了這場危機？你的做法和史書差在哪裡？',
+        '小國面對兩個大國，最重要的資源是什麼？'
+      ] : [
+        '這一幕你花了幾夜蒐集論據？為什麼選在那一夜出城？',
+        '佚之狐為什麼建議去見秦君，而不是晉侯？',
+        '小國面對大國，除了打與降，還有什麼選擇？'
+      ],
+      orders: s.orderSeq,
+      intel: s.intel
+    };
+  }
+
+
+  // ═════════════════════════ 存檔 ═════════════════════════
+
+  function saveState(state) {
+    return ZH.save(SID, MODE, { faction: 'zheng', engine: state }).catch(() => null);
+  }
+
+
+  // ═════════════════════════ 結束 ═════════════════════════
+
+  function onEnd(result, ctx) {
+    const s = ctx.state;
+    if (result.type === 'act1') {
+      showActEnd(ctx);
+      return;
+    }
+    const e = result.ending;
+    ZH.sfx('ng');
+    ctx.banner(e.title, '鄭國篇・終')
+      .then(() => ctx.say([
+        { text: e.text },
+        { who: '史官', text: '史書上，鄭國並沒有亡於這一年。是哪一個轉折，讓鄭國活了下來？再試一次吧。' }
+      ]))
+      .then(() => ZH.deleteSave(SID, MODE).catch(() => null))
+      .then(() => ZH.finishScenario(payload(s, e)));
+  }
+
+  /** 第一幕結束的幕間：統計＋進入第二幕（第二幕進行中重新整理，也會先回到這裡） */
+  function showActEnd(ctx) {
+    const s = ctx.state;
+    const n = argCount(s);
+    const args = INTEL.filter(i => i.kind === ARG);
+    const have = id => s.intel.indexOf(id) > -1;
+    const going = !!s.flags.a2_start;
+    const wrap = ZH.html(
+      '<div class="wz-act" role="dialog" aria-modal="true" aria-labelledby="wz-act-t"><div class="wz-act__card">' +
+      (hasArt() ? '<div class="wz-act__face" aria-hidden="true">' + window.ART.portrait({ name: '燭之武' }, { bust: true, expr: 'serious' }) + '</div>' : '') +
+      '<p class="wz-act__line">是夜，燭之武縋城而出——</p>' +
+      '<h2 class="wz-act__title" id="wz-act-t">第一幕　完</h2>' +
+      '<dl>' +
+      '<div><dt>圍城</dt><dd>' + Math.min(s.turn, 12) + ' 夜</dd></div>' +
+      '<div><dt>論據</dt><dd>' + n + ' / 5</dd></div>' +
+      '<div><dt>城防</dt><dd>' + s.res.wall + '</dd></div>' +
+      '<div><dt>糧草</dt><dd>' + s.res.food + '</dd></div>' +
+      '<div><dt>民心</dt><dd>' + s.res.morale + '</dd></div>' +
+      '</dl>' +
+      '<div class="wz-act__args">' + args.map(a => '<span class="zh-chip' + (have(a.id) ? ' zh-chip--gilt' : '') + '">' + (have(a.id) ? '' : '未得・') + esc(a.title) + '</span>').join('') + '</div>' +
+      '<div class="zh-slip">' + (going
+        ? '第二幕〈夜縋〉進行中。按「繼續第二幕」，從上次停下的地方接著玩。'
+        : '第二幕〈夜縋〉：燭之武要從城牆垂降，避開晉軍的崗哨，潛行到秦營，再到帳中說服秦伯。手上的論據越多，秦伯越容易被說動。') + '</div>' +
+      '<div class="zh-row">' +
+      '<button type="button" class="zh-btn zh-btn--quiet" data-a="home">回首頁</button>' +
+      '<button type="button" class="zh-btn zh-btn--quiet" data-a="restart">重新開始</button>' +
+      '<button type="button" class="zh-btn zh-btn--primary" data-a="act2">' + (going ? '繼續第二幕' : '第二幕：夜縋') + '</button>' +
+      '</div></div></div>'
+    );
+    document.body.appendChild(wrap);
+    ZH.sfx('bell');
+    wrap.querySelector('[data-a="act2"]').focus({ preventScroll: true });
+    wrap.querySelector('[data-a="home"]').addEventListener('click', () => ZH.go('hub'));
+    wrap.querySelector('[data-a="restart"]').addEventListener('click', () => {
+      ZH.modal({
+        title: '重新開始鄭國篇？',
+        body: '<p>目前的進度會清除，從第一夜重新開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => {
+        if (!ok) return;
+        ZH.loading(true, '重新開始');
+        ZH.deleteSave(SID, MODE).catch(() => null).then(() => ZH.go(SID));
+      });
+    });
+    wrap.querySelector('[data-a="act2"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      wrap.remove();
+      act2(ctx);
+    });
+  }
+
+
+  // ═════════════════════════ 第二幕：夜縋 ═════════════════════════
+
+  const STL_GAME = 'stl_yezhui';
+
+  // 潛行地圖（16×20）：上方是新鄭城牆，中間是晉營，下方渡過氾水就是秦營
+  const STEALTH_LEVEL = {
+    grid: [
+      'WWWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWW',
+      '..S..."""......"',
+      '......"""..C....',
+      '..""........""..',
+      ',,,,,,,,,,,,,,,,',
+      '.""...TTT.,.""..',
+      '."".TTTFTT,.""..',
+      '.x..TFTTTT,..C..',
+      '.x..TTTTFT,.....',
+      '.xx.TTTTTT,.....',
+      '..x.......,.""".',
+      '~.x"""K...,.""".',
+      '~~""""....,...K.',
+      '~~~==~~~~~~~=~~~',
+      '~~~==~~~~~~~=~~~',
+      '................',
+      '"""""...""".tttt',
+      '...........Etttt',
+      '...........ftttt'
+    ],
+    labels: [
+      { x: 7, y: 0.5, text: '新鄭城牆' },
+      { x: 6.5, y: 8.5, text: '晉營', color: '#ffc9bf' },
+      { x: 7.5, y: 14.5, text: '氾水', color: '#b9dcef' },
+      { x: 13.5, y: 17, text: '秦營', color: '#d6d9e4' }
+    ]
+  };
+
+  // 晉軍崗哨：A 大路巡哨、B 晉營西哨、C 營東大路的斥候、E 東側哨兵、D 河岸巡哨
+  const STEALTH_GUARDS = [
+    { name: '晉軍巡哨', kind: 'patrol', path: [[14, 5], [1, 5]], speed: 1.8, range: 4.5, fov: 70, pause: 1, warm: 3 },
+    { name: '晉營哨兵', kind: 'sweep', at: [4, 11], angle: 200, span: 60, period: 5, range: 4.5, fov: 60 },
+    { name: '晉軍斥候', kind: 'patrol', path: [[10, 6], [10, 13]], speed: 1.3, range: 4, fov: 70, pause: 1.2 },
+    { name: '晉營哨兵', kind: 'sweep', at: [14, 9], angle: 180, span: 50, period: 6, range: 4.5, fov: 60 },
+    { name: '河岸巡哨', kind: 'patrol', path: [[14, 16], [1, 16]], speed: 1.5, range: 4, fov: 70, pause: 1.2, warm: 12 }
+  ];
+
+  const STEALTH_HELP =
+    '<p><b>目標</b>：從城牆垂降，避開晉軍，渡過氾水，走到秦營的轅門（金色橫梁）。</p>' +
+    '<p style="margin-top:8px"><b>垂降</b>：按住「放繩」（或空白鍵）往下。城下晉軍的火光掃過來時就放手，被照到還在動就會被發現。</p>' +
+    '<p style="margin-top:8px"><b>移動</b>：點地面，燭之武會自己找路走過去；也可以用方向鍵、WASD，手機上有方向鍵。</p>' +
+    '<p style="margin-top:8px"><b>藏身</b>：蘆葦、壕溝可以藏身；但巡哨貼到身邊（一步之內）還是會看見。</p>' +
+    '<p style="margin-top:8px"><b>巡哨</b>：扇形是巡哨看得到的範圍。頭上的「？」變成紅色「！」就會被發現。雲遮月時，巡哨看得比較近。</p>' +
+    '<p style="margin-top:8px"><b>記下位置</b>：地上的金色小框。走過去之後，被發現時會回到這裡。被發現三次後可以讓巡哨放慢。</p>';
+
+  function stealthConfig() {
+    return {
+      title: '夜縋', subtitle: '燭之武出城見秦伯',
+      goal: '避開晉軍的巡哨，渡過氾水，到秦營去',
+      player: { name: '燭之武', glyph: '燭', color: '#3f9d84', speed: 2.1 },
+      guardArt: { state: '晉' },
+      rope: { length: 8, period: 5 },
+      ropeHint: '按住「放繩」（或空白鍵）慢慢往下。城下晉軍的火光掃過來時就放手；被照到還在動，就會被發現。',
+      groundMsg: '避開晉軍的火把，渡過氾水，到秦營去。',
+      winMsg: '秦營的轅門就在眼前。',
+      intro: '點地面就會走過去，也可以用方向鍵。蘆葦、壕溝可以藏身；扇形是晉軍看得到的範圍。',
+      level: STEALTH_LEVEL,
+      guards: STEALTH_GUARDS,
+      moon: { bright: 7, dark: 5 },
+      helpHtml: STEALTH_HELP
+    };
+  }
+
+  function stealthScore(r) {
+    if (!r || r.skipped) return 0;
+    return Math.max(2, 10 - 2 * (r.caught || 0) - (r.assisted ? 1 : 0));
+  }
+
+  /** 夜縋：有挑戰賽（Eng_Stealth v0.2.0 ＋ Arena_js）就用挑戰賽版本，每一局由引擎寫進小遊戲紀錄 */
+  function playStealth() {
+    const cfg = stealthConfig();
+    if (ZH.stealth.challenge && ZH.arena) {
+      return ZH.stealth.challenge(cfg, {
+        scenarioId: SID, gameId: STL_GAME, title: '夜縋', goal: '不被晉軍發現，越快到秦營越好',
+        help: STEALTH_HELP + '<p style="margin-top:8px"><b>計分</b>：沒被發現 10 分，被發現一次 −2 分，放慢巡哨 −1 分（最低 2 分）；同分比用時。最多挑戰 3 次，劇情採計最好的一次。</p>',
+        score: r => ({ passed: !r.skipped, score: stealthScore(r), max: 10 }),
+        backdrop: { base: 'night', banner: FLAG.zheng, glyph: '鄭' }
+      });
+    }
+    return ZH.stealth.run(cfg).then(r => {
+      ZH.track('minigame', { scenarioId: SID, gameId: STL_GAME, score: stealthScore(r), maxScore: 10, durationSec: r.seconds });
+      return r;
+    });
+  }
+
+  // 帳中說秦伯：每一段說辭一個錨點。手上有對應的論據，燭之武多補一句，秦伯心意多加一些
+  const PERS = { base: 10, direct: 8, fork: 4, fail: 1, arg: 6, great: 84, good: 60 };
+  const TALK = [
+    {
+      anchor: 'wz_05', title: '開口', arg: 'split',
+      pre: [
+        { text: '中軍大帳裡燈火通明，秦國將士按劍而立。燭之武整了整衣冠，慢慢走上前。' },
+        { who: 'qinmugong', text: '鄭國派一個白髮老人，半夜摸進寡人的大營。說吧，你想說什麼？', expr: 'smirk' }
+      ],
+      argLine: { who: 'zhuzhiwu', text: '（秦、晉兩軍分營而駐，老臣才能避開晉人，單獨來見秦伯。今晚這番話，只說給秦國聽。）' },
+      post: [{ who: 'qinmugong', text: '哼，倒不像是來求饒的。說下去。', expr: 'smirk' }]
+    },
+    {
+      anchor: 'wz_06', title: '越國鄙遠', arg: 'far',
+      pre: [
+        { text: '燭之武走到帳中的地圖前，指著秦、晉、鄭三國的位置。' },
+        { who: 'zhuzhiwu', text: '越國以鄙遠，君知其難也。' }
+      ],
+      argLine: { who: 'zhuzhiwu', text: '秦軍從雍城一路東來，走了一千多里，糧車還得穿過晉國的地界。這一點，秦營的將士比誰都清楚。' },
+      post: [{ who: 'qinmugong', text: '……秦在西，鄭在東，中間確實隔著晉國。' }]
+    },
+    {
+      anchor: 'wz_07', title: '亡鄭陪鄰', arg: 'noGrudge',
+      pre: [{ who: 'qinmugong', text: '就算秦國拿不到鄭國的地，鄭國亡了，對秦國也沒有壞處。' }],
+      argLine: { who: 'zhuzhiwu', text: '況且晉國圍鄭，是為了晉國自己的舊怨。鄭國從來沒有得罪過秦國，秦國何必替晉國出力？' },
+      post: [{ text: '秦伯沒有回答，手指在几案上輕輕敲著。' }]
+    },
+    {
+      anchor: 'wz_08', title: '東道主', unlock: 'idiom:dongdaozhu',
+      pre: [{ who: 'qinmugong', text: '亡鄭的壞處，寡人聽明白了。那麼留下鄭國，秦國又能得到什麼？' }],
+      post: [{ who: 'qinmugong', text: '東方道路上的主人……秦國往東方各國派使者，路上確實需要一個落腳的地方。' }]
+    },
+    {
+      anchor: 'wz_09', title: '行李往來',
+      pre: [{ who: '秦大夫', text: '（低聲問左右）他說的「行李之往來」，是什麼意思？' }],
+      post: [{ who: 'qinmugong', text: '接待寡人的使者，供給他們缺少的東西……這對秦國確實沒有害處。' }]
+    },
+    {
+      anchor: 'wz_10', title: '晉君之賜', arg: 'past', unlock: 'treasure:banzhu',
+      pre: [{ who: 'qinmugong', text: '可是秦、晉世代聯姻，晉侯還是寡人的女婿。寡人憑什麼信你，不信他？' }],
+      hint: { intel: 'marriage', line: { text: '燭之武想起斥候的話：挑撥親情沒有用，要讓秦伯自己算清楚利害。' } },
+      argLine: { who: 'zhuzhiwu', text: '這件事，秦營裡的老兵到現在都還記得。秦伯只要問一問身邊的人就知道。' },
+      post: [{ text: '秦伯的臉色沉了下來。' }, { who: 'qinmugong', text: '……那件事，寡人沒有忘。', expr: 'angry' }]
+    },
+    {
+      anchor: 'wz_11', title: '晉何厭之有', arg: 'ambition', unlock: 'idiom:tandewuyan',
+      pre: [
+        { who: 'qinmugong', text: '晉國拿下鄭國之後呢？' },
+        { who: 'zhuzhiwu', text: '夫晉，何厭之有？' }
+      ],
+      argLine: { who: 'zhuzhiwu', text: '老臣派去的斥候，在晉營外聽得清清楚楚：晉將說，拿下鄭國之後，霸業還要往西推。' },
+      post: [{ text: '燭之武說完，退後一步，躬身行禮，不再多說一個字。' }]
+    }
+  ];
+
+  const ENDINGS2 = {
+    great: { id: 'great', title: '一言退秦', good: true, text: '秦伯說，與鄭人盟，使杞子、逢孫、楊孫戍之，乃還。子犯請擊之，晉侯不許，亦去之。鄭圍遂解。' },
+    survive: { id: 'survive', title: '小國存續', good: true, text: '秦伯說，與鄭人盟，使杞子、逢孫、楊孫戍之，乃還。子犯請擊之，晉侯不許，亦去之。鄭圍遂解。' },
+    narrow: { id: 'narrow', title: '險中求存', good: true, text: '秦伯說，與鄭人盟，使杞子、逢孫、楊孫戍之，乃還。子犯請擊之，晉侯不許，亦去之。鄭圍遂解。' }
+  };
+
+  function tierOf(p) {
+    return p >= PERS.great ? 'great' : p >= PERS.good ? 'survive' : 'narrow';
+  }
+
+  function stageOf(p) {
+    return p >= PERS.great ? '心折' : p >= PERS.good ? '心動' : p >= 35 ? '動搖' : '戒備';
+  }
+
+  /** 第二幕主流程：每一段開始前看旗標，做過的段落不重做 */
+  function act2(ctx) {
+    const f = ctx.state.flags;
+    if (!f.a2_start) f.a2_start = Date.now();
+    ctx.subtitle('鄭國篇・第二幕　夜縋');
+    ctx.tab('intel');
+    ctx.night(true);
+    return Promise.resolve()
+      .then(() => a2Intro(ctx))
+      .then(() => a2Sneak(ctx))
+      .then(() => a2Talk(ctx))
+      .then(() => a2Qin(ctx))
+      .then(() => a2Jin(ctx))
+      .then(() => a2Finale(ctx))
+      .catch(err => {
+        if (window.console) console.error(err);
+        ZH.toast('發生錯誤：' + err.message + '。重新整理頁面，可以從這一段繼續。', 'bad');
+      });
+  }
+
+  function a2Intro(ctx) {
+    if (ctx.flag('a2_intro')) return Promise.resolve();
+    return ctx.save()
+      .then(() => ctx.banner('第二幕', '夜縋'))
+      .then(() => stage(ctx, { base: 'night', who: 'zheng', place: '新鄭城頭', time: '三更', cast: ['zhuzhiwu'] }))
+      .then(() => ctx.say([
+        { text: '第' + CN[Math.min(ctx.state.turn, 12)] + '夜，三更。新鄭城頭一片漆黑，只有城外晉軍的火把一明一滅。' },
+        { who: 'zhuzhiwu', text: '城門一開，晉軍立刻就會察覺。老臣得想別的法子出城。', expr: 'serious' }
+      ]))
+      .then(() => ctx.anchor('wz_04'))
+      .then(() => ctx.say([{ text: '城頭垂下一條長繩。燭之武把繩子繫在腰間，守城的士兵扶著他跨過女牆。' }]))
+      .then(() => { ctx.flag('a2_intro', 1); return ctx.save(); });
+  }
+
+  function a2Sneak(ctx) {
+    if (ctx.flag('a2_stealth')) return Promise.resolve();
+    return playStealth().then(r => {
+      ctx.flag('a2_stealth', { caught: r.caught || 0, ropeCaught: r.ropeCaught || 0, seconds: r.seconds || 0, assisted: !!r.assisted, skipped: !!r.skipped });
+      ctx.log(r.skipped ? '燭之武繞遠路到了秦營（略過潛行）。' : '燭之武避開晉軍崗哨，到了秦營。被發現 ' + r.caught + ' 次。', r.skipped ? '' : 'good');
+      return ctx.save().then(() => ctx.say([
+        r.skipped ? { text: '燭之武繞了很遠的路，天快亮時，才摸到秦營門口。' }
+          : r.caught === 0 ? { text: '一路無聲無息，晉軍沒有一個人發現他。秦營的轅門就在眼前。' }
+            : { text: '幾次差點被晉軍發現，燭之武伏在蘆葦裡等了很久，終於摸到了秦營門口。' }
+      ]));
+    });
+  }
+
+  function a2Talk(ctx) {
+    if (ctx.flag('a2_talked')) return Promise.resolve();
+    if (typeof ctx.flag('persuade') !== 'number') ctx.flag('persuade', PERS.base);
+    let p = Promise.resolve();
+    if (!ctx.flag('a2_tent')) {
+      p = p.then(() => ctx.fx.pulse('fanan', '#e0b44c'))
+        .then(() => stage(ctx, { base: 'camp', who: 'qin', place: '氾南・秦營轅門', time: '三更', cast: ['秦兵', 'zhuzhiwu'] }))
+        .then(() => ctx.say([
+          { who: '秦兵', text: '什麼人！', expr: 'angry' },
+          { who: 'zhuzhiwu', text: '鄭國使者燭之武，求見秦伯。', expr: 'serious' },
+          { text: '秦兵把燭之武押進中軍大帳。' }
+        ])).then(() => {
+          ctx.unlock('person:cq_qinmugong');
+          ctx.flag('a2_tent', 1);
+          ctx.log('燭之武進入秦營中軍大帳。');
+          return ctx.save();
+        });
+    } else if (!ctx.scene) {
+      p = p.then(() => ctx.fx.pulse('fanan', '#e0b44c'));
+    }
+    p = p.then(() => stage(ctx, TENT)).then(() => persUI(ctx));
+    if(ctx.state._textplayV===3&&ZH.textplay)p=p.then(async()=>{const r=await ZH.textplay.direct(SID,'wz_arguments',ctx.state,()=>ctx.save());if(r&&!ctx.flag('textArgumentsApplied')){ctx.flag('textArgumentsApplied',1);persAdd(ctx,Math.max(0,r.score-5),'利害說明');await ctx.save();}});
+    TALK.forEach(st => { p = p.then(() => talkStep(ctx, st)); });
+    return p.then(() => {
+      const t = tierOf(ctx.flag('persuade'));
+      const lines = t === 'great' ? [
+        { text: '帳中一片寂靜。過了許久，秦伯站起身來，親手扶起燭之武。' },
+        { who: 'qinmugong', text: '先生一席話，讓寡人看清了這一仗。秦國不能替別人打天下。', expr: 'happy' }
+      ] : t === 'survive' ? [
+        { text: '秦伯在帳中來回踱步，沉吟良久。' },
+        { who: 'qinmugong', text: '……先生說得有理。秦國犯不著為晉國流血。' }
+      ] : [
+        { text: '秦伯盯著燭之武看了很久，帳中的將士都在等他開口。' },
+        { who: 'qinmugong', text: '你的話，有幾句寡人還不全信。但是晉國……寡人確實不能不防。', expr: 'worried' }
+      ];
+      return ctx.say(lines);
+    }).then(() => { ctx.flag('a2_talked', 1); return ctx.save(); });
+  }
+
+  // 帳中說秦伯的舞台
+  const TENT = { base: 'tent', who: 'qin', place: '秦營・中軍大帳', time: '燈火通明', cast: ['zhuzhiwu', 'qinmugong'] };
+
+  function talkStep(ctx, st) {
+    const done = ctx.flag('talk') || {};
+    if (done[st.anchor]) return Promise.resolve();
+    const pre = st.pre.slice();
+    if (st.hint && ctx.hasIntel(st.hint.intel)) pre.push(st.hint.line);
+    return ctx.say(pre)
+      .then(() => ctx.anchor(st.anchor))
+      .then(r => {
+        if (st.unlock) ctx.unlock(st.unlock);
+        const path = r && r.path;
+        const base = path === 'direct' ? PERS.direct : path === 'fail' ? PERS.fail : PERS.fork;
+        const has = !!st.arg && ctx.hasIntel(st.arg);
+        return (has ? ctx.say([st.argLine]) : Promise.resolve()).then(() => {
+          const gain = base + (has ? PERS.arg : 0);
+          const arg = has ? (INTEL.find(i => i.id === st.arg) || {}).title : '';
+          persAdd(ctx, gain, arg);
+          ctx.log('帳中說秦伯・' + st.title + '：秦伯心意 +' + gain + (arg ? '（論據「' + arg + '」）' : '') + '。', 'good');
+          return ctx.say(st.post);
+        });
+      })
+      .then(() => {
+        const d = Object.assign({}, ctx.flag('talk') || {});
+        d[st.anchor] = 1;
+        ctx.flag('talk', d);
+        persUI(ctx);
+        return ctx.save();
+      });
+  }
+
+  /** 秦伯心意的浮層（舞台開著時放在舞台上，否則放在地圖上方） */
+  function persUI(ctx) {
+    const map = layer(ctx, '.wz-pers');
+    if (!map) return;
+    let box = map.querySelector('.wz-pers');
+    if (!box) {
+      box = ZH.html('<div class="wz-pers" aria-live="polite"><div class="wz-pers__head"><b>秦伯心意</b><span class="wz-pers__num"></span><span class="wz-pers__stage"></span></div>' +
+        '<div class="wz-pers__bar" role="progressbar" aria-label="秦伯心意" aria-valuemin="0" aria-valuemax="100"><i></i></div><div class="wz-pers__args"></div></div>');
+      map.appendChild(box);
+    }
+    const p = Math.min(100, ctx.flag('persuade') || 0);
+    const done = ctx.flag('talk') || {};
+    box.querySelector('.wz-pers__num').textContent = p + ' / 100';
+    box.querySelector('.wz-pers__stage').textContent = stageOf(p);
+    box.querySelector('.wz-pers__bar').setAttribute('aria-valuenow', String(p));
+    box.querySelector('.wz-pers__bar i').style.width = p + '%';
+    box.querySelector('.wz-pers__args').innerHTML = TALK.filter(t => t.arg).map(t => {
+      const it = INTEL.find(i => i.id === t.arg) || {};
+      const have = ctx.hasIntel(t.arg);
+      return '<span class="' + (have ? 'is-have' : '') + (have && done[t.anchor] ? ' is-used' : '') + '">' + (have ? '' : '未得・') + esc(it.title || '') + '</span>';
+    }).join('');
+  }
+
+  function persAdd(ctx, n, arg) {
+    const before = ctx.flag('persuade') || 0;
+    const after = Math.min(100, before + n);
+    ctx.flag('persuade', after);
+    persUI(ctx);
+    const host = layer(ctx, '.wz-pers');
+    const box = host && host.querySelector('.wz-pers');
+    if (box) {
+      const g = ZH.html('<span class="wz-pers__gain">+' + n + '</span>');
+      box.querySelector('.wz-pers__head').insertBefore(g, box.querySelector('.wz-pers__stage'));
+      setTimeout(() => g.remove(), 1700);
+    }
+    ctx.fx.float('fanan', (arg ? arg + '　' : '') + '心意 +' + n, '#f0d27a');
+    ZH.sfx(n >= PERS.direct ? 'chime' : 'click');
+    if (box && stageOf(before) !== stageOf(after)) {
+      const sg = box.querySelector('.wz-pers__stage');
+      sg.classList.remove('is-up');
+      void sg.offsetWidth;
+      sg.classList.add('is-up');
+    }
+  }
+
+  function a2Qin(ctx) {
+    if (ctx.flag('a2_qin')) return Promise.resolve();
+    return stage(ctx, TENT).then(() => { persUI(ctx); return ctx.say([{ who: 'qinmugong', text: '來人，取筆墨來。', expr: 'serious' }]); })
+      .then(() => ctx.anchor('wz_12'))
+      .then(() => {
+        ctx.node('fanan', { sub: '杞子等戍守', badge: '盟', badgeColor: '#3f9d84', note: '秦伯與鄭人結盟，留下杞子、逢孫、楊孫三位將領駐守，秦軍主力西歸。' });
+        ctx.log('秦伯與鄭國結盟，留杞子、逢孫、楊孫戍守，秦軍撤回。', 'good');
+        return ctx.fx.march('fanan', 'yong', { faction: 'qin', ms: 2400, curve: [420, 60] }); // 從北邊繞過函陵
+      })
+      .then(() => ctx.say([{ text: '天還沒亮，秦軍就拔營西歸，只留下杞子、逢孫、楊孫三位將領，帶兵駐守鄭國。' }]))
+      .then(() => { ctx.flag('a2_qin', 1); return ctx.save(); });
+  }
+
+  function a2Jin(ctx) {
+    if (ctx.flag('a2_jin')) return Promise.resolve();
+    return ctx.fx.pulse('hanling', '#c4473a')
+      .then(() => stage(ctx, { base: 'camp', who: 'jin', tod: 'dawn', place: '函陵・晉營', time: '天快亮了', cast: ['jinwengong', 'zifan'] }))
+      .then(() => ctx.say([
+        { text: '消息傳到函陵的晉營。' },
+        { who: 'zifan', text: '秦國背盟而去，請國君下令，追擊秦軍！', expr: 'angry' }
+      ]))
+      .then(() => ctx.anchor('wz_13'))
+      .then(() => ctx.say([{ who: 'jinwengong', text: '不可。微夫人之力不及此。因人之力而敝之，不仁；失其所與，不知；以亂易整，不武。吾其還也。', expr: 'serious' }]))
+      .then(() => ctx.anchor('wz_14'))
+      .then(() => {
+        ctx.unlock('person:cq_jinwengong');
+        ctx.unlock('person:cq_zifan');
+        ctx.unlock('idiom:qinjinzhihao');
+        ctx.log('晉侯不許追擊，晉軍也撤走了。鄭國之圍解除。', 'good');
+        return ctx.fx.march('hanling', 'jiang', { faction: 'jin', ms: 2200 });
+      })
+      .then(() => {
+        ctx.node('hanling', { hidden: true });
+        ctx.node('xinzheng', { badge: '解圍', badgeColor: '#3f9d84' });
+        ctx.night(false);
+        ctx.flag('a2_jin', 1);
+        return ctx.save();
+      });
+  }
+
+  function a2Finale(ctx) {
+    const s = ctx.state;
+    const e = ENDINGS2[tierOf(s.flags.persuade || 0)];
+    ZH.sfx('seal');
+    return ctx.banner(e.title, '鄭國篇・終')
+      .then(() => stage(ctx, { base: 'city', who: 'zheng', tod: 'dawn', place: '新鄭城門', time: '黎明', cast: ['zhengbo', 'zhuzhiwu'], expr: { zhengbo: 'happy', zhuzhiwu: 'happy' } }))
+      .then(() => ctx.say([
+        { text: '晉、秦兩國的大軍各自回國。新鄭城頭，百姓望著空蕩蕩的函陵和氾南，久久說不出話來。' },
+        { who: '史官', text: '鄭國的城牆沒有擋住大軍；擋住大軍的，是秦、晉之間那道看不見的裂縫。' }
+      ]))
+      .then(() => { markDone('鄭'); return ZH.deleteSave(SID, MODE).catch(() => null); })
+      .then(() => ZH.finishScenario(payload2(s, e)));
+  }
+
+  function scores2(s) {
+    const a1 = scores(s);
+    const st = s.flags.a2_stealth || {};
+    const p = Math.min(100, s.flags.persuade || 0);
+    const strategy = Math.round(a1.strategy * 0.45 + p * 0.55 - (st.skipped ? 8 : 0));
+    const calm = st.skipped ? -5 : (st.caught || 0) === 0 ? 8 : st.caught <= 2 ? 4 : 0;
+    const virtue = a1.virtue + calm;
+    return { strategy: Math.max(0, Math.min(100, strategy)), virtue: Math.max(0, Math.min(100, virtue)) };
+  }
+
+  function deeds2(s) {
+    const f = s.flags;
+    const st = f.a2_stealth || {};
+    const nights = Math.min(s.turn, 12);
+    const n = argCount(s);
+    const t = tierOf(f.persuade || 0);
+    const list = ['晉侯、秦伯圍鄭，晉軍函陵，秦軍氾南。'];
+    if (f.council) list.push('鄭伯謀於朝，群臣或請求救於楚，或請開城請和，議不能決。');
+    if (f.scoutQin || f.scoutJin) {
+      list.push('鄭伯夜遣斥候窺' + (f.scoutQin && f.scoutJin ? '秦、晉之營' : f.scoutQin ? '秦營' : '晉營') + '，' +
+        (f.scoutQin ? '知秦師千里遠來，士有歸心。' : '見晉師之盛。'));
+    }
+    if (f.chuSent) list.push('嘗遣使求救於楚，楚不應。');
+    if (f.jinEnvoy) list.push('嘗遣使見晉侯，晉侯不納。');
+    if (f.sortie) list.push('嘗出城夜襲晉營，' + (f.sortieWin ? '焚其糧車，而晉怒益甚。' : '不利而還。'));
+    if (f.rumor) list.push('又使人散流言於秦營。');
+    list.push('佚之狐言於鄭伯曰：「國危矣！若使燭之武見秦君，師必退。」公從之。');
+    list.push('武辭以老，公引咎自責，武乃許之。');
+    list.push('城被圍' + CN[nights] + '夜，武夜縋而出。');
+    if (st.ropeCaught) list.push('方縋城，為晉人火光所照，復引而上，再縋乃下。');
+    if (st.skipped) list.push('晉哨甚密，武迂道而行，天將明乃至秦營。');
+    else if (!st.caught) list.push('潛行避晉軍之哨，人莫之覺，見秦伯於帳中。');
+    else if (st.caught <= 2) list.push('途中數為晉哨所驚，伏蘆葦間良久，乃至秦營。');
+    else list.push('途中屢為晉哨所逐，幾不得脫，乃至秦營。');
+    list.push('見秦伯，先言越國鄙遠之難、亡鄭陪鄰之害，次許東道主之利，終舉焦、瑕之事，以明晉之無厭。');
+    list.push(n >= 5 ? '所陳之事，皆斥候所親見，秦伯不能難。' : n >= 3 ? '所陳之事，多有所據。' : '所陳之事，多無實據，秦伯屢詰之。');
+    list.push(t === 'great' ? '秦伯聞之，未終席而色動。' : t === 'survive' ? '秦伯沉吟良久，乃從之。' : '秦伯初甚疑之，再三詰難，乃從之。');
+    return list;
+  }
+
+  function payload2(s, ending) {
+    const sc = scores2(s);
+    const st = s.flags.a2_stealth || {};
+    return {
+      scenarioId: SID, mode: MODE, faction: '鄭',
+      role: '燭之武', roleKind: 'liezhuan', country: '鄭',
+      ending: ending,
+      scoreStrategy: sc.strategy, scoreVirtue: sc.virtue,
+      turns: Math.min(s.turn, 12),
+      durationSec: Math.min(5400, Math.round((Date.now() - (s.vars.startedAt || Date.now())) / 1000)), // 分次遊玩時最多記 90 分鐘
+      deeds: deeds2(s),
+      anchors: s.anchors,
+      games: [{ gameId: STL_GAME, score: stealthScore(st), maxScore: 10 }],
+      codex: s.codex,
+      opener: '余讀《左氏春秋》，至燭之武夜縋而出，未嘗不撫卷而歎也：小國之存亡，繫於一言。',
+      prompts: [
+        '燭之武說服秦伯，靠的是哪一個論點？如果只能留一句話，你會留哪一句？為什麼？',
+        '第一幕你蒐集了幾條論據？它們在帳中幫上了什麼忙？如果重來，你會多等一夜，還是早一夜出城？',
+        '晉文公為什麼不追擊秦軍？你同意他的理由嗎？'
+      ],
+      orders: s.orderSeq,
+      intel: s.intel,
+      persuade: s.flags.persuade || 0,
+      stealth: st
+    };
+  }
+
+
+  // ═════════════════════════ 各陣營篇章共用 ═════════════════════════
+  // 秦國篇、晉國篇寫在 Side_cq08_*.html：透過 ZH.wz 取用共用資料，再把自己登記在 ZH.wz.sides。
+
+  const ZHENG_FAIL = ['fall', 'surrender', 'exhausted'].map(k => ENDINGS[k].title);
+  const doneKey = () => 'wz:done:' + (ZH.user.email || 'guest');
+  const doneStore = () => (ZH.isGuest() ? ZH.session : ZH.local);
+
+  /** 記下這台裝置上完成過哪個陣營（伺服器的完成紀錄另外查） */
+  function markDone(name) {
+    const d = Object.assign({}, doneStore().get(doneKey(), {}) || {});
+    d[name] = true;
+    doneStore().set(doneKey(), d);
+  }
+
+  /** 某個陣營是否已完成：這台裝置的紀錄，或伺服器上有非失敗的結局 */
+  function isDone(name, progress, fails) {
+    if ((doneStore().get(doneKey(), {}) || {})[name]) return true;
+    const rec = progress && progress.factions && progress.factions[name];
+    return !!(rec && rec.endings.some(e => (fails || []).indexOf(e) === -1));
+  }
+
+  ZH.wz = {
+    SID: SID, MODE: MODE, ROOT: ROOT, params: params, esc: esc, CN: CN, anchorsReady: anchorsReady,
+    FACTIONS: FACTIONS, OTHERS: OTHERS, MAP: MAP,
+    markDone: markDone, isDone: isDone, stage: stage, layer: layer, hasArt: hasArt,
+    sides: {}
+  };
+
+
+  // ═════════════════════════ 開始 ═════════════════════════
+
+  function startGame(saved) {
+    ROOT.innerHTML = '';
+    const game = ZH.slg.create(ROOT, {
+      id: SID, mode: MODE, title: '秦晉圍鄭', subtitle: '鄭國篇・第一幕　圍城之急',
+      turns: (!saved||saved._textplayV===3)?6:12, orders: 3, player: 'zheng',
+      seed: Number(params.seed) || 0,
+      turnName: n => '第 ' + n + ' 夜',
+      endTurnLabel: '結束此夜',
+      factions: FACTIONS, others: OTHERS, map: MAP, resources: RESOURCES, meters: METERS,
+      characters: CHARACTERS, speakers: SPEAKERS, intel: INTEL,
+      intelGoal: { kind: ARG, total: 5, label: '說服秦伯的論據', note: '論據越多，之後說服秦伯越有把握。' },
+      commands: COMMANDS, events: EVENTS, ai: ai, upkeep: upkeep, check: check, onEnd: onEnd,
+      tutorial: TUTORIAL, help: HELP, anchorTotal: 14,
+      initState: () => ({ vars: { qinWill: 70, jinWrath: 80, jinBoost: 0, startedAt: Date.now() } }),
+      save: saveState
+    });
+    game.start(saved || null);
+  }
+
+  /** 秦國篇、晉國篇是否開放：教師一律開放；學生要先完成鄭國篇 */
+  function sideOpen(progress) {
+    return !!ZH.user.isTeacher || isDone('鄭', progress, ZHENG_FAIL);
+  }
+
+  function renderTitle(saves, progress) {
+    const s = ZH.findScenario(SID);
+    const vol = ZH.VOLUMES.find(v => v.key === s.vol);
+    const st = saves.zheng && saves.zheng.engine;
+    const inAct = st && !st.ended;
+    const act1Done = st && st.ended && st.ended.type === 'act1';
+    const open = sideOpen(progress);
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    const sideActions = (key, name) => {
+      const side = ZH.wz.sides[key];
+      if (!side) return { lock: '製作中' };
+      if (!open) return { lock: '完成鄭國篇後開放' };
+      const sv = saves[key];
+      return sv ? btn(key + ':continue', side.continueLabel(sv), true) + btn(key + ':new', '重新開始', false) : btn(key + ':new', '開始' + name, true);
+    };
+    const hero = hasArt() && window.ART.scene ? '<div class="wz-hero" aria-hidden="true">' + window.ART.scene('night', { tod: 'night', banner: FLAG.zheng, glyph: '鄭' }) + '</div>' : '';
+    ROOT.innerHTML =
+      '<div class="wz-title">' + hero +
+      '<div class="wz-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="wz-title__main">' +
+      '<header><p class="wz-kicker">' + esc(vol.no + ' ' + vol.name + '・' + ZH.episodeLabel(s) + '・前 ' + s.year + ' 年') + '</p>' +
+      '<h1 class="wz-h1">' + esc(s.name) + '</h1>' +
+      '<p class="wz-episode">' + esc(s.episode) + '</p>' +
+      '<div class="wz-chips"><span class="zh-chip zh-chip--gilt">教學關</span><span class="zh-chip">原典' + esc(s.source) + '</span>' +
+      '<span class="zh-chip zh-chip--patina">非對稱三方 SLG＋夜縋潛行</span><span class="zh-chip">每篇約 30 分鐘・自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="wz-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header>' +
+      '<section class="wz-factions" aria-label="選擇勢力">' +
+      faction('zheng', '鄭', '鄭國篇', '鄭文公（鄭伯）', '一座孤城，兵少糧薄。打不贏，就想辦法讓圍城的聯軍散掉。',
+        ['第一幕：每夜三道令，修城、安民、夜探、朝議', '城防、糧草、民心，一項歸零就亡國', '第二幕：夜縋出城，潛行到秦營', '帳中說秦伯：論據越多，越有把握'],
+        inAct ? btn('continue', '繼續（第 ' + st.turn + ' 夜）', true) + btn('new', '重新開始', false)
+          : act1Done ? btn('continue', st.flags && st.flags.a2_start ? '繼續第二幕' : '進入第二幕：夜縋', true) + btn('new', '重新開始', false)
+            : btn('new', '開始鄭國篇', true)) +
+      faction('qin', '秦', '秦國篇', '秦穆公（秦伯）', '千里遠征，糧道要穿過晉國。這一仗打贏了，好處歸誰？',
+        ['糧草、軍心、盟信：大國也有自己的難處', '幫晉國攻城，還是留一手？', '帳中來了一位鄭國老臣：他說的話，哪些是真的？'], sideActions('qin', '秦國篇')) +
+      faction('jin', '晉', '晉國篇', '晉文公（晉侯）', '霸主之師，舊怨在身。要懲罰鄭國，也要留住秦國這個盟友。',
+        ['軍力、霸業、盟好：霸主也要顧著盟友', '攻城、合圍、犒秦師，還是先去偵楚？', '秦軍走了，子犯請擊：追還是不追？'], sideActions('jin', '晉國篇')) +
+      '</section>' +
+      '<p class="wz-note">三方的資源、指令、勝負條件都不一樣。先從鄭國篇開始；完成鄭國篇後，可以換到秦國、晉國那一邊，看同一場圍城。' +
+      (ZH.user.isTeacher ? '（教師帳號三篇都直接開放，方便試玩。）' : '') + '</p>' +
+      '</main></div>';
+
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      confirmRestart('鄭國篇', '從第一夜重新開始。').then(ok => {
+        if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null));
+      });
+    });
+    Object.keys(ZH.wz.sides).forEach(key => {
+      const side = ZH.wz.sides[key];
+      const c = ROOT.querySelector('[data-a="' + key + ':continue"]');
+      const n = ROOT.querySelector('[data-a="' + key + ':new"]');
+      if (c) c.addEventListener('click', () => { ZH.sfx('click'); side.start(saves[key]); });
+      if (n) n.addEventListener('click', () => {
+        ZH.sfx('click');
+        if (!saves[key]) { side.start(null); return; }
+        confirmRestart(side.title, '從頭開始。').then(ok => {
+          if (ok) ZH.deleteSave(SID, side.slot).catch(() => null).then(() => side.start(null));
+        });
+      });
+    });
+  }
+
+  function confirmRestart(name, tail) {
+    return ZH.modal({
+      title: '重新開始' + name + '？',
+      body: '<p>目前的進度會清除，' + esc(tail) + '</p>',
+      actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+    });
+  }
+
+  function faction(id, glyph, name, ruler, lead, bullets, actions) {
+    const locked = !actions || typeof actions === 'object';
+    return '<article class="wz-fac wz-fac--' + id + (locked ? ' is-locked' : '') + '">' +
+      '<div class="wz-fac__head">' + (hasArt()
+        ? '<span class="wz-fac__seal is-art" aria-hidden="true">' + window.ART.portrait({ name: ruler, art: { state: glyph } }, { bust: true }) + '</span>'
+        : '<span class="wz-fac__seal" aria-hidden="true">' + glyph + '</span>') +
+      '<div><h2 class="wz-fac__name">' + esc(name) + '</h2><p class="wz-fac__ruler">' + esc(ruler) + '</p></div></div>' +
+      '<p class="wz-fac__lead">' + esc(lead) + '</p>' +
+      '<ul>' + bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>' +
+      '<div class="wz-fac__act">' + (locked ? '<p class="wz-fac__lock">' + esc((actions && actions.lock) || '製作中') + '</p>' : actions) + '</div>' +
+      '</article>';
+  }
+
+  const loadSlot = slot => ZH.load(SID, slot).then(r => (r && r.ok && r.state && r.state.engine ? r.state : null)).catch(() => null);
+
+  ZH.ready(() => {
+    ZH.loading(true, '展開帛書');
+    ZH.codex.init();
+    const sideKeys = Object.keys(ZH.wz.sides);
+    Promise.all([
+      loadSlot(MODE),
+      Promise.all(sideKeys.map(k => loadSlot(ZH.wz.sides[k].slot))),
+      ZH.isGuest() ? Promise.resolve(null) : ZH.call('api_getScenarioProgress', SID).catch(() => null),
+      Promise.race([anchorsReady, ZH.sleep(8000)])
+    ]).then(([zheng, sideSaves, progress]) => {
+      ZH.loading(false);
+      const saves = { zheng: zheng };
+      sideKeys.forEach((k, i) => { saves[k] = sideSaves[i]; });
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續那一篇
+      const want = String(params.mode || '');
+      const hit = sideKeys.find(k => ZH.wz.sides[k].slot === want && saves[k]);
+      if (hit && sideOpen(progress)) { ZH.wz.sides[hit].start(saves[hit]); return; }
+      if (want === MODE && zheng) { startGame(zheng); return; }
+      renderTitle(saves, progress);
+    });
+  });
+})();
+</script>
+<?!= include('Side_cq08_qin') ?>
+<?!= include('Side_cq08_jin') ?>
+<script>ZH.ready(function(){ZH.textplay?.install("S_cq08_weizheng",null);});</script>
+</body>
+</html>

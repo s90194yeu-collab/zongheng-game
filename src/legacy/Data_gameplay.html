@@ -1,0 +1,580 @@
+<!-- 實際核心玩法登錄 v2.0.0；只替換列出的挑戰，原文錨點沿用。 -->
+<script>window.ZH_GAMEPLAY={
+  "version": "2.0.0",
+  "entries": {
+    "cp_battle": {
+      "id": "cp_battle",
+      "scenarioId": "S_cq07_chengpu",
+      "chapter": "城濮爭霸",
+      "volume": "春秋篇",
+      "ep": 7,
+      "asset": "scene:cq07_world",
+      "actor": "晉文公",
+      "kind": "command",
+      "title": "城濮・三軍即時指揮",
+      "version": 2,
+      "retreat": 3,
+      "goal": "三軍先退至三條標記，再以側翼、後備與援軍奪取三處接應點。",
+      "sectors": 3
+    },
+    "wen_zc_guanyue": {
+      "id": "wen_zc_guanyue",
+      "scenarioId": "S_cq13_zichan",
+      "chapter": "子產治鄭",
+      "volume": "春秋篇",
+      "ep": 13,
+      "asset": "scene:cq13_world",
+      "actor": "子產",
+      "kind": "rhythm",
+      "title": "季札觀樂・五聲合奏",
+      "version": 2,
+      "goal": "以五聲按鍵完成拍點與長音，再逐章親讀八則評語。",
+      "notes": 32,
+      "readings": [
+        {
+          "name": "周南、召南",
+          "text": "兩組國風，王化初基。\n美哉！始基之矣，猶未也，然勤而不怨矣。"
+        },
+        {
+          "name": "邶、鄘、衛",
+          "text": "季札想到衛康叔、武公的德行。\n美哉！淵乎！憂而不困者也。"
+        },
+        {
+          "name": "王",
+          "text": "周王室東遷之後的聲音。\n美哉！思而不懼，其周之東乎！"
+        },
+        {
+          "name": "鄭",
+          "text": "政令苛細，民眾難以承受。\n美哉！其細已甚，民弗堪也，是其先亡乎！"
+        },
+        {
+          "name": "齊",
+          "text": "東海之濱，季札想到太公。\n美哉！泱泱乎！大風也哉！表東海者，其大公乎！國未可量也。"
+        },
+        {
+          "name": "陳",
+          "text": "朝政缺乏能主持國事的人。\n國無主，其能久乎！"
+        },
+        {
+          "name": "大武",
+          "text": "舞者演出周武王的功業。\n美哉！周之盛也，其若此乎！"
+        },
+        {
+          "name": "韶箾",
+          "text": "季札以天地覆載比擬舜的德行。\n觀止矣！若有他樂，吾不敢請已。"
+        }
+      ]
+    },
+    "zc_fengxu": {
+      "id": "zc_fengxu",
+      "scenarioId": "S_cq13_zichan",
+      "chapter": "子產治鄭",
+      "volume": "春秋篇",
+      "ep": 13,
+      "asset": "scene:cq13_world",
+      "actor": "子產",
+      "kind": "simulation",
+      "title": "封洫・會流動的田里",
+      "version": 2,
+      "mode": "farm",
+      "goal": "連通水路、為五戶各劃三田，維持收成並親自處理兩次田界異議。"
+    },
+    "ws_yanwu": {
+      "id": "ws_yanwu",
+      "scenarioId": "S_cq14_wushi",
+      "chapter": "吳師入郢",
+      "volume": "春秋篇",
+      "ep": 14,
+      "asset": "scene:cq14_world",
+      "actor": "伍子胥",
+      "kind": "fighter",
+      "title": "演武場・木兵切磋",
+      "version": 2,
+      "mode": "drill",
+      "waves": 3,
+      "goal": "移步、跳躍、格擋與破防；三輪對手各有不同出招。此為教學演武。"
+    },
+    "ws_boju": {
+      "id": "ws_boju",
+      "scenarioId": "S_cq14_wushi",
+      "chapter": "吳師入郢",
+      "volume": "春秋篇",
+      "ep": 14,
+      "asset": "scene:cq14_world",
+      "actor": "伍子胥",
+      "kind": "command",
+      "title": "五戰入郢・行軍與接應",
+      "version": 2,
+      "sectors": 5,
+      "goal": "在五處進路調動小隊，保持補給與接應；後兩處仍為教學推演。"
+    },
+    "wy_fujiao": {
+      "id": "wy_fujiao",
+      "scenarioId": "S_cq17_wuyue",
+      "chapter": "吳越春秋",
+      "volume": "春秋篇",
+      "ep": 17,
+      "asset": "scene:cq17_world",
+      "actor": "勾踐",
+      "kind": "command",
+      "title": "夫椒・船隊撤收",
+      "version": 2,
+      "mode": "naval",
+      "sectors": 3,
+      "goal": "點選船隊穿越水道、避開追船，讓三艘船抵達西岸接應區。"
+    },
+    "wy_shengju": {
+      "id": "wy_shengju",
+      "scenarioId": "S_cq17_wuyue",
+      "chapter": "吳越春秋",
+      "volume": "春秋篇",
+      "ep": 17,
+      "asset": "scene:cq17_world",
+      "actor": "勾踐",
+      "kind": "simulation",
+      "title": "越地・生聚與整備",
+      "version": 2,
+      "mode": "base",
+      "periods": 20,
+      "goal": "分派工人採集、建造、造船與訓練，撐過二十個教學時段並備妥糧木與軍隊。"
+    },
+    "ml_saima": {
+      "id": "ml_saima",
+      "scenarioId": "S_zg05_maling",
+      "chapter": "桂陵馬陵",
+      "volume": "戰國篇",
+      "ep": 5,
+      "asset": "scene:zg05_world",
+      "actor": "田忌",
+      "kind": "race",
+      "title": "田忌賽馬・三場決勝",
+      "version": 2,
+      "mode": "horses",
+      "matches": 3,
+      "goal": "三等馬各出一次；親自轉向、加速與管理體力，三場合計爭勝。"
+    },
+    "ml_daliang": {
+      "id": "ml_daliang",
+      "scenarioId": "S_zg05_maling",
+      "chapter": "桂陵馬陵",
+      "volume": "戰國篇",
+      "ep": 5,
+      "asset": "scene:zg05_world",
+      "actor": "田忌",
+      "kind": "race",
+      "title": "大梁之路・保糧急行",
+      "version": 2,
+      "mode": "convoy",
+      "matches": 1,
+      "goal": "沿彎道控制車隊，避開路障、收取補給並與回援軍競速。"
+    },
+    "ml_jianzao": {
+      "id": "ml_jianzao",
+      "scenarioId": "S_zg05_maling",
+      "chapter": "桂陵馬陵",
+      "volume": "戰國篇",
+      "ep": 5,
+      "asset": "scene:zg05_world",
+      "actor": "田忌",
+      "kind": "command",
+      "title": "馬陵・伏兵到位",
+      "version": 2,
+      "sectors": 3,
+      "goal": "先讓左右伏兵就位，再用前隊引敵；保住輜重與接應線。"
+    },
+    "hf_qishe": {
+      "id": "hf_qishe",
+      "scenarioId": "S_zg08_hufu",
+      "chapter": "胡服與火牛",
+      "volume": "戰國篇",
+      "ep": 8,
+      "asset": "scene:zg08_world",
+      "actor": "趙武靈王",
+      "kind": "archery",
+      "title": "胡服騎射・移動靶場",
+      "version": 2,
+      "targets": 20,
+      "goal": "控制坐騎位置、移動準星，蓄力放箭；以二十靶練習提前量與穩定度。"
+    },
+    "hf_lianjun": {
+      "id": "hf_lianjun",
+      "allies": 5,
+      "scenarioId": "S_zg08_hufu",
+      "chapter": "胡服與火牛",
+      "volume": "戰國篇",
+      "ep": 8,
+      "asset": "scene:zg08_world",
+      "actor": "樂毅",
+      "kind": "command",
+      "title": "五軍・前進與駐守",
+      "version": 2,
+      "sectors": 3,
+      "goal": "以小隊移動、固守與援軍建立接應，部隊與對手會同時行動。",
+      "unitNames": [
+        "燕軍",
+        "趙軍",
+        "魏軍",
+        "韓軍",
+        "秦軍"
+      ]
+    },
+    "hf_huoniu": {
+      "id": "hf_huoniu",
+      "scenarioId": "S_zg08_hufu",
+      "chapter": "胡服與火牛",
+      "volume": "戰國篇",
+      "ep": 8,
+      "asset": "scene:zg08_world",
+      "actor": "田單",
+      "kind": "race",
+      "title": "即墨・衝出營障",
+      "version": 2,
+      "mode": "break",
+      "matches": 1,
+      "goal": "控制突破路線、避開障礙並維持隊形；火牛以抽象教學單位呈現。"
+    },
+    "xy_deck_1": {
+      "id": "xy_deck_1",
+      "scenarioId": "S_ch06_xingyang",
+      "chapter": "滎陽成皋",
+      "volume": "楚漢篇",
+      "ep": 6,
+      "asset": "scene:ch06_world",
+      "actor": "陳平",
+      "kind": "nativeCards",
+      "title": "滎陽計策・第1局",
+      "version": 2,
+      "goal": "看敵方意圖，以偵察、連鎖與資源安排出牌；三回合後親選新牌。"
+    },
+    "xy_deck_2": {
+      "id": "xy_deck_2",
+      "scenarioId": "S_ch06_xingyang",
+      "chapter": "滎陽成皋",
+      "volume": "楚漢篇",
+      "ep": 6,
+      "asset": "scene:ch06_world",
+      "actor": "陳平",
+      "kind": "nativeCards",
+      "title": "滎陽計策・第2局",
+      "version": 2,
+      "goal": "看敵方意圖，以偵察、連鎖與資源安排出牌；三回合後親選新牌。"
+    },
+    "xy_deck_3": {
+      "id": "xy_deck_3",
+      "scenarioId": "S_ch06_xingyang",
+      "chapter": "滎陽成皋",
+      "volume": "楚漢篇",
+      "ep": 6,
+      "asset": "scene:ch06_world",
+      "actor": "陳平",
+      "kind": "nativeCards",
+      "title": "滎陽計策・第3局",
+      "version": 2,
+      "goal": "看敵方意圖，以偵察、連鎖與資源安排出牌；三回合後親選新牌。"
+    },
+    "jingxing_board": {
+      "id": "jingxing_board",
+      "scenarioId": "S_ch07_hanxin",
+      "chapter": "韓信北伐",
+      "volume": "楚漢篇",
+      "ep": 7,
+      "asset": "scene:ch07_world",
+      "actor": "韓信",
+      "kind": "nativeTactics",
+      "title": "井陘・地形與奇兵",
+      "version": 2,
+      "goal": "地圖上選隊、預覽路線、下令；引敵、佯退、守三回合並以兩隊換旗。"
+    },
+    "xo_ambush": {
+      "id": "xo_ambush",
+      "scenarioId": "S_cq09_xiao",
+      "chapter": "殽之戰",
+      "volume": "春秋篇",
+      "ep": 9,
+      "asset": "scene:cq09_world",
+      "actor": "殽之戰",
+      "kind": "command",
+      "title": "殽山・封鎖與接應",
+      "version": 2,
+      "sectors": 3,
+      "goal": "兩端封鎖、主攻與後備同時調度，守住山道補給。"
+    },
+    "jc_mibing": {
+      "id": "jc_mibing",
+      "scenarioId": "S_cq12_jinchu",
+      "chapter": "晉楚之間",
+      "volume": "春秋篇",
+      "ep": 12,
+      "asset": "scene:cq12_world",
+      "actor": "晉楚之間",
+      "kind": "cards",
+      "title": "弭兵・四國交涉",
+      "version": 2,
+      "rounds": 5,
+      "theme": "diplomacy",
+      "goal": "讀四國的安全需求與對方意圖，出牌建立可履行的調停安排。"
+    },
+    "jx_jixia": {
+      "id": "jx_jixia",
+      "scenarioId": "S_zg04_jixia",
+      "chapter": "稷下百家",
+      "volume": "戰國篇",
+      "ep": 4,
+      "asset": "scene:zg04_world",
+      "actor": "稷下百家",
+      "kind": "cards",
+      "title": "稷下・論點與反例",
+      "version": 2,
+      "rounds": 5,
+      "theme": "debate",
+      "goal": "用證據支撐論點、拆解反例，應對會改變策略的辯者。"
+    },
+    "hz_duel": {
+      "id": "hz_duel",
+      "scenarioId": "S_zg06_hezong",
+      "chapter": "合縱連橫",
+      "volume": "戰國篇",
+      "ep": 6,
+      "asset": "scene:zg06_world",
+      "actor": "合縱連橫",
+      "kind": "cards",
+      "title": "縱橫對決・盟約牌局",
+      "version": 2,
+      "rounds": 6,
+      "theme": "diplomacy",
+      "goal": "抽牌、組合、管理履約資源，與對手爭取列國支持。"
+    },
+    "mc_hangu": {
+      "id": "mc_hangu",
+      "scenarioId": "S_zg09_mengchang",
+      "chapter": "孟嘗君",
+      "volume": "戰國篇",
+      "ep": 9,
+      "asset": "scene:zg09_world",
+      "actor": "孟嘗君",
+      "kind": "adventure",
+      "title": "函谷關・潛入與出關",
+      "version": 2,
+      "goal": "沿巡燈與掩護潛入，取裘交付、模聲應和，再持傳符出關。",
+      "questNames": [
+        "辨認狐裘",
+        "取裘",
+        "交裘求解",
+        "雞鳴應和",
+        "驗傳出關"
+      ],
+      "stealth": true
+    },
+    "qy_jiangpan": {
+      "id": "qy_jiangpan",
+      "scenarioId": "S_zg07_quyuan",
+      "chapter": "屈原與楚",
+      "volume": "戰國篇",
+      "ep": 7,
+      "asset": "scene:zg07_world",
+      "actor": "屈原",
+      "kind": "adventure",
+      "title": "江畔行吟・沿岸尋訪",
+      "version": 2,
+      "goal": "直接控制人物沿岸探索，逐件親讀五物，最後到渡口。",
+      "peaceful": true,
+      "readings": [
+        {
+          "id": "edict",
+          "name": "楚王的詔令",
+          "text": "懷王使屈原造為憲令。\n你曾受任草擬法令。這件教學舊物提醒你，爭寵如何使公議變成指控。"
+        },
+        {
+          "id": "letter",
+          "name": "懷王的信",
+          "text": "秦虎狼之國，不可信，不如毋行。\n這是對照會見與勸諫的教學信件，並非出土真跡。想到受扣的懷王，也想到當初查核承諾的機會。"
+        },
+        {
+          "id": "draft",
+          "name": "離騷草稿",
+          "text": "離騷者，猶離憂也。\n把難以陳說的憂患寫成辭。這份教學草稿代表創作，不宣稱保存了屈原手稿。"
+        },
+        {
+          "id": "pouch",
+          "name": "香草佩囊",
+          "text": "扈江離與辟芷兮，紉秋蘭以為佩。\n芳草不只是收藏品。你剛讀過，它們在語境中寄寓修養，也可能被寫成變質。"
+        },
+        {
+          "id": "soil",
+          "name": "故鄉的土",
+          "text": "雖放流，睠顧楚國，繫心懷王。\n故鄉的土是教學象徵，沒有說它是原典實物。眷顧家國，與尋求支持、調整處境可以一起思考。"
+        }
+      ]
+    },
+    "zk_xunbao": {
+      "id": "zk_xunbao",
+      "scenarioId": "S_zg11_zhuke",
+      "chapter": "奇貨可居與逐客",
+      "volume": "戰國篇",
+      "ep": 11,
+      "asset": "scene:zg11_world",
+      "actor": "李斯",
+      "kind": "adventure",
+      "title": "咸陽・重物與用人",
+      "version": 2,
+      "goal": "在宮道中走訪九處材料，避開巡查；到達後親讀原有論證材料。",
+      "stealth": true,
+      "readings": [
+        {
+          "id": "jade",
+          "name": "昆山之玉",
+          "text": "昆山之玉，非秦所產；本文不以國籍表考產地。\n「致昆山之玉」以陛下喜愛的寶物開場，為稍後逐客的矛盾作準備。"
+        },
+        {
+          "id": "suihe",
+          "name": "隨和之寶",
+          "text": "隨侯珠與和氏璧。「隨和」指兩種寶物，並非一國名。\n本文合稱「隨和之寶」。共同論點是秦亦採用外來的珍寶。"
+        },
+        {
+          "id": "pearl",
+          "name": "明月之珠",
+          "text": "指明亮的寶珠；本句未指定出產國。\n「此數寶者，秦不生一焉」總說所列寶物不產於秦，不必替每一項補造精確國名。"
+        },
+        {
+          "id": "sword",
+          "name": "太阿之劍",
+          "text": "太阿為名劍，注釋引楚王召歐冶子、干將鑄劍之事。\n「服太阿之劍」與「乘纖離之馬」連續列舉，讓秦王面對自己的取物標準。"
+        },
+        {
+          "id": "horse",
+          "name": "纖離之馬",
+          "text": "纖離是駿馬名；本句未指定出產國。\n重用駿馬只問是否適用，李斯接著追問取人為何一律看是否秦人。"
+        },
+        {
+          "id": "flag",
+          "name": "翠鳳之旗",
+          "text": "以翠羽等裝飾的旗；本句未指定製作國。\n「建」是立起旗幟。依總句判斷它是外來材料，不能自造秦趙韓的產地答案。"
+        },
+        {
+          "id": "drum",
+          "name": "靈鼉之鼓",
+          "text": "以鼉皮蒙鼓；本句未指定出產國。\n「樹」是立起。「建旗、樹鼓」完成一連串鋪陳；文章要討論重物與輕人的矛盾。"
+        },
+        {
+          "id": "music",
+          "name": "鄭衛樂舞訪談",
+          "text": "樂舞者來自鄭、衛；這一格是訪談紀錄。\n樂舞者：我以技藝在秦生活，不是一件讓人收藏的寶物。李斯列舉女色、音樂時，要追問他把誰的喜好、誰的處境放在論證中心。"
+        },
+        {
+          "id": "pin",
+          "name": "宛珠之簪",
+          "text": "珠飾之簪；「宛珠」注釋有不同解釋，不硬指定單一國名。\n喜愛外來珠簪，卻一律排斥外國人才，是第二段的對比。不要把文中未定的產地當已查明。"
+        }
+      ]
+    },
+    "ch02_fox": {
+      "id": "ch02_fox",
+      "scenarioId": "S_ch02_dazexiang",
+      "chapter": "大澤鄉",
+      "volume": "楚漢篇",
+      "ep": 2,
+      "asset": "scene:ch02_world",
+      "actor": "大澤鄉",
+      "kind": "adventure",
+      "title": "大澤鄉・巡燈與聲響",
+      "version": 2,
+      "goal": "在掩護間移動，抵叢祠後親自按住發聲三次，再回到接應點。",
+      "questNames": [
+        "會合吳廣",
+        "察看巡燈",
+        "傳遞聲響"
+      ],
+      "stealth": true
+    },
+    "ch03_nine": {
+      "id": "ch03_nine",
+      "scenarioId": "S_ch03_julu",
+      "chapter": "鉅鹿與入關",
+      "volume": "楚漢篇",
+      "ep": 3,
+      "asset": "scene:ch03_world",
+      "actor": "項羽",
+      "kind": "fighter",
+      "title": "鉅鹿・甬道突破",
+      "version": 2,
+      "waves": 9,
+      "goal": "以橫向動作穿越九處甬道，格擋、閃避與破防後接上隊伍；軍事單位為教學抽象。"
+    },
+    "ch05_chase": {
+      "id": "ch05_chase",
+      "scenarioId": "S_ch05_sanqin",
+      "chapter": "分封與還定三秦",
+      "volume": "楚漢篇",
+      "ep": 5,
+      "asset": "scene:ch05_world",
+      "actor": "蕭何",
+      "kind": "adventure",
+      "title": "月下・追還韓信",
+      "version": 2,
+      "goal": "循足跡、營門、溪橋與消息走到會合處；可奔跑、藏身及直接尋路。",
+      "questNames": [
+        "營門消息",
+        "溪邊足跡",
+        "渡橋問路",
+        "尋得韓信"
+      ],
+      "peaceful": true
+    },
+    "ch08_breakout": {
+      "id": "ch08_breakout",
+      "scenarioId": "S_ch08_gaixia",
+      "chapter": "垓下",
+      "volume": "楚漢篇",
+      "ep": 8,
+      "asset": "scene:ch08_world",
+      "actor": "垓下",
+      "kind": "adventure",
+      "title": "垓下・夜路接應",
+      "version": 2,
+      "goal": "在夜色與巡查之間走訪三處接應點，維持同伴會合；歷史終局不變。",
+      "questNames": [
+        "辨認營火",
+        "接應落後者",
+        "確認間道"
+      ],
+      "stealth": true
+    }
+  },
+  "dialoguePatches": {
+    "S_cq07_chengpu": {
+      "先親放三軍，再做三段退軍與四道會戰令。這是將先前退三舍與城濮部署連起來的回演；不把兩者當作同一地點的七次真實回合。": "接著直接調動前隊、側翼與輜重，先退過三條標記，再建立三處接應。這是連結退三舍與城濮協同的教學軍圖，不是精確地形或兵力復原。",
+      "會戰每一步都要親選部隊、目標與戰術後送令。楚右軍在畫面左，楚左軍在畫面右，是兩軍面對面之故。部署不合任務會增加損失。": "選一隊，點地面下令；對方也會同時移動。集中、包抄、固守和補給安排都會影響隊伍損失，並非按完選項就自動獲勝。",
+      "90活動秒，準備、軍報、說明與暫停不計時。錯令須親自改正；不限時提示不會代你退軍、出擊或收隊。": "先讀場內操作說明，再開始指揮。可以暫停與儲存；若使用放慢輔助，會保留使用前的首次表現，仍須親自完成接應。"
+    },
+    "S_cq17_wuyue": {
+      "四面都有吳船！請看封鎖格和旗艦朝向。": "四面都有吳船！分別選取三艘船，沿水道前往西岸接應區。",
+      "先保住接應。節拍到時再發令。": "先保住接應，別讓追船切斷撤收路線。",
+      "五隊人力要逐年分配。兵力與生計，要放在同一張年計裡。": "先建作坊與田地，分派工人，再增建居所、訓練營與船塢。二十期內，糧木、人口、隊伍與船隻都要照顧。"
+    },
+    "S_zg04_jixia": {
+      "把論點帶到講台！路上要避開以偏概全、只憑權威和偷換問題，接住查核、理由與反例。": "把論點帶到講台！看清對方的施壓、斷援或查核意圖，再安排證據、守約與回應反例。",
+      "三跑道是論辯的教學比賽，並非史書記載的賽跑。「白馬非馬」有名與實、形與色的討論背景；本關避的是未釐清概念就偷換問題，不能把名家整套思想直接貼成謬誤。": "接下來是五回合卡牌論辯。查訪後接證據可加強支持；不要只累積聲勢，也要保有履約資源。「白馬非馬」有名與實、形與色的背景，不能直接把名家整套思想貼成謬誤。",
+      "途中孟子、鄒衍可借讀一句。荀子借讀站特別標為「後輩札記」，用後來的學習觀點回看，不能認為他與孟子同日擺攤。": "牌局是教學抽象，不能代替思想原文。先前讀過的孟子、鄒衍與後輩荀子仍按時代分辨，不把他們當成同日競賽。",
+      "跑得快不會自動使話正確。帶上來的每一個論點，還需要能說明理由、回應對方。": "牌局支持高不會自動使話正確。每一個論點仍需要說明理由、回應反例。"
+    },
+    "S_zg05_maling": {
+      "那就準備三場！下一匹馬，馬倌會依我的話備好轡頭。": "那就準備三場！我依次派上、中、下等馬，你可自行安排三匹馬的次序。",
+      "第一場可用原文的調度；之後王改變次序，你要讀轡頭、表情與台詞重新配對。改序與逐場籌金是教學設計。": "三匹馬各出一次。配馬之後還須親自轉向、加速、管理體力與避障；賽道和手動騎乘是教學延伸，原文的調度另由錨點對讀。",
+      "下一段以三車道壓縮行軍與補給，和魏軍回援比進度；目標是抵近、牽制，不是操作攻陷大梁。": "下一段直接控制糧車連續轉向與加速，避開路障、收取補給，與魏軍回援比進度；目標是抵近牽制，不是攻陷大梁。",
+      "每一天你親設竈數，再傳令車隊前進，把部隊放到路旁。第三日才部署馬陵的六隊伏兵。": "竈跡的因果先按原文理解；接著以即時軍圖調動前隊、兩翼與輜重，逐處建立伏兵的接應點。",
+      "前兩日兩隊斥候、第三日六隊與20秒時限，是教學調度模型。竈數不直接換算為固定士卒人數。": "小隊、接應點與補給值都是教學抽象。竈數不直接換算固定士卒人數，軍圖也不把三日史實壓成三個真實回合。"
+    },
+    "S_zg08_hufu": {
+      "先換便於騎乘的胡服，再看準靶，親自放箭。": "胡服便於騎乘。控制坐騎、移動準星，拉滿弓再放箭；靶會移動，要估計提前量。",
+      "接下來以騎兵和舊式車兵比練靶。草人、旗桿與木鵲都是練習靶；教學競賽比較操作的靈活，不宣稱每次車戰都必輸騎兵。": "二十個移動靶是操作練習，至少親自放出十箭才算完成。這不等於每次車戰都必輸騎兵，也不復原當時的完整射藝規程。",
+      "攻城之軍不能只看戰力。補給、駐防與齊地民心，也要納入每一回合的命令。": "聯軍不能只看戰力。五隊同時行動時，補給、駐守與前後接應都會影響損失；原文對民心與用人的討論仍要另外對讀。",
+      "先親開示意缺口，牛群出城後逐排選道。走營帳，避柵欄與拒馬。": "控制突破隊伍連續轉向、加速與放緩。看前方營障選路，保住隊形並接上補給。",
+      "遊戲用布飾、光帶象徵原文火牛聲勢，牛群沒有受傷機制。三個示意口代表數十缺口，五支隨行旗代表五千壯士，畫面數量不是史實數量。": "遊戲用布飾與光帶象徵原文火牛聲勢，碰撞以隊形損失表示。畫面數量不是史實數量，不用動物受傷作為計分機制。"
+    },
+    "S_ch08_gaixia": {
+      "操作時看三道阻擋，每段親自下換道或維持令，不須攻擊。": "直接沿夜路移動，觀察巡哨與掩護，親自走訪三個接應點，再抵達出口；不須攻擊。",
+      "18段，每段先看可走的道，再親自下令。維持也要確認，放著不算完成。": "先辨認營火、接應落後者、確認間道，每處都要走近並讀完，最後到接應出口。只站在原地不算完成。",
+      "三道、拒馬與示警區是教學模型。原典夜出的記載與本局操作分開。": "道路、掩護與巡哨是教學模型。原典夜出的記載與本局操作分開，歷史終局不由分數改寫。"
+    }
+  }
+};</script>

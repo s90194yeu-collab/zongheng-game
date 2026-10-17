@@ -1,0 +1,184 @@
+<!-- 吳師入郢・必要體驗 v0.1.0（2026-10-13）。只供 S_cq14_wushi 引入。 -->
+<style>
+.cq14-game{display:grid;gap:12px;width:min(760px,100%);margin:auto;padding:12px 12px 24px;font-size:16px;line-height:1.6;box-sizing:border-box;overflow-wrap:anywhere}.cq14-game h2{font-size:24px;color:var(--gilt);margin:0}.cq14-game p{margin:0}.cq14-note{color:var(--text-dim);font-size:15px}.cq14-game button{min-height:44px;font:inherit;touch-action:manipulation;cursor:pointer}.cq14-game button:focus-visible{outline:3px solid #fff0ad;outline-offset:2px}.cq14-message{min-height:3.2em;color:#b9e5d4}.cq14-message.is-bad{color:#ffb9ae}
+.cq14-scroll{border:1px solid #bba367;border-radius:12px;background:linear-gradient(100deg,#e2ce9f,#f6e9c8,#e2ce9f);color:#342d24;padding:16px;box-shadow:inset 0 0 0 5px #70543322}.cq14-scroll b{font-size:20px}.cq14-roundbar{height:8px;background:#47382244;border-radius:5px;overflow:hidden;margin-top:8px}.cq14-roundbar i{display:block;height:100%;width:100%;background:#9e563f}
+.cq14-direction{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.cq14-direction button{border:1px solid #bea167;border-radius:8px;color:#f3e7ca;background:#243649;padding:6px}.cq14-direction b{display:block;font-size:27px}.cq14-direction button:disabled{opacity:.55}.cq14-soldiers{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.cq14-soldiers button{position:relative;display:grid;justify-items:center;gap:0;border:1px solid #608e9f;border-radius:8px;background:linear-gradient(#315564,#203944);color:#fff4d4;padding:6px 2px;min-width:0}.cq14-soldiers button:nth-child(n+7){border-color:#bd9b60;background:linear-gradient(#716440,#423e2b)}.cq14-soldiers button:disabled{cursor:default;opacity:1}.cq14-head{display:block;width:20px;height:20px;background:#edccac;border-radius:50%;border-top:5px solid #1e2630;box-sizing:content-box}.cq14-soldiers i{font-style:normal;font-size:28px;line-height:1.2}.cq14-soldiers small{font-size:15px;white-space:nowrap}
+.cq14-route{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:0;margin:0;list-style:none}.cq14-route li{border:1px solid #5d7b8d;border-radius:8px;padding:8px 3px;text-align:center;background:#152b3b;color:#c7d7de}.cq14-route li.is-active{border:2px solid #e6be68;color:#ffeac0}.cq14-route span{font-size:16px}.cq14-route small{display:block;font-size:15px}.cq14-battle{display:block;width:100%;height:auto;max-height:180px}.cq14-timebar{position:relative;height:44px;border:1px solid #ad935e;border-radius:8px;background:#263c4c;overflow:hidden}.cq14-timebar span{position:absolute;top:0;bottom:0;background:#c19c46;opacity:.8}.cq14-timebar i{position:absolute;top:0;bottom:0;width:4px;background:#fff6d9;box-shadow:0 0 9px #fff8c5}
+@media(max-width:860px){.cq14-game{padding:8px;gap:9px}.cq14-scroll{padding:12px}.cq14-direction{gap:5px}.cq14-soldiers{gap:3px}.cq14-route{grid-template-columns:repeat(3,minmax(0,1fr))}.cq14-route li{padding:5px 2px}.cq14-soldiers small{font-size:15px}.cq14-scroll b{font-size:18px}}
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+  const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
+  const paused = () => document.hidden || !!document.querySelector('.zh-modal');
+  const shuffle = (a,rng) => { const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; };
+  const tones = ['#b98e52','#5d91b0','#9d6faa','#70955a','#b76a63'];
+  // 首次表現於啟用提示或時間到時定格；完成操作後才回到劇情。
+  function session(body,g,seconds,judge,resolve) {
+    let done=false,assisted=false,first=null,elapsed=0,left=seconds,timer=null,tick=null,last=performance.now();
+    const clean = () => { clearInterval(tick); if(timer)timer.stop(); };
+    const freeze = () => { if(!first) first=Object.assign({max:10,sec:Math.round(elapsed)},judge()); };
+    const assist = () => {
+      if(done||assisted)return;
+      freeze();assisted=true;if(timer)timer.stop();
+      body.querySelector('[data-assist]').disabled=true;
+      body.querySelector('[data-guide]').hidden=false;
+      body.querySelector('[data-guide]').textContent='已保存首次表現。現在無時限練習，請親自完成；提示不會代你操作。';
+      if(api.onAssist)api.onAssist();
+    };
+    const api={get done(){return done;},get assisted(){return assisted;},get left(){return left;},get elapsed(){return elapsed;},onStep:null,onAssist:null,assist,
+      finish(extra){if(done)return;freeze();done=true;clean();resolve(Object.assign({},first,extra,{completed:true,assisted,independentScore:first.score,independentPassed:first.passed}));},
+      message(text,bad){const m=body.querySelector('[data-message]');m.textContent=text;m.classList.toggle('is-bad',!!bad);},
+      feedback(ok,streak){g.sfx(ok?'ok':'ng');if(g.combo)g.combo(ok?streak:0);if(g.flash)g.flash(ok?'ok':'bad');},
+      dispose(){done=true;clean();}
+    };
+    if(g.timer)timer=g.timer(seconds,{warn:10,onEnd:assist});
+    tick=setInterval(()=>{
+      const now=performance.now(),dt=clamp((now-last)/1000,0,.25);last=now;if(done)return;
+      if(paused())return;
+      elapsed+=dt;if(!assisted){left=Math.max(0,left-dt);if(!left)assist();}
+      if(api.onStep)api.onStep(dt);
+    },100);
+    const hint=body.querySelector('[data-assist]');hint.addEventListener('click',assist);
+    g.onCleanup(()=>{api.dispose();hint.removeEventListener('click',assist);});
+    return api;
+  }
+  function shell(body,title,tip,markup) {
+    body.innerHTML='<section class="cq14-game"><h2>'+ZH.esc(title)+'</h2><p>'+ZH.esc(tip)+'</p>'+markup+
+      '<p class="cq14-message" data-message role="status" aria-live="polite"></p><p class="cq14-note" data-guide hidden></p><button type="button" class="zh-btn zh-btn--quiet" data-assist>提示與無時限練習</button></section>';
+  }
+  // 昭關為18×14的教學地圖；三區巡哨與兩個檢查點，沒有繩降。
+  function zhaoguan(ctx){
+    const grid=[
+      'WWWWWWWWWWWWWWWWWW',
+      'WWWWWWWWWW...,,.EW',
+      'WWWWWWWWWW"".,,".W',
+      'WWWWWWWWWW..C....W',
+      'WWWWWWWWWW"",,C".W',
+      'WWWWWWWWWW.K,""..W',
+      'WWWW.,"".,,,,"...W',
+      'WWWW.,...C...WWWWW',
+      'WWWW"",,.,"".WWWWW',
+      'W""....K,"...WWWWW',
+      'W..,,,,.WWWWWWWWWW',
+      'W"".C.""WWWWWWWWWW',
+      'WS..,"".WWWWWWWWWW',
+      'WWWWWWWWWWWWWWWWWW'
+    ];
+    return {
+      title:'過昭關',subtitle:'楚・山路夜行',goal:'帶公子勝離開楚境：沿藏身處，經檢查點到關外。',
+      player:{name:'伍子胥',glyph:'胥',color:'#2f6f8a',speed:2.1,art:{state:'楚'}},guardArt:{state:'楚'},rope:null,
+      assistAfter:3,skipAfter:1000000,
+      level:{grid,labels:[{x:2,y:12,text:'公子勝同行',color:'#e4c879'},{x:4,y:10,text:'懸賞告示',color:'#e4b17b'},{x:6,y:9,text:'林間歇腳',color:'#c2deb3'},{x:11,y:5,text:'山路歇腳',color:'#c2deb3'},{x:16,y:1,text:'關外',color:'#e4c879'}]},
+      guards:[
+        {name:'巡關甲',kind:'patrol',path:[[3,10],[6,10]],speed:.9+ctx.rng()*.25,range:3.2,fov:65,pause:.7},
+        {name:'巡關乙',kind:'patrol',path:[[6,7],[8,7]],speed:1+ctx.rng()*.3,range:3.4,fov:70,pause:.7},
+        {name:'巡關丙',kind:'patrol',path:[[13,3],[16,3]],speed:1.2+ctx.rng()*.25,range:3.5,fov:70,pause:.6}
+      ],moon:{bright:7,dark:5},
+      intro:'點地面會自動找路，或用方向鍵／下方按鈕；扇形是巡哨視線，草叢可藏身。公子勝同行。',
+      winMsg:'走出關外，與公子勝繼續往江邊。',
+      helpHtml:'<p>觀察巡哨的扇形視線，點地面或按方向移動。草叢可藏身；雲遮月時視野縮短。K為檢查點，被發現後從最近檢查點再走。</p><p>被發現三次可放慢巡哨，仍須親自走到關外。本關不提供直接略過。地圖為教學設計，伍子胥的立繪代表兩人同行。</p><p>滿分10；被發現每次扣2，放慢巡哨再扣1，最低2。完成通關後沿用挑戰卡最多三次；首次表現與最佳紀錄分開。</p>'
+    };
+  }
+  const DIRS=[{key:'front',name:'前',arrow:'↑'},{key:'back',name:'後',arrow:'↓'},{key:'left',name:'左',arrow:'←'},{key:'right',name:'右',arrow:'→'}];
+  function sanling(body,g){
+    return new Promise(resolve=>{
+      const order=shuffle(Array.from({length:12},(_,i)=>DIRS[i%4]),g.rng);
+      let phase='teach',teach=0,cursor=0,s=null,roundLeft=5,delay=0,hits=0,corrections=0,errors=0,streak=0,best=0,good=true,offender=-1,turned=false;
+      const leaderMistakes={0:0,6:0},switched={0:false,6:false},responses=[];
+      const race=g.race?g.race({me:'整齊度',rival:'隊伍的嬉笑',rivalColor:'#a83a2c',goal:'說清楚，再守號令'}):null;
+      shell(body,'三令五申','先完成四方向教學，再點號令方向。發令後觀察十二人，點朝向不同者申令；同一隊長第三次失序，親自換隊長。',
+        '<div class="cq14-scroll"><b data-command></b><p data-instruction></p><div class="cq14-roundbar"><i data-roundbar></i></div></div><div class="cq14-direction" data-directions>'+DIRS.map(x=>'<button type="button" data-dir="'+x.key+'"><b>'+x.arrow+'</b>'+x.name+'</button>').join('')+'</div><div class="cq14-soldiers" data-soldiers>'+Array.from({length:12},(_,i)=>'<button type="button" data-soldier="'+i+'" aria-label="'+(i<6?'甲':'乙')+'隊'+(i%6===0?'隊長':(i%6)+'號隊員')+'"><span class="cq14-head"></span><i data-arrow>↑</i><small data-name>'+(i%6===0?(i===0?'甲長':'乙長'):(i<6?'甲':'乙')+(i%6))+'</small></button>').join('')+'</div><button type="button" class="zh-btn zh-btn--primary" data-start hidden>開始操練</button><button type="button" class="zh-btn zh-btn--primary" data-replace hidden>更換隊長</button>');
+      body.querySelector('[data-assist]').disabled=true;
+      const commandEl=body.querySelector('[data-command]'),instruction=body.querySelector('[data-instruction]');
+      const showTeach=()=>{const d=DIRS[teach];commandEl.textContent='教學 '+(teach+1)+'／4：'+d.name+'，'+({front:'視心',back:'視背',left:'視左手',right:'視右手'})[d.key];instruction.textContent='以隊伍原來朝上為正面，請點「'+d.name+'」確認號令。';};
+      showTeach();
+      const judge=()=>({score:clamp(Math.round((hits/12*6+corrections/12*2+(cursor>=12&&s.left>=20?1:0)+(best>=10?1:0)-errors*.15)*10)/10,0,10),passed:hits>=8&&corrections>=8,correct:hits,corrected:corrections,errors,bestCombo:best,finishedRounds:cursor});
+      const updateRace=()=>{if(race){race.me(cursor/12);race.rival(clamp((errors*2+(s?s.elapsed:0)*.12)/12,0,1));}};
+      const draw=()=>{
+        if(cursor>=12){s.finish({responses,teaching:4,leadersReplaced:Object.values(switched).filter(Boolean).length});return;}
+        phase='command';good=true;turned=false;roundLeft=cursor<6?5:3.5;
+        offender=cursor<6?(cursor%2===0?0:6):Math.floor(g.rng()*4)+1+(g.rng()<.5?0:6);
+        commandEl.textContent='第 '+(cursor+1)+'／12 輪・鼓令「'+order[cursor].name+'」';instruction.textContent='先點方向發令，再觀察誰朝向不同。';
+        body.querySelectorAll('[data-dir]').forEach(b=>b.disabled=false);body.querySelectorAll('[data-soldier]').forEach(b=>{b.disabled=true;b.classList.remove('is-wrong');});
+        body.querySelector('[data-replace]').hidden=true;g.setStatus('第 '+(cursor+1)+'／12 輪');g.sfx('drum');if(s.assisted)s.message('提示：先點「'+order[cursor].name+'」，再找朝向不同者。');updateRace();
+      };
+      const complete=()=>{
+        if(!s.assisted&&good){hits++;streak++;best=Math.max(best,streak);}else streak=0;
+        responses.push({round:cursor+1,command:order[cursor].key,independent:!s.assisted&&good,offender,replaced:!!switched[offender]});
+        s.feedback(true,streak);cursor++;updateRace();phase='waiting';delay=.4;
+      };
+      const begin=()=>{
+        body.querySelector('[data-start]').hidden=true;body.querySelector('[data-assist]').disabled=false;
+        s=session(body,g,60,judge,resolve);s.onAssist=()=>{good=false;instruction.textContent='無時限：先點鼓令方向，再點朝向不同者；三次失序的隊長要換人。';};
+        s.onStep=dt=>{if(phase==='waiting'){delay-=dt;if(delay<=0)draw();return;}if(phase==='teach')return;if(!s.assisted){roundLeft-=dt;if(roundLeft<=0){good=false;streak=0;s.message('本輪逾時，首次表現已保存。請用提示親自完成。',true);s.assist();}}body.querySelector('[data-roundbar]').style.width=(s.assisted?100:clamp(roundLeft/(cursor<6?5:3.5),0,1)*100)+'%';};draw();
+      };
+      const onClick=e=>{
+        const dir=e.target.closest('[data-dir]'),soldier=e.target.closest('[data-soldier]');
+        if(dir&&!dir.disabled){
+          if(phase==='teach'){
+            if(dir.dataset.dir!==DIRS[teach].key){g.sfx('ng');instruction.textContent='請照本輪號令點「'+DIRS[teach].name+'」。';return;}g.sfx('ok');teach++;
+            if(teach===4){commandEl.textContent='四方向已教清楚';instruction.textContent='現在開始六十秒操練；後六輪號令更快。';body.querySelectorAll('[data-dir]').forEach(b=>b.disabled=true);body.querySelector('[data-start]').hidden=false;}else showTeach();return;
+          }
+          if(!s||s.done||paused()||phase!=='command')return;
+          if(dir.dataset.dir!==order[cursor].key){good=false;streak=0;errors++;s.feedback(false,0);s.message('號令與方向不同，請重新發令。',true);updateRace();return;}
+          turned=true;phase='inspect';const d=order[cursor],other=DIRS.find(x=>x.key!==d.key);
+          body.querySelectorAll('[data-dir]').forEach(b=>b.disabled=true);body.querySelectorAll('[data-soldier]').forEach((b,i)=>{b.disabled=false;b.querySelector('[data-arrow]').textContent=i===offender?other.arrow:d.arrow;});
+          instruction.textContent='號令已發。點朝向不同的隊員申令。';g.sfx('drum');if(s.assisted)s.message('提示：'+(offender<6?'甲':'乙')+'隊'+(offender%6===0?'隊長':(offender%6)+'號')+'朝向不同。');return;
+        }
+        if(soldier&&!soldier.disabled&&s&&!s.done&&!paused()&&phase==='inspect'&&turned){
+          const i=Number(soldier.dataset.soldier);
+          if(i!==offender){good=false;streak=0;errors++;s.feedback(false,0);s.message('這位隊員已守令；請看箭頭，再申令。',true);updateRace();return;}
+          if(!s.assisted)corrections++;soldier.querySelector('[data-arrow]').textContent=order[cursor].arrow;body.querySelectorAll('[data-soldier]').forEach(b=>b.disabled=true);g.sfx('ok');
+          if(i===0||i===6){leaderMistakes[i]++;if(leaderMistakes[i]===3&&!switched[i]){phase='replace';body.querySelector('[data-replace]').hidden=false;instruction.textContent=(i===0?'甲':'乙')+'隊長第三次失序；點「更換隊長」任用下一位。';return;}}
+          s.message('申令後，隊伍回到同一方向。');complete();return;
+        }
+        if(e.target.closest('[data-start]')&&phase==='teach'&&teach===4){begin();return;}
+        if(e.target.closest('[data-replace]')&&phase==='replace'&&s&&!s.done&&!paused()){
+          switched[offender]=true;body.querySelector('[data-soldier="'+offender+'"] [data-name]').textContent=offender===0?'新甲長':'新乙長';body.querySelector('[data-replace]').hidden=true;s.message('換隊長完成。清楚的號令仍須反覆遵行。');complete();
+        }
+      };
+      body.addEventListener('click',onClick);g.onCleanup(()=>body.removeEventListener('click',onClick));
+    });
+  }
+  const STAGES=[
+    {name:'柏舉',kind:'原典地名',tip:'楚軍士氣動搖，吳軍以旗號協同前進。',lo:.24,hi:.48,reason:'要等旗號協同，太早會使隊伍分散。'},
+    {name:'清發',kind:'原典地名',tip:'楚軍渡水：先讓已渡者知免，等半渡時發令。',lo:.46,hi:.59,reason:'太早使困者死鬥，太晚則錯過半渡的時機。'},
+    {name:'雍澨',kind:'原典地名',tip:'楚人為食，吳軍追及。觀察準備未整的時機。',lo:.29,hi:.45,reason:'前後旗號未合，或對方已重整，都錯失協調。'},
+    {name:'行軍整隊',kind:'教學推演',tip:'這段不另造戰地名；等前後旗隊接應再前進。',lo:.51,hi:.63,reason:'前隊過快會脫離接應，後隊太慢又讓對方重整。'},
+    {name:'郢都進路',kind:'教學推演',tip:'以最後一段行軍表現及郢；待路線協同再發令。',lo:.66,hi:.76,reason:'最後的窄時機仍要保持陣形，不能只憑急迫發令。'}
+  ];
+  function boju(body,g){
+    return new Promise(resolve=>{
+      const stages=STAGES.map((x,i)=>{const shift=(g.rng()-.5)*(i===1?.025:.055);return Object.assign({},x,{lo:x.lo+shift,hi:x.hi+shift});});
+      let cursor=0,phase='play',time=0,waiting=0,p=0,hits=0,precision=0,supply=100,streak=0,best=0;const missed=[],responses=[];
+      shell(body,'五戰入郢','看移動游標與旗號，在金色時機區點「發令」。每段最多十二秒，後半段區間變窄；失誤後仍須親自補作。',
+        '<ol class="cq14-route">'+stages.map((x,i)=>'<li data-stage="'+i+'"><span>'+g.esc(x.name)+'</span><small>'+g.esc(x.kind)+'</small></li>').join('')+'</ol><div class="cq14-scroll"><b data-battle></b><p data-tip></p><svg class="cq14-battle" viewBox="0 0 600 155" role="img" aria-label="吳楚旗隊的進退"><path d="M0 90 Q150 25 310 90 T600 90" fill="none" stroke="#6596ac" stroke-width="40"/><g data-wuflag><path d="M0 0V65M0 0H40L30 18H0" fill="#2f6f8a" stroke="#243b45" stroke-width="3"/><text x="5" y="14" fill="#fff" font-size="14">吳</text></g><g data-chuflag><path d="M0 0V65M0 0H40L30 18H0" fill="#a83a2c" stroke="#543326" stroke-width="3"/><text x="5" y="14" fill="#fff" font-size="14">楚</text></g></svg><p data-signal></p></div><div class="cq14-timebar"><span data-window></span><i data-cursor></i></div><button type="button" class="zh-btn zh-btn--primary" data-order>發令・旗隊前進</button><p class="cq14-note" data-supply>兵力保全 100</p>');
+      const race=g.race?g.race({me:'吳軍的協同',rival:'楚軍的重整',rivalColor:'#a83a2c',goal:'五段時機與兵力保全'}):null;
+      const judge=()=>({score:clamp(Math.round((hits/5*7+precision/5*2+supply/100)*10)/10,0,10),passed:hits>=3&&supply>=40,correct:hits,precision:Math.round(precision*100)/100,supply,bestCombo:best});
+      const s=session(body,g,60,judge,resolve);
+      const current=()=>phase==='repair'?stages[missed[0]]:stages[cursor];
+      const stageIndex=()=>phase==='repair'?missed[0]:cursor;
+      const paint=()=>{const q=current();if(!q)return;const idx=stageIndex();body.querySelector('[data-window]').style.left=(q.lo*100)+'%';body.querySelector('[data-window]').style.width=((q.hi-q.lo)*100)+'%';body.querySelector('[data-window]').dataset.lo=q.lo;body.querySelector('[data-window]').dataset.hi=q.hi;body.querySelector('[data-cursor]').style.left=(p*100)+'%';body.querySelector('[data-cursor]').dataset.progress=p;
+        body.querySelector('[data-wuflag]').setAttribute('transform','translate('+(35+cursor*65)+',65)');body.querySelector('[data-chuflag]').setAttribute('transform','translate('+(390+(idx===1?p*150:Math.sin(p*3.14)*45))+','+(idx===1?25+p*40:25)+')');
+        body.querySelector('[data-signal]').textContent=idx===1?(p<.45?'楚軍尚未半渡':p<=.62?'楚軍陸續半渡':'楚軍多已渡過'):'旗號協同 '+Math.round(p*100)+'％';if(race){race.me(cursor/5);race.rival(clamp(s.elapsed/60+(100-supply)/180,0,1));}};
+      const draw=()=>{
+        if(cursor>=5&&phase!=='repair'){if(missed.length){phase='repair';s.assist();}else{s.finish({responses,repaired:true});return;}}
+        if(phase==='repair'&&!missed.length){s.finish({responses,repaired:true});return;}
+        const q=current();time=0;p=0;waiting=0;body.querySelector('[data-battle]').textContent=(phase==='repair'?'親自補作・':'第 '+(cursor+1)+'／5 段・')+q.name;
+        body.querySelector('[data-tip]').textContent=q.tip;body.querySelector('[data-order]').disabled=false;body.querySelectorAll('[data-stage]').forEach((el,i)=>el.classList.toggle('is-active',i===stageIndex()));g.setStatus((phase==='repair'?'補作':'進軍')+'・'+q.name);if(s.assisted)s.message('提示：等游標進入金色區，再親自點發令。');paint();
+      };
+      const take=(timedOut)=>{
+        const q=current(),idx=stageIndex(),ok=!timedOut&&p>=q.lo&&p<=q.hi;
+        if(ok){if(phase==='repair')missed.shift();else if(!s.assisted){hits++;streak++;best=Math.max(best,streak);const half=(q.hi-q.lo)/2;precision+=clamp(1-Math.max(0,Math.abs(p-(q.lo+q.hi)/2)-.015)/(half-.015),0,1);}s.feedback(true,streak);s.message('旗隊協同前進。'+q.name+'這段已完成。');if(g.pop)g.pop('旗隊合進','ok');}
+        else {streak=0;if(!s.assisted)supply=Math.max(0,supply-15);if(phase!=='repair')missed.push(idx);s.feedback(false,0);s.message((timedOut?'逾時。':'發令時機未合。')+q.reason,true);if(g.shake)g.shake();}
+        if(phase!=='repair')cursor++;responses.push({stage:idx+1,position:Math.round(p*1000)/1000,correct:ok,assisted:s.assisted,repair:phase==='repair'});body.querySelector('[data-supply]').textContent='兵力保全 '+supply;body.querySelector('[data-order]').disabled=true;waiting=.7;
+      };
+      const onClick=e=>{if(!e.target.closest('[data-order]')||s.done||paused()||waiting>0)return;take(false);};body.addEventListener('click',onClick);g.onCleanup(()=>body.removeEventListener('click',onClick));
+      s.onAssist=()=>{body.querySelector('[data-tip]').textContent=current()?current().tip:'請依金色時機區補作，完成後才接劇情。';};
+      s.onStep=dt=>{if(waiting>0){waiting-=dt;if(waiting<=0)draw();return;}time+=dt;p=s.assisted?(time%12)/12:Math.min(1,time/12);paint();if(!s.assisted&&time>=12)take(true);};draw();
+    });
+  }
+  ZH.games_cq14={zhaoguan,sanling,boju};
+})(window.ZH);
+</script>

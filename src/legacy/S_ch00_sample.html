@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：S_ch00_sample.html
+ 版本：v0.1.0（2026-10-04）
+ 依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story
+       伺服器 Code.gs（樣板變數、劇本資料檔）、Save.gs、Log.gs、AnchorBank.gs
+       劇本資料檔 S_ch00_sample_data.gs（錨點 sp_01～sp_02、圖鑑 2 項）
+ 說明：範例劇本「會稽起兵」（約 3 分鐘）。示範劇情冒險引擎 Eng_Story 的全部用法：
+       標題頁、章節、場景、人物、對話、限時抉擇、數值、史實錨點、圖鑑、小遊戲、
+       結局、結算、存檔與接續、訪客。
+       新的一話請複製這個檔，改檔名與 SID，再依「每一話都要改」的標記逐段替換。
+ 網址：?page=S_ch00_sample（需要學校帳號；這個範例不會出現在首頁）
+============================================================
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題頁（各話共用的版型，通常不用改） ───────── */
+  .ep-title {
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 520px at 70% 0%, var(--ep-glow, rgba(196, 71, 58, .2)), transparent 65%),
+      radial-gradient(700px 600px at 0% 100%, rgba(224, 180, 76, .12), transparent 60%);
+  }
+  .ep-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width: min(1040px, 100%); margin: 0 auto; padding: 8px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 22px; align-content: start; }
+  .ep-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .ep-h1 { margin-top: 4px; font-size: clamp(46px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .ep-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ep-note { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, auto); gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: rgba(20, 26, 46, .82); box-shadow: var(--shadow);
+  }
+  .ep-seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--ep-color, #c4473a); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--ep-color, #c4473a);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--ep-color, #c4473a); background: rgba(11, 14, 29, .6);
+  }
+  .ep-start__name { font-family: var(--f-display); font-size: 22px; }
+  .ep-start__lead { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start__act { display: grid; gap: 8px; }
+  .ep-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .ep-point { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .7); }
+  .ep-point b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; color: var(--gilt); }
+  .ep-point span { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  @media (max-width: 860px) {
+    .ep-start { grid-template-columns: auto minmax(0, 1fr); }
+    .ep-start__act { grid-column: 1 / -1; }
+  }
+
+  /* ───────── 本話的小遊戲（每一話都要改：換成自己的小遊戲樣式） ───────── */
+  .ep-drum { display: grid; gap: 18px; justify-items: center; align-content: center; min-height: 100%; padding: 24px 16px; text-align: center; }
+  .ep-drum__tip { font-family: var(--f-display); font-size: 18px; line-height: 1.7; }
+  .ep-drum__track { position: relative; width: min(560px, 100%); height: 46px; border-radius: 999px; border: 1px solid var(--line); background: rgba(236, 230, 214, .08); overflow: hidden; }
+  .ep-drum__zone { position: absolute; top: 0; bottom: 0; background: rgba(63, 157, 132, .45); border-left: 2px solid var(--patina); border-right: 2px solid var(--patina); }
+  .ep-drum__mark { position: absolute; top: 4px; bottom: 4px; width: 8px; margin-left: -4px; border-radius: 4px; background: var(--gilt); box-shadow: 0 0 12px var(--gilt-glow); }
+  .ep-drum__hit { min-width: 220px; min-height: 64px; font-size: 20px; }
+  .ep-drum__msg { min-height: 1.6em; font-size: 16px; }
+  .ep-drum__msg.is-ok { color: #a9e2d4; }
+  .ep-drum__msg.is-bad { color: #ffb4aa; }
+</style>
+</head>
+<body>
+<div id="ep-root"></div>
+
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+
+  // ═════════════════════════ 1. 基本設定（每一話都要改） ═════════════════════════
+
+  const SID = 'S_ch00_sample';                 // 劇本代碼＝檔名＝資料檔裡的代碼
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['sp_01', 'sp_02'];       // 本話全部錨點，依出現順序
+  const anchorsReady = ZH.anchor.load(SID).catch(() => []);
+
+  // 目錄（Data_catalog）裡有這一話就用目錄的資料；範例不在目錄裡，用這一份
+  const META = ZH.findScenario(SID) || {
+    id: SID, vol: 'ch', ep: 0, name: '會稽起兵', episode: '範例：先發制人的，是誰？', year: 209,
+    genre: '劇情冒險（範例）', source: '〈項羽本紀〉', guest: false, status: 'planned'
+  };
+
+  // 標題頁上的扮演角色
+  const ROLE = {
+    name: '項梁', glyph: '梁', color: '#c4473a',
+    title: '楚將項燕之子・避仇吳中',
+    lead: '秦二世元年九月，陳涉在大澤鄉起事的消息傳到會稽。郡守殷通找你商量起兵——他打的是什麼主意？'
+  };
+
+  // 標題頁的「本話重點」（三到四點）
+  const POINTS = [
+    { title: '劇情冒險', text: '對話、抉擇，跟著《史記》走一遍會稽起兵。' },
+    { title: '限時抉擇', text: '有些選擇要在時間內決定，猶豫太久，機會就沒了。' },
+    { title: '小遊戲：擊鼓', text: '鼓聲為號，在對的時機出手。' }
+  ];
+
+
+  // ═════════════════════════ 2. 人物（每一話都要改） ═════════════════════════
+
+  const CHARACTERS = [
+    { id: 'xiangliang', name: '項梁', glyph: '梁', color: '#c4473a', title: '你' },
+    { id: 'xiangji', name: '項籍', glyph: '籍', color: '#e0b44c', title: '項梁之姪' },
+    { id: 'yintong', name: '殷通', glyph: '通', color: '#5b8fb9', title: '會稽郡守' },
+    { id: 'shiguan', name: '史官', glyph: '史', color: '#8a7350' }
+  ];
+
+
+  // ═════════════════════════ 3. 數值（每一話都要改，最多三個） ═════════════════════════
+
+  const METERS = [
+    { id: 'nerve', label: '膽識', icon: 'sword', max: 100, start: 50, danger: 20 },
+    { id: 'trust', label: '人心', icon: 'people', max: 100, start: 40, danger: 15 }
+  ];
+
+
+  // ═════════════════════════ 4. 說明（每一話都要改） ═════════════════════════
+
+  const HELP =
+    '<p><b>你是項梁</b>：跟著《史記・項羽本紀》，走一遍會稽起兵。</p>' +
+    '<p style="margin-top:10px"><b>對話與抉擇</b>：點對話框繼續。遇到抉擇時選一個選項；有計時條的抉擇，時間到了就算你沒有回答。</p>' +
+    '<p style="margin-top:10px"><b>膽識、人心</b>：你的選擇會讓數值上升或下降，影響最後的結局。</p>' +
+    '<p style="margin-top:10px"><b>史實錨點</b>：劇情走到史書記載的關鍵句，會停下來請你作答。選錯會先聽史官解說，再回到史書。</p>' +
+    '<p style="margin-top:10px"><b>中途離開</b>：會自動存檔，下次從這一段的開頭接著玩。</p>';
+
+
+  // ═════════════════════════ 5. 劇情節點（每一話都要改） ═════════════════════════
+  // 每個節點是一段 async 函式：跑完回傳下一個節點的代碼；最後一個節點 return ctx.end(結果)。
+  // 中途離開時，下次會從「進入這個節點時」的狀態重玩這個節點，所以：
+  //   ・先 await 對話與抉擇，再改數值，一個節點不要太長（3～8 句對話＋一個抉擇或一題錨點）。
+  //   ・答過的錨點、解鎖過的圖鑑不會重來。
+
+  const NODES = {
+    n_intro: async ctx => {
+      await ctx.chapter('會稽起兵', '秦二世元年・九月');
+      await ctx.scene('city', { place: '會稽郡守府', time: '秦二世元年九月' });
+      ctx.cast(['yintong', 'xiangliang']);
+      await ctx.say([
+        { text: '大澤鄉起事的消息，一路傳到了江東。' },
+        { who: 'yintong', text: '江西皆反，此亦天亡秦之時也。吾聞先即制人，後則為人所制。' }
+      ]);
+      await ctx.anchor('sp_01');
+      ctx.unlock('idiom:sample_xianfazhiren');
+      await ctx.say([{ who: 'yintong', text: '吾欲發兵，使公及桓楚將。' }]);
+      return 'n_choose';
+    },
+
+    n_choose: async ctx => {
+      const pick = await ctx.choose({
+        title: '殷通要你領兵',
+        text: '殷通想借項家的名望起兵，兵權卻要握在他自己手上。你只有一點點時間回答。',
+        timeout: 12000, timeoutValue: 'wait',
+        options: [
+          { label: '說只有項籍知道桓楚在哪裡', desc: '把項籍叫進來。', value: 'call' },
+          { label: '一口答應', desc: '先答應再說。', value: 'yes' },
+          { label: '推說年紀大了', desc: '不蹚這渾水。', value: 'no' }
+        ]
+      });
+      ctx.flag('pick', pick);
+      if (pick === 'call') {
+        ctx.add('nerve', 15);
+        ctx.log('項梁推說只有項籍知道桓楚的下落。');
+      } else if (pick === 'yes') {
+        ctx.add('trust', -10);
+        await ctx.say([{ who: 'xiangliang', text: '（話一出口，你就後悔了：兵馬一交出去，項家只是替人打仗。）' }]);
+      } else {
+        ctx.add('nerve', -10);
+        await ctx.say([{ who: 'xiangliang', text: '（你遲疑了一下。殷通的眼神冷了下來。）' }]);
+      }
+      // 不管選哪一個，錨點題都會把劇情導回史實
+      await ctx.anchor('sp_02');
+      ctx.unlock('person:sample_xiangliang');
+      ctx.cast(['yintong', 'xiangliang', 'xiangji']);
+      await ctx.say([
+        { who: 'xiangliang', text: '請召籍，使受命召桓楚。' },
+        { who: 'yintong', text: '諾。' },
+        { text: '項籍進門，站在一旁。項梁看了他一眼。' }
+      ]);
+      return 'n_drum';
+    },
+
+    n_drum: async ctx => {
+      const r = await ctx.minigame({
+        id: 'sample_drum', title: '眴籍：可行矣！', skip: true,
+        help: '<p>金色的標記會左右移動。標記進入綠色區域時，按「出手」（或空白鍵）。三次裡對兩次就成功。</p>'
+      }, drumGame);
+      if (r.passed) {
+        ctx.add('nerve', 10);
+        ctx.add('trust', 20);
+        await ctx.say([{ text: '於是籍遂拔劍斬守頭。項梁持守頭，佩其印綬。' }]);
+      } else {
+        ctx.add('trust', 5);
+        await ctx.say([{ text: '一陣慌亂之後，項籍還是斬下了郡守的頭。項梁持守頭，佩其印綬。' }]);
+      }
+      return 'n_end';
+    },
+
+    n_end: async ctx => {
+      await ctx.scene('camp', { place: '吳中', time: '數日之後' });
+      ctx.cast(['xiangliang', 'xiangji']);
+      await ctx.say([
+        { text: '項梁召集舊識的豪傑，說明起兵的道理，得精兵八千人。' },
+        { who: 'xiangji', text: '叔父，下一步呢？' }
+      ]);
+      const key = ctx.meter('nerve') + ctx.meter('trust') >= 120 ? 'great' : 'good';
+      return ctx.end({ type: 'final', key: key });
+    }
+  };
+
+
+  // ═════════════════════════ 6. 小遊戲（每一話都要改） ═════════════════════════
+  // 規則：(body, g) => Promise<{ passed, score, max }>
+  //   ・畫在 body 裡；滑鼠、觸控、鍵盤都要能玩；字要夠大（手機 16px 以上）
+  //   ・計時器、事件監聽一律用 g.onCleanup 登記，結束時引擎會自動停掉
+  //   ・g.setStatus('第 1 / 3 擊') 會顯示在標題列右邊
+
+  function drumGame(body, g) {
+    return new Promise(resolve => {
+      body.innerHTML =
+        '<div class="ep-drum">' +
+        '<p class="ep-drum__tip">標記進入綠色區域時出手。</p>' +
+        '<div class="ep-drum__track"><i class="ep-drum__zone"></i><i class="ep-drum__mark"></i></div>' +
+        '<button type="button" class="zh-btn zh-btn--primary ep-drum__hit">出手</button>' +
+        '<p class="ep-drum__msg" aria-live="polite"></p></div>';
+      const zone = body.querySelector('.ep-drum__zone');
+      const mark = body.querySelector('.ep-drum__mark');
+      const msg = body.querySelector('.ep-drum__msg');
+      const ROUNDS = 3;
+      const WIDTH = 0.18;
+      let round = 0;
+      let hits = 0;
+      let pos = 0;
+      let dir = 1;
+      let center = 0.5;
+      let locked = false;
+      let last = performance.now();
+      let raf = 0;
+      const newZone = () => {
+        center = 0.25 + g.rng() * 0.5;
+        zone.style.left = ((center - WIDTH / 2) * 100) + '%';
+        zone.style.width = (WIDTH * 100) + '%';
+        g.setStatus('第 ' + (round + 1) + ' / ' + ROUNDS + ' 擊');
+      };
+      const loop = now => {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        if (!locked) {
+          pos += dir * dt * (0.8 + round * 0.25);
+          if (pos > 1) { pos = 1; dir = -1; }
+          if (pos < 0) { pos = 0; dir = 1; }
+          mark.style.left = (pos * 100) + '%';
+        }
+        raf = requestAnimationFrame(loop);
+      };
+      const hit = () => {
+        if (locked) return;
+        locked = true;
+        const ok = Math.abs(pos - center) <= WIDTH / 2;
+        if (ok) hits += 1;
+        g.sfx(ok ? 'drum' : 'ng');
+        msg.className = 'ep-drum__msg ' + (ok ? 'is-ok' : 'is-bad');
+        msg.textContent = ok ? '正中！' : '慢了一步……';
+        round += 1;
+        setTimeout(() => {
+          if (round >= ROUNDS) { resolve({ passed: hits >= 2, score: hits, max: ROUNDS }); return; }
+          msg.textContent = '';
+          newZone();
+          locked = false;
+        }, 700);
+      };
+      const onKey = e => { if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); hit(); } };
+      body.querySelector('.ep-drum__hit').addEventListener('click', hit);
+      document.addEventListener('keydown', onKey);
+      g.onCleanup(() => { cancelAnimationFrame(raf); document.removeEventListener('keydown', onKey); });
+      newZone();
+      raf = requestAnimationFrame(loop);
+    });
+  }
+
+
+  // ═════════════════════════ 7. 結局與結算（每一話都要改） ═════════════════════════
+
+  const ENDINGS = {
+    great: { id: 'great', title: '八千子弟', good: true, text: '梁舉吳中兵，得精兵八千人，部署豪傑為校尉、候、司馬，江東大震' },
+    good: { id: 'good', title: '會稽起兵', good: true, text: '梁舉吳中兵，得精兵八千人，渡江而西' },
+    bad: { id: 'bad', title: '事敗身危', good: false, text: '謀洩，梁與籍亡走' }
+  };
+
+  function onEnd(result, ctx) {
+    const s = ctx.state;
+    const e = ENDINGS[(result && result.key) || 'good'] || ENDINGS.good;
+    ZH.sfx('seal');
+    return ctx.banner(e.title, '會稽起兵・終')
+      .then(() => ctx.say([{ who: 'shiguan', text: '項梁起於會稽，項羽的故事，從這裡開始。' }]))
+      .then(() => ZH.deleteSave(SID, MODE).catch(() => null))
+      .then(() => ZH.finishScenario(payload(s, e)));
+  }
+
+  function payload(s, ending) {
+    const f = s.flags;
+    const strategy = Math.round(Math.min(100, s.meters.nerve));
+    const virtue = Math.round(Math.min(100, 30 + s.meters.trust * 0.7));
+    const deeds = ['秦二世元年，陳涉等起大澤中。其九月，會稽守通謂梁曰：「吾欲發兵，使公及桓楚將。」'];
+    if (f.pick === 'call') deeds.push('梁曰：「桓楚亡，人莫知其處，獨籍知之耳。」乃召籍入。');
+    else deeds.push('梁初猶豫，既而召籍入。');
+    deeds.push('須臾，梁眴籍，籍遂拔劍斬守頭。梁持守頭，佩其印綬。');
+    return {
+      scenarioId: SID, mode: MODE, faction: '楚',
+      role: '項梁', roleKind: 'liezhuan', country: '楚',
+      bioTitle: '項梁傳（範例）', bioOpening: '項梁者，楚將項燕之子也。',
+      ending: ending,
+      scoreStrategy: strategy, scoreVirtue: virtue,
+      turns: s.steps || 1,
+      durationSec: Math.min(5400, Math.round((Date.now() - (s.startedAt || Date.now())) / 1000)),
+      deeds: deeds,
+      anchors: s.anchors,
+      games: s.games,
+      codex: s.codex,
+      opener: '余讀〈項羽本紀〉，至梁眴籍曰「可行矣」，未嘗不歎機事之在呼吸間也。',
+      prompts: [
+        '殷通說「先即制人，後則為人所制」，最後先動手的卻是項梁。你覺得殷通錯在哪裡？',
+        '如果你是項梁，你會怎麼回答殷通？為什麼？',
+        '「先發制人」在今天的生活裡，什麼時候是好事，什麼時候不是？'
+      ]
+    };
+  }
+
+
+  // ═════════════════════════ 8. 開始（通常不用改） ═════════════════════════
+
+  const saveState = state => ZH.save(SID, MODE, { engine: state }).catch(() => null);
+
+  function startGame(saved) {
+    ROOT.innerHTML = '';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_intro',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd: onEnd, save: saveState
+    });
+    if (params.test) window.__ep = game;
+    game.start(saved || null);
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip">原典' + esc(META.source) + '</span><span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header>' +
+      '<section class="ep-start"><span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>' +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個史實錨點。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave = () => ZH.load(SID, MODE).then(r => (r && r.ok && r.state && r.state.engine ? r.state : null)).catch(() => null);
+
+  ZH.ready(() => {
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), Promise.race([anchorsReady, ZH.sleep(8000)])]).then(([saved]) => {
+      ZH.loading(false);
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+</script>
+</body>
+</html>

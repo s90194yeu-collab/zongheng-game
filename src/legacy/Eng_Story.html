@@ -1,0 +1,1229 @@
+<!-- 對話 AI 背景整合 v2.1.0：特殊場景由集中對照接入；劇情與評量沿用。 -->
+<!-- 動作策略核心實裝 v2.0.0；原文與舊局沿用，新開局按登錄替換挑戰。 -->
+<!-- 春秋場景任務整合 v1.0.0；原有劇情、首次成績與名場面演出沿用。 -->
+<!-- 關鍵時刻插畫演出整合 v0.9.0（2026-10-15）；以下保留完整 v0.2.8 劇情與 v0.6.0 字型修正。 -->
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Eng_Story.html
+ 版本：v0.2.8（2026-10-14）
+ 依賴：Core_css.html、Core_js.html（ZH.sfx、ZH.toast、ZH.modal、ZH.esc、ZH.settings、ZH.html）
+       選用：Anchor_js.html（史實錨點）、Codex_js.html（史冊圖鑑）
+       需要原文錨點的劇本：StoryGuard.gs（直接讀取題庫、進場檢查與重試）
+       自動帶入：Art_kit.html（Q 版立繪與精細場景）、Arena_js.html（小遊戲挑戰賽）——Code.gs v0.1.5 起，
+       頁面 include('Eng_Story') 時伺服器會先插入這兩個檔；沒有它們時，引擎退回 v0.1.0 的印章頭像與剪影場景。
+ 說明：劇情冒險引擎。楚漢篇等以劇情、抉擇、小遊戲為主的劇本共用。
+       引擎負責：場景背景、人物立繪（Q 版，會眨眼、說話時嘴巴會動）、對話、抉擇（可限時）、
+       數值列、章節標題、史實錨點、圖鑑解鎖、小遊戲外框、存檔與接續、離開與說明。
+       劇本頁只要寫「節點」（node）：每個節點是一段 async 函式，跑完回傳下一個節點的代碼。
+ 用法：
+   const game = ZH.story.create(根元素, config);
+   game.start(存檔狀態或 null);
+ config 欄位：
+   id、mode（預設 history）、title、subtitle、seed、start（第一個節點代碼）
+   nodes      { 節點代碼: async ctx => '下一個節點代碼' }    最後一個節點呼叫 ctx.end(result)
+   meters     [{ id, label, icon, max, start, danger, invert（越低越好）, show(state) }]
+              icon：grain、people、heart、flame、eye、scroll、sword、shield、crown、star
+   characters [{ id, name, glyph, color, title, art }]  glyph：沒有美術檔時的印章字；color：名牌顏色
+              art（選用）：Q 版外型，欄位見 Art_kit 檔頭。不寫時依名字查內建名冊，查不到就依頭銜自動猜。
+   scenes     { 場景代碼: { base, tod, weather, banner, glyph } }   以內建場景為底的自訂場景（建議）
+              或 { sky, art, tint }（舊寫法：天空色＋1600×600 剪影 SVG）
+   arena      false：這一話的小遊戲都不用挑戰賽外框（預設開啟）
+   initState(state) → { flags, meters, vars… }           開新局時的初始資料
+   onEnd(result, ctx)、save(state)、help（HTML）、anchorTotal、anchorOrder
+ ctx（節點函式拿到的工具，全部回傳 Promise 的要 await）：
+   state、rng()、flag(name[, value])、meter(id)、add(id, delta)、log(text)
+   say(lines)            lines：字串，或 { who: 人物 id 或名字, text, expr }；陣列會依序播放
+                         expr：normal happy surprised sad angry serious worried smirk（不寫會依台詞猜一點點）
+   expr(人物 id, 表情)    設定這個人物之後的預設表情（null 恢復）
+   choose({ title, text, options: [{ label, desc, value, disabled }], timeout: 毫秒, timeoutValue })
+   scene(代碼, { place, time, tod, weather, banner, glyph })、place(地點, 時間)、cast([人物 id…])、chapter(標題, 副標)
+                         tod：dawn day dusk night（不寫會從 time 的文字猜，例如「夜」「黃昏」）；banner／glyph：軍營旗色與旗上的字
+   banner(標題, 副標)、anchor(錨點 id)、unlock('person:ch_xiangyu')、toast(文字, 'ok'|'bad')、wait(毫秒)
+   minigame({ id, title, help, skip, goal, attempts, arena }, (body, g) => Promise<result>)   見下方「小遊戲」
+   end(result)           結束這一局：存檔後呼叫 config.onEnd(result, ctx)
+ 存檔：每進入一個節點就存一次（存「進入節點時」的狀態）。中途離開，下次從那個節點的開頭重玩；
+       已經答過的錨點、已經解鎖的圖鑑不會重來。所以節點裡「改數值」的程式，重玩時會再跑一次，
+       但起點是進入節點時的數值，不會重複累加。
+ 小遊戲：ctx.minigame(opts, fn) 會在舞台上開一個外框（標題列＋說明＋可選的「略過」），
+       fn(body, g) 在 body 裡畫自己的遊戲，回傳 Promise，玩完 resolve 一個結果物件，
+       建議 { passed: true/false, score, max }。g 提供：
+         g.rng()、g.sfx(name)、g.isMobile()、g.onCleanup(fn)（結束時要停掉的計時器、事件）
+         g.setStatus(text)（標題列右邊的小字，例如剩餘時間）
+       opts.skip 為 true 時顯示「略過」按鈕，按了就 resolve { skipped: true, passed: false, score: 0 }。
+       有 opts.id 時，結果會記在 state.games（結算時放進 payload.games），也寫進小遊戲紀錄；
+       文字類小遊戲（字義、成語、句子排序……）的 id 用 wen_ 開頭，才會算入五維的「文辭」。
+       小遊戲函式拿不到 ctx：需要的數值用參數傳進去，額外的結果放在 resolve 的物件裡，回到節點再處理。
+       挑戰賽（有 id、有載入 Arena_js）：先出挑戰卡（排行榜）→ 3、2、1 → 遊戲 → 成績卡（星等、新紀錄、名次），
+       最多挑戰 attempts 次（預設 3），回傳最好的一次（多一個 sec 欄位）。goal 是挑戰卡上的一句目標。
+       g 另外有 g.race、g.timer、g.combo、g.pop、g.flash、g.shake、g.best、g.attempt（見 Arena_js 檔頭）；
+       沒有載入 Arena_js 時這些工具不存在，所以小遊戲用之前先判斷：if (g.race) { … }。
+ v0.2.7：進場前確認尚未作答的原文題目；缺題時重新讀取目前題庫，保留教師停用設定與首答。
+ v0.2.5：閱讀、通關管理與存檔。
+ v0.2.4：效能。人物立繪拿掉 drop-shadow 濾鏡（每一格都要重算模糊，最吃效能），改成腳下的橢圓陰影；
+         小遊戲進行時，台上人物的動畫也暫停。搭配 Art_kit v0.1.5（動畫改成每 0.125 秒一格）。
+ v0.2.3：退場背景停止動畫並清理；相同畫面不重建；遊戲時暫停舞台裝飾；存檔快照只深拷貝一次。
+ v0.2.2：共用引擎統一管理逐步存檔、帳號隔離的裝置備份與重試送出；既有進度可接續。
+ v0.1.0：初版。
+ v0.2.1：Q 版立繪（ART.portrait）、表情、說話嘴型；對話框改成紙箋＋名牌；精細場景（ART.scene，時段與天氣）；
+         小遊戲外框加上競技列與挑戰賽（ZH.arena）；每一次挑戰都寫進小遊戲紀錄。
+============================================================
+-->
+<style>
+  /* ───────── 版面 ───────── */
+  .sty {
+    position: fixed; inset: 0; z-index: 10;
+    display: grid; grid-template-rows: auto minmax(0, 1fr);
+    background: #0b0e1d; color: var(--text);
+  }
+  .sty-top {
+    position: relative; z-index: 5;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+    padding: calc(8px + var(--safe-t)) 14px 8px;
+    background: rgba(14, 18, 34, .92); border-bottom: 1px solid var(--line);
+  }
+  .sty-icon {
+    display: grid; place-items: center; width: 38px; height: 38px; flex: none; cursor: pointer;
+    border: 1px solid var(--line-soft); border-radius: 10px; background: none; color: var(--text);
+    font-size: 20px; line-height: 1;
+  }
+  .sty-icon:hover { border-color: var(--gilt); color: var(--gilt); }
+  .sty-title { display: flex; flex-direction: column; min-width: 0; }
+  .sty-title b { font-family: var(--f-display); font-size: 19px; letter-spacing: .1em; line-height: 1.2; white-space: nowrap; }
+  .sty-title span { font-size: 12.5px; color: var(--gilt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sty-meters { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
+  .sty-m { position: relative; display: grid; grid-template-columns: 18px auto 72px 2.2em; align-items: center; gap: 6px; font-size: 13.5px; }
+  .sty-m svg { width: 18px; height: 18px; fill: currentColor; color: var(--gilt); }
+  .sty-m__bar { height: 7px; border-radius: 999px; background: rgba(236, 230, 214, .12); overflow: hidden; }
+  .sty-m__bar i { display: block; height: 100%; width: var(--v, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--patina), var(--gilt)); transition: width .5s ease; }
+  .sty-m.is-invert .sty-m__bar i { background: linear-gradient(90deg, #c9a24a, var(--cinnabar)); }
+  .sty-m__val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .sty-m.is-danger { color: #ff9c90; }
+  .sty-m.is-danger svg { color: var(--cinnabar); }
+  .sty-m.is-danger .sty-m__bar i { background: var(--cinnabar); }
+  .sty-m__float {
+    position: absolute; right: 0; top: -2px; pointer-events: none; font-weight: 700; font-size: 14px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, .8); animation: sty-float 1.4s ease-out forwards;
+  }
+  .sty-menu { display: flex; gap: 6px; }
+
+  /* ───────── 舞台 ───────── */
+  .sty-stage { position: relative; overflow: hidden; }
+  .sty-bg { position: absolute; inset: 0; opacity: 0; transition: opacity .9s ease; background: var(--sky, #10142a); }
+  .sty-bg.is-on { opacity: 1; }
+  .sty-bg svg { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 78%; }
+  /* 已退場與被遊戲覆蓋的舞台只保留靜態畫面，不做持續動畫。 */
+  .sty-bg:not(.is-on) *, .sty-bg:not(.is-on)::after,
+  .sty.is-in-game .sty-bg *, .sty.is-in-game .sty-bg::after, .sty.is-in-game .sty-cast * {
+    animation-play-state: paused !important;
+  }
+  .sty-bg::after { content: ''; position: absolute; inset: 0; background: var(--tint, transparent); pointer-events: none; }
+  .sty-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(4, 6, 14, .75)); }
+  .sty-rain { position: absolute; inset: -20% 0 0; pointer-events: none; opacity: .5;
+    background-image: repeating-linear-gradient(105deg, transparent 0 18px, rgba(200, 215, 240, .35) 18px 19px, transparent 19px 46px);
+    animation: sty-rain .6s linear infinite; }
+  .sty-place {
+    position: absolute; top: 14px; left: 16px; z-index: 2; display: grid; gap: 2px;
+    padding: 8px 16px 8px 14px; border-radius: 4px 12px 12px 4px; border-left: 4px solid var(--cinnabar);
+    background: rgba(239, 228, 200, .94); color: var(--slip-ink); box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    animation: zh-rise .5s ease both;
+  }
+  .sty-place b { font-family: var(--f-display); font-size: 19px; letter-spacing: .12em; }
+  .sty-place span { font-size: 12.5px; color: #6b5a3a; }
+  .sty-cast {
+    position: absolute; left: 0; right: 0; bottom: calc(var(--cast-b, 64px) + var(--safe-b)); z-index: 2;
+    display: flex; justify-content: center; align-items: flex-end; gap: var(--cast-gap, 14px); padding: 0 12px;
+    pointer-events: none;
+  }
+  .sty-actor { position: relative; flex: none; width: var(--aw, 280px); transform-origin: 50% 100%; transition: transform .3s ease, opacity .3s ease, filter .3s ease; }
+  .sty-actor .ck { position: relative; width: 100%; height: auto; }
+  /* 腳下的陰影：取代 drop-shadow 濾鏡（濾鏡會讓呼吸、眨眼的每一格都重算模糊） */
+  .sty-actor::before { content: ''; position: absolute; left: 16%; right: 16%; bottom: -1.5%; height: 7%; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .42), rgba(0, 0, 0, 0)); pointer-events: none; }
+  .sty-actor--seal::before { display: none; }
+  .sty-actor.is-enter { animation: sty-enter .4s ease both; }
+  .sty-actor__tag {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0 auto; width: max-content; max-width: 110%;
+    padding: 1px 10px 1px 8px; border-radius: 4px; border-left: 3px solid var(--ac, var(--gilt));
+    background: rgba(11, 14, 29, .78); font-family: var(--f-display); font-size: 14px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; transition: opacity .2s ease;
+  }
+  .sty-actor.is-speaking .sty-actor__tag { opacity: 0; }
+  .sty-cast.has-speaker .sty-actor { filter: none; opacity:.52; }
+  .sty-cast.has-speaker .sty-actor.is-speaking { filter: none; opacity:1; transform: translateY(-4px) scale(1.02); }
+  /* 沒有美術檔時的印章頭像（v0.1.0 的樣子） */
+  .sty-actor--seal { display: grid; justify-items: center; gap: 4px; width: auto; }
+  .sty-actor__seal {
+    display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%;
+    border: 3px solid var(--ac, var(--gilt)); color: var(--ac, var(--gilt));
+    background: radial-gradient(circle at 50% 35%, rgba(39, 49, 79, .96), rgba(11, 14, 29, .96));
+    box-shadow: inset 0 0 0 4px rgba(11, 14, 29, .9), inset 0 0 0 6px var(--ac, var(--gilt)), 0 10px 28px rgba(0, 0, 0, .5);
+    font-family: var(--f-display); font-weight: 700; font-size: 40px;
+  }
+  .sty-actor__name { padding: 1px 10px; border-radius: 4px; background: rgba(11, 14, 29, .85); font-family: var(--f-display); font-size: 15px; white-space: nowrap; }
+  .sty-actor--seal .sty-actor__tag { display: none; }
+
+  /* ───────── 對話、抉擇、標題 ───────── */
+  .sty-say {
+    position: fixed; left: 0; right: 0; margin: 0 auto; bottom: calc(16px + var(--safe-b)); z-index: 45;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start;
+    width: min(880px, calc(100vw - 24px)); padding: 20px 22px 12px;
+    border: 2px solid #c9a24a; border-radius: 14px; cursor: pointer; color: #3b2620;
+    background: linear-gradient(180deg, rgba(250, 243, 226, .97), rgba(236, 222, 189, .97));
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .45), inset 0 0 0 4px rgba(255, 252, 242, .6);
+    animation: zh-rise .2s ease both;
+  }
+  .sty-say.has-face { grid-template-columns: 96px minmax(0, 1fr); }
+  .sty-say__face { width: 96px; height: 124px; margin: -8px 0 -6px; border-radius: 10px; overflow: hidden; background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); border: 2px solid var(--fc, #c9a24a); }
+  .sty-say__face .ck { width: 100%; height: 100%; }
+  .sty-say__face--seal { display: grid; place-items: center; width: 64px; height: 64px; margin: 0; border-radius: 50%; border: 3px solid var(--fc, var(--gilt)); color: var(--fc, var(--gilt)); background: rgba(11, 14, 29, .8); font-family: var(--f-display); font-weight: 700; font-size: 30px; }
+  .sty-say.has-seal { grid-template-columns: 64px minmax(0, 1fr); }
+  .sty-say__name {
+    position: absolute; top: -17px; left: 20px; padding: 2px 16px; border-radius: 6px 6px 6px 0;
+    background: var(--fc, var(--cinnabar)); color: var(--fct, #fff4ec); font-family: var(--f-display); font-weight: 700; font-size: 17px;
+    letter-spacing: .12em; box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+  }
+  .sty-say__text { min-height: 3.4em; font-family: var(--f-display); font-size: 18.5px; line-height: 1.8; }
+  .sty-say__more { margin-top: 0; text-align: right; font-size: 12.5px; color: #8a7350; }
+  .sty-say.is-narrator {
+    border-color: var(--slip-line, #c9b07a); color: var(--slip-ink, #3a2a18);
+    background: repeating-linear-gradient(90deg, rgba(120, 90, 40, 0) 0 46px, rgba(120, 90, 40, .16) 46px 48px), var(--slip, #efe2bf);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .45);
+  }
+  .sty-say.is-narrator .sty-say__more { color: #6b5a3a; }
+
+  .sty-choice { position: fixed; inset: 0; z-index: 46; display: grid; place-items: center; padding: 16px; background: rgba(8, 10, 22, .68); animation: zh-fade-in .2s ease both; }
+  .sty-choice__card { width: min(580px, 100%); max-height: 100%; overflow: auto; padding: 20px; border: 1px solid var(--gilt); border-radius: 14px; background: linear-gradient(180deg, var(--night-3), var(--night-2)); box-shadow: var(--shadow); }
+  .sty-choice__card h2 { font-size: 22px; margin-bottom: 8px; }
+  .sty-choice__card > p { margin-bottom: 14px; line-height: 1.8; }
+  .sty-choice .zh-choice__text small { display: block; font-family: var(--f-body); font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .sty-timer { height: 6px; margin: -4px 0 14px; border-radius: 999px; background: rgba(236, 230, 214, .12); overflow: hidden; }
+  .sty-timer i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--cinnabar), var(--gilt)); transform-origin: left center; animation: sty-timer var(--ms, 8000ms) linear forwards; }
+
+  .sty-banner { position: fixed; inset: 0; z-index: 44; display: grid; place-items: center; pointer-events: none; }
+  .sty-banner__in { text-align: center; padding: 0 16px; animation: sty-banner 1.8s ease both; }
+  .sty-banner__title { font-family: var(--f-display); font-size: clamp(38px, 8.5vw, 80px); letter-spacing: .26em; color: var(--text); text-shadow: 0 4px 30px rgba(0, 0, 0, .85); }
+  .sty-banner__sub { margin-top: 4px; font-family: var(--f-display); font-size: 18px; letter-spacing: .2em; color: var(--gilt); text-shadow: 0 2px 12px rgba(0, 0, 0, .85); }
+
+  /* ───────── 小遊戲外框 ───────── */
+  .sty-game {
+    position: absolute; inset: 12px; z-index: 20; display: grid; grid-template-rows: auto auto minmax(0, 1fr);
+    border: 1px solid var(--gilt); border-radius: 14px; overflow: hidden;
+    background: rgba(11, 14, 29, .95); box-shadow: var(--shadow); animation: zh-fade-in .25s ease both;
+  }
+  .sty-game__head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: rgba(20, 26, 46, .9); }
+  .sty-game__head b { font-family: var(--f-display); font-size: 18px; letter-spacing: .1em; }
+  .sty-game__status { margin-left: auto; font-size: 13.5px; color: var(--gilt); font-variant-numeric: tabular-nums; }
+  .sty-game__head { grid-row: 1; }
+  .sty-game__hud { grid-row: 2; }
+  .sty-game__stage { grid-row: 3; position: relative; min-height: 0; }
+  .sty-game__body { position: absolute; inset: 0; overflow: auto; }
+  .sty-bg.is-full svg { top: 0; height: 100%; }
+
+  @keyframes sty-enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes sty-float { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-24px); } }
+  @keyframes sty-rain { from { transform: translateY(0); } to { transform: translateY(46px); } }
+  @keyframes sty-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  @keyframes sty-banner { 0% { opacity: 0; filter: blur(8px); transform: scale(1.06); } 22% { opacity: 1; filter: none; transform: none; } 78% { opacity: 1; } 100% { opacity: 0; } }
+
+  body.sty-on .zc-pop { top: calc(var(--sty-top, 60px) + 10px); }
+
+  /* ───────── 手機 ───────── */
+  @media (max-width: 860px) {
+    .sty-top { gap: 6px 10px; padding: calc(6px + var(--safe-t)) 10px 6px; }
+    .sty-title b { font-size: 16px; }
+    .sty-menu { margin-left: auto; }
+    .sty-menu .zh-btn { padding: 4px 10px; min-height: 34px; }
+    .sty-menu [data-act="sound"] { display: none; }
+    .sty-meters { order: 5; width: 100%; margin-left: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+    .sty-m { grid-template-columns: 16px auto minmax(0, 1fr) 2em; gap: 4px; font-size: 12.5px; }
+    .sty-m svg { width: 16px; height: 16px; }
+    .sty-place { top: 10px; left: 10px; padding: 6px 12px 6px 10px; }
+    .sty-place b { font-size: 16px; }
+    .sty-actor__seal { width: 58px; height: 58px; font-size: 28px; }
+    .sty-actor__name { font-size: 13px; padding: 0 6px; }
+    .sty-actor__tag { font-size: 12.5px; padding: 0 6px 0 5px; }
+    .sty-say { bottom: calc(10px + var(--safe-b)); padding: 18px 14px 10px; gap: 10px; }
+    .sty-say.has-face { grid-template-columns: 64px minmax(0, 1fr); }
+    .sty-say__face { width: 64px; height: 84px; margin: -6px 0 -4px; }
+    .sty-say__face--seal { width: 48px; height: 48px; font-size: 24px; }
+    .sty-say.has-seal { grid-template-columns: 48px minmax(0, 1fr); }
+    .sty-say__name { top: -15px; left: 14px; font-size: 15.5px; padding: 1px 12px; }
+    .sty-say__text { font-size: 16.5px; }
+    .sty-game { inset: 6px; }
+  }
+  @media (max-width: 420px) {
+    .sty-actor__seal { width: 50px; height: 50px; font-size: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sty-banner__in, .sty-rain, .sty-m__float, .sty-actor.is-enter { animation-duration: .01ms !important; }
+  }
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+
+  const global = window;
+  const SPEED = { slow: 42, normal: 22, fast: 9, instant: 0 };
+  const REDUCE = !!(global.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const KEYS = '甲乙丙丁戊己庚辛壬癸';
+
+  const ICONS = {
+    grain: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9.2 19V8.6C6.2 8.4 4.2 6.4 4 3c3.3.2 5.2 2.1 5.2 5.2V8.6h1.6v-.4C10.8 5.1 12.7 3.2 16 3c-.2 3.4-2.2 5.4-5.2 5.6V19z"/></svg>',
+    people: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7" cy="6" r="3"/><circle cx="14.2" cy="7" r="2.4"/><path d="M1 18c0-4 2.7-6.3 6-6.3s6 2.3 6 6.3zm12.6 0c0-2.5-.6-4.3-1.7-5.4.6-.3 1.4-.5 2.2-.5 2.6 0 4.9 2 4.9 5.9z"/></svg>',
+    heart: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18S2 12.8 2 7.4C2 4.9 4 3 6.3 3c1.6 0 3 .9 3.7 2.2C10.7 3.9 12.1 3 13.7 3 16 3 18 4.9 18 7.4 18 12.8 10 18 10 18z"/></svg>',
+    flame: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 19c-3.9 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.1 3.6-7 .6 1.6 1.5 2.6 2.6 3C9.4 6.1 10.2 3.3 12.4 1c.3 3.3 4.1 5.6 4.1 11.4 0 3.8-2.6 6.6-6.5 6.6z"/></svg>',
+    eye: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4C5 4 1.7 8.6 1 10c.7 1.4 4 6 9 6s8.3-4.6 9-6c-.7-1.4-4-6-9-6zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg>',
+    scroll: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h10a2 2 0 0 1 2 2v9h1a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5H3a1 1 0 0 1-1-1 1 1 0 0 1 1-1zm2 4v1.6h8V7zm0 3v1.6h8V10z"/></svg>',
+    sword: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.5 1.5 18.5 2.5 9.4 13.4l1.4 1.4-1.4 1.4-1.6-1.6-3.2 3.2-1.4-1.4 3.2-3.2-1.6-1.6 1.4-1.4 1.4 1.4z"/></svg>',
+    shield: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1 3 4v5.2c0 4.4 3 8.2 7 9.8 4-1.6 7-5.4 7-9.8V4z"/></svg>',
+    crown: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 6l4 3 4-6 4 6 4-3-1.6 10H3.6zM3.6 17.4h12.8V19H3.6z"/></svg>',
+    star: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6L10 15l-5.4 3 1.2-6L1.3 7.8l6.1-.7z"/></svg>'
+  };
+
+  // ───────── 內建場景：sky 是天空或室內的底色；art 是剪影（viewBox 1600×600，貼齊底部） ─────────
+  const SVG = body => '<svg viewBox="0 0 1600 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' + body + '</svg>';
+  const SCENES = {
+    palace: {
+      sky: 'linear-gradient(180deg, #1b1330 0%, #3a1f2c 55%, #5c2b22 100%)',
+      art: SVG('<path fill="#140d18" d="M0 600V452h1600v148z"/><g fill="#1a1020" stroke="#c9a24a" stroke-opacity=".38" stroke-width="2">' +
+        '<path d="M430 452V300h740v152z"/><path d="M330 312Q800 236 1270 312l-58-40Q800 196 388 272z"/><path d="M540 272V206h520v66z"/><path d="M470 214Q800 150 1130 214l-50-30Q800 118 520 184z"/></g>' +
+        '<g fill="#c9a24a" opacity=".22"><rect x="480" y="320" width="16" height="132"/><rect x="620" y="320" width="16" height="132"/><rect x="964" y="320" width="16" height="132"/><rect x="1104" y="320" width="16" height="132"/></g>' +
+        '<path d="M620 452h360v20H620zm-40 20h440v20H580zm-40 20h520v22H540z" fill="#241520"/>')
+    },
+    hall: {
+      sky: 'linear-gradient(180deg, #2a1414 0%, #3d1c17 60%, #23110f 100%)',
+      art: SVG('<g fill="#170b0b"><rect x="120" y="0" width="70" height="600"/><rect x="1410" y="0" width="70" height="600"/><rect x="430" y="40" width="46" height="560"/><rect x="1124" y="40" width="46" height="560"/></g>' +
+        '<path fill="#120808" d="M0 470h1600v130H0z"/><path fill="#5c1f18" d="M560 470h480l120 130H440z" opacity=".7"/>' +
+        '<g fill="#e0b44c" opacity=".14"><rect x="0" y="0" width="1600" height="26"/><rect x="0" y="40" width="1600" height="8"/></g><circle cx="800" cy="210" r="90" fill="#e0b44c" opacity=".06"/>')
+    },
+    tent: {
+      sky: 'radial-gradient(70% 60% at 50% 45%, #6a4423 0%, #3c2515 55%, #1c120b 100%)',
+      art: SVG('<path fill="#2a1a0f" d="M0 0l800 120L1600 0v600H0z" opacity=".55"/><path fill="#1a100a" d="M0 0l520 600H0zM1600 0l-520 600h520z" opacity=".7"/>' +
+        '<path fill="#120b07" d="M0 500h1600v100H0z"/><g fill="#f0c36a"><circle cx="420" cy="330" r="10"/><circle cx="1180" cy="330" r="10"/></g>' +
+        '<g fill="#f0c36a" opacity=".12"><circle cx="420" cy="330" r="120"/><circle cx="1180" cy="330" r="120"/></g><rect x="410" y="340" width="20" height="160" fill="#2b1c10"/><rect x="1170" y="340" width="20" height="160" fill="#2b1c10"/>')
+    },
+    banquet: {
+      sky: 'radial-gradient(80% 60% at 50% 40%, #6b3a1f 0%, #3b2013 55%, #170d08 100%)',
+      art: SVG('<path fill="#1d110a" d="M0 0l800 100L1600 0v600H0z" opacity=".5"/><path fill="#140b06" d="M0 470h1600v130H0z"/>' +
+        '<g fill="#2b170c" stroke="#c9a24a" stroke-opacity=".3" stroke-width="2"><rect x="180" y="430" width="300" height="26" rx="4"/><rect x="650" y="410" width="300" height="26" rx="4"/><rect x="1120" y="430" width="300" height="26" rx="4"/></g>' +
+        '<g fill="#2b170c"><rect x="200" y="456" width="14" height="40"/><rect x="446" y="456" width="14" height="40"/><rect x="670" y="436" width="14" height="40"/><rect x="916" y="436" width="14" height="40"/><rect x="1140" y="456" width="14" height="40"/><rect x="1386" y="456" width="14" height="40"/></g>' +
+        '<g fill="#f0c36a"><circle cx="560" cy="300" r="9"/><circle cx="1040" cy="300" r="9"/></g><g fill="#f0c36a" opacity=".1"><circle cx="560" cy="300" r="140"/><circle cx="1040" cy="300" r="140"/></g>')
+    },
+    camp: {
+      sky: 'linear-gradient(180deg, #1c2340 0%, #6b3b3a 52%, #d08a4c 78%, #3b2a24 100%)',
+      art: SVG('<path fill="#1a1416" d="M0 600V470q200-30 400-6t420-20 420 14 360-10v152z"/>' +
+        '<g fill="#140f12"><path d="M180 480l90-110 90 110z"/><path d="M420 470l120-150 120 150z"/><path d="M1010 476l110-130 110 130z"/><path d="M1290 486l80-96 80 96z"/></g>' +
+        '<g stroke="#140f12" stroke-width="5"><path d="M540 320V200M1120 346V236"/></g><g fill="#a3362c"><path d="M540 200h70l-14 22 14 22h-70z"/><path d="M1120 236h60l-12 18 12 18h-60z"/></g>')
+    },
+    field: {
+      sky: 'linear-gradient(180deg, #2b4a6a 0%, #6f93a6 50%, #c9b98a 82%, #4f5a3a 100%)',
+      art: SVG('<path fill="#3d4a33" d="M0 600V430q260-70 520-20t540-30 540 40v180z"/><path fill="#2c3725" d="M0 600V500q300-40 640-6t600-14 360 10v110z"/>' +
+        '<g fill="#25301f"><circle cx="1260" cy="420" r="34"/><rect x="1254" y="430" width="12" height="60"/></g>')
+    },
+    road: {
+      sky: 'linear-gradient(180deg, #3a3550 0%, #8a6f62 55%, #c8a170 80%, #5b4733 100%)',
+      art: SVG('<path fill="#4a3a2a" d="M0 600V440q400-40 800-10t800 10v160z"/><path fill="#8d6e4a" d="M760 440h80l300 160H460z" opacity=".75"/>' +
+        '<g fill="#2b2119"><rect x="300" y="380" width="10" height="70"/><rect x="1290" y="380" width="10" height="70"/></g><g fill="#2b2119"><circle cx="305" cy="370" r="30"/><circle cx="1295" cy="370" r="30"/></g>')
+    },
+    mountain: {
+      sky: 'linear-gradient(180deg, #1d2a3a 0%, #44556a 50%, #8c97a0 100%)',
+      art: SVG('<path fill="#2a3442" d="M0 600V250l220-140 200 200 180-220 260 260 220-180 300 230 220-90v490z"/><path fill="#1b232e" d="M0 600V380l300-100 260 140 300-160 340 170 400-80v250z"/>' +
+        '<g stroke="#8a6a44" stroke-width="6"><path d="M560 420h460"/></g><g stroke="#5c4630" stroke-width="4"><path d="M600 420v40M680 420v40M760 420v40M840 420v40M920 420v40M1000 420v40"/></g>')
+    },
+    river: {
+      sky: 'linear-gradient(180deg, #0f1a33 0%, #22365a 55%, #3f5a7a 100%)',
+      art: SVG('<circle cx="1240" cy="140" r="54" fill="#f2e3b0" opacity=".85"/><path fill="#1a2840" d="M0 600V420h1600v180z"/><path fill="#355074" d="M0 470h1600v40H0z" opacity=".6"/>' +
+        '<g stroke="#8fb0d6" stroke-opacity=".35" stroke-width="3"><path d="M200 490h120M520 500h180M980 486h140M1300 498h160"/></g>' +
+        '<g stroke="#0e1726" stroke-width="5"><path d="M80 600V420M110 600V400M140 600V430M1480 600V410M1510 600V390M1540 600V420"/></g>')
+    },
+    night: {
+      sky: 'linear-gradient(180deg, #050816 0%, #111a38 60%, #1c2547 100%)',
+      art: SVG('<circle cx="1280" cy="120" r="46" fill="#f2e3b0" opacity=".9"/><g fill="#f2e3b0" opacity=".7"><circle cx="200" cy="80" r="2"/><circle cx="420" cy="140" r="2"/><circle cx="700" cy="60" r="2"/><circle cx="980" cy="120" r="2"/><circle cx="1500" cy="200" r="2"/></g>' +
+        '<path fill="#0a0f1f" d="M0 600V380h120v-40h80v40h300v-40h80v40h400v-40h80v40h300v-40h80v40h160v220z"/>')
+    },
+    rain: {
+      sky: 'linear-gradient(180deg, #232a33 0%, #3f4a55 60%, #2a3038 100%)',
+      art: SVG('<path fill="#1d242c" d="M0 600V450q400-40 800-10t800 10v150z"/><g fill="#161b21"><path d="M260 460l70-90 70 90z"/><path d="M1180 470l60-80 60 80z"/></g>'),
+      rain: true
+    },
+    city: {
+      sky: 'linear-gradient(180deg, #23304d 0%, #5d6f86 60%, #a59a83 100%)',
+      art: SVG('<path fill="#2a2a33" d="M0 600V360h1600v240z"/><g fill="#22222a"><rect x="0" y="330" width="1600" height="30"/></g><g fill="#2a2a33"><rect x="40" y="316" width="40" height="20"/><rect x="140" y="316" width="40" height="20"/><rect x="240" y="316" width="40" height="20"/><rect x="1320" y="316" width="40" height="20"/><rect x="1420" y="316" width="40" height="20"/><rect x="1520" y="316" width="40" height="20"/></g>' +
+        '<path fill="#16161c" d="M700 600V430q100-80 200 0v170z"/><path fill="#2f2b33" stroke="#c9a24a" stroke-opacity=".3" stroke-width="2" d="M640 300h320v40H640z"/><path fill="#2f2b33" d="M600 306q200-60 400 0l-30-30q-170-48-340 0z"/>')
+    }
+  };
+
+  const esc = s => ZH.esc(s);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const isMobile = () => global.innerWidth <= 860;
+  const clone = o => JSON.parse(JSON.stringify(o));
+
+  function makeRng(state) {
+    return function () {
+      let t = (state.rng = (state.rng + 0x6D2B79F5) >>> 0);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function create(root, config) {
+    const C = Object.assign({ mode: 'history', meters: [], characters: [], scenes: {}, nodes: {}, title: '', subtitle: '' }, config);
+    const textOriginalHelp=C.help;
+    const S = { nodeSource: '', state: null, entry: null, ended: false, saving: null, saveAgain: false, bgFlip: false, castIds: [], castKey: '', expr: {} };
+    const el = {};
+    let rng = null;
+    let progressSave = null;
+    let activeArt = null;
+    const bgCleanup = new Map();
+    let anchorCatalog = Object.create(null);
+    let anchorRequest = null;
+
+    // 題目保存在本次引擎內，避開舊 Anchor_js 對空陣列的永久快取。
+    function readStoryAnchors(required) {
+      if (anchorRequest) return anchorRequest;
+      anchorRequest = Promise.resolve().then(() => {
+        if (!ZH.call) throw new Error('題庫連線尚未就緒，請重新整理頁面。');
+        if (ZH.anchor && ZH.anchor.storyGuardVersion) {
+          return ZH.anchor.load(C.id, { required: required }).then(anchors => ({ ok: true, anchors: anchors }));
+        }
+        return ZH.call('api_getStoryAnchors', C.id, Array.from(new Set(required)));
+      }).then(res => {
+        if (!res || !res.ok || !Array.isArray(res.anchors)) {
+          throw new Error(res && res.msg || '題庫尚未讀取，請確認已新增 StoryGuard.gs 並部署新版本。');
+        }
+        const next = Object.create(null);
+        res.anchors.forEach(item => { if (item && item.scenarioId === C.id) next[item.id] = item; });
+        const absent = required.filter(id => !next[id]);
+        if (absent.length) throw new Error('原文題庫缺少：' + absent.join('、') + '。');
+        if (!ZH.anchor || typeof ZH.anchor.run !== 'function') throw new Error('原文對讀介面尚未就緒，請確認 Anchor_js.html 已建立。');
+        anchorCatalog = next;
+        return next;
+      }).catch(err => {
+        anchorCatalog = Object.create(null);
+        const error = new Error(err && err.message || '重新讀取題庫失敗。');
+        error.code = 'STORY_ANCHORS';
+        throw error;
+      }).finally(() => { anchorRequest = null; });
+      return anchorRequest;
+    }
+
+    async function prepareStoryAnchors() {
+      const required = (Array.isArray(C.anchorOrder) ? C.anchorOrder : []).filter(id =>
+        !S.state.anchors.some(a => a && a.anchorId === id));
+      if (!required.length) return true;
+      while (true) {
+        try {
+          if (ZH.loading) ZH.loading(true, '讀取原文題庫');
+          try { await readStoryAnchors(required); }
+          finally { if (ZH.loading) ZH.loading(false); }
+          return true;
+        } catch (err) {
+          const retry = await ZH.modal({
+            title: '原文題庫尚未就緒',
+            body: '<p>' + esc(err.message) + '</p><p>讀到本話必要的題目後，就可以繼續原文對讀。</p>',
+            actions: [{ label: '回首頁', value: false, kind: 'quiet' }, { label: '重新讀取題庫', value: true, kind: 'primary' }]
+          });
+          if (!retry) { ZH.go('hub'); return false; }
+        }
+      }
+    }
+
+    const charOf = who => {
+      if (!who) return null;
+      const c = C.characters.find(x => x.id === who || x.name === who);
+      return c ? { id: c.id, name: c.name, glyph: c.glyph || c.name.slice(0, 1), color: c.color, title: c.title, art: c.art } : { id: who, name: who, glyph: String(who).slice(0, 1), color: null };
+    };
+    const hasArt = () => !!(global.ART && global.ART.portrait);
+    const EXPR_SET = ['normal', 'happy', 'surprised', 'sad', 'angry', 'serious', 'worried', 'smirk'];
+    /** 依台詞猜表情（只猜很明顯的） */
+    function guessExpr(text) {
+      const t = String(text || '');
+      if (/哈哈|大笑|大喜|太好了/.test(t)) return 'happy';
+      if (/大怒|豎子|放肆|大膽|可恨|豈有此理/.test(t)) return 'angry';
+      if (/什麼[？?]|竟然|怎麼會|[！!][？?]|[？?][！!]/.test(t)) return 'surprised';
+      if (/唉|嗚呼|悲夫|可惜|奈何/.test(t)) return 'sad';
+      return '';
+    }
+    /** 名牌上的字要用白字還是深色字 */
+    function inkOn(hex) {
+      const h = String(hex || '').replace('#', '');
+      if (h.length < 6) return '#fff4ec';
+      const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+      return (0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#2a1a12' : '#fff4ec';
+    }
+
+    function freshState() {
+      const st = {
+        v: 1, node: C.start || Object.keys(C.nodes)[0], steps: 0, chapter: '', scene: null, cast: [],
+        meters: {}, flags: {}, vars: {}, anchors: [], codex: [], games: [], log: [],
+        _gameplayV:2, _textplayV:3, _cutins: [], _cutinSkip: false, ended: null, rng: (Number(C.seed) || Date.now()) >>> 0, startedAt: Date.now()
+      };
+      C.meters.forEach(m => { st.meters[m.id] = m.start === undefined ? 0 : m.start; });
+      if (C.initState) {
+        const extra = C.initState(st) || {};
+        Object.keys(extra).forEach(k => {
+          if (k === 'flags' || k === 'meters' || k === 'vars') Object.assign(st[k], extra[k]);
+          else st[k] = extra[k];
+        });
+      }
+      return st;
+    }
+
+
+    // ───────────── 畫面 ─────────────
+
+    function skeleton() {
+      root.innerHTML =
+        '<div class="sty" data-story="' + esc(C.id) + '">' +
+        '<header class="sty-top">' +
+        '<button type="button" class="sty-icon" data-act="home" aria-label="離開：儲存或放棄進度" title="離開">‹</button>' +
+        '<div class="sty-title"><b>' + esc(C.title) + '</b><span></span></div>' +
+        '<div class="sty-meters"></div>' +
+        '<div class="sty-menu">' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="log">紀錄</button>' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="help">說明</button>' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="sound"></button></div>' +
+        '</header>' +
+        '<main class="sty-stage" aria-label="舞台">' +
+        '<div class="sty-bg"></div><div class="sty-bg"></div><div class="sty-vignette"></div>' +
+        '<div class="sty-cast" aria-hidden="true"></div>' +
+        '</main></div>';
+      const q = s => root.querySelector(s);
+      el.app = q('.sty');
+      el.top = q('.sty-top');
+      el.chapter = q('.sty-title span');
+      el.meters = q('.sty-meters');
+      el.stage = q('.sty-stage');
+      el.bgs = root.querySelectorAll('.sty-bg');
+      el.cast = q('.sty-cast');
+      el.sound = q('[data-act="sound"]');
+      q('[data-act="home"]').addEventListener('click', leave);
+      q('[data-act="help"]').addEventListener('click', help);
+      q('[data-act="log"]').addEventListener('click', showLog);
+      if(ZH.player){const b=document.createElement('button');b.type='button';b.className='zh-btn zh-btn--quiet zh-btn--sm';b.dataset.act='player';b.textContent='策士';b.onclick=()=>ZH.player.storyPanel(S.state,C.id,save);q('.sty-menu').appendChild(b);}
+      (C.actions || []).forEach(action => { const b = document.createElement('button'); b.type = 'button'; b.className = 'zh-btn zh-btn--quiet zh-btn--sm'; b.textContent = action.label; b.addEventListener('click', () => action.run(ctx)); q('.sty-menu').appendChild(b); });
+      el.sound.addEventListener('click', () => { ZH.setSetting('sound', !ZH.settings.sound); renderTop(); ZH.sfx('click'); });
+    }
+
+    function renderTop() {
+      const s = S.state;
+      el.chapter.textContent = s.chapter || C.subtitle || '';
+      el.meters.innerHTML = C.meters.filter(m => !m.show || m.show(s)).map(m => {
+        const v = Math.round(s.meters[m.id] || 0);
+        const max = m.max || 100;
+        const danger = m.danger !== undefined && (m.invert ? v >= m.danger : v <= m.danger);
+        return '<div class="sty-m' + (m.invert ? ' is-invert' : '') + (danger ? ' is-danger' : '') + '" data-meter="' + esc(m.id) + '" title="' + esc(m.label + ' ' + v + ' / ' + max) + '">' +
+          (ICONS[m.icon] || '') + '<span>' + esc(m.label) + '</span><span class="sty-m__bar"><i style="--v:' + clamp(100 * v / max, 0, 100).toFixed(0) + '%"></i></span>' +
+          '<span class="sty-m__val">' + v + '</span></div>';
+      }).join('');
+      el.sound.textContent = ZH.settings.sound ? '音效：開' : '音效：關';
+      el.sound.setAttribute('aria-pressed', String(!!ZH.settings.sound));
+      document.documentElement.style.setProperty('--sty-top', el.top.offsetHeight + 'px');
+    }
+
+    function sceneDef(key) {
+      if (!key) return null;
+      if (typeof key === 'object') return key;
+      return C.scenes[key] || SCENES[key] || null;
+    }
+
+    /** 算出要畫的背景：{ svg, full, sky, tint, rain } */
+    function sceneArt(sc) {
+      const opt = typeof sc === 'object' && sc ? sc : { key: sc };
+      const key = opt.key;
+      const custom = key ? C.scenes[key] : null;
+      const ART = global.ART;
+      const pick = (base, extra) => ({ svg: ART.scene(base, Object.assign({}, extra, { scenarioId: C.id, node: S.state.node, place: opt.place, time: opt.time, tod: opt.tod || extra.tod, weather: opt.weather || extra.weather, banner: opt.banner || extra.banner, glyph: opt.glyph || extra.glyph })), full: true, sky: '#0b0e1d', tint: extra.tint || opt.tint || 'transparent' });
+      if (ART && ART.hasScene) {
+        if (custom && custom.base && ART.hasScene(custom.base)) return pick(custom.base, custom);
+        if (!custom && !opt.art && key && ART.hasScene(key)) return pick(key, {});
+      }
+      const def = sceneDef(custom ? key : (key || sc)) || {};
+      const aiCustom = ZH.assets && ZH.assets.customScene && ZH.assets.customScene(key, opt, def, C.id);
+      if (aiCustom) return { svg: aiCustom, full: true, sky: '#0b0e1d', tint: 'transparent', rain: false };
+      return { svg: opt.art || def.art || '', full: false, sky: opt.sky || def.sky || '#10142a', tint: opt.tint || def.tint || 'transparent', rain: !!(opt.rain || def.rain) };
+    }
+
+    function paintScene(sc, instant) {
+      const A = sceneArt(sc);
+      const opt = typeof sc === 'object' && sc ? sc : {};
+      const changed = !activeArt || ['svg', 'sky', 'tint', 'full', 'rain'].some(k => activeArt[k] !== A[k]);
+      if (changed) {
+        const next = el.bgs[S.bgFlip ? 0 : 1];
+        const prev = el.bgs[S.bgFlip ? 1 : 0];
+        // 再次使用背景層前，取消上一輪尚未執行的清理。
+        clearTimeout(bgCleanup.get(next)); bgCleanup.delete(next);
+        clearTimeout(bgCleanup.get(prev)); bgCleanup.delete(prev);
+        S.bgFlip = !S.bgFlip;
+        next.style.setProperty('--sky', A.sky);
+        next.style.setProperty('--tint', A.tint);
+        next.classList.toggle('is-full', A.full);
+        next.innerHTML = A.svg + (A.rain ? '<div class="sty-rain"></div>' : '');
+        if (instant) { next.style.transition = 'none'; prev.style.transition = 'none'; }
+        next.classList.add('is-on');
+        prev.classList.remove('is-on');
+        const retire = () => {
+          bgCleanup.delete(prev);
+          if (!prev.classList.contains('is-on')) prev.replaceChildren();
+        };
+        if (instant || REDUCE) retire();
+        else bgCleanup.set(prev, setTimeout(retire, 950));
+        if (instant) { void next.offsetWidth; next.style.transition = ''; prev.style.transition = ''; }
+        activeArt = A;
+      }
+      const old = el.stage.querySelector('.sty-place');
+      const place = opt.place || '', time = opt.time || '';
+      if (!place) { if (old) old.remove(); }
+      else if (!old || old.querySelector('b').textContent !== place || (old.querySelector('span')?.textContent || '') !== time) {
+        if (old) old.remove();
+        el.stage.appendChild(ZH.html('<div class="sty-place"><b>' + esc(place) + '</b>' + (time ? '<span>' + esc(time) + '</span>' : '') + '</div>'));
+      }
+      return changed;
+    }
+
+    /** 舞台上的人物。只在人物換了的時候重畫；換說話的人、換表情時只改那一位 */
+    function castLayout() {
+      if (!hasArt()) { el.cast.style.setProperty('--cast-b', (isMobile() ? 150 : 168) + 'px'); return; }
+      const n = Math.max(1, S.castIds.length);
+      const W = el.stage.clientWidth || global.innerWidth;
+      const H = el.stage.clientHeight || global.innerHeight;
+      const mob = isMobile();
+      const gap = n > 3 ? 4 : mob ? 8 : 14;
+      const maxH = mob ? H * 0.5 : H * 0.8;
+      const w = Math.max(64, Math.min(320, maxH / 1.5, (W - 24 - gap * (n - 1)) / n));
+      el.cast.style.setProperty('--aw', Math.floor(w) + 'px');
+      el.cast.style.setProperty('--cast-gap', gap + 'px');
+      // 人物小的時候整排往上，臉才不會被對話框擋住
+      const sayH = mob ? 190 : 190;
+      const chin = w * 1.5 * 0.43;   // 下巴到腳底的高度
+      el.cast.style.setProperty('--cast-b', Math.round(Math.max(mob ? 56 : 64, Math.min(sayH + 6, sayH + 12 - chin))) + 'px');
+    }
+
+    function actorHtml(c, isNew) {
+      if (!hasArt()) {
+        return '<div class="sty-actor sty-actor--seal" data-actor="' + esc(c.id) + '" style="--ac:' + esc(c.color || '#e0b44c') + '">' +
+          '<span class="sty-actor__seal">' + esc(c.glyph) + '</span><span class="sty-actor__name">' + esc(c.name) + '</span></div>';
+      }
+      const ex = S.expr[c.id] || '';
+      return '<div class="sty-actor' + (isNew ? ' is-enter' : '') + '" data-actor="' + esc(c.id) + '" data-expr="' + esc(ex) + '" style="--ac:' + esc(c.color || '#e0b44c') + '">' +
+        global.ART.portrait(c, { expr: ex || undefined }) + '<span class="sty-actor__tag">' + esc(c.name) + '</span></div>';
+    }
+
+    function renderCast(speaker, speakerExpr) {
+      const ids = S.castIds.map(id => charOf(id).id);
+      const key = ids.join('|') + '#' + (hasArt() ? 1 : 0);
+      if (S.castKey !== key) {
+        const before = (S.castKey || '').split('#')[0].split('|');
+        el.cast.innerHTML = S.castIds.map(id => { const c = charOf(id); return actorHtml(c, before.indexOf(c.id) === -1); }).join('');
+        el.cast.querySelectorAll('.is-enter').forEach(a=>{if(REDUCE)a.classList.remove('is-enter');else a.addEventListener('animationend',()=>a.classList.remove('is-enter'),{once:true});});
+        S.castKey = key;
+        castLayout();
+      }
+      el.cast.querySelectorAll('.sty-actor').forEach(a => {
+        const id = a.getAttribute('data-actor');
+        const talking = !!speaker && speaker === id;
+        a.classList.toggle('is-speaking', talking);
+        if (!hasArt() || a.classList.contains('sty-actor--seal')) return;
+        const want = (talking && speakerExpr) || S.expr[id] || '';
+        if (a.getAttribute('data-expr') !== want) {
+          const c = charOf(id);
+          const svg = a.querySelector('svg.ck');
+          if (svg) svg.outerHTML = global.ART.portrait(c, { expr: want || undefined });
+          a.setAttribute('data-expr', want);
+        }
+      });
+      el.cast.classList.toggle('has-speaker', !!speaker && ids.indexOf(speaker) > -1);
+    }
+
+    // ───────────── 對話、抉擇、標題 ─────────────
+
+    function rememberLearning(title, sub) {
+      const list=S.state._learning||(S.state._learning=[]);
+      if(!list.length||list[list.length-1].title!==title)list.push({title:String(title||'').slice(0,100),sub:String(sub||'').slice(0,180),anchors:[],notes:[]});
+      if(list.length>20)list.splice(0,list.length-20);
+      ZH.session.set('learning:'+C.id,list);
+    }
+    function sayOne(line) {
+      const l = typeof line === 'string' ? { text: line } : line || {};
+      const sp = charOf(l.who);
+      const originalText = String(l.text || '');
+      const text = ZH.textplay?.eligible(S.state) ? ZH.textplay.dialogue(C.id,originalText,S.state) : ZH.gameplay?.dialogue ? ZH.gameplay.dialogue(C.id,originalText,S.state) : originalText;
+      const part=(S.state._learning||[]).slice(-1)[0];
+      if(part&&part.notes.length<3&&text.length>8){const note=(sp?sp.name+'：':'')+text.slice(0,180);if(!part.notes.includes(note))part.notes.push(note);ZH.session.set('learning:'+C.id,S.state._learning);}
+
+      const ex = sp ? (EXPR_SET.indexOf(l.expr) > -1 ? l.expr : (S.expr[sp.id] ? '' : guessExpr(text))) : '';
+      renderCast(sp ? sp.id : null, ex);
+      const onStage = sp && S.castIds.some(id => charOf(id).id === sp.id);
+      let face = '', cls = '';
+      if (sp && !onStage) {
+        if (hasArt()) { face = '<span class="sty-say__face" aria-hidden="true">' + global.ART.portrait(sp, { expr: ex || S.expr[sp.id] || undefined, bust: true }) + '</span>'; cls = ' has-face'; }
+        else { face = '<span class="sty-say__face sty-say__face--seal" aria-hidden="true">' + esc(sp.glyph) + '</span>'; cls = ' has-seal'; }
+      }
+      return new Promise(resolve => {
+        const box = ZH.html(
+          '<div class="sty-say' + (sp ? cls : ' is-narrator') + '" role="dialog" aria-live="polite" tabindex="-1"' + (sp && sp.color ? ' style="--fc:' + esc(sp.color) + ';--fct:' + inkOn(sp.color) + '"' : '') + '>' +
+          (sp ? '<header class="sty-say__head"><span class="sty-say__name">' + esc(sp.name) + '</span></header>' : '') + face +
+          '<div class="sty-say__content"><p class="sty-say__text"></p><p class="sty-say__more">點一下繼續 ▾</p></div></div>'
+        );
+        document.body.appendChild(box);
+        const textEl = box.querySelector('.sty-say__text');
+        const actor = sp && onStage ? el.cast.querySelector('[data-actor="' + (global.CSS && CSS.escape ? CSS.escape(sp.id) : sp.id) + '"]') : null;
+        const talk = on => { if (actor) actor.classList.toggle('is-talk', on); const f = box.querySelector('.sty-say__face'); if (f) f.classList.toggle('is-talk', on); };
+        const speed = Object.prototype.hasOwnProperty.call(SPEED, ZH.settings.textSpeed) ? SPEED[ZH.settings.textSpeed] : SPEED.normal;
+        let i = 0;
+        let typing = !!speed && !REDUCE;
+        let timer = null;
+        if (typing) {
+          talk(true);
+          timer = setInterval(() => {
+            i += 1;
+            textEl.textContent = text.slice(0, i);
+            if (i >= text.length) { clearInterval(timer); typing = false; talk(false); }
+          }, speed);
+        } else {
+          textEl.textContent = text;
+        }
+        const advance = () => {
+          if (typing) { clearInterval(timer); typing = false; talk(false); textEl.textContent = text; return; }
+          talk(false);
+          document.removeEventListener('keydown', onKey, true);
+          box.remove();
+          resolve();
+        };
+        const onKey = e => {
+          if (document.querySelector('.za, .zc, .zc-detail, .zh-modal')) return;
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); advance(); }
+        };
+        box.addEventListener('click', advance);
+        document.addEventListener('keydown', onKey, true);
+        box.focus({ preventScroll: true });
+        ZH.sfx('click');
+      });
+    }
+
+    function say(lines) {
+      const list = Array.isArray(lines) ? lines : [lines];
+      return list.reduce((p, l) => p.then(() => sayOne(l)).then(() => cutinCue('afterSay', {text:typeof l==='string'?l:String(l&&l.text||'')})), Promise.resolve()).then(() => renderCast(null));
+    }
+
+    /** 抉擇：options [{ label, desc, value, disabled }]；timeout（毫秒）到了就回傳 timeoutValue */
+    function choose(o) {
+      return new Promise(resolve => {
+        const opts = (o.options || []).filter(Boolean);
+        const wrap = ZH.html(
+          '<div class="sty-choice" role="dialog" aria-modal="true" aria-labelledby="sty-choice-t"><div class="sty-choice__card">' +
+          '<h2 id="sty-choice-t">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') +
+          (o.timeout ? '<div class="sty-timer" role="timer" aria-label="限時"><i style="--ms:' + Number(o.timeout) + 'ms"></i></div>' : '') +
+          '<div class="zh-choices">' + opts.map((op, i) =>
+            '<button type="button" class="zh-choice" data-i="' + i + '"' + (op.disabled ? ' disabled' : '') + '><span class="zh-choice__key">' + KEYS[i] + '</span>' +
+            '<span class="zh-choice__text">' + esc(op.label) + (op.desc ? '<small>' + esc(op.desc) + '</small>' : '') + '</span></button>').join('') +
+          '</div></div></div>'
+        );
+        let done = false;
+        let timer = null;
+        const finish = v => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          document.removeEventListener('keydown', onKey, true);
+          wrap.remove();
+          resolve(v);
+        };
+        const onKey = e => {
+          const n = parseInt(e.key, 10);
+          if (n >= 1 && n <= opts.length && !opts[n - 1].disabled && !document.querySelector('.zh-modal')) { e.preventDefault(); ZH.sfx('click'); finish(opts[n - 1].value); }
+        };
+        document.body.appendChild(wrap);
+        wrap.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => { ZH.sfx('click'); finish(opts[Number(b.dataset.i)].value); }));
+        document.addEventListener('keydown', onKey, true);
+        if (o.timeout) {
+          timer = setTimeout(() => {
+            ZH.sfx('ng');
+            finish(o.timeoutValue !== undefined ? o.timeoutValue : (opts.length ? opts[opts.length - 1].value : null));
+          }, Number(o.timeout));
+        }
+        const first = wrap.querySelector('[data-i]:not(:disabled)');
+        if (first) first.focus({ preventScroll: true });
+      });
+    }
+
+    function banner(title, sub) {
+      rememberLearning(title,sub);
+      const b = ZH.html('<div class="sty-banner" aria-live="polite"><div class="sty-banner__in"><div class="sty-banner__title">' + esc(title) + '</div>' + (sub ? '<div class="sty-banner__sub">' + esc(sub) + '</div>' : '') + '</div></div>');
+      document.body.appendChild(b);
+      ZH.sfx('bell');
+      return sleep(REDUCE ? 300 : 1800).then(() => b.remove());
+    }
+
+    function help() {
+      const body=(typeof C.help === 'function' ? C.help(S.state) : C.help)||'<p>點對話框繼續；遇到抉擇時選一個選項。</p>';
+      ZH.modal({ title: '怎麼玩', body:body+(ZH.copyrightHtml?'<hr><details><summary>版權與製作</summary>'+ZH.copyrightHtml+'</details>':''), actions: [{ label: '知道了', value: true, kind: 'primary' }] });
+    }
+
+    function showLog() {
+      const list = S.state.log.slice().reverse();
+      ZH.modal({
+        title: '紀錄',
+        body: list.length ? '<ul style="margin:0;padding-left:1.2em;line-height:1.8">' + list.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>' : '<p>還沒有紀錄。</p>',
+        actions: [{ label: '關閉', value: true, kind: 'primary' }]
+      });
+    }
+
+    async function leave() {
+      const action=await ZH.modal({title:'離開這一局？',body:'<p>存檔離開可接續這一段；放棄會移除這局未完成的進度。已完成的通關紀錄與蒐集保留。</p>',actions:[{label:'繼續玩',value:'stay',kind:'quiet'},{label:'放棄存檔並離開',value:'discard',kind:'seal'},{label:'存檔並離開',value:'save',kind:'primary'}]});
+      if(action==='stay'||!action)return;
+      ZH.loading(true,action==='discard'?'放棄這局進度':'保存進度');
+      try{if(action==='discard'){S.ended=true;if(S.saving)await S.saving;await ZH.discardAndLeave(C.id,C.mode);}else{const r=await save();if(ZH.flushJournals)await ZH.flushJournals(C.id,C.mode);if(r&&r.ok===false)throw Error('雲端尚未存好，請稍後再試。');ZH.go('hub');}}
+      catch(e){S.ended=false;ZH.loading(false);ZH.toast(e.message,'bad');}
+    }
+
+    // ───────────── 小遊戲 ─────────────
+
+    async function minigame(opts, legacyFn) {
+      const originalOpts = Object.assign({}, opts || {}), storyGameId = originalOpts.id;
+      const textTask = ZH.textplay?.route(C.id,storyGameId,S.state);
+      const upgrade = ZH.gameplay && ZH.gameplay.route(C.id, storyGameId, S.state);
+      const o = upgrade ? Object.assign({}, originalOpts, { id:(String(storyGameId).startsWith('wen_')?'wen_g2_'+String(storyGameId).slice(4):'g2_'+String(storyGameId)), title:upgrade.title, goal:upgrade.goal,
+        help:'<p>'+esc(upgrade.goal)+'</p><p>操作說明在挑戰內。可以暫停、儲存接續；首次、輔助與重試分開記錄。</p>' }) : originalOpts;
+      const baseFn = !upgrade ? legacyFn : ['nativeCards','nativeTactics'].includes(upgrade.kind) ? (body,g)=>legacyFn(body,Object.assign({},g,{ruleset:2,gameplayConfig:upgrade})) : (body,g)=>ZH.gameplay.play(upgrade,body,g);
+      if(textTask){Object.assign(o,{id:ZH.textplay.recordId(storyGameId),title:textTask.title,goal:textTask.goal,help:'<p>'+esc(textTask.situation)+'</p><p>'+esc(textTask.goal)+'</p><p>'+esc(textTask.reason)+'</p><p>'+esc(textTask.limit)+'</p>'});}
+      const fn = textTask ? ZH.textplay.wrap(textTask,S.state,baseFn) : baseFn;
+      if (o.id && S.state.games.some(x => x.gameId === storyGameId) && S.state.progress && S.state.progress['arena:' + o.id]?.last) {
+        const ar = S.state.progress['arena:' + o.id];
+        return Promise.resolve(Object.assign({}, ar.best.r, { firstResult: ar.first }));
+      }
+      if (ZH.spring && !ZH.textplay?.eligible(S.state) && !(ZH.gameplay && ZH.gameplay.chapterUpgraded(C.id,S.state))) await ZH.spring.before(C.id);
+      return new Promise(resolve => {
+        const box = ZH.html(
+          '<section class="sty-game" role="region" aria-label="' + esc(o.title || '小遊戲') + '">' +
+          '<div class="sty-game__head"><b>' + esc(o.title || '小遊戲') + '</b>' +
+          '<span class="sty-game__status" aria-live="polite"></span>' +
+          (o.help ? '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-g="help">說明</button>' : '') +
+          (o.skip ? '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-g="skip">略過</button>' : '') +
+          '</div><div class="ar-hud sty-game__hud" hidden></div><div class="sty-game__stage"><div class="sty-game__body"></div></div></section>'
+        );
+        el.stage.appendChild(box);
+        el.cast.hidden = true;
+        el.app.classList.add('is-in-game');
+        const placeTag = el.stage.querySelector('.sty-place');
+        if (placeTag) placeTag.hidden = true;
+        const body = box.querySelector('.sty-game__body');
+        const stageEl = box.querySelector('.sty-game__stage');
+        const hudEl = box.querySelector('.sty-game__hud');
+        const status = box.querySelector('.sty-game__status');
+        const arenaOn = !!(o.id && ZH.arena && o.arena !== false && C.arena !== false);
+        let done = false;
+        let cleanups = [];
+        let session = null;
+        const runCleanups = () => { cleanups.forEach(f => { try { f(); } catch (err) { /* 收尾失敗不影響遊戲 */ } }); cleanups = []; };
+        const record = (r, sec) => {
+          // 寫進小遊戲紀錄（教師後臺、排行榜；代碼以 wen_ 開頭的算入「文辭」）
+          if (o.id && ZH.track && !r.skipped) ZH.track('minigame', { scenarioId: C.id, gameId: String(o.id), recordId:String(o.id), ruleset:textTask?'t3':upgrade?'g2':'legacy', score: Math.round(Number(r.score) || 0), maxScore: Math.round(Number(r.max) || 0), durationSec: Math.round(sec) });
+        };
+        const finish = (result, tracked) => {
+          if (done) return;
+          done = true;
+          runCleanups();
+          box.remove();
+          el.cast.hidden = false;
+          el.app.classList.remove('is-in-game');
+          if (placeTag) placeTag.hidden = false;
+          const r = result && typeof result === 'object' ? result : { passed: !!result };
+          if (o.id) {
+            const rec = { gameId: String(storyGameId), recordId:String(o.id), ruleset:textTask?'t3':upgrade?'g2':'legacy', score: Math.round(Number(r.score) || 0), maxScore: Math.round(Number(r.max) || 0), passed: !!r.passed, skipped: !!r.skipped, firstScore: Number(r.firstResult ? r.firstResult.score : r.score) || 0, firstMax: Number(r.firstResult ? r.firstResult.max : r.max) || 0 };
+            if (r.sec !== undefined) rec.sec = Math.round(r.sec);
+            S.state.games = S.state.games.filter(g => g.gameId !== storyGameId);
+            S.state.games.push(rec);
+            if (!tracked) record(r, r.sec !== undefined ? r.sec : (Date.now() - t0) / 1000);
+            if (ZH.flush && !ZH.isGuest()) ZH.flush();
+          }
+          resolve(r);
+        };
+        const helpBtn = box.querySelector('[data-g="help"]');
+        if (helpBtn) helpBtn.addEventListener('click', () => ZH.modal({ title: o.title || '小遊戲', body: o.help, actions: [{ label: '知道了', value: true, kind: 'primary' }] }));
+        const skipBtn = box.querySelector('[data-g="skip"]');
+        if (skipBtn) skipBtn.addEventListener('click', () => {
+          const kept = session && session.hasBest;
+          ZH.modal({
+            title: '略過這個小遊戲？',
+            body: kept ? '<p>會用你目前最好的一次成績繼續劇情。</p>' : '<p>略過的話，這一段算是沒有過關，劇情會照原本的史實繼續。</p>',
+            actions: [{ label: '再試試', value: false, kind: 'quiet' }, { label: '略過', value: true, kind: 'primary' }]
+          }).then(v => {
+            if (!v) return;
+            runCleanups();
+            if (session) session.skip();
+            else finish({ skipped: true, passed: false, score: 0, max: 0 });
+          });
+        });
+        const makeG = extra => Object.assign({
+          rng: () => rng(),
+          checkpoint: () => { if(progressSave){clearTimeout(progressSave);progressSave=null;} return save(); },
+          playerSkillAvailable:id=>!!(!S.state._playerError&&ZH.player&&(ZH.player.available(S.state._player,id,0)||(S.state._player&&S.state._player.pending&&S.state._player.pending.id===id))),
+          playerSkill:async(id,apply)=>{const receipt=await ZH.player.consume(S.state,id,String(o.id),0,save);await ZH.player.applyReceipt(S.state,receipt,apply,save);return receipt;},
+          getProgress: () => clone(S.state.progress?.[String(o.id || o.progressId || S.state.node) + ':' + (extra?.attempt || 1)] || {}),
+          setProgress: value => {
+            const key = String(o.id || o.progressId || S.state.node) + ':' + (extra?.attempt || 1);
+            S.state.progress = S.state.progress || {}; S.state.progress[key] = clone(Object.assign({}, value, {activeSeconds: extra?.elapsed ? extra.elapsed() : 0}));
+            if (C.onProgress && S.entry) C.onProgress(snapshotState());
+            if(!progressSave) progressSave = setTimeout(() => { progressSave = null; save(); }, 3000);
+          },
+          sfx: name => ZH.sfx(name),
+          isMobile: isMobile,
+          esc: esc,
+          onCleanup: f => { if (typeof f === 'function') cleanups.push(f); },
+          setStatus: t => { status.textContent = String(t === undefined || t === null ? '' : t); }
+        }, extra || {});
+        const t0 = Date.now();
+
+        if (!arenaOn) {
+          Promise.resolve()
+            .then(() => fn(body, makeG()))
+            .then(r => finish(r))
+            .catch(err => {
+              if (global.console) console.error(err);
+              runCleanups();
+              body.innerHTML = '<p role="alert">' + esc(err.message || String(err)) + '</p><button class="zh-btn zh-btn--primary" data-game-retry>重新載入此段</button>';
+              body.querySelector('[data-game-retry]').onclick = () => save().then(() => location.reload());
+            });
+          return;
+        }
+
+        // 挑戰賽：每一局都重新呼叫小遊戲函式
+        const playOnce = hud => new Promise(res => {
+          runCleanups();
+          body.innerHTML = '';
+          body.scrollTop = 0;
+          status.textContent = '';
+          Promise.resolve()
+            .then(() => fn(body, makeG(hud)))
+            .then(r => {
+              const rr = r && typeof r === 'object' ? r : { passed: !!r };
+              runCleanups();
+              record(rr, hud.elapsed ? hud.elapsed() : (Date.now() - t0) / 1000);
+              res(rr);
+            })
+            .catch(err => {
+              if (global.console) console.error(err);
+              runCleanups();
+              res(Promise.reject(err));
+            });
+        });
+        session = ZH.arena.session({
+          scenarioId: C.id, gameId: String(o.id), title: o.title, goal: o.goal, help: o.help,
+          attempts: o.attempts, frame: stageEl, hud: hudEl, body: body, hideClock: !!o.hideClock,
+          getProgress: () => clone(S.state.progress?.['arena:' + o.id] || {}),
+          saveProgress: value => { S.state.progress = S.state.progress || {}; S.state.progress['arena:' + o.id] = clone(value); save(); },
+          attemptElapsed: attempt => Number(S.state.progress?.[String(o.id) + ':' + attempt]?.activeSeconds) || 0
+        }, playOnce);
+        session.promise.then(r => finish(r, true));
+      });
+    }
+
+
+    // ───────────── 狀態與工具 ─────────────
+
+    function add(id, delta) {
+      const m = C.meters.find(x => x.id === id);
+      if (!m || !delta) return 0;
+      const before = S.state.meters[id] || 0;
+      S.state.meters[id] = clamp(Math.round(before + delta), m.min || 0, m.max || 100);
+      const real = S.state.meters[id] - before;
+      const meterEl=el.meters.querySelector('[data-meter="'+id+'"]');
+      if(meterEl){const v=S.state.meters[id],max=m.max||100;meterEl.querySelector('.sty-m__val').textContent=String(v);meterEl.querySelector('.sty-m__bar i').style.setProperty('--v',clamp(v/max*100,0,100)+'%');meterEl.title=m.label+' '+v+' / '+max;meterEl.classList.toggle('is-danger',m.danger!==undefined&&(m.invert?v>=m.danger:v<=m.danger));}
+      if (real) {
+        const box = el.meters.querySelector('[data-meter="' + id + '"]');
+        if (box) {
+          const good = (real > 0) !== !!m.invert;
+          const f = ZH.html('<span class="sty-m__float" style="color:' + (good ? '#bdf2dd' : '#ffb4aa') + '">' + (real > 0 ? '+' : '') + real + '</span>');
+          box.appendChild(f);
+          setTimeout(() => f.remove(), 1500);
+        }
+      }
+      return real;
+    }
+
+    function unlock(key) {
+      if (!ZH.codex) return false;
+      const k = String(key);
+      const i = k.indexOf(':');
+      if (i < 1) return false;
+      const ok = ZH.codex.unlock(k.slice(0, i), k.slice(i + 1), C.id);
+      if (S.state.codex.indexOf(k) === -1) S.state.codex.push(k);
+      return ok;
+    }
+
+    async function anchor(id) {
+      const part=(S.state._learning||[]).slice(-1)[0];
+      if(part&&!part.anchors.includes(id)){part.anchors.push(id);ZH.session.set('learning:'+C.id,S.state._learning);}
+      const done = S.state.anchors.find(a => a.anchorId === id);
+      if (done) return done;
+      if (!anchorCatalog[id]) await readStoryAnchors([id]);
+      const item = anchorCatalog[id];
+      const order = Array.isArray(C.anchorOrder) ? C.anchorOrder.indexOf(id) + 1 : 0;
+      return (C.anchorRunner || ZH.anchor.run)(item, { scenarioId: C.id, mode: C.mode, index: order || item.seq, total: C.anchorTotal || 0 }).then(async r => {
+        S.state.anchors.push(r);
+        save();
+        await cutinCue('afterAnchor', {anchorId:id, passage:String(item.passage||'')});
+        return r;
+      });
+    }
+
+    function log(text) {
+      S.state.log.push(String(text));
+      if (S.state.log.length > 200) S.state.log.splice(0, S.state.log.length - 200);
+    }
+
+    // 先合併當前進度再深拷貝，保持節點入口與首答語意，避免同一資料重複序列化。
+    function snapshotState() {
+      const source = S.ended ? S.state : Object.assign({}, S.entry, {
+        anchors: S.state.anchors, codex: S.state.codex, games: S.state.games,
+        _player:S.state._player, _playerError:S.state._playerError, progress: S.state.progress || {}, expr: S.state.expr || {}, _playRunId:S.state._playRunId, _learning:S.state._learning||[], _cutins:S.state._cutins||[], _cutinSkip:S.state._cutinSkip===true, _springWorld:S.state._springWorld||{}, _gameplayV:S.state._gameplayV, _textplayV:S.state._textplayV, _textPlay:S.state._textPlay||{}
+      });
+      const snap = clone(source);
+      if (C.snapshot) C.snapshot(snap, S.state);
+      // 新規則保留首／佳／末結果，只移除冗餘首績副本與已結算的操作中快照。
+      if(snap._gameplayV===2)for(const key of Object.keys(snap.progress||{})){
+        if(!/^arena:(g2_|wen_g2_|t3_|wen_t3_)/.test(key))continue;
+        const ar=snap.progress[key];if(ar?.first){if(ar.best)delete ar.best.first;if(ar.last)delete ar.last.first;}
+        if(ar?.last&&!ar.active){const id=key.slice(6);for(const k of Object.keys(snap.progress))if(k.startsWith(id+':')&&/^\d+$/.test(k.slice(id.length+1)))delete snap.progress[k];}
+      }
+      return snap;
+    }
+
+    /** 存檔：存「進入目前節點時」的狀態，加上之後答過的錨點與解鎖的圖鑑 */
+    function save() {
+      if (!C.save || !S.entry) return Promise.resolve();
+      if (S.saving) { S.saveAgain = true; return S.saving; }
+      const snap = snapshotState();
+      S.saving = Promise.resolve(C.save(snap))
+        .catch(err => ({ok:false,msg:err&&err.message||'存檔暫時無法完成'}))
+        .then(r => {
+          S.saving = null;
+          if (S.saveAgain) { S.saveAgain = false; return save(); }
+          return r;
+        });
+      return S.saving;
+    }
+
+    const ctx = {
+      get state() { return S.state; },
+      rng: () => rng(),
+      flag(name, value) {
+        if (value === undefined) return S.state.flags[name];
+        S.state.flags[name] = value;
+        return value;
+      },
+      meter: id => S.state.meters[id] || 0,
+      add: add,
+      log: log,
+      say: say,
+      choose: choose,
+      banner: banner,
+      anchor: anchor,
+      unlock: unlock,
+      toast: (text, kind) => ZH.toast(text, kind),
+      wait: ms => sleep(REDUCE ? 0 : ms),
+      scene(key, extra) {
+        const sc = typeof key === 'object' ? Object.assign({}, key) : Object.assign({ key: key }, extra || {});
+        S.state.scene = sc;
+        const changed = paintScene(sc);
+        return sleep(REDUCE || !changed ? 0 : 500);
+      },
+      place(place, time) {
+        const sc = Object.assign({}, S.state.scene || {}, { place: place, time: time || '' });
+        S.state.scene = sc;
+        paintScene(sc, true);
+      },
+      cast(ids) {
+        S.castIds = (ids || []).slice();
+        S.state.cast = S.castIds.slice();
+        renderCast(null);
+      },
+      expr(id, e) {
+        const c = charOf(id);
+        if (!c) return;
+        if (e && EXPR_SET.indexOf(e) > -1) S.expr[c.id] = e; else delete S.expr[c.id];
+        S.state.expr = Object.assign({}, S.expr);
+        renderCast(null);
+      },
+      chapter(title, sub) {
+        S.state.chapter = String(title || '');
+        renderTop();
+        return banner(title, sub);
+      },
+      minigame: minigame,
+      refresh: renderTop,
+      end(result) {
+        if (S.ended) return Promise.resolve();
+        S.ended = true;
+        clearTimeout(S.autoSaveTimer);
+        S.state.ended = result || { type: 'end' };
+        renderTop();
+        return save().then(() => (C.onEnd ? C.onEnd(S.state.ended, ctx) : null));
+      },
+      icons: ICONS,
+      scenes: SCENES
+    };
+
+
+    // 關鍵演出只改呈現狀態；節點、原文題、分數與操作結果仍由原劇本決定。
+    async function cutinCue(when, detail) {
+      if (!ZH.cutin || !S.state || S.ended) return;
+      const skipped = S.state._cutinSkip;
+      try {
+        const result = await ZH.cutin.at(Object.assign({ scenarioId:C.id, node:S.state.node, when:when, source:S.nodeSource, state:S.state }, detail || {}));
+        if (result && result.handled || skipped !== S.state._cutinSkip) save();
+      } catch (err) { if (global.console) console.warn('關鍵演出暫時略過', err); }
+    }
+
+    // ───────────── 流程 ─────────────
+
+    function runNode(id) {
+      if (S.ended) return Promise.resolve();
+      const fn = C.nodes[id];
+      if (typeof fn !== 'function') {
+        ZH.toast('找不到劇情節點「' + id + '」。', 'bad', 5000);
+        if (global.console) console.error('找不到節點', id);
+        return Promise.resolve();
+      }
+      S.nodeSource = Function.prototype.toString.call(fn);
+      S.state.node = id;
+      S.state.steps = (S.state.steps || 0) + 1;   // 走過幾個節點（結算的 turns）
+      S.entry = clone(S.state);
+      // 操作後先讓瀏覽器呈現回饋，再製作自動備份；使用者明確離開仍立即保存。
+      clearTimeout(S.autoSaveTimer);S.autoSaveTimer=setTimeout(()=>{if(!S.ended)save();},180);
+      return Promise.resolve()
+        .then(() => fn(ctx))
+        .then(async next => {
+          if (S.ended) return null;
+          if (next && next !== id) await cutinCue('afterNode', {next:next});
+          if (S.ended) return null;
+          if (!next) {
+            if (global.console) console.warn('節點「' + id + '」沒有回傳下一個節點，也沒有呼叫 ctx.end()');
+            return null;
+          }
+          return runNode(next);
+        })
+        .catch(err => {
+          if (global.console) console.error(err);
+          return ZH.modal({
+            title: '這一段發生錯誤',
+            body: '<p>' + esc(err && err.message ? err.message : String(err)) + '</p><p>可以重玩這一段，或先回首頁。</p>',
+            actions: [{ label: '回首頁', value: false, kind: 'quiet' }, { label: err.code === 'STORY_ANCHORS' ? '重新讀取並重玩' : '重玩這一段', value: true, kind: 'primary' }]
+          }).then(retry => {
+            if (!retry) { ZH.go('hub'); return null; }
+            const keep = { anchors: S.state.anchors, codex: S.state.codex, games: S.state.games, progress: S.state.progress, vars: S.state.vars, _player:S.state._player, _cutins:S.state._cutins, _cutinSkip:S.state._cutinSkip, _springWorld:S.state._springWorld };
+            S.state = clone(S.entry);
+            S.state._cutins = keep._cutins;S.state._cutinSkip = keep._cutinSkip;S.state._springWorld = keep._springWorld;if(ZH.spring)ZH.spring.bind(C.id,S.state,save,root);
+            S.state.anchors = keep.anchors;
+            S.state.codex = keep.codex; S.state.games = keep.games; S.state.progress = keep.progress;S.state._player=keep._player;
+            if (C.snapshot) C.snapshot(S.state, { vars: keep.vars });
+            rng = makeRng(S.state);
+            return runNode(id);
+          });
+        });
+    }
+
+    async function start(saved) {
+      if(ZH.requireStudentProfile&&!await ZH.requireStudentProfile())return;
+      S.state = saved && saved.v && !ZH.isEndedSave(saved) ? saved : freshState();
+      C.help=ZH.textplay?.eligible(S.state)?ZH.textplay.helpHTML(C.id):textOriginalHelp;
+      if(ZH.runs)ZH.runs.begin(C.id,S.state,C.mode);
+      if(ZH.player)await ZH.player.initRun(S.state,'story',C.id);
+      ZH.session.set('learning:'+C.id,S.state._learning||[]);
+      if (ZH.cutin && S.state._cutinSkip !== true) ZH.cutin.preload(C.id).catch(() => {});
+      ['flags', 'vars', 'meters'].forEach(k => { if (!S.state[k]) S.state[k] = {}; });
+      ['anchors', 'codex', 'games', 'log', 'cast'].forEach(k => { if (!Array.isArray(S.state[k])) S.state[k] = []; });
+      S.state.progress = S.state.progress || {};
+      if (!S.state.ended && !await prepareStoryAnchors()) return;
+      if (ZH.spring) ZH.spring.bind(C.id,S.state,save,root);
+      rng = makeRng(S.state);
+      bgCleanup.forEach(clearTimeout); bgCleanup.clear(); activeArt = null;
+      skeleton();
+      ZH.textplay?.install(C.id,S.state);
+      document.body.classList.add('sty-on');
+      renderTop();
+      paintScene(S.state.scene || 'night', true);
+      S.castIds = (S.state.cast || []).slice();
+      S.expr = Object.assign({}, S.state.expr || {});
+      renderCast(null);
+      let rz = null;
+      global.addEventListener('resize', () => {
+        document.documentElement.style.setProperty('--sty-top', el.top.offsetHeight + 'px');
+        clearTimeout(rz);
+        rz = setTimeout(castLayout, 120);
+      });
+      if (S.state.ended) {
+        S.ended = true;
+        S.entry = clone(S.state);
+        return Promise.resolve(C.onEnd ? C.onEnd(S.state.ended, ctx) : null);
+      }
+      return runNode(S.state.node);
+    }
+
+    return { start: start, save: save, ctx: ctx, get state() { return S.state; } };
+  }
+
+  // Checkpoint adapters store only serialized ctx.state; presentation objects never enter saves.
+function createJournal({id,mode,scope='guest',remote}){
+ const global=window,L=global.ZHGameLibs||{},copy=v=>JSON.parse(JSON.stringify(v));
+ const key=JSON.stringify([scope,id,mode]);let db=null,memory=null,queue=Promise.resolve(),timer=null,pending=null,flight=null,epoch=0,stamp=0,closed=false;
+ try{if(scope!=='guest'&&L.Dexie){db=new L.Dexie('ZH_Game_Journal_v3');db.version(1).stores({saves:'key,updatedAt'});}}catch(e){db=null;}
+ async function put(entry){memory=entry;if(scope==='guest'){ZH.session.set('journal:'+key,entry);return;}try{if(db){await db.saves.put(entry);return;}}catch(e){}try{global.localStorage.setItem('zhgame:'+key,JSON.stringify(entry));}catch(e){} }
+ async function get(){if(scope==='guest')return ZH.session.get('journal:'+key,null);try{const stored=db&&await db.saves.get(key);if(stored)return stored;}catch(e){}try{return JSON.parse(global.localStorage.getItem('zhgame:'+key))||memory;}catch(e){return memory;}}
+ function snapshot(state){const snap=copy(state);stamp=Math.max(Date.now(),stamp+1);snap._runtime={schema:2,savedAt:stamp};return snap;}
+ function writeLocal(state){const entry={key,updatedAt:state._runtime.savedAt,state};queue=queue.then(()=>put(entry));return queue;}
+ async function flush(){clearTimeout(timer);timer=null;await queue;if(flight)return flight;const myEpoch=epoch;
+  flight=(async()=>{let result={ok:true};while(pending&&myEpoch===epoch){const next=pending;pending=null;try{result=await remote(next);}catch(e){result={ok:false};}if(!result||result.ok!==true){if(!pending)pending=next;return{ok:false,local:true};}}return result;})();
+  try{return await flight;}finally{flight=null;}
+ }
+ function schedule(){clearTimeout(timer);timer=setTimeout(()=>{flush().catch(()=>{});},650);}
+ function enqueue(state,force=false){if(closed)return Promise.resolve({ok:true,closed:true});pending=snapshot(state);const saved=pending;writeLocal(saved);if(force)return flush();schedule();return queue.then(()=>({ok:true,local:true}));}
+ async function load(server){await queue;const local=await get(),remoteStamp=server?._runtime?.savedAt||0;
+  if(ZH.isEndedSave(server))server=null;
+  if(local&&!ZH.isEndedSave(local.state)&&local.updatedAt>remoteStamp)return{...copy(local.state),local:true};return server;
+ }
+ async function clear(terminal=false){closed=terminal;epoch++;clearTimeout(timer);timer=null;pending=null;if(flight)await flight;pending=null;await queue;memory=null;if(scope==='guest')ZH.session.remove('journal:'+key);try{if(db)await db.saves.delete(key);}catch(e){}try{global.localStorage.removeItem('zhgame:'+key);}catch(e){} }
+ const journal={enqueue,flush,load,clear,key};return ZH.registerJournal?ZH.registerJournal(journal):journal;
+}
+
+  ZH.story = { create: create, createJournal: createJournal, icons: ICONS, scenes: SCENES };
+})(window.ZH);
+</script>
+
+<style>
+/* v0.2.5：閱讀距離、說話層次、幕名對比。 */
+.sty .sty-actor__tag,.sty .sty-actor__name{font-size:clamp(17px,1.8vw,21px);padding:3px 10px;background:#14151eef}
+.sty .sty-actor.is-speaking .sty-actor__tag{opacity:1;color:#fff2c8;border-color:var(--gilt)}
+.sty-say .sty-say__name{z-index:1;font-size:clamp(20px,2vw,24px);padding:3px 16px;top:4px}
+.sty-say .sty-say__text{font-size:clamp(21px,2.15vw,25px);line-height:1.75;min-width:0;word-break:normal;overflow-wrap:break-word}
+.sty-say{max-height:min(45dvh,360px);overflow-y:auto;padding-top:42px}
+.sty-say .sty-say__more{font-size:15px}
+.sty .sty-place{background:#24252eed;color:#fff1cf;box-shadow:none;animation:none}
+.sty .sty-place b{font-size:clamp(20px,2vw,25px)}
+.sty .sty-place span{font-size:16px;color:#decaa5}
+.sty-banner{background:rgba(25,25,30,.78)}
+.sty-banner__in{padding:24px 28px;border-block:1px solid #bd9f5b70;background:#202027f2;animation:none;max-width:94vw}
+.sty-banner__title{letter-spacing:.12em;text-shadow:none}
+.sty-banner__sub{font-size:clamp(20px,2.4vw,27px);text-shadow:none}
+.sty-choice .sty-choice__card h2,.sty-game .sty-game__head b{font-size:clamp(22px,2vw,27px);line-height:1.55;background:#24252e;color:#fff2d2;padding:8px 12px;border-radius:5px;overflow-wrap:break-word;white-space:normal}
+.sty .sty-actor{transition:opacity .15s ease,transform .15s ease;filter:none}
+@media(max-width:700px){.sty-say .sty-say__text{font-size:21px}.sty-say{max-height:45dvh}.sty .sty-actor__tag{font-size:17px}.sty-say .sty-say__name{z-index:1;font-size:20px}}
+</style>
+
+<style>
+/* v0.2.8：名字牌、頭像、內文分列，固定閱讀順序，不使用負位移重疊文字。 */
+.sty-say{grid-template-areas:"name" "text";grid-template-columns:minmax(0,1fr);gap:10px 16px;padding:16px 20px 12px;max-height:min(48dvh,380px);overflow-y:auto}
+.sty-say.has-face{grid-template-areas:"name name" "face text";grid-template-columns:96px minmax(0,1fr)}
+.sty-say.has-seal{grid-template-areas:"name name" "face text";grid-template-columns:64px minmax(0,1fr)}
+.sty-say__head{grid-area:name;min-width:0;line-height:1.4}
+.sty-say .sty-say__name{position:static;display:inline-flex;align-items:center;max-width:100%;font-size:18px;line-height:1.4;padding:3px 14px;overflow-wrap:anywhere;border-radius:6px}
+.sty-say .sty-say__face{grid-area:face;margin:0;align-self:start}
+.sty-say__content{grid-area:text;min-width:0;display:flex;flex-direction:column}
+.sty-say .sty-say__text{margin:0;font-family:var(--f-display);font-size:clamp(18px,1.65vw,21px);line-height:1.8;min-height:2.6em;overflow-wrap:break-word;word-break:normal}
+.sty-say .sty-say__more{margin:8px 0 0;font-family:var(--f-body);font-size:13px;line-height:1.5;align-self:flex-end;white-space:nowrap}
+@media(max-width:700px){.sty-say{padding:12px 14px 10px;gap:8px 12px}.sty-say.has-face{grid-template-columns:64px minmax(0,1fr)}.sty-say.has-seal{grid-template-columns:48px minmax(0,1fr)}.sty-say .sty-say__name{font-size:17px;padding:2px 12px}.sty-say .sty-say__text{font-size:18px;line-height:1.75}.sty-say .sty-say__face{width:64px;height:84px}.sty-say .sty-say__face--seal{width:48px;height:48px}}
+</style>

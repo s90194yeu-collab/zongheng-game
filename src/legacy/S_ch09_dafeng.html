@@ -1,0 +1,1102 @@
+<!-- 本話任務：三傑各有所長，後勤與前線互相支撐；三句歌由追憶轉向求賢守四方。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!--
+ Re:縱橫鼎業・第九話／尾聲〈大風歌〉；S_ch09_dafeng.html。
+ v1.1.0（2026-10-08）；status ready依老師授權；?page=S_ch09_dafeng。
+ 26節點、12原文題、12圖鑑；論三傑與擊筑必做，分步由本人操作，首績保留。
+ 漢六年被捕、十一年後來結局、十二年還沛分幕；史實固定，數值為教學模型。
+ 三卷完整第二人稱尾聲、可停回看的九話名單；不另授等級或假設三卷全數通關。
+ 只依原範例七個include及既有服務；不改共用檔、前八話、來源。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  .ep-title { min-height:100vh; min-height:100dvh; display:grid; grid-template-rows:auto 1fr; background:radial-gradient(900px 520px at 70% 0%,var(--gilt-glow),transparent 65%); }
+  .ep-title__bar { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width:min(1040px,100%); margin:0 auto; padding:8px var(--gutter) calc(32px + var(--safe-b)); display:grid; gap:22px; align-content:start; }
+  .ep-kicker { font-size:15px; color:var(--gilt); letter-spacing:.1em; }
+  .ep-h1 { margin-top:4px; font-size:clamp(38px,8vw,80px); letter-spacing:.08em; line-height:1.1; overflow-wrap:anywhere; }
+  .ep-episode { margin-top:10px; font-family:var(--f-display); font-size:clamp(17px,2.6vw,22px); }
+  .ep-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+  .ep-note { font-size:15px; color:var(--text-dim); line-height:1.7; }
+  .ep-start { display:grid; grid-template-columns:auto minmax(0,1fr) minmax(220px,auto); gap:16px; align-items:center; padding:18px; border-radius:14px; border:1px solid var(--gilt); background:var(--night-2); box-shadow:var(--shadow); }
+  .ep-seal { display:grid; place-items:center; width:64px; height:64px; border-radius:8px; flex:none; border:3px solid var(--ep-color,var(--cinnabar)); box-shadow:inset 0 0 0 3px var(--night-2),inset 0 0 0 5px var(--ep-color,var(--cinnabar)); font-family:var(--f-display); font-weight:700; font-size:34px; color:var(--ep-color,var(--cinnabar)); background:var(--night); }
+  .ep-start__name { font-family:var(--f-display); font-size:22px; }
+  .ep-start__lead { font-size:15px; color:var(--text-dim); line-height:1.7; }
+  .ep-start__act { display:grid; gap:8px; }
+  .ep-points { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+  .ep-point { padding:14px 16px; border-radius:12px; border:1px solid var(--line-soft); background:var(--night-2); }
+  .ep-point b { display:block; font-family:var(--f-display); font-size:17px; margin-bottom:4px; color:var(--gilt); }
+  .ep-point span { font-size:15px; color:var(--text-dim); line-height:1.7; }
+  .ch09-page { overflow-x:hidden; }
+  .ch09-page .zh-chip, .ch09-page .sty-m, .ch09-page .sty-title span, .ch09-page .sty-game__status,
+  .ch09-page .sty-place, .ch09-page .sty-place span, .ch09-page .sty-say__name,
+  .ch09-page .sty-choice__text, .ch09-page .sty-opt__desc, .ch09-page .zh-small { font-size:15px; }
+  .ch09-page .zh-btn, .ch09-page .sty-icon, .ch09-page .sty-opt { min-width:44px; min-height:44px; font-size:16px; white-space:normal; }
+  .ch09-page .sty-game__head { flex-wrap:wrap; gap:8px; }
+  .ch09-page:has(.ch09-game) .sty-meters { display:none; }
+  .ch09-page button:focus-visible { outline:3px solid var(--gilt); outline-offset:-3px; }
+  .ch09-game { width:min(740px,100%); margin:0 auto; padding:14px; display:grid; gap:10px; align-content:start; line-height:1.6; }
+  .ch09-game h2 { font-size:clamp(21px,3vw,28px); color:var(--gilt); }
+  .ch09-game p, .ch09-game span, .ch09-game b, .ch09-game button { font-size:16px; overflow-wrap:anywhere; }
+  .ch09-panel, .ch09-live, .ch09-controls { padding:9px; border:1px solid var(--line); border-radius:10px; background:var(--night-2); }
+  .ch09-live { color:var(--gilt); border-color:var(--gilt); font-variant-numeric:tabular-nums; }
+  .ch09-controls { position:sticky; top:0; z-index:3; display:grid; gap:7px; border-color:var(--patina); background:var(--night); }
+  .ch09-actions { display:flex; flex-wrap:wrap; gap:7px; }
+  .ch09-actions button { flex:1 1 145px; padding:8px; }
+  .ch09-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+  .ch09-cards button { padding:10px; min-height:68px; }
+  .ch09-cards button span { display:block; font-size:15px; }
+  .ch09-cards button.is-selected { border-color:var(--gilt); background:var(--night-3); }
+  .ch09-posts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+  .ch09-posts button { padding:9px; }
+  .ch09-posts button[aria-pressed="true"] { border-color:var(--patina); background:var(--night-3); }
+  .ch09-feedback { min-height:48px; padding:6px 8px; border-left:3px solid var(--patina); }
+  .ch09-lyrics { display:grid; gap:6px; }
+  .ch09-verse { padding:7px 9px; border:1px solid var(--line-soft); border-radius:8px; }
+  .ch09-verse.is-current { border-color:var(--gilt); background:var(--night-3); color:var(--gilt); }
+  .ch09-beats { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; padding:6px 0; }
+  .ch09-beats span { display:grid; place-items:center; min-height:32px; border:1px solid var(--line); border-radius:6px; }
+  .ch09-beats .is-current { border-color:var(--patina); background:var(--night-3); color:var(--gilt); }
+  .ch09-zhu { width:min(320px,100%); height:90px; margin:0 auto; color:var(--gilt); }
+  .ch09-track { position:relative; width:min(300px,100%); height:100px; margin:0 auto; border:1px solid var(--line); border-radius:10px; background:var(--night-2); overflow:hidden; }
+  .ch09-ring { position:absolute; top:49px; left:0; right:0; margin:0 auto; width:64px; height:44px; border:3px solid var(--gilt); border-radius:8px; }
+  .ch09-ring.is-window { border-color:var(--patina); background:var(--night-3); }
+  .ch09-note { position:absolute; left:0; right:0; margin:0 auto; width:44px; height:40px; display:grid; place-items:center; border:2px solid var(--patina); border-radius:8px; background:var(--night); color:var(--gilt); }
+  .ch09-hit { min-height:56px !important; font-size:20px !important; }
+  .ch09-credits { width:100%; display:grid; gap:10px; font-size:16px; }
+  .ch09-credits p, .ch09-credits span, .ch09-credits button { font-size:16px; overflow-wrap:anywhere; }
+  .ch09-reel { position:relative; height:240px; overflow-y:auto; overflow-x:hidden; padding:5px; border:1px solid var(--line); border-radius:10px; scrollbar-gutter:stable; }
+  .ch09-credit-card { position:relative; padding:13px; margin:0 0 10px; border:1px solid var(--line); border-radius:9px; background:var(--night-2); }
+  .ch09-credit-card h3 { font-size:20px; color:var(--gilt); margin-bottom:6px; }
+  .ch09-credit-card.is-current { border-color:var(--patina); background:var(--night-3); }
+  .ch09-credit-state { font-size:15px !important; color:var(--text-dim); }
+  .ch09-credits .ch09-controls { position:static; }
+  @media(max-width:860px) {
+    .ep-start { grid-template-columns:auto minmax(0,1fr); }
+    .ep-start__act { grid-column:1 / -1; }
+    .ch09-game { padding:9px; gap:8px; }
+    .ch09-game p, .ch09-game span, .ch09-game b, .ch09-game button, .ch09-credits p, .ch09-credits span { font-size:15px; }
+    .ch09-panel, .ch09-live, .ch09-controls { padding:7px; }
+    .ch09-posts { grid-template-columns:1fr; }
+    .ch09-reel { height:210px; }
+  }
+  @media(prefers-reduced-motion:reduce) { .ch09-game *, .ch09-credits * { animation:none !important; transition:none !important; } }
+
+.hm-title-scene{position:relative;height:320px;overflow:hidden;border:1px solid var(--gilt);border-radius:10px;margin:25px 0;background:#30221b}
+.hm-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}
+.hm-title-cast{position:absolute;inset:30px 8% 0;display:flex;align-items:end;justify-content:center;gap:2%}
+.hm-title-cast>span{width:21%;max-width:150px;filter:drop-shadow(0 8px 6px #0005)}
+.hm-title-cast .ck{display:block;width:100%;height:100%}
+.hm-portrait{display:block!important;width:70px!important;height:90px!important;border:0!important;background:transparent!important;border-radius:0!important;margin:0 auto!important}
+.hm-portrait .ck{height:100%;width:100%;display:block}
+.ch04-observer{position:relative;padding:8px 4px!important;min-height:190px;background:linear-gradient(#322c32,#191b2e)!important;touch-action:manipulation}
+.ch04-observer .hm-portrait{width:100px!important;height:135px!important}
+.ch04-watch-stage{padding:24px 10px 12px;background:linear-gradient(#502e2455,#291c1688);border:1px solid var(--line);border-radius:8px;gap:8px!important}
+.ch04-observer.is-moving .ck{animation:hm-gesture .45s ease-in-out infinite alternate}
+.ch04-observer.is-noticed{box-shadow:0 0 0 2px var(--patina),0 0 20px #4a9c8a44}
+.ch04-motion{min-height:48px;display:grid;justify-content:center;align-content:center;gap:4px;color:var(--slip)}
+.ch04-sign-jade{width:32px;height:32px;display:block;border:7px solid #a9d9bf;border-right-color:transparent;border-radius:50%;filter:drop-shadow(0 0 6px #a9d9bf)}
+.hm-returner{position:absolute;left:5%;bottom:2px;width:55px;height:85px;pointer-events:none}.hm-returner>.ck{height:100%;width:100%}
+.hm-anchor .sty-choice__card{max-height:85dvh;overflow:auto}.hm-anchor h2{font-family:var(--f-display);font-size:23px;line-height:1.5}
+.hm-anchor blockquote{margin:16px 0;padding:14px;color:var(--slip-ink);background:var(--slip);border-left:4px solid var(--gilt);font:21px/1.65 var(--f-display)}
+.hm-follow,.hm-feedback{padding:12px;background:#c9a24a18;line-height:1.7;border:1px solid var(--line);border-radius:6px}
+.hm-book details{border-bottom:1px solid var(--line);padding:12px}.hm-book summary{display:flex;align-items:center;gap:12px;cursor:pointer}.hm-book summary small{display:block;color:var(--text-dim)}.hm-book blockquote{color:var(--gilt);line-height:1.7}.hm-book p{line-height:1.8}.hm-book .is-locked{opacity:.6}.hm-thumb{display:block;width:54px;height:74px}.hm-thumb svg{width:100%;height:100%}
+.hm-small-seal{width:44px!important;height:44px!important;font-size:26px!important}.hm-actions{display:flex;gap:10px;flex-wrap:wrap}.hm-import{display:none}.hm-savebar{font-size:13px;color:var(--text-dim)}
+.ar-clock[hidden]{display:none!important}.ch04-game .zh-btn{min-height:44px}.ch04-hold{touch-action:none}.ch04-game .ch04-bank{margin-bottom:12px}
+.sty-game__stage{min-height:440px}.ar-layer{overflow:auto}.ar-card{max-height:calc(100dvh - var(--sty-top,80px) - 90px);overflow:auto}
+.hm-still *{animation:none!important;transition:none!important}
+@keyframes hm-gesture{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-6px) rotate(2deg)}}
+@media(max-width:700px){.hm-title-scene{height:230px}.hm-title-cast{inset:35px 2% 0}.hm-title-cast>span{width:24%}.ch04-person{padding:6px!important}.ch04-person .hm-portrait{width:42px!important;height:60px!important}.ch04-observer .hm-portrait{width:64px!important;height:96px!important}.ch04-observer{min-height:160px;font-size:13px!important}.ch04-watch-stage{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:8px!important}.ch04-motion{font-size:12px}.ch04-watch-stage .ch04-observer:nth-child(4){grid-column:1 / 2}.hm-anchor .sty-choice__card{padding:16px}.hm-anchor h2{font-size:20px}.hm-anchor blockquote{font-size:19px}.sty-game__body{padding:12px}.sty-game__stage{min-height:480px}.ch04-seat-board{min-height:320px}.ar-card{max-height:calc(100dvh - var(--sty-top,100px) - 70px)}.ch04-wait-scene{height:190px}.ch04-wait p,.ch04-watch p,.ch04-seats p{font-size:15px;line-height:1.6}}
+
+.df-panorama{position:relative;overflow:hidden;aspect-ratio:3.8/1;border:1px solid var(--gilt);border-radius:10px;background:#212539}.df-panorama>svg{display:block;width:100%;height:100%}.df-panorama-cast{position:absolute;inset:8% 12% 0;display:flex;align-items:flex-end;justify-content:center;gap:12%}.df-panorama-cast>span{display:block;width:22%;height:96%;filter:drop-shadow(0 5px 4px #0005)}.df-panorama-cast svg{height:100%;width:100%}.df-title-art .df-panorama{aspect-ratio:3.2/1}.ch09-page .sty-choice__card{max-height:92dvh;overflow:auto}.ch09-game{width:min(1050px,100%);padding:10px}.ch09-cards{grid-template-columns:repeat(4,minmax(0,1fr))}.ch09-cards [data-person]{display:flex;flex-direction:column;align-items:center;min-width:0;white-space:normal;padding:8px;background:linear-gradient(160deg,#28324b,#181f35)}.df-person{display:block;width:100%;height:160px;background:radial-gradient(ellipse at 50% 90%,#a38c4840,transparent 68%)}.df-person svg{width:100%;height:100%}.ch09-cards [data-person]:disabled{opacity:.7}.ch09-cards [data-person].is-selected{border:2px solid var(--gilt);box-shadow:0 0 20px #cba44b20}.ch09-posts [aria-pressed=true]{background:#355348;border-color:var(--patina)}.ch09-controls{position:static}.ch09-controls button,.ch09-posts button{min-height:46px}.df-song-layout{display:grid;grid-template-columns:minmax(300px,1fr) minmax(290px,1fr);gap:14px;align-items:start}.df-song-stage{position:relative;overflow:hidden;isolation:isolate;min-height:310px;border:1px solid #aa9161;border-radius:12px}.df-song-bg{position:absolute;inset:0;z-index:-2;opacity:.8}.df-song-bg svg{width:100%;height:100%;display:block}.df-song-stage:after{position:absolute;content:'';inset:0;z-index:-1;background:linear-gradient(#11192b00,#11192b66)}.df-singer{position:absolute;inset:8% 26% 3%}.df-singer svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px #0005)}.df-chorus{position:absolute;inset:33% 8% 2%;display:flex;align-items:flex-end;justify-content:space-between}.df-chorus svg{width:25%;height:60%;filter:drop-shadow(0 4px 4px #0005)}.df-chorus svg:nth-child(2){position:absolute;right:15%;height:52%;bottom:20%}.df-stage-label{position:absolute;top:8px;left:8px;color:#edddb8;background:#171f30c9;border:1px solid #ad946e;border-radius:5px;padding:4px 9px;font-family:var(--f-display)}.ch09-lyrics{font-size:18px}.ch09-verse{padding:6px 8px}.ch09-verse.is-current{background:#85714b22;border-left:3px solid var(--gilt)}.ch09-track{width:100%;height:96px;background:linear-gradient(90deg,#182b36,#3c3324,#182b36)}.ch09-ring{width:62px;height:42px;left:calc(50% - 31px);top:46px;border-radius:8px}.ch09-note{width:42px;left:calc(50% - 21px);height:28px;text-align:center;background:#b99954;color:#151b2d;border-radius:6px}.ch09-ring.is-window{background:#54877055;box-shadow:0 0 18px #72b29955}.ch09-beats{margin-top:8px}.df-govern-art p{text-align:center;color:var(--gilt);font-family:var(--f-display);padding:5px}.ch09-reel{position:relative}.ch09-credit-card{display:grid;grid-template-columns:70px 1fr;gap:5px 12px;align-items:center;min-height:130px}.df-credit-person{grid-row:1/4;width:65px;height:105px}.df-credit-person svg{width:100%;height:100%}.ch09-credit-card h3,.ch09-credit-card p{margin:0}.ch09-credit-card p{grid-column:2}.ch09-page .ep-start__name{line-height:1.4}.hm-still .df-song-stage *{animation:none!important;transition:none!important}@media(max-width:820px){.ch09-game{padding:6px;gap:6px}.ch09-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.df-person{height:100px}.ch09-cards [data-person]{padding:4px}.ch09-cards [data-person] span:not(.df-person){font-size:12px}.df-song-layout{grid-template-columns:1fr;gap:8px}.df-song-stage{min-height:190px}.ch09-lyrics{font-size:16px}.ch09-controls{padding:6px;gap:6px}.ch09-actions{gap:6px}.ch09-actions button{flex:1 1 135px;padding:6px}.ch09-game>p{font-size:14px}.df-title-art .df-panorama{aspect-ratio:2/1}.df-panorama-cast{inset:4% 8% 0;gap:8%}.df-panorama-cast>span{width:26%}.ch09-credit-card{grid-template-columns:50px 1fr;gap:4px 8px;min-height:118px}.df-credit-person{width:46px;height:88px}.ch09-reel{height:300px;max-height:42dvh}}
+.df-song-controls{display:grid;gap:6px}.df-song-controls .ch09-panel{font-size:14px}.df-song-controls .ch09-feedback{min-height:0}.df-song-note{font-size:13px!important;color:var(--text-dim)}.ch09-game[data-kind=song] .ch09-live{display:none}@media(max-width:820px){.ch09-game[data-kind=song] .df-song-stage{min-height:112px}.ch09-game[data-kind=song] .df-song-layout{gap:5px}.ch09-game[data-kind=song] .ch09-lyrics{gap:3px}.ch09-game[data-kind=song] .ch09-verse{font-size:14px;padding:3px 7px;line-height:1.35}.ch09-game[data-kind=song] .ch09-beats{padding:0;margin:0}.ch09-game[data-kind=song] .ch09-beats span{font-size:13px;min-height:23px}.ch09-game[data-kind=song] .ch09-track{height:79px}.ch09-game[data-kind=song] .ch09-ring{top:36px}.ch09-game[data-kind=song] .ch09-note{height:24px}.ch09-game[data-kind=song] .ch09-controls{padding:4px}.ch09-game[data-kind=song] .ch09-hit{min-height:46px!important;font-size:17px!important}.ch09-game[data-kind=song] .ch09-actions button{min-height:40px;font-size:13px;flex-basis:130px}.ch09-game[data-kind=song] .ch09-panel{font-size:13px;padding:4px}.ch09-game[data-kind=song] .ch09-feedback,.ch09-game[data-kind=song] [data-chorus]{font-size:13px;line-height:1.4;padding-top:2px;padding-bottom:2px}.ch09-game[data-kind=song] .df-stage-label{font-size:12px;padding:2px 7px}.ch09-game[data-kind=song] .df-song-note{font-size:12px!important}}
+</style></head><body class="ch09-page"><div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+  // Chapter helpers use the platform APIs. They do not replace the router,
+  // catalogue, identity, saves, logging, codex or result services.
+  const SID = 'S_ch09_dafeng', E = ZH.esc;
+  const KEY = 'dafeng-platform-v1:' + (ZH.user.email || 'guest') + ':';
+  let run = '', first = {}, progress = {}, latest = null;
+  const clone = v => JSON.parse(JSON.stringify(v));
+  const read = (k, d) => ZH.local.get(KEY + k, d);
+  const write = (k, v) => ZH.local.set(KEY + k, v);
+  const freshId = () => 'df_' + Date.now().toString(36) + '_' + crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+  const status = text => document.querySelectorAll('[data-df-save]').forEach(el => { el.textContent = text; });
+  const current = () => window.__ep && window.__ep.state;
+  function meta(state) {
+    state.vars = state.vars || {};
+    state.vars.dfRunId = run;
+    state.vars.dfFirst = clone(first);
+    state.vars.dfProgress = clone(progress);
+  }
+  window.DF = {
+    read, write, runId: () => run,
+    newRun() { run = freshId(); first = {}; progress = {}; latest = null; write('save', null); },
+    useState(state) {
+      const v = state && state.vars || {};
+      run = v.dfRunId || freshId(); first = clone(v.dfFirst || {}); progress = clone(v.dfProgress || {});
+      if (state) {
+        state.progress=state.progress || {};
+        // Preserve old recorded scores on their original scale. Existing runs
+        // carry a legacy marker; do not invent missing first-attempt records.
+        for(const rec of state.anchors || []) if(!first[rec.anchorId])first[rec.anchorId]=Object.assign({},rec,{completed:true,legacy:true});
+        for(const rec of state.games || []) {
+          if(state.progress['arena:'+rec.gameId])continue;
+          const recorded=rec.gameId==='wen_df_sanjie'?state.vars.appointment:state.vars.song;
+          const raw=Object.assign({},recorded || {},{score:rec.score,max:rec.maxScore,passed:rec.passed,completed:!!recorded?.completed,legacy:true,sec:rec.sec || 0});
+          if(!raw.completed)continue;
+          const normalized=Math.round(raw.score/Math.max(1,raw.max)*10),attempt={r:clone(raw),mine:{score:normalized,sec:raw.sec},stars:normalized>=9?3:normalized>=7?2:normalized>=4?1:0,first:clone(raw)};
+          state.progress['arena:'+rec.gameId]={tries:1,active:false,best:attempt,last:attempt,first:clone(raw)};rec.legacy=true;
+        }
+        meta(state);
+      }
+    },
+    snapshot(snap,live) { meta(snap); if(Number.isFinite(live?.rng))snap.rng=live.rng; },
+    progress(k) { return progress[k] || {}; },
+    saveProgress(k, value) { progress[k] = clone(value); },
+    cacheProgress(state) { meta(state); latest = {engine:clone(state), updatedAt:Date.now(), chapterVersion:'v1.1.0'}; if(ZH.isGuest()) ZH.save(SID,'history',latest); else write('save',latest); },
+    async saveState(state) {
+      meta(state);
+      const value = { engine: clone(state), updatedAt: Date.now(), chapterVersion: 'v1.1.0' };
+      latest = value; write('save', value);
+      status(ZH.isGuest() ? '訪客進度已暫存於此分頁' : '正在保存進度');
+      try {
+        const r = await ZH.save(SID, 'history', value);
+        status(r && r.ok ? (ZH.isGuest() ? '訪客進度已暫存於此分頁' : '進度已保存') : '已存此裝置・雲端尚未保存，請匯出備份');
+        return r;
+      } catch (e) { status('已存此裝置・雲端暫時未連線，請匯出備份'); return { ok: false }; }
+    },
+    async loadState() {
+      const local = read('save', null);
+      try {
+        const r = await ZH.load(SID, 'history');
+        const cloud = r && r.ok && r.state && r.state.engine ? r.state : null;
+        // Guest progress follows Core_js's per-tab lifetime. School backups
+        // cover failed RPCs and are scoped to the authenticated account.
+        const value = ZH.isGuest() ? cloud : local && (!cloud || Number(local.updatedAt) > Number(cloud.updatedAt || 0)) ? local : cloud;
+        latest = value;
+        if (value) write('save', value);
+        return value;
+      } catch (e) { latest = ZH.isGuest() ? null : local; return latest; }
+    },
+    checkpoint() {
+      const state = current();
+      if (state) meta(state);
+      // Commit the first answer before any modal continuation or page reload.
+      if (window.__ep && window.__ep.save) return window.__ep.save().then(()=>ZH.flushAll ? ZH.flushAll() : null);
+      return Promise.resolve();
+    },
+    download(value, name) {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+    async exportSave() {
+      await DF.checkpoint();
+      DF.download({ format: 'dafeng-full', version: 1, save: latest, run, progress, first }, '大風歌_進度.json');
+    },
+    async importSave(data) {
+      if (JSON.stringify(data.save).length > 45000) throw Error('進度檔過大，請使用本話匯出的檔案。');
+      const state = clone(data.save.engine);
+      state.vars = state.vars || {};
+      state.vars.dfRunId = data.run || state.vars.dfRunId || freshId();
+      state.vars.dfFirst = data.first || state.vars.dfFirst || {};
+      state.vars.dfProgress = data.progress || state.vars.dfProgress || {};
+      DF.useState(state); await DF.saveState(state);
+    },
+    teacher() { ZH.go('teacher'); },
+    async finish(payload) {
+      const state=current(),v=state?.vars || {},required=['wen_df_sanjie','df_zhu'];
+      if(payload.anchors.length!==12 || payload.codex.length!==12 || required.some(id=>!payload.games.some(g=>g.gameId===id&&!g.skipped)) || !v.appointment?.completion?.complete || !v.song?.completion?.acknowledgements?.every(Boolean) || ['merit','promise','trust'].some(k=>!v[k] || typeof v[k].score!=='number') || !v.future || !v.credits?.seen?.every(Boolean) || ['appointmentDone','songDone','creditsDone'].some(k=>!state.flags[k]))throw Error('必要體驗尚未完成，請接續本話。');
+      payload.runId=run;payload.chapterVersion='v1.1.0';
+      payload.experience={appointment:clone(v.appointment),song:clone(v.song),merit:clone(v.merit),promise:clone(v.promise),trust:clone(v.trust),future:v.future,credits:clone(v.credits),decisions:clone(progress),firstAnchors:clone(first)};
+      await DF.checkpoint();
+      // Core_js logs the scenario and transfers the complete payload to Result.
+      if(read('finishedRun','')===run){const prior=ZH.session.get('result:'+SID,null);ZH.session.set('result:'+SID,Object.assign({},payload,prior || {}));ZH.go('result',{s:SID});return;}
+      write('finishedRun',run);
+      return ZH.finishScenario(payload);
+    }
+  };
+
+  // Read questions through Anchor_js.load/get so edits made by the teacher in
+  // AnchorBank remain authoritative. This chapter's overlay adds durable
+  // first-answer records while reporting every attempt through Core_js.track.
+  DF.runAnchor = (a,options={}) => new Promise(resolve => {
+    let rec = first[a.id];
+    if (rec && rec.completed) return resolve(clone(rec));
+    let reading = false, finished = false, shownAt = performance.now();
+    const previous = document.activeElement;
+    const order = a.options.slice();
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor((window.__ep ? window.__ep.ctx.rng() : crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const wrap = ZH.html('<div class="sty-choice hm-anchor" role="dialog" aria-modal="true" aria-labelledby="hm-question"><div class="sty-choice__card"><p class="hm-kicker">原文對讀 ' + (options.index || a.seq) + '／12</p><h2 id="hm-question">' + E(a.stem) + '</h2><blockquote>' + E(a.passage) + '</blockquote>' + (a.followUp ? '<p class="hm-follow" data-follow hidden>' + E(a.followUp) + '</p>' : '') + '<div class="zh-choices">' + order.map((o, i) => '<button type="button" class="zh-choice" data-answer="' + E(o.key) + '"><span class="zh-choice__key">' + '甲乙丙丁'[i] + '</span><span class="zh-choice__text">' + E(o.text) + '</span></button>').join('') + '</div><p class="hm-feedback" role="status" hidden></p><button type="button" class="zh-btn zh-btn--primary" data-read-done hidden>讀畢，回到劇情</button><p class="ep-note">首次判斷會保留，答錯後需親自修正。</p></div></div>');
+    document.body.append(wrap);  wrap.querySelector('button').focus();
+    wrap.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const bs = [...wrap.querySelectorAll('button:not([hidden]):not(:disabled)')];
+      if (e.shiftKey && document.activeElement === bs[0]) { e.preventDefault(); bs.at(-1).focus(); }
+      else if (!e.shiftKey && document.activeElement === bs.at(-1)) { e.preventDefault(); bs[0].focus(); }
+    });
+    function complete() {
+      finished = true; rec.completed = true; first[a.id] = rec; DF.checkpoint();
+      wrap.remove();  if (previous?.isConnected) previous.focus({preventScroll:true}); resolve(clone(rec));
+    }
+    function showRead() {
+      reading = true; const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = a.explanation;
+      wrap.querySelectorAll('[data-answer]').forEach(x => { x.disabled = true; });
+      const follow = wrap.querySelector('[data-follow]'); if (follow) follow.hidden = false;
+      const done = wrap.querySelector('[data-read-done]'); done.hidden = false; done.focus();
+    }
+    if (rec?.finalAnswer === a.answer) showRead();
+    wrap.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || b.disabled || finished) return;
+      if (b.hasAttribute('data-read-done') && reading) { complete(); return; }
+      if (!b.dataset.answer || reading) return;
+      const answer = b.dataset.answer, correct = answer === a.answer, seconds = Math.round((performance.now() - shownAt) / 100) / 10;
+      if (!rec) rec = { anchorId: a.id, choice: answer, correct, seconds, attempts: 0, completed: false };
+      rec.attempts++; rec.path = correct ? (rec.attempts === 1 ? 'direct' : 'fork') : rec.attempts === 1 ? 'fork' : 'fail';
+      const op = a.options.find(o => o.key === answer);
+      ZH.track('anchor', { scenarioId: SID, anchorId: a.id, attempt: rec.attempts, choice: answer, correct, firstTry: rec.attempts === 1, path: rec.path, distractorType: correct ? '' : op.type || '', seconds });
+      if (correct) { rec.finalAnswer = answer; showRead(); }
+      else { const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = (op.fork || '請重新對讀原文。') + ' 請再判斷一次。'; shownAt = performance.now(); }
+      first[a.id] = rec; DF.checkpoint();
+    });
+  });
+
+  const who = {ch_caoshen:'caoshen',ch_lvhou:'lvhou',ch_ejun:'ejun'};
+  DF.book = () => {
+    const items = (ZH.CODEX || []).filter(c => c.scenarioId === SID);
+    const unlocked = new Set(ZH.codex.keys());
+    (current()?.codex || []).forEach(k => unlocked.add(k));
+    ZH.modal({ title: '史冊・' + items.filter(c => unlocked.has(c.type + ':' + c.id)).length + '／' + items.length, body: '<div class="hm-book">' + items.map(c => {
+      const ok = unlocked.has(c.type + ':' + c.id);
+      return '<details' + (ok ? '' : ' class="is-locked"') + '><summary>' + (ok && who[c.id] ? '<span class="hm-thumb">' + ART.portrait({id:who[c.id],name:c.name}) + '</span>' : '<span class="ep-seal hm-small-seal">' + E(ok ? c.glyph : '？') + '</span>') + '<span>' + E(ok ? c.name : '尚待解鎖') + '<small>' + E(ok ? c.title : '隨劇情完成原文對讀') + '</small></span></summary>' + (ok ? '<blockquote>' + E(c.quote) + '</blockquote><p>' + E(c.text) + '</p>' : '') + '</details>';
+    }).join('') + '</div>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+  };
+  DF.saveMenu = () => {
+    ZH.modal({ title: '存檔與設定', body: '<p>進度會自動保存。你也可以下載進度備份，或調整文字速度。</p><p class="hm-savebar" data-df-save>已保留目前進度</p>', actions: [{label:'回到遊戲',value:'close',kind:'quiet'},{label:'遊玩設定',value:'settings',kind:'quiet'},{label:'下載進度',value:'export',kind:'primary'}] }).then(action => { if(action==='export')DF.exportSave(); if(action==='settings')DF.settings(); });
+  };
+  DF.settings = () => {
+    ZH.modal({ title: '遊玩設定', body: '<label>文字速度 <select id="df-speed"><option value="normal">逐字</option><option value="instant">立即顯示</option></select></label><label><input type="checkbox" id="df-still" ' + (read('still', false) ? 'checked' : '') + '>減少場景動態</label><p>關閉或移到其他分頁時，首輪計時會暫停；回來後需親按繼續。練習、分步與任用不限時。</p>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+    const s = document.querySelector('#df-speed'); s.value = ZH.settings.textSpeed; s.addEventListener('change', () => ZH.setSetting('textSpeed', s.value));
+    document.querySelector('#df-still').addEventListener('change', e => { write('still', e.target.checked); document.documentElement.classList.toggle('hm-still', e.target.checked); });
+  };
+})(window);
+
+</script>
+<script>
+
+(function () {
+  'use strict';
+  // ═════════════════════════ 1. 基本設定 ═════════════════════════
+  const SID = 'S_ch09_dafeng';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER=['df_01','df_02','df_09','df_10','df_03','df_04','df_05','df_06','df_07','df_11','df_12','df_08'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => null);
+  const META = ZH.findScenario(SID) || { id:SID, vol:'ch', ep:9, name:'大風歌',
+    episode:'大風起兮，誰來守四方', year:196, genre:'尾聲動畫', source:'〈高祖功臣侯年表〉', guest:false, status:'ready' };
+  const ROLE = { name:'劉邦', glyph:'漢', color:'var(--cinnabar)', title:'你・漢高祖',
+    lead:'親自任用三傑、辨別功勞，再擊筑唱完大風歌，思考如何守住天下與承諾。' };
+  const POINTS = [
+    { title:'論三傑', text:'讀原文，親自選人物、配職掌、確認任用；再比較楚營范增的處境。' },
+    { title:'論功與守信', text:'辨前線與後勤，讀封爵之誓、韓信的感嘆；用理由說明自己的判斷。' },
+    { title:'擊筑而歌', text:'三句24拍，跟視覺提示擊筑；不必開聲音。分步協助仍由本人完成。' },
+    { title:'三卷尾聲', text:'回到亂世策士，帶著自己的判斷合卷；九話名單可暫停、逐話回看。' }
+  ];
+  const bounded = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  function requireAnchor(r, id) {
+    if (!r || r.anchorId !== id || typeof r.correct !== 'boolean') throw new Error('原文題「' + id + '」尚未完整載入，請重玩本段。');
+    return r;
+  }
+  function firstIndependent(r) {
+    if (!r || r.correct !== true) return false;
+    if (typeof r.firstTry === 'boolean') return r.firstTry;
+    if (Number.isInteger(r.attempt) && r.attempt > 0) return r.attempt === 1;
+    // 技術規格保證correct；有firstTry或attempt時優先保留首答資訊。
+    return r.correct;
+  }
+  const endingKey = (firstRight, people) => !firstRight && people < 40 ? 'worry' : 'good';
+  // ═════════════════════════ 2. 人物 ═════════════════════════
+  const CHARACTERS = [
+    { id:'liubang', name:'劉邦', glyph:'漢', color:'var(--cinnabar)', title:'你・漢高祖' },
+    { id:'zhangliang', name:'張良', glyph:'良', color:'var(--patina)', title:'子房・帷帳之謀' },
+    { id:'xiaohe', name:'蕭何', glyph:'蕭', color:'var(--patina)', title:'補兵・供糧' },
+    { id:'hanxin', name:'韓信', glyph:'信', color:'var(--patina)', title:'統軍・後封楚王' },
+    { id:'caoshen', name:'曹參', glyph:'參', color:'var(--patina)', title:'平陽侯・前線戰功' },
+    { id:'ejun', name:'鄂君', glyph:'鄂', color:'var(--patina)', title:'論功進言',art:{hat:'guan',robe:'#6a8066',beard:1,prop:'scroll'} },
+    { id:'lvhou', name:'呂后', glyph:'呂', color:'var(--cinnabar)', title:'韓信後來的事件' },
+    { id:'elders', name:'沛中父老', glyph:'沛', color:'var(--patina)', title:'群體呈現',art:{old:true,hat:'jin',robe:'#827154',beard:3,jade:false} },
+    { id:'children', name:'沛中歌童', glyph:'歌', color:'var(--patina)', title:'百二十兒・群體呈現',art:{hat:'none',beard:0,robe:'#7896a4',jade:false} },
+    {id:'fanzeng',name:'范增',glyph:'范',color:'var(--cinnabar)',title:'楚營對照'},
+    { id:'shiguan', name:'史官', glyph:'史', color:'var(--gilt)', title:'原典與教學演出對讀' }
+  ];
+  // ═════════════════════════ 3. 數值 ═════════════════════════
+  const METERS = [
+    { id:'crown', label:'天下', icon:'crown', max:100, start:80 },
+    { id:'people', label:'人心', icon:'people', max:100, start:60, danger:39 }
+  ];
+  // ═════════════════════════ 4. 說明 ═════════════════════════
+  const HELP = '<p><b>你是劉邦。</b>依漢五年、六年、十一年、十二年分幕；天下大事依史記。人物演出與節奏是教學安排。</p>' +
+    '<p><b>論三傑：</b>選人物、選職掌，再親自確認。四項首答每項25分，至少三項正確算首輪達標；錯項仍須本人補正。</p>' +
+    '<p><b>擊筑：</b>先練四拍，三句各八拍。拍符進金框、框變青綠時，按擊筑鍵或空白／Enter；24拍命中率至少70分算首輪達標。</p>' +
+    '<p><b>協助：</b>兩個核心遊戲都必做。確定改分步後保留首分；任用須親自配對，演唱須親按24拍並讀畢三句。</p>' +
+    '<p><b>暫停：</b>演唱失焦、切頁或開說明會暫停，回來親按繼續。提示音可關，視覺可獨立完成。</p>' +
+    '<p><b>治政：</b>天下表示本話治政掌握，人心依三次反思的理由品質變動；手速與原文題答對不直接增加人心。</p>' +
+    '<p><b>尾聲：</b>回顧三卷不另授最高稱號；名單可停、回看，每話親按讀畢，最後合卷。</p>' +
+    '<p><b>存檔：</b>保存任用選項、擊筑拍點、治政首選與片尾讀畢紀錄。演唱接續後先暫停，再親按繼續；補正、重載與重挑戰不改首分。</p>';
+  // ═════════════════════════ 5. 劇情節點 ═════════════════════════
+  const NODES = {
+    n_01: async ctx => {
+      ctx.expr('liubang','serious');
+      await ctx.chapter('第一幕　雒陽南宮', '漢五年・天下初定');
+      await ctx.scene('banquet', { tod:'day',banner:'#a84636',glyph:'漢',place:'雒陽・南宮', time:'置酒論天下' }); ctx.cast(['liubang', 'zhangliang', 'shiguan']);
+      await ctx.say([{ text:'高祖置酒雒陽南宮。諸將來到席間，天下已定，得失仍值得追問。' },
+        { who:'shiguan', text:'這一話，你是劉邦。人才怎樣任用，功勞怎樣辨別，都要由你親自判斷。' },
+        { text:'群臣等你開口。先聽清你的問題，再讀席間的回答。' }]); return 'n_02';
+    },
+    n_02: async ctx => {
+      await ctx.say([{ text:'你望向列侯與諸將，請他們談談兩軍走到今日的經過。' },
+        { who:'shiguan', text:'同一場勝負，可能有不同的解釋。先讀發問者要問什麼。' },
+        { text:'酒席稍靜，這段得失之問留在史書裡。' }]);
+      const r = await ctx.anchor('df_01'); requireAnchor(r, 'df_01'); return 'n_03';
+    },
+    n_03: async ctx => {
+      ctx.expr('zhangliang','normal');
+      await ctx.say([{ text:'聽過諸將意見，你開始逐一比較自己與三位人才的本領。' },
+        { text:'第一句說到子房。讀帷帳與千里之外如何相連。' },
+        { who:'zhangliang', text:'戰局上的每一步，都需要先想清條件與安排。' }]);
+      const r = await ctx.anchor('df_02'); requireAnchor(r, 'df_02'); ctx.unlock('idiom:yunchouweiwo'); return 'n_04';
+    },
+    n_04: async ctx => {
+      ctx.expr('liubang','normal');ctx.expr('xiaohe','serious');ctx.expr('hanxin','serious');
+      ctx.cast(['liubang', 'xiaohe', 'hanxin', 'shiguan']);
+      await ctx.say([{ who:'liubang', text:'鎮國家，撫百姓，給餽饟，不絕糧道，吾不如蕭何。' },
+        { who:'liubang', text:'連百萬之軍，戰必勝，攻必取，吾不如韓信。' },
+        { who:'shiguan', text:'餽饟是供給糧餉。後方安定、持續糧道與統軍取勝，是不同的工作。' },
+        { text:'三段評語擺在任用桌上，稍後你要親自配對。' }]);requireAnchor(await ctx.anchor('df_09'),'df_09');requireAnchor(await ctx.anchor('df_10'),'df_10');ctx.unlock('text:ch_sanjielun');return 'n_05';
+    },
+    n_05: async ctx => {
+      ctx.expr('liubang','serious');
+      ctx.cast(['liubang', 'zhangliang', 'shiguan']);
+      await ctx.say([{ who:'liubang', text:'此三者，皆人傑也，吾能用之，此吾所以取天下也。' },
+        { text:'話題轉到楚營的范增。讀高祖如何比較兩方的用人。' },
+        { who:'shiguan', text:'先辨這句話的說話者與意思，再用其他事件檢查他的評論。' }]);
+      const r = await ctx.anchor('df_03'); requireAnchor(r, 'df_03'); return 'n_06';
+    },
+    n_06: async ctx => {
+      const r = await ctx.minigame({ id:'wen_df_sanjie', title:'論三傑・親自任用',skip:false,goal:'親自配對三傑職掌與楚營對照；錯項親自補正，保留首績。',
+        help:'<p>先選人物，再選職掌，親自確認。四項首答固定，每項25分；未全對須本人補正。范增是獨立楚營對照，不安排他入漢廷。協助不代選、不洗首分。</p>' }, appointmentGame);
+      if (!validAppointment(r)) { await ctx.say([{ text:'任用桌尚未完整完成，請親自完成四項再繼續。' }]); return 'n_06'; }
+      ctx.state.vars.appointment=Object.assign({},r.firstResult || r,{completed:true,completion:r.completion,bestScore:r.score}); ctx.flag('appointmentDone', true); return 'n_07';
+    },
+    n_07: async ctx => {
+      const r = ctx.state.vars.appointment;
+      ctx.add('crown', 80 + Math.round(r.score * .2) - ctx.meter('crown'));
+      await ctx.say([{ text:'論三傑首次' + r.score + '分；四項已由你親自完成，補正不改首分。' },
+        { who:'shiguan', text:'謀畫、後勤、統軍各有作用。知道誰有本領，也要給他能發揮的位置。' },
+        { text:'任用桌收起。接著有人問：功臣的位次該如何安排？' }]); return 'n_08';
+    },
+    n_08: async ctx => {
+      ctx.expr('caoshen','serious');ctx.expr('liubang','worried');
+      await ctx.chapter('第二幕　論功與誓約', '封侯與議定位次');
+      await ctx.scene('hall', { tod:'day',banner:'#a84636',glyph:'漢',place:'漢廷', time:'群臣爭功' }); ctx.cast(['liubang', 'caoshen', 'shiguan']);
+      await ctx.say([{ text:'漢五年，既殺項羽，定天下，論功行封。群臣爭功，歲餘功不決。' },
+        { text:'曹參在前線攻城作戰，群臣提起他的許多傷痕。' },
+        { who:'shiguan', text:'封邑與位次的討論有過程。先比較不同工作，稍後再辨史書如何定次。' }]);
+      ctx.unlock('person:ch_caoshen'); return 'n_09';
+    },
+    n_09: async ctx => {
+      await ctx.say([{ text:'論功之中，高祖用狩獵作比喻。先讀兩種工作各做了什麼。' },
+        { who:'shiguan', text:'比喻中的人與狗各有動作，不能只看稱呼就取消任何一方的功勞。' },
+        { text:'指示與追逐怎樣相連？輪到你判讀。' }]);
+      const r = await ctx.anchor('df_04'); requireAnchor(r, 'df_04'); ctx.unlock('idiom:gongrengonggou'); return 'n_10';
+    },
+    n_10: async ctx => { await govern(ctx, 'merit', REFLECTIONS[0]); return 'n_11'; },
+    n_11: async ctx => {
+      ctx.expr('ejun','serious');ctx.expr('caoshen','serious');
+      ctx.cast(['liubang', 'caoshen', 'ejun', 'shiguan']);
+      await ctx.say([{ text:'封侯之後，群臣奏請安排位次。曹參的傷與戰功成為席間主張。' },
+        { who:'shiguan', text:'先回答史書最後採取的安排；你自己的評功理由另有紀錄。' },
+        { text:'讀清眾臣主張，再作這道史實抉擇。' }]);
+      const r = await ctx.anchor('df_05'); requireAnchor(r, 'df_05');
+      if (!ctx.flag('rankRecorded')) { ctx.state.vars.rankFirstRight = firstIndependent(r); ctx.flag('rankRecorded', true); }
+      await ctx.say([{ text:'鄂君進言：前線失利後，蕭何仍能補兵、供糧，持續支援作戰。' },
+        { text:'高祖採納他的比較，定蕭何第一、曹參次之；前線功勞仍在。' },
+        { who:'shiguan', text:'史書的位次已辨明。評功時，仍可用理由比較各種工作如何互相支援。' }]); return 'n_12';
+    },
+    n_12: async ctx => {
+      await ctx.say([{ text:'封爵許下承諾。年表序保存了一段以河山作比的誓語。' },
+        { who:'shiguan', text:'先讀誓語說了什麼，再問後來是否實踐。承諾與結果需要分開查考。' },
+        { text:'河、帶、泰山與厲，合在一起表達何種願望？' }]);
+      const r = await ctx.anchor('df_06'); requireAnchor(r, 'df_06');
+      ctx.unlock('person:ch_ejun');ctx.unlock('idiom:heshandaili'); ctx.unlock('text:ch_gongchenbiao'); return 'n_13';
+    },
+    n_13: async ctx => { await govern(ctx, 'promise', REFLECTIONS[1]); return 'n_14'; },
+    n_14: async ctx => {
+      ctx.expr('liubang','serious');ctx.expr('hanxin','surprised');
+      await ctx.chapter('第三幕　功成之後', '漢六年・會諸侯於陳');
+      await ctx.scene('road', { tod:'day',banner:'#a84636',glyph:'漢',place:'陳・諸侯會面', time:'偽遊雲夢之計' }); ctx.cast(['liubang', 'hanxin', 'shiguan']);
+      await ctx.say([{ text:'有人上書告楚王韓信反。高祖用陳平計，假稱遊雲夢，會諸侯於陳。' },
+        { text:'韓信前來會面，被高祖拘執。這裡不把告發直接當作已證明的全部事實。' },
+        { who:'shiguan', text:'會面與被捕在陳。接著讀韓信當時的感嘆，不將後來結局混入此刻。' }]); return 'n_15';
+    },
+    n_15: async ctx => {
+      ctx.expr('hanxin','worried');
+      await ctx.say([{ text:'韓信說到獵事與戰事，將兔、狗、鳥、弓與謀臣並列。' },
+        { who:'shiguan', text:'辨他的感受與比喻，再想這句話是否足以證明所有人的未來。' },
+        { text:'這段話寫在被捕的記載裡，輪到你判讀。' }]);
+      const r = await ctx.anchor('df_07'); requireAnchor(r, 'df_07'); ctx.unlock('idiom:niaojingongcang'); return 'n_16';
+    },
+    n_16: async ctx => {
+      ctx.expr('hanxin','sad');ctx.expr('shiguan','serious');
+      await ctx.scene('hall', { tod:'day',banner:'#a84636',glyph:'漢',place:'雒陽', time:'漢六年・被捕之後' }); ctx.cast(['hanxin', 'shiguan']);
+      await ctx.say([{ text:'至雒陽，高祖赦韓信罪，降為淮陰侯。被捕這一幕並未當場處死。' },
+        { who:'shiguan', text:'把被捕、降侯、後來事件分開，才不會讓一句感嘆代替整段經過。' },
+        { text:'時間往後移。下一段只交代後來的史事。' }]);requireAnchor(await ctx.anchor('df_11'),'df_11');return 'n_17';
+    },
+    n_17: async ctx => {
+      ctx.expr('lvhou','serious');ctx.expr('xiaohe','worried');
+      await ctx.chapter('時間跳轉', '漢十一年・韓信後來的事件');
+      await ctx.scene('hall', { tod:'day',banner:'#a84636',glyph:'漢',place:'漢廷', time:'高祖出征在外' }); ctx.cast(['lvhou', 'xiaohe', 'shiguan']);
+      await ctx.say([{ text:'史書記韓信後來被誅，呂后用蕭何計；當時高祖出征在外。' },
+        { who:'shiguan', text:'這是後來的結局，與漢六年被捕不同。本話保留年份與人物，不鋪陳細節。' },
+        { text:'讀過誓約與感嘆，現在由你說明如何看待信任與責任。' }]);
+      ctx.unlock('person:ch_lvhou'); return 'n_18';
+    },
+    n_18: async ctx => { await govern(ctx, 'trust', REFLECTIONS[2]); return 'n_19'; },
+    n_19: async ctx => {
+      ctx.expr('liubang','happy');ctx.expr('elders','happy');ctx.expr('children','happy');
+      await ctx.chapter('第四幕　還鄉擊筑', '漢十二年・擊黥布還師');
+      await ctx.scene('banquet', { tod:'day',banner:'#a84636',glyph:'漢',tod:'dusk',place:'沛宮', time:'故人父老相聚' }); ctx.cast(['liubang', 'elders', 'children', 'shiguan']);
+      await ctx.say([{ text:'高祖擊黥布還師，過沛停留，召故人父老子弟飲酒。' },
+        { text:'發沛中兒得百二十人，教之歌。', },
+        { who:'shiguan', text:'這一百二十人是學歌的孩子。你要親自擊筑唱完三句。' },
+        { text:'故鄉的人聚在眼前，歌聲將從這場酒席傳出。' }]);requireAnchor(await ctx.anchor('df_12'),'df_12');ctx.unlock('text:ch_peige');return 'n_20';
+    },
+    n_20: async ctx => {
+      await ctx.say([{ text:'酒到酣處，你擊筑作歌。' },
+        { who:'shiguan', text:'筑是古代弦樂器。先練四拍，再以一個按鍵唱完三句。' },
+        { text:'跟金框的視覺提示即可；教學拍點不聲稱是漢代原曲。' }]);
+      ctx.unlock('treasure:ch_zhu'); return 'n_21';
+    },
+    n_21: async ctx => {
+      const r = await ctx.minigame({ id:'df_zhu', title:'擊筑而歌・三句親自完成',skip:false,goal:'練四拍，擊筑三句共24拍並逐句讀畢；首輪受阻需親自分步完成。',
+        help:'<p>先練四拍。拍符進金框、框變青綠時按擊筑、空白或Enter。三句各八拍，首輪約30秒；首分固定。未達標須本人分步擊完24拍、逐句確認讀畢；切頁、失焦或說明會暫停，親按繼續。</p>' }, songGame);
+      if (!validSong(r)) { await ctx.say([{ text:'三句演唱尚未完整完成，請回本段親自操作。' }]); return 'n_21'; }
+      ctx.state.vars.song=Object.assign({},r.firstResult || r,{completed:true,completion:r.completion,bestScore:r.score}); ctx.flag('songDone', true); return 'n_22';
+    },
+    n_22: async ctx => {
+      ctx.expr('liubang','worried');
+      await ctx.say([{ text:'歌聲仍在沛宮，三句由風雲唱到故鄉，再唱到四方。' },
+        { who:'shiguan', text:'唱過全詩，再讀最後一句帶來哪一層心情。' },
+        { text:'這次用詩句本身支持你的判斷。' }]);
+      const r = await ctx.anchor('df_08'); requireAnchor(r, 'df_08'); ctx.unlock('text:ch_dafengge'); return 'n_23';
+    },
+    n_23: async ctx => {
+      ctx.expr('liubang','sad');
+      await ctx.say([{ text:'擊筑首次' + ctx.state.vars.song.score + '分；三句已親自完成，首分保留。' },
+        { text:'高祖乃起舞，慷慨傷懷，泣數行下。' },
+        { who:'shiguan', text:'威加海內與歸故鄉有豪情，安得猛士又牽掛守成。幾種心情能同在一首歌裡。' },
+        { text:'曲終，劉邦的身分將放下。接著回到你自己。' }]); return 'n_24';
+    },
+    n_24: async ctx => {
+      ctx.expr('shiguan','normal');
+      await ctx.chapter('全遊戲尾聲', 'Lv.1 亂世策士・起始身分的回憶');
+      await ctx.scene('academy', { tod:'night',banner:'#a84636',glyph:'漢',place:'史卷之前', time:'回到你自己的視角' }); ctx.cast(['shiguan']);
+      const future=DF.progress('future');if(future.first){ctx.state.vars.future=future.first;ctx.flag('futureRecorded',true);}if(!ctx.flag('futureRecorded')){
+        const first = await ctx.choose({ title:'你希望成為怎樣的策士？', text:'這個選擇不另加德望；選一個想帶回生活的方向。', options:[
+          { label:'查證之後再判斷，願意依新證據修正', value:'evidence' },
+          { label:'辨清不同功勞，讓合作的人發揮本領', value:'cooperate' },
+          { label:'謹慎許諾，照顧承諾所及的人', value:'promise' },
+          { label:'看清條件與代價，為選擇承擔責任', value:'responsibility' }] });
+        ctx.state.vars.future=first;ctx.flag('futureRecorded',true);DF.saveProgress('future',{first});await DF.checkpoint();
+      }
+      await ctx.say([{ text:FUTURE_FEEDBACK[ctx.state.vars.future] }]);
+      const reel=DF.progress('epilogue');for(let i=reel.index || 0;i<EPILOGUE.length;i++){await ctx.say(EPILOGUE[i].map(text=>({text})));reel.index=i+1;DF.saveProgress('epilogue',reel);await DF.checkpoint();}
+      return 'n_25';
+    },
+    n_25: async ctx => {
+      await ctx.say([{ text:'九話名單將慢慢展開。你可以暫停、逐話翻閱，或回看先前的人物。' },
+        { text:'每話親自按讀畢，最後合卷。那些判斷與操作，將跟著你回到日常。' },
+        { text:'楚漢篇・九話名單。' }]);
+      await creditsReview(ctx); return 'n_26';
+    },
+    n_26: async ctx => {
+      for(const id of ['df_09','df_10','df_11','df_12'])if(!ctx.state.anchors.some(a=>a.anchorId===id))requireAnchor(await ctx.anchor(id),id);ctx.unlock('text:ch_sanjielun');ctx.unlock('person:ch_ejun');ctx.unlock('text:ch_peige');
+      if (!ctx.flag('appointmentDone') || !ctx.flag('songDone') || !ctx.flag('creditsDone') ||
+        ANCHOR_ORDER.some(id => !ctx.state.anchors.some(a => a && a.anchorId === id))) throw new Error('本話體驗與原文尚未齊備，請重玩未完成的段落。');
+      return ctx.end({ type:'final', key:endingKey(ctx.state.vars.rankFirstRight, ctx.meter('people')) });
+    }
+  };
+  const REFLECTIONS = [
+    { title:'你用什麼依據辨功？', text:'評你的比較理由；史書最後的位次另由原文題判讀。', options:[
+      { label:'比較前線成果與持續補兵供糧，說明相互支援', value:'both' },
+      { label:'先重視前線，也把後勤條件與長期作用列入比較', value:'front' },
+      { label:'先列名字與次序，暫未說明功勞依據', value:'bare' },
+      { label:'只憑親疏排名，不看實際工作與貢獻', value:'favor' }], scores:{ both:100, front:100, bare:50, favor:0 }, feedback:{
+        both:'你比較不同工作如何相互支援，功勞有可以檢查的依據。', front:'你提出前線優先的理由，也保留後勤條件，這是可以討論的評功立場。',
+        bare:'次序需要理由。可補上前線成果、糧道與補兵各如何影響局勢。', favor:'親疏不能替代工作事蹟。偏私會使立功者難以信任評功的依據。' } },
+    { title:'誓約怎樣成為可守的承諾？', text:'從封爵之誓出發，說明承諾如何接受檢查。', options:[
+      { label:'記明賞格與事蹟，讓後來賞罰仍有依據', value:'record' },
+      { label:'重視長久承諾，也公開說明必須調整的條件', value:'conditions' },
+      { label:'只重複誓語，暫未說明如何實踐', value:'repeat' },
+      { label:'認為誓約只要好聽，日後可任意反悔', value:'ignore' }], scores:{ record:100, conditions:100, repeat:50, ignore:0 }, feedback:{
+        record:'承諾有記載與事蹟可查，日後的賞罰也需要說得出理由。', conditions:'你同時重視承諾與後來條件，調整仍須提出可檢查的理由。',
+        repeat:'誓語表達願望，還需說明如何記錄、實踐與檢查承諾。', ignore:'許諾所及的人會據此安排未來。任意反悔會損害人心與信任。' } },
+    { title:'如何處理功臣與掌權者的猜疑？', text:'區分感嘆、告發與後來記載，再提出自己的做法。', options:[
+      { label:'查證指控、聽取說法，讓權責與處置有據', value:'verify' },
+      { label:'承認有警戒需要，仍以可查證理由與程序處理', value:'cautious' },
+      { label:'只說大家應互信，暫未提出遇到猜疑的安排', value:'wish' },
+      { label:'有猜疑就任意處罰，不必查證也不必說理由', value:'punish' }], scores:{ verify:100, cautious:100, wish:50, punish:0 }, feedback:{
+        verify:'你讓告發與事實分開，並要求掌權者提出處置依據。', cautious:'你承認警戒可能存在，仍保留查證與說理，避免只憑猜疑處置。',
+        wish:'互信需要做法。可再說明怎樣查證、聽取意見與承擔後果。', punish:'猜疑本身不能代替證據。任意處罰也會使承諾與信任失去依據。' } }
+  ];
+  async function govern(ctx,key,q){const p=DF.progress('govern:'+key),old=ctx.state.vars[key];
+    if(!Object.hasOwn(p,'first') && old?.first)Object.assign(p,old,{people:ctx.meter('people'),applied:true,legacy:true});
+    if(!Object.hasOwn(p,'first')){const pending=ctx.choose({title:q.title,text:q.text,options:q.options});const card=[...document.querySelectorAll('.sty-choice__card')].at(-1);if(card)card.insertAdjacentHTML('afterbegin',governArt(key));p.first=await pending;p.score=q.scores[p.first];}
+    if(!Number.isFinite(p.people)){p.people=ctx.meter('people')+(p.score===100?10:p.score===0?-15:0);p.people=Math.max(0,Math.min(100,p.people));}ctx.add('people',p.people-ctx.meter('people'));p.applied=true;
+    ctx.state.vars[key]={first:p.first,score:p.score};DF.saveProgress('govern:'+key,p);await DF.checkpoint();
+    await ctx.say([{who:'shiguan',expr:p.score===0?'worried':'serious',text:q.feedback[p.first]}]);}
+  const FUTURE_FEEDBACK = {
+    evidence:'你選擇先查證。下一次判斷時，試著說出支持它的證據。',
+    cooperate:'你選擇辨功與合作。下一次分工時，試著讓不同本領各得其所。',
+    promise:'你選擇守信。下一次許諾時，想一想承諾所及的人與可行條件。',
+    responsibility:'你選擇承擔。下一次採取行動時，先看條件與代價，再說明自己的理由。'
+  };
+  const EPILOGUE = [
+    ['歌聲漸遠，你放下劉邦的身分，回到起點。', '如果曾從三卷的起點走來，你也許記得「Lv.1 亂世策士」的身分。', '這裡邀你回看三卷；尚未遊玩的篇章，也可以日後再探訪。'],
+    ['春秋的故事，讓你看見一句話如何改變兩國的距離。', '城下的交鋒、盟約中的承諾，都有人要承擔後果。', '你開始留意：說服了對方以後，自己能否守住所說的話。'],
+    ['戰國的辯論，讓你聽見不同的人如何理解天下。', '一條計策，總有它需要的條件，也有人付出的代價。', '你試著聽完理由，再決定採用哪一種主張。', '當條件改變，你也願意重新檢查自己的判斷。'],
+    ['楚漢的風聲，將這些問題帶進了軍營與宴席。', '帝國的命令、起義的呼聲、鴻門的進退，都落在人的選擇上。', '你親手作出判斷，也看見糧道、任用與信任如何牽動局勢。', '垓下的悲歌唱過，大風又從故鄉吹來。', '天下已定，守住天下的責任仍留在歌的最後一句。'],
+    ['第一次看清時，你能指出支持判斷的證據。', '需要提示時，你也能重新閱讀，親手完成操作。', '當答案改變，你可以說清楚自己改變的理由。', '這些經驗，會成為你下一次作出選擇的依據。'],
+    ['此刻，你可以想一想，自己希望成為怎樣的策士。', '你重視的理由，將決定你如何聽人、查證與許諾。', '回到教室，回到日常，你仍會遇見需要合作的人。', '你仍要分辨不同的功勞，也要照顧承諾所及的人。'],
+    ['史卷將合上，你把這些判斷帶回自己的生活。', '下一次作出選擇時，記得那些曾由你親手完成的時刻。']
+  ];
+  const CREDITS = [
+    { episode:'第一話', name:'秦政與沙丘', people:'李斯、秦始皇、趙高' },
+    { episode:'第二話', name:'大澤鄉', people:'陳勝、吳廣' },
+    { episode:'第三話', name:'鉅鹿與入關', people:'項羽、宋義、章邯' },
+    { episode:'第四話', name:'鴻門宴', people:'張良、劉邦、項羽、樊噲' },
+    { episode:'第五話', name:'分封與還定三秦', people:'蕭何、韓信、劉邦' },
+    { episode:'第六話', name:'滎陽成皋', people:'陳平、劉邦、項羽、紀信' },
+    { episode:'第七話', name:'韓信北伐', people:'韓信、張耳、李左車、漂母' },
+    { episode:'第八話', name:'垓下', people:'項羽、虞、烏江亭長、呂馬童' },
+    { episode:'尾聲', name:'大風歌', people:'劉邦、蕭何、曹參、韓信、呂后' }
+  ];
+  // ═════════════════════════ 6. 必做遊戲、手動協助與片尾 ═════════════════════════
+  const APPOINT_PORTRAITS={zhang:'zhangliang',xiao:'xiaohe',han:'hanxin',fan:'fanzeng'};
+  function portrait(id,expr='normal'){return ART.portrait(CHARACTERS.find(c=>c.id===id)||{id,name:id},{expr});}
+  function panorama(scene,ids,tod='day'){return '<div class="df-panorama">'+ART.scene(scene,{tod,banner:'#a84636',glyph:'漢'})+'<div class="df-panorama-cast">'+ids.map(id=>'<span>'+portrait(id,id==='liubang'?'serious':'normal')+'</span>').join('')+'</div></div>';}
+  function songArt(){return '<div class="df-song-stage"><div class="df-song-bg">'+ART.scene('banquet',{tod:'dusk',banner:'#a84636',glyph:'漢'})+'</div><div class="df-chorus" aria-label="歌童群像，象徵百二十兒">'+['#7d9869','#7996ae','#bc8474'].map((robe,i)=>ART.portrait({name:'沛中歌童',art:{hat:'none',beard:0,robe,pose:'gong',jade:false}},{expr:'happy'})).join('')+'</div><div class="df-singer">'+ART.portrait({id:'liubang',name:'劉邦',art:{prop:'zhu'}},{expr:'happy'})+'</div><span class="df-stage-label">沛宮・還鄉擊筑</span></div>';}
+  function governArt(key){return '<div class="df-govern-art">'+panorama(key==='trust'?'academy':'hall',key==='merit'?['xiaohe','caoshen']:key==='promise'?['liubang','ejun']:['hanxin','shiguan'])+'<p>'+({merit:'前線取勝 × 後方補給',promise:'賞格、事蹟、封爵之誓',trust:'告發、查證、處置之責'}[key])+'</p></div>';}
+
+  const APPOINTMENTS = [
+    { id:'zhang', name:'張良', sub:'漢廷・子房', right:'plan' },
+    { id:'xiao', name:'蕭何', sub:'漢廷・後方', right:'supply' },
+    { id:'han', name:'韓信', sub:'漢廷・統軍', right:'command' },
+    { id:'fan', name:'范增', sub:'楚營對照', right:'unused' }
+  ];
+  const POSTS = [ { value:'plan', label:'帳中籌策' }, { value:'supply', label:'治國・供糧' }, { value:'command', label:'統軍取勝' } ];
+  const FAN_CHOICES = [ { value:'none', label:'身旁全無人才' }, { value:'unused', label:'有謀士而不能用' }, { value:'han', label:'范增本在漢營' } ];
+  const VERSES = ['大風起兮雲飛揚，', '威加海內兮歸故鄉，', '安得猛士兮守四方！'];
+  function shuffled(values, rng) {
+    const a = values.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.min(i, Math.floor(rng() * (i + 1))); const v = a[i]; a[i] = a[j]; a[j] = v; }
+    return a;
+  }
+  function createAppointmentModel(rng,saved={}) {
+    const order=Array.isArray(saved.order)&&saved.order.length===4&&new Set(saved.order).size===4&&saved.order.every(id=>APPOINTMENTS.some(t=>t.id===id))?saved.order.slice():shuffled(APPOINTMENTS.map(t=>t.id),rng);
+    const s = { phase:'intro', current:null, choice:null, records:{}, correct:{}, attempts:{}, first:null,
+      completion:null, assisted:false, returnPhase:null, feedback:'先讀三傑評語，再親自任用；范增另作楚營對照。'};if(saved.state)Object.assign(s,JSON.parse(JSON.stringify(saved.state)));const snapshot=()=>({order:order.slice(),state:JSON.parse(JSON.stringify(s))});
+    const task = id => APPOINTMENTS.find(t => t.id === id);
+    const choices = id => id === 'fan' ? FAN_CHOICES : POSTS;
+    function freeze(normalCompleted) {
+      if (s.first) return;
+      const records = APPOINTMENTS.map(t => s.records[t.id] || { id:t.id, attempted:false, choice:null, correct:false });
+      const correct = records.filter(r => r.correct).length;
+      s.first = { normalCompleted, score:correct * 25, passed:normalCompleted && correct >= 3,
+        attempted:records.filter(r => r.attempted).length, correct, records:records.map(r => ({ ...r })) };
+    }
+    function complete() {
+      s.completion = { complete:true, total:4, manual:4, assisted:s.assisted,
+        correct:APPOINTMENTS.map(t => t.id), attempts:{ ...s.attempts } };
+      s.phase = 'finish'; s.current = null; s.choice = null; s.feedback = '四項都已親自確認正確。首分與首次達標紀錄保持原樣。';
+    }
+    function begin() { if (s.phase !== 'intro') return false; s.phase = 'first'; s.feedback = '先選人物，再選職掌，最後親自確認。'; return true; }
+    function selectPerson(id) {
+      if (!task(id) || !['first', 'guided'].includes(s.phase) || (s.phase === 'first' ? s.records[id] : s.correct[id])) return false;
+      s.current = id; s.choice = null; s.feedback = id === 'fan' ? '這是楚營對照，請判讀項羽與范增的用人問題。' : '親自選此人的職掌，再確認任用。'; return true;
+    }
+    function selectPost(value) {
+      if (!s.current || !['first', 'guided'].includes(s.phase) || !choices(s.current).some(o => o.value === value)) return false;
+      s.choice = value; s.feedback = '選擇尚未送出。請親自按確認。'; return true;
+    }
+    function confirm() {
+      if (!['first', 'guided'].includes(s.phase) || !s.current || !s.choice) return false;
+      const id = s.current, right = s.choice === task(id).right;
+      s.attempts[id] = (s.attempts[id] || 0) + 1;
+      if (s.phase === 'first') {
+        if (s.records[id]) return false;
+        s.records[id] = { id, attempted:true, choice:s.choice, correct:right };
+        if (right) s.correct[id] = true;
+        s.current = null; s.choice = null; s.feedback = '此項首答已記。請親自處理其餘人物與楚營對照。';
+        if (Object.keys(s.records).length === 4) {
+          freeze(true);
+          if (Object.keys(s.correct).length === 4) complete();
+          else { s.phase = 'repair'; s.feedback = '首分已固定。錯項仍須親自補正，四項都完成才回劇情。'; }
+        }
+      } else {
+        if (right) { s.correct[id] = true; s.current = null; s.choice = null; s.feedback = '此項已由你正確確認，請完成其餘未完成項。'; }
+        else { s.choice = null; s.feedback = '再看原典職掌與提示，親自重選；不代選，也不改首分。'; }
+        if (Object.keys(s.correct).length === 4) complete();
+      }
+      return true;
+    }
+    function askAssist() { if (!['first', 'repair'].includes(s.phase)) return false; s.returnPhase = s.phase; s.phase = 'assist'; s.feedback = '確認前不固定新首分。未作答項在確認協助後按首分0記。'; return true; }
+    function cancelAssist() { if (s.phase !== 'assist') return false; s.phase = s.returnPhase; s.returnPhase = null; s.feedback = '已取消，回原段親自任用。'; return true; }
+    function assist() {
+      if (s.phase !== 'assist') return false;
+      freeze(false); s.assisted = true; s.phase = 'guided'; s.current = null; s.choice = null; s.returnPhase = null;
+      s.feedback = '首分固定。請點未完成項，依提示親自配對並確認。'; return true;
+    }
+    function result() {
+      if (s.phase !== 'finish' || !s.first || !s.completion) return null;
+      return { completed:true, passed:s.first.passed, score:s.first.score, max:100, assisted:s.assisted,
+        first:{ ...s.first, records:s.first.records.map(r => ({ ...r })) },
+        completion:{ ...s.completion, correct:s.completion.correct.slice(), attempts:{ ...s.completion.attempts } } };
+    }
+    return { state:s,order,snapshot,choices, begin, selectPerson, selectPost, confirm, askAssist, cancelAssist, assist, result };
+  }
+  function validAppointment(r) {
+    if (!r || !r.completed || r.skipped || r.max !== 100 || !r.first || !r.completion || !r.completion.complete ||
+      r.completion.total !== 4 || r.completion.manual !== 4 || !r.completion.attempts || !Array.isArray(r.first.records) || r.first.records.length !== 4 ||
+      r.first.records.some(x => !x || typeof x.attempted !== 'boolean' || typeof x.correct !== 'boolean') || typeof r.first.normalCompleted !== 'boolean' ||
+      !Array.isArray(r.completion.correct) || new Set(r.completion.correct).size !== 4 ||
+      !APPOINTMENTS.every(t => r.completion.correct.includes(t.id) && r.completion.attempts[t.id] >= 1)) return false;
+    const records = r.first.records;
+    if (new Set(records.map(x => x.id)).size !== 4 || !APPOINTMENTS.every(t => records.some(x => x.id === t.id)) ||
+      records.some(x => x.correct !== (!!x.attempted && x.choice === APPOINTMENTS.find(t => t.id === x.id).right))) return false;
+    const score = records.filter(x => x.correct).length * 25;
+    const passed = r.first.normalCompleted && records.every(x => x.attempted) && score >= 75;
+    return r.score === score && r.first.score === score && r.passed === passed && r.first.passed === passed &&
+      r.assisted === r.completion.assisted && (r.assisted || score === 100);
+  }
+  function appointmentGame(body, g) {
+    return new Promise(resolve => {
+      const old=g.getProgress(),pattern=DF.progress('appointment-order'),m=createAppointmentModel(()=>g.rng(),old.model || {order:pattern.order}),s=m.state;let alive=true;
+      if(!pattern.order)DF.saveProgress('appointment-order',{order:m.order});const persist=()=>g.setProgress({model:m.snapshot()});
+      const btn = (action, text, primary, disabled) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + '" data-action="' + action + '"' + (disabled ? ' disabled' : '') + '>' + g.esc(text) + '</button>';
+      function render(focus) {
+        let actions = '';
+        if (s.phase === 'intro') actions = btn('begin', '親自開始任用', true);
+        else if (s.phase === 'first' || s.phase === 'guided') actions = btn('confirm', s.current === 'fan' ? '確認楚營判讀' : '親自確認任用', true, !s.current || !s.choice) + (s.phase === 'first' ? btn('ask-assist', '改用分步協助', false) : '');
+        else if (s.phase === 'assist') actions = btn('cancel-assist', '取消・回原段', false) + btn('assist', '固定首分・親自分步完成', true);
+        else if (s.phase === 'repair') actions = btn('ask-assist', '準備親自補正錯項', true);
+        else if (s.phase === 'finish') actions = btn('finish', '確認完整完成・回劇情', true);
+        const enabled = ['first', 'guided'].includes(s.phase);
+        const cards = m.order.map(id => { const t = APPOINTMENTS.find(t => t.id === id), done = s.phase === 'first' ? !!s.records[id] : !!s.correct[id];
+          return '<button type="button" class="zh-btn zh-btn--quiet' + (s.current === id ? ' is-selected' : '') + '" data-person="' + id + '" aria-pressed="' + (s.current === id) + '"' + (!enabled || done ? ' disabled' : '') + '><span class="df-person">'+portrait(APPOINT_PORTRAITS[id],id==='fan'?'worried':'normal')+'</span><b>'+g.esc(t.name) + '</b><span>' + g.esc(t.sub + (done ? '・本階段已確認' : '')) + '</span></button>'; }).join('');
+        const choices = s.current ? m.choices(s.current) : [];
+        const posts = choices.map(o => '<button type="button" class="zh-btn zh-btn--quiet" data-post="' + o.value + '" aria-pressed="' + (s.choice === o.value) + '">' + g.esc(o.label) + '</button>').join('');
+        let prompt = s.current ? (s.current === 'fan' ? '楚營對照：項羽有范增，卻如何用他？' : '你正在為' + APPOINTMENTS.find(t => t.id === s.current).name + '配職掌。') : '先點未完成的人物卡；范增是楚營對照，不任入漢廷。';
+        if (s.phase === 'guided' && s.current) prompt += ' 分步提示：' + m.choices(s.current).find(o => o.value === APPOINTMENTS.find(t => t.id === s.current).right).label + '。請本人選擇並確認。';
+        const status = s.first ? '首次' + s.first.score + '分・' + (s.first.passed ? '首次達標' : '首次未達標') + '・已完成' + Object.keys(s.correct).length + '／4' : '首答已記' + Object.keys(s.records).length + '／4';
+        body.innerHTML = '<section class="ch09-game" data-kind="appointment" data-phase="' + s.phase + '"><h2>論三傑・親自任用</h2><p>選人物、選職掌，再親自確認；范增另作楚營對照。</p>' +
+          '<div class="ch09-live">' + g.esc(status) + '</div><div class="ch09-cards">' + cards + '</div><div class="ch09-panel">' + g.esc(prompt) + '</div>' +
+          '<div class="ch09-posts">' + posts + '</div><div class="ch09-controls"><div class="ch09-actions">' + actions + '</div></div>' +
+          '<p class="ch09-feedback" aria-live="polite">' + g.esc(s.feedback) + '</p><p>原典職掌：張良籌策；蕭何治國、供糧；韓信統軍。不限時，補正不改首分。</p></section>';
+        g.setStatus(status);persist();
+        if (focus && !document.querySelector('.zh-modal,.sty-choice,.za,.zc,.zc-detail,.codex-detail')) {
+          const el = body.querySelector(s.current ? '[data-post]' : '[data-person]:not(:disabled), [data-action]:not(:disabled)');
+          if (el) { el.focus({ preventScroll:true }); el.scrollIntoView({ block:'nearest' }); }
+        }
+      }
+      function click(e) {
+        const b = e.target.closest('button'); if (!alive || !b || !body.contains(b) || b.disabled) return;
+        let focus = true;
+        if (b.dataset.person) m.selectPerson(b.dataset.person);
+        else if (b.dataset.post) { m.selectPost(b.dataset.post); focus = false; }
+        else if (b.dataset.action === 'begin') m.begin();
+        else if (b.dataset.action === 'confirm') m.confirm();
+        else if (b.dataset.action === 'ask-assist') m.askAssist();
+        else if (b.dataset.action === 'cancel-assist') m.cancelAssist();
+        else if (b.dataset.action === 'assist') m.assist();
+        else if (b.dataset.action === 'finish') { const r = m.result(); if (validAppointment(r)) { alive = false; resolve(r); return; } }
+        const action = b.dataset.action, post = b.dataset.post; render(focus);
+        if (post) { const target = body.querySelector('[data-action="confirm"]'); if (target) target.focus({ preventScroll:true }); }
+        else if (action === 'ask-assist') { const target = body.querySelector('[data-action="cancel-assist"]'); if (target) target.focus({ preventScroll:true }); }
+      }
+      function key(e) { if (alive && e.repeat && body.contains(e.target) && ['Enter', ' '].includes(e.key)) e.preventDefault(); }
+      body.addEventListener('click', click); document.addEventListener('keydown', key);
+      g.onCleanup(() => { alive = false; body.removeEventListener('click', click); document.removeEventListener('keydown', key); });
+      render(false);
+    });
+  }
+  function createSongModel(saved={}) {
+    const total = 24, schedule = Array.from({ length:total }, (_, i) => ({ due:2 + (i + 1) * 1.1, phrase:Math.floor(i / 8), beat:i % 8 + 1 }));
+    const s = { phase:'intro', time:0, index:0, hits:0, used:[0,0,0], marked:false, first:null,
+      completion:null, assisted:false, practice:0, practiceCorrect:false, guide:0, guideCorrect:false,
+      manual:0, guideUsed:[0,0,0], acknowledgements:[false,false,false], review:0, returnPhase:null,
+      feedback:'先親自練四拍，再擊筑唱完三句。'};if(saved.state)Object.assign(s,JSON.parse(JSON.stringify(saved.state)));const snapshot=()=>({state:JSON.parse(JSON.stringify(s))});
+    function freeze(normalCompleted) {
+      if (!s.first) { const score = bounded(s.hits / total * 100); s.first = { normalCompleted, score,
+        passed:normalCompleted && score >= 70 && s.used.every(n => n > 0), hits:s.hits,
+        processed:s.index, used:s.used.slice(), durationSec:Math.round(s.time * 1000) / 1000 }; }
+    }
+    function complete() {
+      s.completion = { complete:true, total, manual:s.assisted ? s.manual : s.hits, assisted:s.assisted,
+        used:(s.assisted ? s.guideUsed : s.used).slice(), acknowledgements:s.acknowledgements.slice() };
+      s.phase = 'finish'; s.feedback = '三句已親自完成並讀畢。首分與首次達標紀錄保持原樣。';
+    }
+    function beginPractice() { if (s.phase !== 'intro') return false; s.phase = 'practice'; return true; }
+    function practiceNext() {
+      if (s.phase !== 'practice' || !s.practiceCorrect) return false;
+      s.practice++; s.practiceCorrect = false;
+      if (s.practice === 4) { s.phase = 'ready'; s.feedback = '四拍練習完成。可親自開始首輪。'; }
+      return true;
+    }
+    function start() { if (s.phase !== 'ready') return false; s.phase = 'running'; s.feedback = '拍符入金框、框變青綠時擊筑。'; return true; }
+    function input() {
+      if (s.phase === 'practice') { if (s.practiceCorrect) return false; s.practiceCorrect = true; s.feedback = '本拍已親自擊筑，再按確認練習。'; return true; }
+      if (s.phase === 'guided') { if (s.guideCorrect) return false; s.guideCorrect = true; s.manual++; s.guideUsed[Math.floor(s.guide / 8)]++; s.feedback = '本拍已親自擊筑，請確認下一拍。'; return true; }
+      if (s.phase !== 'running' || s.index >= total || s.marked) return false;
+      if (Math.abs(s.time - schedule[s.index].due) <= .35) { s.marked = true; s.hits++; s.used[schedule[s.index].phrase]++; s.feedback = '命中本拍，單拍只計一次。'; return true; }
+      s.feedback = '看金框的視覺提示，等框變青綠再按。'; return false;
+    }
+    function advance(dt) {
+      if (s.phase !== 'running' || !Number.isFinite(dt) || dt <= 0) return false;
+      s.time += dt;
+      while (s.index < total && s.time > schedule[s.index].due + .35) { if (!s.marked) s.feedback = '本拍未命中，保留記錄，繼續下一拍。'; s.index++; s.marked = false; }
+      if (s.index === total) {
+        s.time = schedule[total - 1].due + .35; freeze(true);
+        s.phase = s.first.passed ? 'review' : 'repair'; s.review = 0;
+        s.feedback = s.first.passed ? '首輪達標，請親自確認三句讀畢。' : '首分已固定，接著親自分步唱完三句。';
+      }
+      return true;
+    }
+    function pause() { if (s.phase !== 'running') return false; s.phase = 'paused'; s.feedback = '已暫停，回來親按繼續。'; return true; }
+    function resume() { if (s.phase !== 'paused') return false; s.phase = 'running'; s.feedback = '已繼續，首輪紀錄保留。'; return true; }
+    function askAssist() {
+      if (!['ready', 'running', 'paused', 'repair'].includes(s.phase)) return false;
+      s.returnPhase = s.phase === 'running' ? 'paused' : s.phase; s.phase = 'assist'; s.feedback = '尚未確認，不固定新首分。'; return true;
+    }
+    function cancelAssist() { if (s.phase !== 'assist') return false; s.phase = s.returnPhase; s.returnPhase = null; s.feedback = '已取消協助；暫停中的首輪須親按繼續。'; return true; }
+    function assist() {
+      if (s.phase !== 'assist') return false;
+      freeze(false); s.assisted = true; s.phase = 'guided'; s.guide = 0; s.guideCorrect = false;
+      s.manual = 0; s.guideUsed = [0,0,0]; s.acknowledgements = [false,false,false]; s.returnPhase = null;
+      s.feedback = '首分固定，親自擊每一拍再確認，每句八拍後親按讀畢。'; return true;
+    }
+    function guideNext() {
+      if (s.phase !== 'guided' || !s.guideCorrect) return false;
+      s.guide++; s.guideCorrect = false;
+      if (s.guide % 8 === 0) { s.phase = 'review'; s.review = s.guide / 8 - 1; s.feedback = '本句八拍已親自完成，請讀全句，再親按讀畢。'; }
+      else s.feedback = '親自擊筑，再按確認本拍。'; return true;
+    }
+    function acknowledge() {
+      if (s.phase !== 'review') return false;
+      s.acknowledgements[s.review] = true;
+      if (s.assisted) {
+        if (s.guide === total) complete();
+        else { s.phase = 'guided'; s.feedback = '下一句仍由你親自擊筑，首分不變。'; }
+      } else { s.review++; if (s.review === 3) complete(); }
+      return true;
+    }
+    function result() {
+      if (s.phase !== 'finish' || !s.first || !s.completion) return null;
+      return { completed:true, passed:s.first.passed, score:s.first.score, max:100, assisted:s.assisted,
+        first:{ ...s.first, used:s.first.used.slice() }, completion:{ ...s.completion, used:s.completion.used.slice(), acknowledgements:s.completion.acknowledgements.slice() } };
+    }
+    return { state:s,schedule,snapshot,beginPractice, practiceNext, start, input, advance, pause, resume, askAssist, cancelAssist, assist, guideNext, acknowledge, result };
+  }
+  function validSong(r) {
+    if (!r || !r.completed || r.skipped || r.max !== 100 || !r.first || !r.completion || !r.completion.complete ||
+      r.completion.total !== 24 || !Array.isArray(r.completion.used) || r.completion.used.length !== 3 || !r.completion.used.every(n => n > 0) ||
+      !Array.isArray(r.completion.acknowledgements) || r.completion.acknowledgements.length !== 3 || !r.completion.acknowledgements.every(v => v === true) ||
+      !Number.isInteger(r.first.hits) || r.first.hits < 0 || r.first.hits > 24 || typeof r.first.normalCompleted !== 'boolean' ||
+      !Number.isInteger(r.first.processed) || r.first.processed < 0 || r.first.processed > 24 || !Array.isArray(r.first.used) || r.first.used.length !== 3 ||
+      !r.first.used.every(n => Number.isInteger(n) && n >= 0 && n <= 8) || !r.completion.used.every(n => Number.isInteger(n) && n > 0 && n <= 8) ||
+      r.first.used.reduce((a,b) => a + b, 0) !== r.first.hits || r.score !== bounded(r.first.hits / 24 * 100) || r.score !== r.first.score || r.passed !== r.first.passed) return false;
+    const passed = r.first.normalCompleted && r.first.processed === 24 && r.score >= 70 && r.first.used.every(n => n > 0);
+    if (r.passed !== passed || r.assisted !== r.completion.assisted) return false;
+    return r.assisted ? !r.passed && r.completion.manual === 24 && r.completion.used.every(n => n === 8) : r.passed && r.completion.manual === r.first.hits;
+  }
+  function songGame(body, g) {
+    return new Promise(resolve => {
+      const old=g.getProgress(),m=createSongModel(old.model),s=m.state;if(s.phase==='running'){m.pause();s.feedback='拍點與首績已接續；請親按繼續，時間才會走。';}
+      let alive=true,raf=0,lastTime=null,sound=!!old.sound,paintedPhase='',lastStatus='',lastPersist=0;const persist=()=>{g.setProgress({model:m.snapshot(),sound});lastPersist=performance.now();};
+      const blocked = () => document.hidden || !!document.querySelector('.zh-modal,.sty-choice,.za,.zc,.zc-detail,.codex-detail');
+      const btn = (a, text, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + '" data-action="' + a + '">' + g.esc(text) + '</button>';
+      function index() { return s.phase === 'practice' ? s.practice : s.assisted ? Math.min(s.guide,23) : Math.min(s.index,23); }
+      function phrase() { return s.phase === 'review' ? s.review : Math.floor(index() / 8); }
+      function render(focus) {
+        paintedPhase = s.phase; let actions = '';
+        if (s.phase === 'intro') actions = btn('practice','親自開始四拍練習',true);
+        else if (s.phase === 'practice') actions = btn('practice-next','確認練習・下一拍',true);
+        else if (s.phase === 'ready') actions = btn('start','親自開始首輪',true) + btn('ask-assist','改用分步協助',false);
+        else if (s.phase === 'running') actions = btn('pause','暫停',false) + btn('ask-assist','改用分步協助',false);
+        else if (s.phase === 'paused') actions = btn('resume','親自繼續首輪',true) + btn('ask-assist','改用分步協助',false);
+        else if (s.phase === 'assist') actions = btn('cancel-assist','取消・回原段',false) + btn('assist','固定首分・親自分步完成',true);
+        else if (s.phase === 'repair') actions = btn('ask-assist','準備親自分步完成',true);
+        else if (s.phase === 'guided') actions = btn('guide-next','確認本拍・下一拍',true);
+        else if (s.phase === 'review') actions = btn('acknowledge','親自確認本句讀畢',true);
+        else if (s.phase === 'finish') actions = btn('finish','確認完整完成・回劇情',true);
+        actions += btn('sound','提示音：' + (sound ? '開' : '關'),false);
+        const active = ['practice','running','guided'].includes(s.phase);
+        body.innerHTML='<section class="ch09-game" data-kind="song" data-phase="'+s.phase+'"><div class="ch09-live" data-live></div><div class="df-song-layout">'+songArt()+'<div class="df-song-controls">'+
+          '<div class="ch09-lyrics">'+VERSES.map((v,i)=>'<p class="ch09-verse" data-verse="'+i+'">'+g.esc(v)+'</p>').join('')+'</div>'+
+          '<div class="ch09-beats" aria-hidden="true">'+Array.from({length:8},(_,i)=>'<span data-beat="'+i+'">'+(i+1)+'</span>').join('')+'</div>'+
+          '<div class="ch09-track" aria-hidden="true"><span class="ch09-ring"></span><span class="ch09-note" data-note>拍</span></div>'+
+          '<div class="ch09-panel" data-prompt></div><div class="ch09-controls"><button type="button" class="zh-btn zh-btn--primary ch09-hit" data-hit'+(active?'':' disabled')+'>親自擊筑</button><div class="ch09-actions">'+actions+'</div></div>'+
+          '<p class="ch09-feedback" data-feedback aria-live="polite"></p><p data-chorus>百二十兒準備和歌。</p><p class="df-song-note">三句各八拍為教學節奏；可用按鈕、空白／Enter，不必開聲音。</p></div></div></section>';
+        paint();persist();
+        if (focus && !blocked()) { const el = body.querySelector(active ? '[data-hit]' : '[data-action]:not(:disabled)'); if (el) { el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest'}); } }
+      }
+      function paint() {
+        const live = body.querySelector('[data-live]'); if (!live) return;
+        const i = index(), ph = phrase(), beat = i % 8, windowOpen = s.phase === 'running' && Math.abs(s.time - m.schedule[i].due) <= .35;
+        let status = '', prompt = '';
+        if (s.phase === 'intro') { status = '操作練習尚未開始'; prompt = '先親自擊四拍，再按確認練習。不計分。'; }
+        else if (s.phase === 'practice') { status = '練習第' + (s.practice+1) + '／4拍'; prompt = '親自擊筑，再確認下一拍。'; }
+        else if (s.phase === 'ready') { status = '練習完成・等待開始'; prompt = '首輪三句共24拍，約30秒。一般說明與暫停不扣分。'; }
+        else if (s.phase === 'running') { status = '第' + (ph+1) + '句・第' + (beat+1) + '拍・命中' + s.hits + '・剩' + Math.ceil(Math.max(0,28.75-s.time)) + '秒'; prompt = windowOpen ? '金框已變青綠，現在擊筑。' : '看拍符進框，等金框變青綠再按。'; }
+        else if (s.phase === 'paused') { status = '首輪已暫停'; prompt = '回來親按繼續，時間才走。'; }
+        else if (s.phase === 'assist') { status = '等待確認分步協助'; prompt = '確認後固定首分，未完整首輪不算首次達標；再親自完成24拍。'; }
+        else if (s.phase === 'guided') { status = '分步第' + (s.guide+1) + '／24拍・首分' + s.first.score; prompt = '親自擊筑，再確認本拍。每句八拍後親按讀畢。'; }
+        else if (s.phase === 'review') { status = '第' + (ph+1) + '句・確認讀畢'; prompt = '請讀完整本句，再親按確認：' + VERSES[ph]; }
+        else { status = '首次' + s.first.score + '分・' + (s.first.passed ? '首次達標' : '首次未達標'); prompt = s.phase === 'finish' ? '三句已完整完成。親自確認後回劇情，首分不變。' : '首輪未達標，接著本人分步唱完三句。'; }
+        live.textContent = status; body.querySelector('[data-prompt]').textContent = prompt;
+        const fb = body.querySelector('[data-feedback]'); if (fb.textContent !== s.feedback) fb.textContent = s.feedback;
+        if (status !== lastStatus) { g.setStatus(status); lastStatus = status; }
+        body.querySelectorAll('[data-verse]').forEach(el => el.classList.toggle('is-current', Number(el.dataset.verse) === ph));
+        body.querySelectorAll('[data-beat]').forEach(el => el.classList.toggle('is-current', Number(el.dataset.beat) === beat));
+        body.querySelector('[data-chorus]').textContent = ['running','guided','review'].includes(s.phase) ? '百二十兒和歌：' + VERSES[ph] : '百二十兒準備和歌。';
+        const note = body.querySelector('[data-note]'); note.hidden = !['practice','running','guided','paused'].includes(s.phase);
+        const ring=body.querySelector('.ch09-ring'),track=body.querySelector('.ch09-track'),base=ring.offsetTop+ring.offsetHeight/2-note.offsetHeight/2;note.style.top=Math.max(2,Math.min(track.clientHeight-note.offsetHeight-2,base+(['running','paused'].includes(s.phase)?(s.time-m.schedule[i].due)*48:0)))+'px';
+        body.querySelector('.ch09-ring').classList.toggle('is-window', windowOpen);
+        const practiceNext = body.querySelector('[data-action="practice-next"]'); if (practiceNext) practiceNext.disabled = !s.practiceCorrect;
+        const guideNext = body.querySelector('[data-action="guide-next"]'); if (guideNext) guideNext.disabled = !s.guideCorrect;
+        const resume = body.querySelector('[data-action="resume"]'); if (resume) resume.disabled = blocked();
+      }
+      function tick(now) { if (lastTime !== null && s.phase === 'running') m.advance(Math.max(0,(now-lastTime)/1000)); lastTime = now; }
+      function frame(now) {
+        if (!alive) return;
+        if (blocked() && m.pause()) render(false);
+        tick(now);if(paintedPhase!==s.phase)render(!blocked());else paint();if(s.phase==='running'&&now-lastPersist>=150)persist();raf = requestAnimationFrame(frame);
+      }
+      function hit() { if (!alive || blocked()) return; tick(performance.now()); if (m.input() && sound) g.sfx('click'); if (paintedPhase !== s.phase) render(false); else paint();persist();}
+      function click(e) {
+        const b = e.target.closest('button'); if (!alive || !b || !body.contains(b) || b.disabled || blocked()) return;
+        if (b.hasAttribute('data-hit')) { hit(); return; }
+        tick(performance.now()); const a = b.dataset.action;
+        if (a === 'sound') { sound = !sound; b.textContent='提示音：'+(sound?'開':'關');persist();return; }
+        if (a === 'practice') m.beginPractice(); else if (a === 'practice-next') m.practiceNext();
+        else if (a === 'start') { m.start(); lastTime = performance.now(); } else if (a === 'pause') m.pause();
+        else if (a === 'resume') { m.resume(); lastTime = performance.now(); } else if (a === 'ask-assist') m.askAssist();
+        else if (a === 'cancel-assist') m.cancelAssist(); else if (a === 'assist') m.assist();
+        else if (a === 'guide-next') m.guideNext(); else if (a === 'acknowledge') m.acknowledge();
+        else if (a === 'finish') { const r = m.result(); if (validSong(r)) { alive = false; resolve(r); return; } }
+        render(true);
+      }
+      function key(e) {
+        if (!alive || blocked() || ![' ', 'Enter'].includes(e.key)) return;
+        if (e.repeat) { e.preventDefault(); return; }
+        if (!['practice','running','guided'].includes(s.phase) || (e.target.closest && e.target.closest('[data-action]'))) return;
+        e.preventDefault(); hit();
+      }
+      function externalPause() { if (alive && m.pause()) { lastTime = null; render(false); } }
+      function visibility() { if (document.hidden) externalPause(); }
+      function leave(){externalPause();persist();DF.checkpoint();}window.addEventListener('pagehide',leave);
+      const observer = new MutationObserver(() => { if (alive && blocked()) externalPause(); });
+      body.addEventListener('click',click); document.addEventListener('keydown',key); window.addEventListener('blur',externalPause);
+      document.addEventListener('visibilitychange',visibility); observer.observe(document.body,{childList:true,subtree:true});
+      g.onCleanup(() => { alive=false;cancelAnimationFrame(raf);observer.disconnect();window.removeEventListener('pagehide',leave); body.removeEventListener('click',click);
+        document.removeEventListener('keydown',key); window.removeEventListener('blur',externalPause); document.removeEventListener('visibilitychange',visibility); });
+      render(false); raf = requestAnimationFrame(frame);
+    });
+  }
+  async function creditsReview(ctx) {
+    const s=ctx.state.vars.credits || DF.progress('credits').state || { index:0, seen:Array(9).fill(false), paused:true};
+    ctx.state.vars.credits=s;s.paused=true;const persist=()=>{DF.saveProgress('credits',{state:s});DF.checkpoint();};
+    while (!ctx.flag('creditsDone')) {
+      const markup = '<section class="ch09-credits"><p data-credit-status></p><div class="ch09-reel" tabindex="0" aria-label="九話名單，可上下捲動">' + CREDITS.map((c,i) =>
+        '<article class="ch09-credit-card" data-credit="'+i+'"><span class="df-credit-person">'+ART.portrait({id:['lisi','chensheng','xiangyu','zhangliang','xiaohe','chenping','hanxin','xiangyu','liubang'][i],name:c.people.split('、')[0]})+'</span><h3>' + esc(c.episode + '・' + c.name) + '</h3><p>' + esc(c.people) + '</p><p class="ch09-credit-state" data-credit-state="' + i + '"></p></article>').join('') +
+        '</div><div class="ch09-controls"><div class="ch09-actions"><button type="button" class="zh-btn zh-btn--quiet" data-credit-action="prev">回看上一話</button><button type="button" class="zh-btn zh-btn--quiet" data-credit-action="pause">暫停捲動</button></div>' +
+        '<button type="button" class="zh-btn zh-btn--primary" data-credit-action="read">親自確認本話讀畢</button><button type="button" class="zh-btn zh-btn--quiet" data-credit-action="next">親自翻下一話</button></div><p>慢速捲動只移動畫面；每話讀畢與合卷都由你親自確認。</p></section>';
+      const pending = ZH.modal({ title:'楚漢篇・九話名單', body:markup, actions:[{label:'合卷',value:true,kind:'primary'}] });
+      const root = document.querySelector('.ch09-credits');
+      if (!root) { await pending; throw new Error('片尾名單尚未展開，請重玩本段。'); }
+      const modal = root.closest('.zh-modal'), closeButton = modal.querySelector('.zh-modal__actions button'), reel = root.querySelector('.ch09-reel');
+      let alive = true, raf = 0, last = null, target = 0;
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+      function paint(move) {
+        root.querySelector('[data-credit-status]').textContent = CREDITS[s.index].episode + '・已親自確認' + s.seen.filter(Boolean).length + '／9話' + (s.paused ? '・捲動已暫停' : '');
+        root.querySelectorAll('[data-credit]').forEach(el => el.classList.toggle('is-current',Number(el.dataset.credit) === s.index));
+        root.querySelectorAll('[data-credit-state]').forEach(el => { el.textContent = s.seen[Number(el.dataset.creditState)] ? '已由你確認讀畢' : '等待本人確認讀畢'; });
+        root.querySelector('[data-credit-action="prev"]').disabled = s.index === 0;
+        root.querySelector('[data-credit-action="next"]').disabled = s.index === 8 || !s.seen[s.index];
+        root.querySelector('[data-credit-action="read"]').disabled = s.seen[s.index];
+        root.querySelector('[data-credit-action="pause"]').textContent = s.paused ? '親自繼續捲動' : '暫停捲動';
+        closeButton.disabled = !s.seen.every(Boolean);
+        if (move) { const card = root.querySelector('[data-credit="' + s.index + '"]'); target=Math.min(reel.scrollHeight-reel.clientHeight,Math.max(0,card.offsetTop-reel.offsetTop-5)); if (reduce || s.paused) reel.scrollTop = target; }
+      }
+      function click(e) {
+        const b = e.target.closest('[data-credit-action]'); if (!alive || !b || b.disabled) return;
+        const a = b.dataset.creditAction;
+        if (a === 'read') s.seen[s.index] = true;
+        else if (a === 'prev' && s.index > 0) s.index--;
+        else if (a === 'next' && s.index < 8 && s.seen[s.index]) s.index++;
+        else if (a === 'pause') s.paused = !s.paused;
+        paint(a==='prev'||a==='next');persist();
+        const next = s.seen.every(Boolean) ? closeButton : s.seen[s.index] ? root.querySelector('[data-credit-action="next"]') : root.querySelector('[data-credit-action="read"]');
+        if (a !== 'pause' && next && !next.disabled) next.focus({preventScroll:true});
+      }
+      function frame(now) {
+        if (!alive) return;
+        if (!reduce && !s.paused && !document.hidden && last !== null) { const delta = target-reel.scrollTop; reel.scrollTop += Math.sign(delta)*Math.min(Math.abs(delta),(now-last)*.09); }
+        last = now; raf = requestAnimationFrame(frame);
+      }
+      function pause() { if(alive){s.paused=true;last=null;paint(false);persist();} }
+      function visibility() { if (document.hidden) pause(); }
+      function key(e) { if (alive && e.repeat && root.contains(e.target) && ['Enter',' '].includes(e.key)) e.preventDefault(); }
+      root.addEventListener('click',click); document.addEventListener('keydown',key); window.addEventListener('blur',pause); document.addEventListener('visibilitychange',visibility);
+      paint(true); root.querySelector('[data-credit-action="read"]').focus({preventScroll:true}); raf = requestAnimationFrame(frame);
+      let answer;
+      try { answer = await pending; }
+      finally { alive = false; cancelAnimationFrame(raf); root.removeEventListener('click',click); document.removeEventListener('keydown',key); window.removeEventListener('blur',pause); document.removeEventListener('visibilitychange',visibility); }
+      if(answer===true&&s.seen.every(Boolean)){ctx.flag('creditsDone',true);persist();}
+      else { s.paused = true; await ctx.say([{text:'名單尚未合卷。保留你已確認的話次，再親自完成閱覽。'}]); }
+    }
+  }
+  // ═════════════════════════ 7. 結局與玩家本紀 ═════════════════════════
+  const ENDINGS = {
+    good:{ id:'good', title:'大風起兮', good:true, text:'此局親論任用，辨功而思守信；既歌故鄉，復問守成之道。' },
+    worry:{ id:'worry', title:'猛士何在', good:true, text:'此局初議有失，人心未厚；存其初績而親復核之，宜慎用人守諾。' }
+  };
+  function payload(s, ending) {
+    const a = s.vars.appointment, b = s.vars.song;
+    const deeds = [
+      '高祖置酒雒陽南宮，問漢得天下、項氏失天下之由。',
+      '自言運籌決勝不如子房，知帷帳之謀有專長。',
+      '稱蕭何鎮國給糧、韓信統軍取勝，皆人傑而能用之。',
+      a.assisted ? '此局任用初議有失，存其績而親補正諸項。' : '此局親配三傑之任，復辨楚營用人之失。',
+      s.vars.merit.score === 100 ? '此局論功，兼察前線與後勤之相維。' : '此局讀功人功狗之喻，初論未盡，猶可據事而求。',
+      '封侯議次，高祖納鄂君之言，蕭何第一，曹參次之。',
+      s.vars.promise.score === 100 ? '讀河山之誓，此局思守諾之據，欲使恩澤及後。' : '讀封爵之誓，此局初論其行未備，宜求守諾之道。',
+      '六年以雲夢之計會陳，執韓信，後赦罪而降淮陰侯。',
+      b.assisted ? '十二年還沛擊筑；此局存初績而逐拍親演，三句皆畢。' : '十二年還沛擊筑；此局親應其拍，三句皆讀。',
+      s.vars.trust.score === 100 ? '此局聞守四方之歌，思求賢、查證與掌權之責。' : '此局聞守四方之歌，猶當省猜疑與守成之責。'
+    ];
+    return { scenarioId:SID, mode:MODE, faction:'漢', role:'劉邦', roleKind:'benji', country:'漢',
+      bioTitle:'高祖本紀', bioOpening:'高祖，沛豐邑中陽里人，姓劉氏，字季。', ending,
+      scoreStrategy:bounded((a.score+b.score)/2), scoreVirtue:bounded((s.vars.merit.score+s.vars.promise.score+s.vars.trust.score)/3),
+      turns:s.steps || 1, durationSec:Math.min(5400,Math.max(0,Math.round((Date.now()-(s.startedAt || Date.now()))/1000))),
+      deeds, anchors:s.anchors, games:s.games, codex:s.codex,
+      opener:'遊戲史官評語（自擬）：余讀高祖還沛之歌，見功業之盛，亦思求賢守成與用人守諾之責。',
+      prompts:['能用人與能做事如何配合？以三傑與論功場景說明各自不可替代的工作。',
+        '鳥盡弓藏是必然嗎？區分韓信當時的感嘆與後來史事，提出查證、承諾和掌權者責任的做法。',
+        '回看三卷故事，你想成為怎樣的策士，或以哪位人物為參照？用一件史事支持，提出一項帶回日常的行動。'] };
+  }
+  function onEnd(r, ctx) {
+    const s = ctx.state, ending = ENDINGS[r.key] || ENDINGS.good; ZH.sfx('seal');
+    return ctx.banner(ending.title,'劉邦・此局本紀')
+      .then(() => ctx.say([{text:'論三傑首次' + s.vars.appointment.score + '分；擊筑首次' + s.vars.song.score + '分。核心操作已親自完成。'},
+        {who:'shiguan',text:'以下為遊戲生成本紀與自擬評語。你的三卷回顧另留在尾聲，不寫成劉邦的生平。'}]))
+      
+      .then(()=>DF.finish(payload(s,ending)));
+  }
+  // ═════════════════════════ 8. 開始（沿用官方範例） ═════════════════════════
+  const saveState=DF.saveState;
+
+  function startGame(saved) {
+    if(saved){if(saved.ended&&!saved.vars?.dfRunId){saved.ended=null;saved.node='n_26';}DF.useState(saved);}else DF.newRun();document.documentElement.classList.toggle('hm-still',DF.read('still',false));ROOT.innerHTML='';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_01',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd:onEnd,save:saveState,snapshot:DF.snapshot,anchorRunner:DF.runAnchor,onProgress:DF.cacheProgress,actions:[{label:"史冊",run:DF.book},{label:"存檔",run:DF.saveMenu}]
+    });
+    window.__ep=game;
+    game.start(saved || null);
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header><section class="df-title-art" aria-label="劉邦與三傑">'+panorama('banquet',['liubang','zhangliang','xiaohe'])+'</section>'+
+      '<section class="ep-start"><span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>' +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個史實錨點。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave=DF.loadState;
+
+  ZH.ready(()=>{
+    if(!ZH.story?.createJournal || !ZH.arena || !window.ART){ROOT.innerHTML='<main class="ep-title__main"><h1>共用核心待更新</h1><p>請先安裝 Eng_Story v0.2.2、Arena_js 與 Art_kit，再開啟第九話。</p><button class="zh-btn zh-btn--primary" data-home>回首頁</button></main>';ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');return;}
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), anchorsReady]).then(([saved]) => {
+      ZH.loading(false);
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+
+</script><script>ZH.ready(function(){ZH.textplay?.install("S_ch09_dafeng",null);});</script>
+</body></html>

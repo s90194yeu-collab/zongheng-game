@@ -1,0 +1,93 @@
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Data_catalog.html
+ 版本：v0.1.3（2026-10-07）
+ 依賴：Core_js.html（掛在 ZH 物件上）
+ 說明：劇本目錄。三卷、40 話（38 個劇本＋序章＋尾聲）。
+   id        劇本代碼，也是劇本頁的檔名（S_cq08_weizheng.html）
+   vol       卷別：cq 春秋篇｜zg 戰國篇｜ch 楚漢篇
+   ep        話數；0 為序章，-1 為尾聲
+   name      劇本名稱
+   episode   動畫集數式標題
+   year      故事起點（西元前）
+   genre     主玩法
+   source    對應原典或課文
+   guest     訪客可完整遊玩（課綱選文四關）
+   status    planned 製作中｜ready 可遊玩
+ 修改方式：某一話做好時，把 status 改成 'ready' 即可在首頁開放。
+ v0.1.1：開放第 8 話「秦晉圍鄭」（鄭國篇），主玩法標籤改回「非對稱三方 SLG＋夜縋潛行」。
+ v0.1.2：開放第 16 話「大同與小康」。
+ v0.1.3：戰國篇第 7、11 話先做 2D 版，類型改為「場景探索＋辭賦解謎」「城市探索＋辭令」。
+============================================================
+-->
+<script>
+(function (ZH) {
+  'use strict';
+
+  ZH.VOLUMES = [
+    { key: 'cq', no: '第一卷', name: '春秋篇', span: '前 770 — 前 473', tagline: '明明只是小國，為什麼大家都想打我' },
+    { key: 'zg', no: '第二卷', name: '戰國篇', span: '前 453 — 前 221', tagline: '六國的相印，我全都要' },
+    { key: 'ch', no: '第三卷', name: '楚漢篇', span: '前 221 — 前 202', tagline: '這頓飯，有人想殺我' }
+  ];
+
+  ZH.CATALOG = [
+    // ───── 第一卷 春秋篇 ─────
+    { id: 'S_cq00_dongqian', vol: 'cq', ep: 0, name: '平王東遷', episode: '烽火燒完以後，天子只好搬家', year: 771, genre: '動畫序章', source: '《史記・周本紀》', guest: false, status: 'planned' },
+    { id: 'S_cq01_zhengzhuang', vol: 'cq', ep: 1, name: '鄭莊小霸', episode: '多行不義必自斃，所以我決定先等等', year: 722, genre: '時機策略＋陣形戰', source: '〈鄭伯克段于鄢〉', guest: false, status: 'planned' },
+    { id: 'S_cq02_handong', vol: 'cq', ep: 2, name: '漢東小國', episode: '楚軍故意示弱，千萬別追', year: 706, genre: '塔防', source: '〈季梁諫追楚師〉', guest: false, status: 'planned' },
+    { id: 'S_cq03_qihuan', vol: 'cq', ep: 3, name: '齊桓稱霸', episode: '射中我腰帶的人，竟然成了我的宰相', year: 686, genre: '三國志式戰略', source: '〈曹劌論戰〉、〈管晏列傳〉', guest: false, status: 'planned' },
+    { id: 'S_cq04_chonger', vol: 'cq', ep: 4, name: '重耳流亡', episode: '流亡十九年的公子，在路上收到一塊土', year: 655, genre: '角色扮演冒險', source: '〈宮之奇諫假道〉、〈介之推不言祿〉', guest: false, status: 'planned' },
+    { id: 'S_cq05_hanyuan', vol: 'cq', ep: 5, name: '韓原之戰', episode: '我借你糧食，你卻在我饑荒時翻臉', year: 647, genre: '運輸經營＋會戰', source: '〈陰飴甥對秦伯〉', guest: false, status: 'planned' },
+    { id: 'S_cq06_songxiang', vol: 'cq', ep: 6, name: '宋襄圖霸', episode: '敵軍還沒排好隊，我堅持不能打', year: 639, genre: '禮制戰棋', source: '〈子魚論戰〉', guest: false, status: 'planned' },
+    { id: 'S_cq07_chengpu', vol: 'cq', ep: 7, name: '城濮爭霸', episode: '說好退避三舍，我真的退了九十里', year: 633, genre: '即時會戰', source: '〈展喜犒師〉、〈襄王不許請隧〉', guest: false, status: 'planned' },
+    { id: 'S_cq08_weizheng', vol: 'cq', ep: 8, name: '秦晉圍鄭', episode: '今老矣，但今晚我要縋下城牆', year: 630, genre: '非對稱三方 SLG＋夜縋潛行', source: '〈燭之武退秦師〉', guest: true, status: 'ready' },
+    { id: 'S_cq09_xiao', vol: 'cq', ep: 9, name: '殽之戰', episode: '我只是個賣牛的，卻擋下了秦軍', year: 628, genre: '心理卡牌＋動作伏擊', source: '〈蹇叔哭師〉', guest: false, status: 'planned' },
+    { id: 'S_cq10_wending', vol: 'cq', ep: 10, name: '楚莊問鼎', episode: '三年不鳴的王，一開口就問鼎有多重', year: 613, genre: '觀人推理＋會戰', source: '〈王孫滿對楚子〉', guest: false, status: 'planned' },
+    { id: 'S_cq11_jinba', vol: 'cq', ep: 11, name: '晉霸中興', episode: '這封絕交信，到底有幾句是真的', year: 589, genre: '辨偽推理＋節奏戰鬥', source: '〈呂相絕秦〉', guest: false, status: 'planned' },
+    { id: 'S_cq12_jinchu', vol: 'cq', ep: 12, name: '晉楚之間', episode: '夾在兩個超級大國中間的外交日常', year: 559, genre: '多方外交桌遊', source: '〈駒支不屈于晉〉、〈子產告范宣子輕幣〉', guest: false, status: 'planned' },
+    { id: 'S_cq13_zichan', vol: 'cq', ep: 13, name: '子產治鄭', episode: '大家都在鄉校罵我，但我不拆', year: 544, genre: '小國治理＋觀樂', source: '〈季札觀周樂〉、〈子產論政寬猛〉', guest: false, status: 'planned' },
+    { id: 'S_cq14_wushi', vol: 'cq', ep: 14, name: '吳師入郢', episode: '逃出昭關的我，要帶吳軍回到楚國', year: 522, genre: '潛行冒險', source: '〈伍子胥列傳〉、〈刺客列傳〉', guest: false, status: 'planned' },
+    { id: 'S_cq15_kongzi', vol: 'cq', ep: 15, name: '孔子周遊', episode: '周遊列國的老師，在陳蔡斷糧了', year: 500, genre: '3D 開放探索', source: '〈孔子世家贊〉、《論語》', guest: false, status: 'planned' },
+    { id: 'S_cq16_datong', vol: 'cq', ep: 16, name: '大同與小康', episode: '天下為公的世界，真的存在過嗎', year: 500, genre: '理想國經營解謎', source: '〈大同與小康〉', guest: true, status: 'ready' },
+    { id: 'S_cq17_wuyue', vol: 'cq', ep: 17, name: '吳越春秋', episode: '十年生聚，十年教訓，這次換我反擊', year: 496, genre: '即時戰略經營', source: '〈吳許越成〉、〈申胥諫許越成〉', guest: false, status: 'planned' },
+
+    // ───── 第二卷 戰國篇 ─────
+    { id: 'S_zg01_sanjia', vol: 'zg', ep: 1, name: '三家分晉', episode: '大水淹到只剩三版，我們還沒投降', year: 455, genre: '水流解謎＋舌戰', source: '《戰國策・趙策》', guest: false, status: 'planned' },
+    { id: 'S_zg02_weiwen', vol: 'zg', ep: 2, name: '魏文霸業', episode: '河伯要娶新娘？那請巫婆先去問問', year: 445, genre: '人才經營＋推理', source: '〈魏世家〉、〈滑稽列傳〉', guest: false, status: 'planned' },
+    { id: 'S_zg03_shangyang', vol: 'zg', ep: 3, name: '商鞅變法', episode: '把木頭搬到北門，就給你五十金', year: 361, genre: '政策模擬', source: '〈商君列傳〉', guest: false, status: 'planned' },
+    { id: 'S_zg04_jixia', vol: 'zg', ep: 4, name: '稷下百家', episode: '百家爭鳴的學宮，今天也在吵架', year: 356, genre: '橫向動作', source: '〈鄒忌諷齊王納諫〉、《孟子》', guest: false, status: 'planned' },
+    { id: 'S_zg05_maling', vol: 'zg', ep: 5, name: '桂陵馬陵', episode: '輸一場、贏兩場，這就是賽馬的兵法', year: 354, genre: '戰車競速＋伏擊', source: '〈孫子吳起列傳〉', guest: false, status: 'planned' },
+    { id: 'S_zg06_hezong', vol: 'zg', ep: 6, name: '合縱連橫', episode: '六國的相印，我全都要', year: 333, genre: '卡牌對決', source: '〈蘇秦以連橫說秦〉、〈司馬錯論伐蜀〉', guest: false, status: 'planned' },
+    { id: 'S_zg07_quyuan', vol: 'zg', ep: 7, name: '屈原與楚', episode: '舉世皆濁我獨清，可是漁父笑了', year: 313, genre: '場景探索＋辭賦解謎', source: '〈屈原列傳〉、〈漁父〉', guest: false, status: 'planned' },
+    { id: 'S_zg08_hufu', vol: 'zg', ep: 8, name: '胡服與火牛', episode: '換上胡服的王，與點燃牛尾的將軍', year: 307, genre: '聯軍戰棋', source: '〈樂毅報燕王書〉、〈田單列傳〉', guest: false, status: 'planned' },
+    { id: 'S_zg09_mengchang', vol: 'zg', ep: 9, name: '孟嘗君', episode: '食客三千，最後救我的是會學雞叫的那位', year: 299, genre: '門客收集養成', source: '〈馮諼客孟嘗君〉', guest: false, status: 'planned' },
+    { id: 'S_zg10_changping', vol: 'zg', ep: 10, name: '將相長平', episode: '把璧還來，不然我跟它一起撞柱', year: 283, genre: '舌戰＋補給戰略', source: '〈廉頗藺相如列傳〉、〈觸讋說趙太后〉', guest: false, status: 'planned' },
+    { id: 'S_zg11_zhuke', vol: 'zg', ep: 11, name: '奇貨可居與逐客', episode: '被趕出秦國之前，我寫了一封信', year: 265, genre: '城市探索＋辭令', source: '〈諫逐客書〉', guest: true, status: 'planned' },
+    { id: 'S_zg12_handan', vol: 'zg', ep: 12, name: '邯鄲之圍', episode: '錐子放進布袋，尖端自然會露出來', year: 259, genre: '多主角群像', source: '〈魯仲連義不帝秦〉、〈魏公子列傳〉', guest: false, status: 'planned' },
+    { id: 'S_zg13_tongyi', vol: 'zg', ep: 13, name: '天下一統', episode: '風蕭蕭兮易水寒，地圖裡藏著什麼', year: 233, genre: '終局戰略', source: '〈唐雎不辱使命〉、〈刺客列傳〉', guest: false, status: 'planned' },
+
+    // ───── 第三卷 楚漢篇 ─────
+    { id: 'S_ch01_shaqiu', vol: 'ch', ep: 1, name: '秦政與沙丘', episode: '皇帝死在巡遊路上，詔書被改了', year: 221, genre: '帝國抉擇', source: '〈秦始皇本紀〉、〈留侯世家〉', guest: false, status: 'planned' },
+    { id: 'S_ch02_dazexiang', vol: 'ch', ep: 2, name: '大澤鄉', episode: '下雨遲到要斬首？那乾脆起義吧', year: 209, genre: '隨機冒險起義', source: '〈陳涉世家〉、〈過秦論〉', guest: false, status: 'planned' },
+    { id: 'S_ch03_julu', vol: 'ch', ep: 3, name: '鉅鹿與入關', episode: '鍋砸了、船沉了，只帶三天的糧', year: 207, genre: '無雙動作＋競速', source: '〈項羽本紀〉', guest: false, status: 'planned' },
+    { id: 'S_ch04_hongmen', vol: 'ch', ep: 4, name: '鴻門宴', episode: '這頓飯，有人想殺我', year: 206, genre: '心理冒險', source: '〈鴻門宴〉', guest: true, status: 'planned' },
+    { id: 'S_ch05_sanqin', vol: 'ch', ep: 5, name: '分封與還定三秦', episode: '燒掉棧道，假裝我不回來了', year: 206, genre: '基地經營＋潛行', source: '〈淮陰侯列傳〉', guest: false, status: 'planned' },
+    { id: 'S_ch06_xingyang', vol: 'ch', ep: 6, name: '滎陽成皋', episode: '要煮我父親？那請分我一杯羹', year: 205, genre: '牌組構築', source: '〈陳丞相世家〉', guest: false, status: 'planned' },
+    { id: 'S_ch07_hanxin', vol: 'ch', ep: 7, name: '韓信北伐', episode: '背水一戰：退路斷了，所以我們贏了', year: 205, genre: '戰棋', source: '〈淮陰侯列傳〉', guest: false, status: 'planned' },
+    { id: 'S_ch08_gaixia', vol: 'ch', ep: 8, name: '垓下', episode: '四面都在唱我家鄉的歌', year: 202, genre: '節奏＋突圍', source: '〈項羽本紀贊〉', guest: false, status: 'planned' },
+    { id: 'S_ch09_dafeng', vol: 'ch', ep: -1, name: '大風歌', episode: '大風起兮，誰來守四方', year: 196, genre: '尾聲動畫', source: '〈高祖功臣侯年表〉', guest: false, status: 'planned' }
+  ];
+
+  /** 依代碼找劇本 */
+  ZH.findScenario = id => ZH.CATALOG.find(s => s.id === id) || null;
+
+  /** 某一卷的劇本 */
+  ZH.scenariosOf = vol => ZH.CATALOG.filter(s => s.vol === vol);
+
+  /** 話數的顯示文字 */
+  ZH.episodeLabel = s => (s.ep === 0 ? '序章' : s.ep === -1 ? '尾聲' : '第 ' + s.ep + ' 話');
+
+})(window.ZH);
+</script>

@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<!-- Teacher.html v0.2.4（2026-10-14）：保留原後臺與密碼登入，新增學號、選填班級、帳號與蒐集。依賴 ProgressApi.gs。 -->
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top"><script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script>
+<?!= include('Core_css') ?>
+<style>
+  :root { --t-top: 64px; }
+
+  /* ───────── 頂列 ───────── */
+  .t-brand { display: flex; align-items: baseline; gap: 12px; }
+  .t-brand__tag { font-family: var(--f-display); font-size: 16px; color: var(--text-dim); letter-spacing: .12em; }
+  .t-top-actions { justify-content: flex-end; }
+
+  /* ───────── 登入 ───────── */
+  .t-login { min-height: calc(100vh - var(--t-top)); min-height: calc(100dvh - var(--t-top)); display: grid; place-items: center; padding: 24px var(--gutter); }
+  .t-login__card { width: min(440px, 100%); display: grid; gap: 16px; padding: 28px 26px 24px; }
+  .t-login__card h1 { font-size: 30px; letter-spacing: .12em; }
+  .t-login__seal { justify-self: start; }
+  .t-login__who { font-size: 14px; color: var(--text-dim); }
+  .t-login__msg { min-height: 1.6em; font-size: 14px; color: #ff9c90; }
+  .t-login__msg.is-ok { color: #8fd3c2; }
+  .t-login__form { display: grid; gap: 12px; }
+
+  /* ───────── 主版面：左側目錄＋內容 ───────── */
+  .t-shell { display: grid; grid-template-columns: 196px minmax(0, 1fr); flex: 1; }
+  .t-nav {
+    position: sticky; top: var(--t-top); align-self: start;
+    display: flex; flex-direction: column; gap: 2px;
+    height: calc(100vh - var(--t-top)); padding: 22px 10px;
+    border-right: 1px solid var(--line-soft);
+  }
+  .t-nav button {
+    position: relative; display: block; width: 100%; padding: 10px 14px;
+    border: 0; border-radius: 8px; background: none; cursor: pointer;
+    color: var(--text-dim); font-family: var(--f-display); font-size: 17px; text-align: left;
+  }
+  .t-nav button:hover { color: var(--text); background: rgba(236, 230, 214, .05); }
+  .t-nav button[aria-current="page"] { color: var(--gilt); background: rgba(224, 180, 76, .09); }
+  .t-nav button[aria-current="page"]::before {
+    content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; border-radius: 2px; background: var(--gilt);
+  }
+  .t-main { min-width: 0; width: min(1180px, 100%); padding: 22px var(--gutter) calc(48px + var(--safe-b)); }
+
+  .t-scope { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 22px; }
+  .t-scope label { font-size: 14px; color: var(--text-dim); }
+  .t-scope select { min-width: 200px; }
+  .t-scope__time { font-size: 13px; color: var(--text-dim); margin-left: auto; }
+
+  .t-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 16px; margin-bottom: 14px; }
+  .t-head h2 { font-size: 26px; letter-spacing: .06em; }
+  .t-head__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .t-note { font-size: 14px; color: var(--text-dim); margin: -4px 0 14px; max-width: 72em; }
+  .t-block { margin-bottom: 18px; }
+  .t-block h3 { font-size: 18px; margin-bottom: 12px; }
+  .t-block h3 small { font-family: var(--f-body); font-size: 13px; font-weight: 400; color: var(--text-dim); margin-left: 8px; }
+  .t-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); gap: 18px; margin-bottom: 18px; }
+  .t-grid2 > .t-block { margin-bottom: 0; }
+  .t-empty { padding: 20px; text-align: center; color: var(--text-dim); font-size: 15px; }
+
+  /* 摘要數字 */
+  .t-stats {
+    display: flex; flex-wrap: wrap; gap: 1px; margin: 0 0 18px;
+    background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: 12px; overflow: hidden;
+  }
+  .t-stat { flex: 1 1 140px; background: var(--night-2); padding: 12px 16px; }
+  .t-stat dt { font-size: 13px; color: var(--text-dim); }
+  .t-stat dd { margin: 2px 0 0; font-family: var(--f-display); font-size: 24px; font-variant-numeric: tabular-nums; }
+  .t-stat dd small { font-family: var(--f-body); font-size: 13px; color: var(--text-dim); margin-left: 4px; }
+
+  /* 雷達圖 */
+  .t-radar-wrap { display: grid; grid-template-columns: minmax(200px, 280px) minmax(0, 1fr); gap: 14px 20px; align-items: center; }
+  .t-radar { width: 100%; max-width: 300px; height: auto; display: block; overflow: visible; }
+  .t-radar text { font-family: var(--f-display); }
+  .t-dims { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 12px; align-items: center; font-size: 14px; }
+  .t-dims .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .t-dims .is-off { opacity: .45; }
+  .t-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--text-dim); margin-top: 6px; }
+  .t-legend i { display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; background: var(--gilt); }
+  .t-legend i.is-compare { background: none; border-top: 2px dashed var(--patina); height: 0; }
+
+  /* 橫條 */
+  .t-hbars { display: grid; gap: 2px; }
+  .t-hbar { display: grid; grid-template-columns: minmax(7em, 15em) minmax(60px, 1fr) 7.5em; gap: 12px; align-items: center; padding: 5px 0; font-size: 14px; }
+  .t-hbar__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-hbar__track { height: 10px; border-radius: 999px; background: rgba(236, 230, 214, .08); overflow: hidden; }
+  .t-hbar__fill { display: block; height: 100%; width: var(--v, 0%); border-radius: inherit; background: var(--patina); }
+  .t-hbar__fill.is-gilt { background: var(--gilt); }
+  .t-hbar__fill.is-cinnabar { background: var(--cinnabar); }
+  .t-hbar__val { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-dim); white-space: nowrap; }
+  .t-hbar.is-link { cursor: pointer; border-radius: 6px; }
+  .t-hbar.is-link:hover { background: rgba(224, 180, 76, .06); }
+
+  /* 每日活躍直條 */
+  .t-cols { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; align-items: end; height: 160px; }
+  .t-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; min-width: 0; }
+  .t-col__n { font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .t-col__bar { width: 100%; max-width: 26px; height: var(--h, 0%); min-height: 2px; border-radius: 4px 4px 0 0; background: var(--gilt); opacity: .85; }
+  .t-col__d { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .t-col.is-today .t-col__d { color: var(--gilt); }
+
+  /* 表格 */
+  .t-tablewrap { overflow: auto; max-height: 72vh; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--night-2); }
+  .t-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .t-table th {
+    position: sticky; top: 0; z-index: 2; padding: 10px 12px; white-space: nowrap; text-align: left;
+    background: var(--night-3); color: var(--text-dim); font-weight: 500; border-bottom: 1px solid var(--line);
+  }
+  .t-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; vertical-align: middle; }
+  .t-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .t-table .wrap { white-space: normal; min-width: 16em; }
+  .t-table .sticky { position: sticky; left: 0; z-index: 1; background: var(--night-2); }
+  .t-table th.sticky { z-index: 3; background: var(--night-3); }
+  .t-table tbody tr.is-row { cursor: pointer; }
+  .t-table tbody tr.is-row:hover td, .t-table tbody tr.is-row:focus-visible td { background: #222b4a; }
+  .t-table tbody tr.is-row:focus-visible { outline: 2px solid var(--gilt); outline-offset: -2px; }
+  .t-table th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+  .t-table th button:focus-visible { outline: 2px solid var(--gilt); outline-offset: 2px; border-radius: 3px; }
+  .t-table th[aria-sort="ascending"] button::after { content: "▲"; font-size: 10px; color: var(--gilt); }
+  .t-table th[aria-sort="descending"] button::after { content: "▼"; font-size: 10px; color: var(--gilt); }
+  .t-table .t-detail td { white-space: normal; background: rgba(20, 26, 46, .75); padding: 16px 18px; }
+  .t-strong { font-weight: 700; color: var(--text); }
+  .t-sub { display: block; font-size: 12.5px; color: var(--text-dim); }
+  .t-count { font-size: 13px; color: var(--text-dim); margin-top: 8px; }
+
+  .is-low { color: #ff9c90; }
+  .is-mid { color: var(--gilt); }
+  .is-high { color: #8fd3c2; }
+  .is-none { color: var(--text-dim); }
+
+  /* 選項分布 */
+  .t-opts { display: flex; width: 150px; height: 10px; border-radius: 999px; overflow: hidden; background: rgba(236, 230, 214, .08); }
+  .t-opts span { display: block; height: 100%; width: var(--w); background: var(--cinnabar); }
+  .t-opts span:nth-child(2) { opacity: .75; }
+  .t-opts span:nth-child(3) { opacity: .55; }
+  .t-opts span:nth-child(4) { opacity: .4; }
+  .t-opts span.is-answer { background: var(--patina); opacity: 1; }
+  .t-opts__cap { display: block; margin-top: 4px; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .t-opts__cap b { color: #8fd3c2; font-weight: 700; }
+  .t-optlist { display: grid; gap: 6px; margin-top: 10px; }
+  .t-optrow { display: grid; grid-template-columns: 2em minmax(0, 1fr) 5em 7em; gap: 10px; align-items: baseline; font-size: 14px; }
+  .t-optrow.is-answer { color: #8fd3c2; }
+  .t-stem { font-family: var(--f-display); font-size: 17px; line-height: 1.7; }
+
+  /* 反思竹簡 */
+  .t-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 12px; align-items: end; margin-bottom: 18px; }
+  .t-slips { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 22px 18px; }
+  .t-slip { font-size: 16px; line-height: 1.85; padding: 30px 20px 26px; }
+  .t-slip__meta { font-family: var(--f-body); font-size: 13px; color: #6b5a3a; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .t-slip__meta b { color: var(--slip-ink); }
+  .t-slip__text { white-space: pre-wrap; word-break: break-word; }
+
+  /* 設定 */
+  .t-weights { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .t-weights .zh-input { width: 100%; text-align: right; font-variant-numeric: tabular-nums; }
+  .t-sum { margin-top: 10px; font-size: 14px; }
+  .t-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 2px 16px; }
+  .t-checks h4 { grid-column: 1 / -1; margin-top: 10px; font-size: 15px; color: var(--text-dim); }
+  .t-check { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; font-size: 14px; cursor: pointer; }
+  .t-check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--gilt); flex: none; }
+  .t-pick { border: 1px solid var(--line-soft); border-radius: 10px; padding: 0 14px; background: rgba(20, 26, 46, .45); }
+  .t-pick[open] { padding-bottom: 12px; }
+  .t-pick summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; padding: 12px 0; cursor: pointer; list-style: none; font-size: 15px; }
+  .t-pick summary::-webkit-details-marker { display: none; }
+  .t-pick summary:focus-visible { outline: 2px solid var(--gilt); outline-offset: 2px; border-radius: 4px; }
+  .t-pick__hint { color: var(--gilt); font-size: 14px; white-space: nowrap; }
+  .t-pick__hint::after { content: "點開修改"; }
+  .t-pick[open] .t-pick__hint::after { content: "收合"; }
+  .t-switch { display: flex; gap: 10px; align-items: center; font-size: 15px; cursor: pointer; }
+  .t-switch input { width: 20px; height: 20px; accent-color: var(--gilt); }
+  .t-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+  .t-kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 14px; }
+  .t-kv dt { color: var(--text-dim); }
+  .t-kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .t-src { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  /* 學生詳細（右側抽屜） */
+  .t-drawer { position: fixed; inset: 0; z-index: 60; display: flex; justify-content: flex-end; background: rgba(8, 10, 22, .62); animation: zh-fade-in .2s ease both; }
+  .t-drawer__panel {
+    width: min(680px, 100%); height: 100%; overflow: auto;
+    padding: calc(18px + var(--safe-t)) 22px calc(28px + var(--safe-b));
+    background: linear-gradient(180deg, var(--night-3), var(--night-2));
+    border-left: 1px solid var(--gilt); box-shadow: var(--shadow);
+    animation: t-slide .25s ease both;
+  }
+  .t-drawer__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+  .t-drawer__head h2 { font-size: 24px; }
+  .t-drawer__head .zh-btn { flex: none; white-space: nowrap; }
+  .t-drawer section + section { margin-top: 22px; }
+  .t-drawer h3 { font-size: 17px; margin-bottom: 10px; }
+  .t-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .t-list li { padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 10px; font-size: 14px; }
+  @keyframes t-slide { from { transform: translateX(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* 題庫審閱 */
+  .t-import { border-color: var(--gilt); }
+  .t-import p { font-size: 14px; max-width: 70em; }
+  .t-q { margin-bottom: 16px; }
+  .t-q.is-off { opacity: .62; }
+  .t-q__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+  .t-q__id { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .t-q__seq { font-family: var(--f-display); color: var(--gilt); font-size: 17px; }
+  .t-q__btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .t-q__passage { margin-bottom: 10px; padding: 8px 14px; border-radius: 4px; background: var(--slip); color: var(--slip-ink); font-family: var(--f-display); font-size: 16px; line-height: 1.8; }
+  .t-q__opts { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 8px; }
+  .t-q__opt { display: grid; grid-template-columns: 1.6em minmax(0, 1fr); gap: 10px; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 10px; }
+  .t-q__opt.is-answer { border-color: var(--patina); background: rgba(74, 156, 138, .1); }
+  .t-q__opt p { margin: 0 0 6px; font-size: 15px; }
+  .t-q__key { font-family: var(--f-latin); font-weight: 800; color: var(--gilt); }
+  .t-q__opt details { margin-top: 6px; font-size: 14px; color: var(--text-dim); line-height: 1.75; }
+  .t-q__opt summary { cursor: pointer; color: #ff9c90; }
+  .t-q__warn { margin: 12px 0 0; padding: 10px 14px 10px 30px; border-radius: 8px; background: rgba(217, 72, 59, .12); color: #ff9c90; font-size: 14px; }
+  .t-q .t-kv { font-size: 14px; }
+
+  /* ───────── 手機 ───────── */
+  @media (max-width: 860px) {
+    .t-shell { grid-template-columns: minmax(0, 1fr); }
+    .t-nav {
+      z-index: 15; height: auto; flex-direction: row; overflow-x: auto; scrollbar-width: none;
+      padding: 6px var(--gutter); border-right: 0; border-bottom: 1px solid var(--line-soft);
+      background: rgba(20, 26, 46, .94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .t-nav button { flex: none; width: auto; padding: 8px 12px; font-size: 15px; }
+    .t-nav button[aria-current="page"]::before { left: 12px; right: 12px; top: auto; bottom: 2px; width: auto; height: 2px; }
+    .t-brand__tag { display: none; }
+    .t-scope__time { margin-left: 0; width: 100%; }
+    .t-radar-wrap { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .t-radar-wrap .t-dims { width: 100%; }
+    .t-weights { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .t-hbar { grid-template-columns: minmax(0, 1fr) 6.5em; }
+    .t-hbar__track { grid-column: 1 / -1; grid-row: 2; }
+    .t-cols { gap: 3px; }
+    .t-optrow { grid-template-columns: 2em minmax(0, 1fr) auto; row-gap: 0; }
+    .t-optrow > :nth-child(3) { grid-column: 2; grid-row: 2; font-size: 13px; color: var(--text-dim); }
+    .t-optrow > :nth-child(4) { grid-column: 3; grid-row: 1; font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .t-drawer, .t-drawer__panel { animation: none; }
+  }
+
+.t-access-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;margin:18px 0}.t-access-form>*{min-width:0}.t-access-form .zh-input,#ta-controls .zh-select{width:100%;min-width:0;max-width:100%}.ta-actions{flex-wrap:wrap;gap:10px;margin:14px 0}.ta-actions button{min-height:44px}.t-block #ta-status{overflow-wrap:anywhere;margin:16px 0}.t-block #ta-controls h3{margin-top:22px}[hidden]{display:none!important}@media(max-width:560px){.t-access-form{grid-template-columns:minmax(0,1fr)}.ta-actions button{flex:1 1 160px}}
+</style></head><body><div class="zh-app">
+  <header class="zh-topbar" id="t-topbar">
+    <div class="t-brand">
+      <a class="zh-mark" href="#" id="t-mark" aria-label="Re:縱橫鼎業 首頁"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>
+      <span class="t-brand__tag">教師後臺</span>
+    </div>
+    <div class="zh-row t-top-actions">
+      <button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-home">回首頁</button>
+      <button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-logout" hidden>登出</button>
+    </div>
+  </header>
+
+  <!-- 登入 -->
+  <main class="t-login" id="t-login" hidden>
+    <div class="zh-panel t-login__card">
+      <span class="zh-seal t-login__seal" aria-hidden="true">師</span>
+      <h1>教師後臺</h1>
+      <p class="t-login__who" id="t-login-who"></p>
+      <form class="t-login__form" id="t-login-form" novalidate>
+        <div class="zh-field">
+          <label for="t-password">教師密碼</label>
+          <input class="zh-input" id="t-password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="zh-btn zh-btn--primary zh-btn--block" id="t-login-btn">進入後臺</button>
+      </form>
+      <p class="t-login__msg" id="t-login-msg" role="status" aria-live="polite"></p>
+      <button type="button" class="zh-btn zh-btn--quiet" id="t-login-google" hidden>登入學校帳號</button>
+      <p class="zh-tiny zh-dim">密碼輸入時以圓點遮蔽。連續輸錯 5 次會鎖定 10 分鐘。通行證 2 小時後失效，關閉分頁也需要重新輸入。</p>
+    </div>
+  </main>
+
+  <!-- 後臺 -->
+  <div class="t-shell" id="t-app" hidden>
+    <nav class="t-nav" id="t-nav" aria-label="後臺功能"></nav>
+    <main class="t-main">
+      <div class="t-scope" id="t-scope"></div>
+      <div id="t-view"></div>
+    </main>
+  </div>
+</div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<script>
+(function () {
+  'use strict';
+
+  // ───────────────────────── 常數 ─────────────────────────
+
+  const DIMS = [['history', '史識'], ['letters', '文辭'], ['strategy', '謀略'], ['virtue', '德望'], ['erudition', '博通']];
+  const DIM_SOURCE = {
+    history: '每個錨點第一次作答的正確率',
+    letters: '文辭小遊戲（字義、古今異義、成語、賦詩、學說試煉）第一次的得分率',
+    strategy: '各劇本第一次結算的目標達成度（小國存續、大國霸業）',
+    virtue: '各劇本第一次結算的名分、民心、守信抉擇',
+    erudition: '史冊、人物、成語、寶物、諸子、六經圖鑑的收集量'
+  };
+  const TABS = [['overview', '總覽'], ['roster', '名冊與成績'], ['scenario', '劇本分析'], ['anchor', '試題分析'], ['bank', '題庫審閱'], ['reflection', '反思與列傳'], ['settings', '設定'], ['access', '帳號與蒐集']];
+  const KIND_LABELS = { reflection: '反思', biography: '列傳' };
+  const MODE_LABELS = { history: '正史', romance: '演義' };
+  const CODEX_LABELS = { person: '人物', idiom: '成語', treasure: '寶物', text: '史冊', school: '諸子', classic: '六經' };
+  const LETTERS_PREFIX = 'wen_';
+
+  const T = {
+    token: ZH.session.get('tToken', ''),
+    data: null,
+    cls: ZH.session.get('tCls', ''),
+    tab: ZH.local.get('tTab', 'overview'),
+    rosterSort: { key: 'studentId', dir: 1 },
+    rosterQuery: '',
+    scenario: '',
+    anchorScenario: '',
+    anchorSort: { key: 'firstRate', dir: 1 },
+    openAnchor: '',
+    refl: { scenarioId: '', kind: '', q: '' },
+    reflCache: {},
+    bankScenario: '',
+    bankCache: {},
+    previewMode: 'history'
+  };
+  if (!TABS.some(t => t[0] === T.tab)) T.tab = 'overview';
+
+  const $ = id => document.getElementById(id);
+  const esc = ZH.esc;
+
+
+  // ───────────────────────── 小工具 ─────────────────────────
+
+  const sum = (arr, f) => arr.reduce((s, x) => s + (Number(f(x)) || 0), 0);
+  const avg = arr => (arr.length ? arr.reduce((s, x) => s + x, 0) / arr.length : null);
+  const pct = (n, d) => (d ? (100 * n) / d : null);
+  const fmt = (v, digits) => (v === null || v === undefined || !isFinite(v) ? '—' : Number(v).toFixed(digits || 0));
+  const fmtPct = v => (v === null || v === undefined ? '—' : Math.round(v) + '%');
+  const rate = v => (v === null || v === undefined ? 'is-none' : v < 40 ? 'is-low' : v < 70 ? 'is-mid' : 'is-high');
+  const shortTime = s => (s ? String(s).slice(5, 16) : '—');
+  const clip = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n) + '…' : s; };
+
+  function scenName(id) {
+    const s = ZH.findScenario(id);
+    return s ? s.name : id;
+  }
+  /** 劇本名稱加上卷別與話數，例如「秦晉圍鄭（春秋 第 8 話）」 */
+  function scenLabel(id) {
+    const s = ZH.findScenario(id);
+    if (!s) return id;
+    const vol = ZH.VOLUMES.filter(v => v.key === s.vol)[0];
+    return s.name + '（' + (vol ? vol.name.replace('篇', '') + ' ' : '') + ZH.episodeLabel(s) + '）';
+  }
+  function volOf(id) {
+    const s = ZH.findScenario(id);
+    return s ? s.vol : '';
+  }
+
+  /** 是否在目前的檢視範圍：空字串＝全部學生（不含教師帳號） */
+  function inScope(cls) {
+    return T.cls ? cls === T.cls : cls !== T.data.labels.teacher;
+  }
+  function scopeStudents() {
+    return T.data.students.filter(s => inScope(s.cls));
+  }
+  function scopeLabel() {
+    if (!T.cls) return '全部學生';
+    if (T.cls === T.data.labels.teacher) return '教師帳號';
+    if (T.cls === T.data.labels.none) return '未填班級代碼';
+    return T.cls + ' 班';
+  }
+
+  /** 把各班的統計相加成目前範圍的統計 */
+  function merge(byClass) {
+    const out = {};
+    Object.keys(byClass || {}).forEach(cls => { if (inScope(cls)) addInto(out, byClass[cls]); });
+    return out;
+  }
+  function addInto(target, src) {
+    Object.keys(src).forEach(k => {
+      const v = src[k];
+      if (typeof v === 'number') target[k] = (target[k] || 0) + v;
+      else if (v && typeof v === 'object') addInto(target[k] || (target[k] = {}), v);
+    });
+  }
+
+  /** 一群學生的五維平均（只算有資料的人） */
+  function avgDims(list) {
+    const out = {};
+    DIMS.forEach(([k]) => { out[k] = avg(list.map(s => s.dims[k]).filter(v => v !== null)); });
+    out.total = avg(list.map(s => s.total).filter(v => v !== null));
+    return out;
+  }
+
+  function hbar(label, value, max, text, tone, attrs) {
+    const v = max ? Math.max(0, Math.min(100, (100 * value) / max)) : 0;
+    return '<div class="t-hbar' + (attrs ? ' is-link' : '') + '"' + (attrs || '') + '>' +
+      '<span class="t-hbar__label" title="' + esc(label) + '">' + esc(label) + '</span>' +
+      '<span class="t-hbar__track"><span class="t-hbar__fill' + (tone ? ' ' + tone : '') + '" style="--v:' + v.toFixed(1) + '%"></span></span>' +
+      '<span class="t-hbar__val">' + text + '</span></div>';
+  }
+
+  /** 分布橫條：{ 標籤: 人數 } 依人數排序 */
+  function distBars(obj, total, tone) {
+    const keys = Object.keys(obj || {}).sort((a, b) => obj[b] - obj[a]);
+    if (!keys.length) return '<p class="t-empty">還沒有紀錄。</p>';
+    return '<div class="t-hbars">' + keys.map(k => hbar(k, obj[k], total, obj[k] + ' 人（' + fmtPct(pct(obj[k], total)) + '）', tone)).join('') + '</div>';
+  }
+
+  /** 五維雷達圖。main 與 compare 為 { history: 0–100, ... }，compare 可省略 */
+  function radar(main, compare, avail) {
+    const C = 140, R = 92;
+    const angle = i => -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const pt = (i, v) => {
+      const r = (R * Math.max(0, Math.min(100, Number(v) || 0))) / 100;
+      return (C + r * Math.cos(angle(i))).toFixed(1) + ',' + (C + r * Math.sin(angle(i))).toFixed(1);
+    };
+    const poly = vals => DIMS.map(([k], i) => pt(i, vals[k])).join(' ');
+    let svg = '<svg class="t-radar" viewBox="-24 -6 328 296" role="img" aria-label="五維雷達圖：' +
+      DIMS.map(([k, l]) => l + ' ' + fmt(main[k])).join('、') + '">';
+    [20, 40, 60, 80, 100].forEach(level => {
+      svg += '<polygon points="' + DIMS.map((d, i) => pt(i, level)).join(' ') + '" fill="none" stroke="' +
+        (level === 100 ? 'rgba(224,180,76,.45)' : 'rgba(236,230,214,.1)') + '" stroke-width="1"/>';
+    });
+    DIMS.forEach((d, i) => {
+      svg += '<line x1="' + C + '" y1="' + C + '" x2="' + pt(i, 100).split(',')[0] + '" y2="' + pt(i, 100).split(',')[1] + '" stroke="rgba(236,230,214,.1)"/>';
+    });
+    if (compare) svg += '<polygon points="' + poly(compare) + '" fill="none" stroke="#4a9c8a" stroke-width="2" stroke-dasharray="5 4"/>';
+    svg += '<polygon points="' + poly(main) + '" fill="rgba(224,180,76,.22)" stroke="#e0b44c" stroke-width="2" stroke-linejoin="round"/>';
+    DIMS.forEach(([k, label], i) => {
+      const off = !avail || avail[k] ? 1 : 0.45;
+      const x = C + (R + 26) * Math.cos(angle(i));
+      const y = C + (R + 26) * Math.sin(angle(i));
+      const anchor = Math.abs(x - C) < 8 ? 'middle' : x > C ? 'start' : 'end';
+      svg += '<text x="' + x.toFixed(1) + '" y="' + (y - 4).toFixed(1) + '" text-anchor="' + anchor + '" fill="#ece6d6" font-size="15" opacity="' + off + '">' + label + '</text>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y + 14).toFixed(1) + '" text-anchor="' + anchor + '" fill="#e0b44c" font-size="13" opacity="' + off + '">' +
+        (off < 1 ? '未計' : fmt(main[k])) + '</text>';
+    });
+    return svg + '</svg>';
+  }
+
+  /** 下載 CSV（Excel 可直接開啟中文） */
+  function downloadCsv(filename, rows) {
+    const cell = v => {
+      const s = v === null || v === undefined ? '' : String(v);
+      return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const csv = '\uFEFF' + rows.map(r => r.map(cell).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    ZH.toast('已下載 ' + filename + '。沒有出現檔案時，請改用「匯出到試算表」。', 'ok', 4000);
+  }
+
+  /** 檔名用的範圍代號（只用英數字，避免部分瀏覽器把中文檔名改成 download） */
+  function scopeSlug() {
+    if (!T.cls) return 'all';
+    if (T.cls === T.data.labels.teacher) return 'teacher';
+    if (T.cls === T.data.labels.none) return 'noseat';
+    return T.cls;
+  }
+
+  function today() {
+    const d = new Date();
+    return d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+  }
+
+  /** 呼叫後臺 API：通行證過期時回到登入畫面 */
+  function tcall(fnName) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    return ZH.call.apply(ZH, [fnName, T.token].concat(args)).then(res => {
+      if (res && res.expired) {
+        showLogin(res.msg);
+        throw new Error(res.msg);
+      }
+      return res;
+    });
+  }
+
+
+  // ───────────────────────── 登入 ─────────────────────────
+
+  function setLoginMsg(text, ok) {
+    const el = $('t-login-msg');
+    el.textContent = text || '';
+    el.classList.toggle('is-ok', !!ok);
+  }
+
+  function showLogin(msg) {
+    T.token = '';
+    T.data = null;
+    ZH.session.remove('tToken');
+    closeDrawer();
+    $('t-app').hidden = true;
+    $('t-logout').hidden = true;
+    $('t-login').hidden = false;
+    const who = ZH.user.isSchool ? ZH.user.email : '';
+    $('t-login-who').textContent = who
+      ? '目前帳號：' + who
+      : '還沒有偵測到學校帳號。請先用教師的學校 Google 帳號登入，再輸入密碼。';
+    $('t-login-google').hidden = !!who;
+    setLoginMsg(msg || '');
+    setTimeout(() => $('t-password').focus(), 50);
+  }
+
+  function bindLogin() {
+    $('t-login-google').addEventListener('click', ZH.login);
+    $('t-login-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = $('t-password');
+      const pwd = input.value;
+      if (!pwd) {
+        setLoginMsg('請輸入教師密碼。');
+        input.focus();
+        return;
+      }
+      const btn = $('t-login-btn');
+      btn.disabled = true;
+      setLoginMsg('驗證中……', true);
+      ZH.call('api_teacherLogin', pwd)
+        .then(res => {
+          input.value = '';
+          if (res && res.ok) {
+            T.token = res.token;
+            ZH.session.set('tToken', res.token);
+            ZH.sfx('seal');
+            setLoginMsg('');
+            loadDashboard();
+          } else {
+            ZH.sfx('ng');
+            setLoginMsg((res && res.msg) || '登入失敗，請再試一次。');
+            if (res && res.loginUrl) $('t-login-google').hidden = false;
+            input.focus();
+          }
+        })
+        .catch(err => setLoginMsg(err.message))
+        .then(() => { btn.disabled = false; });
+    });
+  }
+
+
+  // ───────────────────────── 讀取與外框 ─────────────────────────
+
+  function loadDashboard() {
+    ZH.loading(true, '彙整資料');
+    return Promise.all([ZH.call('api_teacherDashboard', T.token),ZH.call('api_teacherStudentProfiles',T.token)]).then(([r,p])=>{if(!p||!p.ok)throw Error(p&&p.msg||'學號資料讀取失敗');if(r&&r.ok){const profiles=Object.fromEntries(p.profiles.map(x=>[x.email,x]));r.students.forEach(x=>{const a=profiles[x.email];x.studentId=a?.studentId||'';x.classCode=a?.classCode||'';if(a){x.name=a.nickname||x.name;x.avatarId=a.avatarId;x.nameLocked=a.nameLocked;}if(a&&a.hasStudentProfile!==false&&x.cls!==r.labels.teacher)x.cls=a.classCode||r.labels.none;});const counts={};r.students.forEach(x=>counts[x.cls]=(counts[x.cls]||0)+1);r.classes=Object.entries(counts).map(([key,count])=>({key,count}));}return r;})
+      .then(res => {
+        ZH.loading(false);
+        if (!res || !res.ok) {
+          if (!res || res.expired || !T.data) return showLogin((res && res.msg) || '讀取失敗，請重新登入。');
+          ZH.toast(res.msg || '讀取失敗。', 'bad');
+          return;
+        }
+        T.data = res;
+        T.reflCache = {};
+        if (T.cls && !res.classes.some(c => c.key === T.cls)) T.cls = '';
+        $('t-login').hidden = true;
+        $('t-app').hidden = false;
+        $('t-logout').hidden = false;
+        setTopVar();
+        renderScope();
+        renderNav();
+        renderTab();
+      })
+      .catch(err => {
+        ZH.loading(false);
+        if (!T.data) showLogin(err.message);
+        else ZH.toast(err.message, 'bad');
+      });
+  }
+
+  function renderScope() {
+    const d = T.data;
+    const total = d.students.filter(s => s.cls !== d.labels.teacher).length;
+    const opts = ['<option value="">全部學生（' + total + ' 人）</option>'].concat(d.classes.map(c => {
+      const label = c.key === d.labels.teacher ? '教師帳號' : c.key === d.labels.none ? '未填班級代碼' : c.key + ' 班';
+      return '<option value="' + esc(c.key) + '"' + (c.key === T.cls ? ' selected' : '') + '>' + esc(label) + '（' + c.count + ' 人）</option>';
+    }));
+    $('t-scope').innerHTML =
+      '<label for="t-cls">檢視範圍</label>' +
+      '<select class="zh-input" id="t-cls">' + opts.join('') + '</select>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-refresh">重新整理資料</button>' +
+      '<span class="t-scope__time">資料時間 ' + esc(d.generatedAt) + '</span>';
+    $('t-cls').addEventListener('change', e => {
+      T.cls = e.target.value;
+      ZH.session.set('tCls', T.cls);
+      renderTab();
+    });
+    $('t-refresh').addEventListener('click', () => loadDashboard());
+  }
+
+  function renderNav() {
+    $('t-nav').innerHTML = TABS.map(([key, label]) =>
+      '<button type="button" data-tab="' + key + '"' + (key === T.tab ? ' aria-current="page"' : '') + '>' + label + '</button>'
+    ).join('');
+    $('t-nav').querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+  }
+
+  function switchTab(key) {
+    if (key === T.tab) return;
+    T.tab = key;
+    ZH.local.set('tTab', key);
+    ZH.sfx('click');
+    renderNav();
+    renderTab();
+    window.scrollTo({ top: 0 });
+    const current = $('t-nav').querySelector('[aria-current="page"]');
+    if (current && current.scrollIntoView) current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  function renderTab() {
+    const view = $('t-view');
+    const map = { overview: renderOverview, roster: renderRoster, scenario: renderScenario, anchor: renderAnchors, bank: renderBank, reflection: renderReflections, settings: renderSettings, access: renderAccess };
+    view.innerHTML = '';
+    (map[T.tab] || renderOverview)(view);
+  }
+
+  function setTopVar() {
+    const bar = $('t-topbar');
+    if (bar) document.documentElement.style.setProperty('--t-top', bar.offsetHeight + 'px');
+  }
+
+
+  // ───────────────────────── 總覽 ─────────────────────────
+
+  function renderOverview(view) {
+    const d = T.data;
+    const list = scopeStudents();
+    const playing = list.filter(s => s.plays || s.anchors || s.codex);
+    let n = 0;
+    let first = 0;
+    Object.keys(d.anchors).forEach(id => { const m = merge(d.anchors[id].byClass); n += m.n || 0; first += m.first || 0; });
+    const dims = avgDims(list);
+    const required = d.config.required;
+    const reqDone = required.length ? list.filter(s => s.requiredDone >= required.length).length : null;
+
+    let html = '<div class="t-head"><h2>總覽</h2></div>';
+    html += '<dl class="t-stats">' +
+      stat('名冊人數', list.length, '人') +
+      stat('有遊玩紀錄', playing.length, '人') +
+      stat('完成局數', sum(list, s => s.plays), '局') +
+      stat('錨點首答正確率', fmtPct(pct(first, n)), n ? '共 ' + n + ' 次' : '') +
+      stat('平均平時成績', fmt(dims.total, 1), '') +
+      (required.length ? stat('必玩全部完成', reqDone, '/ ' + list.length + ' 人') : '') +
+      '</dl>';
+
+    if (!playing.length) {
+      html += '<div class="zh-panel t-empty">' + esc(scopeLabel()) + '還沒有遊玩紀錄。學生用學校帳號玩完一話後，這裡就會出現統計。</div>';
+      view.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="t-grid2">' +
+      '<section class="zh-panel t-block"><h3>五維平均<small>' + esc(scopeLabel()) + '，只算有資料的學生</small></h3>' +
+      '<div class="t-radar-wrap">' + radar(dims, null, d.dimsAvailable) + dimsTable(dims, null) + '</div></section>' +
+      '<section class="zh-panel t-block"><h3>近 14 天活躍人數<small>當天有任何遊玩紀錄</small></h3>' + activityChart() + '</section>' +
+      '</div>';
+
+    html += '<section class="zh-panel t-block"><h3>劇本完成率<small>玩過的人數 ÷ ' + esc(scopeLabel()) + '人數；點一列看劇本分析</small></h3>' + completionBars(list.length) + '</section>';
+
+    if (!T.cls) html += '<section class="zh-panel t-block"><h3>班級比較<small>點一列切換到該班</small></h3>' + classTable() + '</section>';
+
+    view.innerHTML = html;
+    view.querySelectorAll('[data-scen]').forEach(el => {
+      const go = () => { T.scenario = el.dataset.scen; switchTab('scenario'); };
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+    view.querySelectorAll('[data-cls]').forEach(el => {
+      const go = () => {
+        T.cls = el.dataset.cls;
+        ZH.session.set('tCls', T.cls);
+        renderScope();
+        renderTab();
+      };
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+  }
+
+  function stat(label, value, unit) {
+    return '<div class="t-stat"><dt>' + label + '</dt><dd>' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</dd></div>';
+  }
+
+  /** 五維數值表；compare 為同班平均（學生詳細用） */
+  function dimsTable(values, compare) {
+    const d = T.data;
+    let html = '<div class="t-dims">';
+    DIMS.forEach(([k, label]) => {
+      const off = !d.dimsAvailable[k];
+      html += '<span class="' + (off ? 'is-off' : '') + '">' + label + '</span>' +
+        '<span class="zh-dim zh-tiny' + (off ? ' is-off' : '') + '">' + (off ? '目前沒有資料，不列入成績' : '權重 ' + d.config.weights[k] + '%') + '</span>' +
+        '<span class="num ' + rate(values[k]) + '">' + fmt(values[k], 1) + (compare ? '<span class="zh-dim">／' + fmt(compare[k], 1) + '</span>' : '') + '</span>';
+    });
+    html += '<span class="t-strong">平時成績</span><span></span><span class="num t-strong">' + fmt(values.total, 1) + '</span>';
+    return html + '</div>';
+  }
+
+  function activityChart() {
+    const a = T.data.activity;
+    const series = a.days.map(() => 0);
+    Object.keys(a.byClass).forEach(cls => { if (inScope(cls)) a.byClass[cls].forEach((v, i) => { series[i] += v; }); });
+    const max = Math.max(1, Math.max.apply(null, series));
+    return '<div class="t-cols" role="img" aria-label="近 14 天每日活躍人數：' + a.days.map((d, i) => d.slice(5) + ' ' + series[i] + ' 人').join('，') + '">' +
+      a.days.map((day, i) => '<div class="t-col' + (i === a.days.length - 1 ? ' is-today' : '') + '" title="' + day + '：' + series[i] + ' 人">' +
+        '<span class="t-col__n">' + (series[i] || '') + '</span>' +
+        '<span class="t-col__bar" style="--h:' + ((100 * series[i]) / max).toFixed(1) + '%"></span>' +
+        '<span class="t-col__d">' + Number(day.slice(8)) + '</span></div>').join('') +
+      '</div>';
+  }
+
+  function completionBars(population) {
+    const d = T.data;
+    const ids = ZH.CATALOG.map(s => s.id).concat(Object.keys(d.scenarios).filter(id => !ZH.findScenario(id)));
+    const rows = ids.map(id => {
+      const m = merge(d.scenarios[id]);
+      return { id: id, players: m.players || 0, required: d.config.required.indexOf(id) > -1 };
+    }).filter(r => r.players || r.required);
+    if (!rows.length) return '<p class="t-empty">還沒有學生完成任何一話。</p>';
+    return '<div class="t-hbars">' + rows.map(r =>
+      hbar(scenLabel(r.id) + (r.required ? '（必玩）' : ''), r.players, population,
+        r.players + ' / ' + population + ' 人', r.required ? 'is-gilt' : '',
+        ' data-scen="' + esc(r.id) + '" tabindex="0" role="button"')
+    ).join('') + '</div>';
+  }
+
+  function classTable() {
+    const d = T.data;
+    const req = d.config.required.length;
+    const classes = d.classes.filter(c => c.key !== d.labels.teacher);
+    let html = '<div class="t-tablewrap"><table class="t-table"><thead><tr>' +
+      '<th class="sticky">班級</th><th class="num">人數</th><th class="num">有紀錄</th>' +
+      DIMS.map(([, l]) => '<th class="num">' + l + '</th>').join('') +
+      '<th class="num">平時成績</th>' + (req ? '<th class="num">必玩完成</th>' : '') + '</tr></thead><tbody>';
+    classes.forEach(c => {
+      const list = d.students.filter(s => s.cls === c.key);
+      const dims = avgDims(list);
+      const label = c.key === d.labels.none ? '未填' : c.key + ' 班';
+      html += '<tr class="is-row" tabindex="0" data-cls="' + esc(c.key) + '"><td class="sticky t-strong">' + esc(label) + '</td>' +
+        '<td class="num">' + list.length + '</td>' +
+        '<td class="num">' + list.filter(s => s.plays || s.anchors).length + '</td>' +
+        DIMS.map(([k]) => '<td class="num ' + rate(dims[k]) + '">' + fmt(dims[k], 1) + '</td>').join('') +
+        '<td class="num t-strong">' + fmt(dims.total, 1) + '</td>' +
+        (req ? '<td class="num">' + fmtPct(pct(list.filter(s => s.requiredDone >= req).length, list.length)) + '</td>' : '') +
+        '</tr>';
+    });
+    return html + '</tbody></table></div>';
+  }
+
+
+  // ───────────────────────── 名冊與成績 ─────────────────────────
+
+  const ROSTER_COLS = [
+    { key: 'studentId', label: '學號', sticky: true },
+    { key: 'classCode', label: '班級代碼' },
+    { key: 'classSeat', label: '舊班級座號' },
+    { key: 'name', label: '暱稱' },
+    { key: 'email', label: '帳號' }
+  ].concat(DIMS.map(([k, l]) => ({ key: k, label: l, num: true, dim: true })))
+    .concat([
+      { key: 'total', label: '平時成績', num: true },
+      { key: 'played', label: '已玩劇本', num: true },
+      { key: 'requiredDone', label: '必玩', num: true },
+      { key: 'minutes', label: '遊玩分鐘', num: true },
+      { key: 'lastActive', label: '最後活動' }
+    ]);
+
+  function rosterValue(s, key) {
+    if (DIMS.some(([k]) => k === key)) return s.dims[key];
+    return s[key];
+  }
+
+  function rosterList() {
+    const q = T.rosterQuery.trim().toLowerCase();
+    const { key, dir } = T.rosterSort;
+    return scopeStudents()
+      .filter(s => !q || (s.studentId + ' ' + s.classCode + ' ' + s.classSeat + ' ' + s.name + ' ' + s.email).toLowerCase().indexOf(q) > -1)
+      .sort((a, b) => {
+        const x = rosterValue(a, key);
+        const y = rosterValue(b, key);
+        const xe = x === null || x === undefined || x === '';
+        const ye = y === null || y === undefined || y === '';
+        if (xe !== ye) return xe ? 1 : -1; // 空值永遠排最後
+        if (x === y) return a.classSeat < b.classSeat ? -1 : 1;
+        return (x < y ? -1 : 1) * dir;
+      });
+  }
+
+  function renderRoster(view) {
+    const d = T.data;
+    const off = DIMS.filter(([k]) => !d.dimsAvailable[k]).map(([, l]) => l);
+    view.innerHTML =
+      '<div class="t-head"><h2>名冊與成績</h2><div class="t-head__actions">' +
+      '<input class="zh-input" id="t-roster-q" type="search" placeholder="搜尋學號、班級、暱稱或帳號" value="' + esc(T.rosterQuery) + '" aria-label="搜尋學生">' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-roster-csv">下載 CSV</button>' +
+      '<button type="button" class="zh-btn zh-btn--sm" id="t-roster-sheet">匯出到試算表</button>' +
+      '</div></div>' +
+      '<p class="t-note">平時成績＝五維依權重加權（' + DIMS.map(([k, l]) => l + ' ' + d.config.weights[k]).join('、') + '），每一項都只採第一次的表現。' +
+      (off.length ? '目前全體都沒有「' + off.join('、') + '」的資料，暫不列入，權重按比例分給其他維度。' : '') +
+      '點一列可以看學生的詳細紀錄。</p>' +
+      '<div class="t-tablewrap"><table class="t-table"><caption class="zh-sr-only">' + esc(scopeLabel()) + '名冊與成績</caption><thead><tr>' +
+      ROSTER_COLS.map(c => {
+        const sorted = T.rosterSort.key === c.key ? (T.rosterSort.dir === 1 ? 'ascending' : 'descending') : 'none';
+        return '<th class="' + (c.num ? 'num' : '') + (c.sticky ? ' sticky' : '') + '" aria-sort="' + sorted + '"><button type="button" data-sort="' + c.key + '">' + c.label + '</button></th>';
+      }).join('') +
+      '</tr></thead><tbody id="t-roster-body"></tbody></table></div>' +
+      '<p class="t-count" id="t-roster-count"></p>';
+
+    renderRosterBody();
+    $('t-roster-q').addEventListener('input', e => { T.rosterQuery = e.target.value; renderRosterBody(); });
+    view.querySelectorAll('[data-sort]').forEach(btn => btn.addEventListener('click', () => {
+      const key = btn.dataset.sort;
+      const numeric = ROSTER_COLS.some(c => c.key === key && c.num);
+      T.rosterSort = T.rosterSort.key === key ? { key: key, dir: -T.rosterSort.dir } : { key: key, dir: numeric ? -1 : 1 };
+      renderRoster(view);
+    }));
+    $('t-roster-csv').addEventListener('click', () => {
+      const req = d.config.required.length;
+      const rows = [['班級', '座號', '班級座號', '暱稱', '帳號'].concat(DIMS.map(([, l]) => l)).concat(['平時成績', '已玩劇本', '必玩完成', '遊玩分鐘', '最後活動'])];
+      rosterList().forEach(s => rows.push([s.cls, s.studentId, s.classCode, s.classSeat, s.name, s.email]
+        .concat(DIMS.map(([k]) => (s.dims[k] === null ? '' : s.dims[k])))
+        .concat([s.total === null ? '' : s.total, s.played, req ? s.requiredDone + '/' + req : '', s.minutes, s.lastActive])));
+      downloadCsv('zongheng_roster_' + scopeSlug() + '_' + today() + '.csv', rows);
+    });
+    $('t-roster-sheet').addEventListener('click', exportSheet);
+  }
+
+  function renderRosterBody() {
+    const d = T.data;
+    const req = d.config.required.length;
+    const list = rosterList();
+    const body = $('t-roster-body');
+    if (!list.length) {
+      body.innerHTML = '<tr><td colspan="' + ROSTER_COLS.length + '" class="t-empty">' + (T.rosterQuery ? '找不到符合的學生。' : '這個範圍還沒有學生登入過。') + '</td></tr>';
+    } else {
+      body.innerHTML = list.map(s =>
+        '<tr class="is-row" tabindex="0" data-email="' + esc(s.email) + '">' +
+        '<td class="sticky t-strong">' + esc(s.studentId || '未填') + '</td>' +
+        '<td>'+esc(s.classCode||'—')+'</td>'+
+        '<td>'+esc(s.classSeat||'—')+'</td>'+ 
+        '<td>' + esc(s.name || '—') + '</td>' +
+        '<td class="zh-dim">' + esc(s.email.split('@')[0]) + '</td>' +
+        DIMS.map(([k]) => '<td class="num ' + rate(s.dims[k]) + '">' + fmt(s.dims[k], 1) + '</td>').join('') +
+        '<td class="num t-strong">' + fmt(s.total, 1) + '</td>' +
+        '<td class="num">' + s.played + '</td>' +
+        '<td class="num' + (req && s.requiredDone < req ? ' is-low' : '') + '">' + (req ? s.requiredDone + '/' + req : '—') + '</td>' +
+        '<td class="num">' + s.minutes + '</td>' +
+        '<td class="zh-dim">' + esc(shortTime(s.lastActive)) + '</td>' +
+        '</tr>'
+      ).join('');
+    }
+    body.querySelectorAll('tr[data-email]').forEach(tr => {
+      tr.addEventListener('click', () => openStudent(tr.dataset.email));
+      tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStudent(tr.dataset.email); } });
+    });
+    $('t-roster-count').textContent = '共 ' + list.length + ' 人' + (T.rosterQuery ? '（搜尋結果）' : '') + '。';
+  }
+
+  function exportSheet() {
+    ZH.loading(true, '匯出中');
+    tcall('api_teacherExportSheet', T.cls)
+      .then(res => {
+        ZH.loading(false);
+        if (!res || !res.ok) { ZH.toast((res && res.msg) || '匯出失敗。', 'bad'); return; }
+        ZH.sfx('seal');
+        ZH.modal({
+          title: '已匯出 ' + res.count + ' 位學生',
+          body: '<p>資料已寫入試算表的「' + esc(res.sheetName) + '」工作表。每次匯出都會覆蓋這張工作表，要保留請另存一份。</p>' +
+            '<p style="margin-top:12px"><a class="zh-btn zh-btn--primary" href="' + esc(res.url) + '" target="_top" rel="noopener">開啟「' + esc(res.sheetName) + '」</a></p>',
+          actions: [{ label: '關閉', value: true, kind: 'quiet' }]
+        });
+      })
+      .catch(err => { ZH.loading(false); ZH.toast(err.message, 'bad'); });
+  }
+
+
+  // ───────────────────────── 劇本分析 ─────────────────────────
+
+  function scenarioIds() {
+    const d = T.data;
+    return ZH.CATALOG.map(s => s.id).concat(Object.keys(d.scenarios).filter(id => !ZH.findScenario(id)));
+  }
+
+  function renderScenario(view) {
+    const d = T.data;
+    const ids = scenarioIds();
+    const players = id => (merge(d.scenarios[id]).players || 0);
+    if (!T.scenario || ids.indexOf(T.scenario) === -1) T.scenario = ids.filter(id => players(id))[0] || ids[0];
+
+    const options = ZH.VOLUMES.map(vol => '<optgroup label="' + esc(vol.no + ' ' + vol.name) + '">' +
+      ids.filter(id => volOf(id) === vol.key).map(id => '<option value="' + id + '"' + (id === T.scenario ? ' selected' : '') + '>' +
+        esc(scenLabel(id)) + (players(id) ? '（' + players(id) + ' 人）' : '') + '</option>').join('') + '</optgroup>').join('') +
+      ids.filter(id => !volOf(id)).map(id => '<option value="' + esc(id) + '"' + (id === T.scenario ? ' selected' : '') + '>' + esc(id) + '</option>').join('');
+
+    const m = merge(d.scenarios[T.scenario]);
+    const population = scopeStudents().length;
+    const meta = ZH.findScenario(T.scenario);
+
+    let html = '<div class="t-head"><h2>劇本分析</h2><div class="t-head__actions">' +
+      '<label class="zh-sr-only" for="t-scen">選擇劇本</label><select class="zh-input" id="t-scen">' + options + '</select></div></div>';
+    if (meta) html += '<p class="t-note">' + esc(meta.episode) + '。原典：' + esc(meta.source) + '。主玩法：' + esc(meta.genre) + '。</p>';
+
+    if (!m.players) {
+      html += '<div class="zh-panel t-empty">' + esc(scopeLabel()) + '還沒有人玩過「' + esc(scenName(T.scenario)) + '」。</div>';
+      view.innerHTML = html;
+      bindScenarioSelect(view);
+      return;
+    }
+
+    html += '<dl class="t-stats">' +
+      stat('遊玩人數', m.players, '/ ' + population + ' 人') +
+      stat('完成率', fmtPct(pct(m.players, population)), '') +
+      stat('總局數', m.plays, '局') +
+      stat('平均謀略', fmt(m.strategySum / m.players, 1), '第一次') +
+      stat('平均德望', fmt(m.virtueSum / m.players, 1), '第一次') +
+      stat('平均時長', fmt(m.firstDurationSum / m.players / 60, 0), '分鐘') +
+      '</dl>';
+
+    html += '<div class="t-grid2">' +
+      '<section class="zh-panel t-block"><h3>陣營選擇<small>每位學生第一次的選擇</small></h3>' + distBars(m.factions, m.players) + '</section>' +
+      '<section class="zh-panel t-block"><h3>結局分布<small>每位學生第一次的結局</small></h3>' + distBars(m.endings, m.players, 'is-gilt') + '</section>' +
+      '</div>';
+
+    const modes = Object.keys(m.modes || {});
+    if (modes.length) {
+      html += '<section class="zh-panel t-block"><h3>模式<small>全部局數</small></h3><div class="t-hbars">' +
+        modes.map(k => hbar(MODE_LABELS[k] || k, m.modes[k], m.plays, m.modes[k] + ' 局')).join('') + '</div></section>';
+    }
+
+    const games = Object.keys(d.minigames).filter(k => d.minigames[k].scenarioId === T.scenario);
+    if (games.length) {
+      html += '<section class="zh-panel t-block"><h3>小遊戲<small>得分率＝得分 ÷ 滿分</small></h3><div class="t-tablewrap"><table class="t-table"><thead><tr>' +
+        '<th class="sticky">遊戲代碼</th><th>類別</th><th class="num">人數</th><th class="num">局數</th><th class="num">第一次平均</th><th class="num">最佳平均</th></tr></thead><tbody>' +
+        games.map(k => {
+          const g = d.minigames[k];
+          const a = merge(g.byClass);
+          if (!a.players) return '';
+          const firstRate = (100 * a.firstSum) / a.players;
+          return '<tr><td class="sticky">' + esc(g.gameId) + '</td><td>' + (g.gameId.indexOf(LETTERS_PREFIX) === 0 ? '文辭' : '其他') + '</td>' +
+            '<td class="num">' + a.players + '</td><td class="num">' + a.plays + '</td>' +
+            '<td class="num ' + rate(firstRate) + '">' + fmtPct(firstRate) + '</td><td class="num">' + fmtPct((100 * a.bestSum) / a.players) + '</td></tr>';
+        }).join('') + '</tbody></table></div></section>';
+    }
+
+    const anchorRows = buildAnchorRows().filter(r => r.scenarioId === T.scenario && r.n);
+    if (anchorRows.length) {
+      html += '<section class="zh-panel t-block"><h3>本劇本的史實錨點<small>首答正確率，點一列到試題分析</small></h3><div class="t-hbars">' +
+        anchorRows.sort((a, b) => (a.seq || 0) - (b.seq || 0)).map(r => hbar(r.id + '　' + clip(r.stem, 24), r.firstRate, 100, fmtPct(r.firstRate) + '（' + r.n + ' 人）',
+          r.firstRate < 40 ? 'is-cinnabar' : r.firstRate < 70 ? 'is-gilt' : '', ' data-anchor="' + esc(r.id) + '" tabindex="0" role="button"')).join('') +
+        '</div></section>';
+    }
+
+    view.innerHTML = html;
+    bindScenarioSelect(view);
+    view.querySelectorAll('[data-anchor]').forEach(el => {
+      const go = () => { T.anchorScenario = T.scenario; T.openAnchor = el.dataset.anchor; switchTab('anchor'); };
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+  }
+
+  function bindScenarioSelect(view) {
+    $('t-scen').addEventListener('change', e => { T.scenario = e.target.value; renderScenario(view); });
+  }
+
+
+  // ───────────────────────── 試題分析 ─────────────────────────
+
+  function buildAnchorRows() {
+    const d = T.data;
+    const ids = Object.keys(d.anchors).concat(Object.keys(d.bank).filter(id => !d.anchors[id]));
+    return ids.map(id => {
+      const node = d.anchors[id];
+      const bank = d.bank[id] || null;
+      const m = merge(node ? node.byClass : {});
+      const n = m.n || 0;
+      const first = m.first || 0;
+      const recovered = m.recovered || 0;
+      const wrong = n - first;
+      const types = m.types || {};
+      const topType = Object.keys(types).sort((a, b) => types[b] - types[a])[0] || '';
+      return {
+        id: id,
+        scenarioId: (node && node.scenarioId) || (bank && bank.scenarioId) || '',
+        bank: bank,
+        stem: bank ? bank.stem : '',
+        seq: bank ? bank.seq : 0,
+        answer: bank ? bank.answer : '',
+        n: n,
+        first: first,
+        recovered: recovered,
+        stillWrong: wrong - recovered,
+        firstRate: pct(first, n),
+        recRate: pct(recovered, wrong),
+        choices: m.choices || {},
+        types: types,
+        topType: topType,
+        sec: n ? m.secSum / n : null
+      };
+    });
+  }
+
+  function optsBar(r) {
+    const letters = ['A', 'B', 'C', 'D'];
+    const extra = Object.keys(r.choices).filter(k => letters.indexOf(k) === -1);
+    const all = letters.concat(extra);
+    const segs = all.map(k => {
+      const c = r.choices[k] || 0;
+      return c ? '<span class="' + (k === r.answer ? 'is-answer' : '') + '" style="--w:' + ((100 * c) / r.n).toFixed(1) + '%" title="' + k + '：' + c + ' 人"></span>' : '';
+    }).join('');
+    const cap = letters.map(k => {
+      const txt = k + ' ' + fmtPct(pct(r.choices[k] || 0, r.n));
+      return k === r.answer ? '<b>' + txt + '</b>' : txt;
+    }).join('　');
+    return '<span class="t-opts" aria-hidden="true">' + segs + '</span><span class="t-opts__cap">' + cap + '</span>';
+  }
+
+  const ANCHOR_COLS = [
+    { key: 'id', label: '題目', sticky: true },
+    { key: 'n', label: '作答人數', num: true },
+    { key: 'firstRate', label: '首答正確', num: true },
+    { key: 'recRate', label: '歧路回歸', num: true },
+    { key: 'stillWrong', label: '仍答錯', num: true },
+    { key: 'dist', label: '選項分布', nosort: true },
+    { key: 'topType', label: '主要誤答' },
+    { key: 'sec', label: '平均秒數', num: true }
+  ];
+
+  function renderAnchors(view) {
+    const d = T.data;
+    const all = buildAnchorRows();
+    const scenIds = scenarioIds().filter(id => all.some(r => r.scenarioId === id));
+    if (T.anchorScenario && scenIds.indexOf(T.anchorScenario) === -1) T.anchorScenario = '';
+    const rows = all.filter(r => !T.anchorScenario || r.scenarioId === T.anchorScenario);
+    const answered = rows.filter(r => r.n);
+    const unanswered = rows.length - answered.length;
+    const { key, dir } = T.anchorSort;
+    answered.sort((a, b) => {
+      const x = a[key];
+      const y = b[key];
+      const xe = x === null || x === undefined || x === '';
+      const ye = y === null || y === undefined || y === '';
+      if (xe !== ye) return xe ? 1 : -1;
+      if (x === y) return a.id < b.id ? -1 : 1;
+      return (x < y ? -1 : 1) * dir;
+    });
+
+    const typeTotals = {};
+    answered.forEach(r => Object.keys(r.types).forEach(t => { typeTotals[t] = (typeTotals[t] || 0) + r.types[t]; }));
+    const wrongTotal = Object.keys(typeTotals).reduce((s, t) => s + typeTotals[t], 0);
+
+    let html = '<div class="t-head"><h2>試題分析</h2><div class="t-head__actions">' +
+      '<label class="zh-sr-only" for="t-anchor-scen">篩選劇本</label><select class="zh-input" id="t-anchor-scen"><option value="">全部劇本</option>' +
+      scenIds.map(id => '<option value="' + esc(id) + '"' + (id === T.anchorScenario ? ' selected' : '') + '>' + esc(scenLabel(id)) + '</option>').join('') +
+      '</select><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-anchor-csv"' + (answered.length ? '' : ' disabled') + '>下載 CSV</button></div></div>' +
+      '<p class="t-note">首答正確＝第一次就選史實答案的比例；歧路回歸＝首答錯的人走完歧路後選回史實的比例。選項代號是題庫的原始代號，不是學生畫面上輪替後的位置。點一題看選項內容與誘答類型。</p>';
+
+    if (!answered.length) {
+      html += '<div class="zh-panel t-empty">' + esc(scopeLabel()) + '還沒有錨點作答紀錄。' + (rows.length ? '題庫中有 ' + rows.length + ' 題。' : '') + '</div>';
+      view.innerHTML = html;
+      bindAnchorControls(view, answered);
+      return;
+    }
+
+    html += '<div class="t-grid2">' +
+      '<section class="zh-panel t-block"><h3>誤答歸因<small>首答答錯時選到的誘答類型，共 ' + wrongTotal + ' 次</small></h3>' +
+      (wrongTotal ? '<div class="t-hbars">' + d.types.filter(t => typeTotals[t]).map(t =>
+        hbar(t, typeTotals[t], wrongTotal, typeTotals[t] + ' 次（' + fmtPct(pct(typeTotals[t], wrongTotal)) + '）', 'is-cinnabar')).join('') + '</div>'
+        : '<p class="t-empty">首答全部正確，沒有誤答。</p>') + '</section>' +
+      '<section class="zh-panel t-block"><h3>答對率概況<small>' + answered.length + ' 題</small></h3><div class="t-hbars">' +
+      [['低於 40%', r => r.firstRate < 40, 'is-cinnabar'], ['40%～69%', r => r.firstRate >= 40 && r.firstRate < 70, 'is-gilt'], ['70% 以上', r => r.firstRate >= 70, '']]
+        .map(([label, f, tone]) => { const c = answered.filter(f).length; return hbar(label, c, answered.length, c + ' 題', tone); }).join('') +
+      '</div></section></div>';
+
+    html += '<div class="t-tablewrap"><table class="t-table"><caption class="zh-sr-only">錨點試題分析</caption><thead><tr>' +
+      ANCHOR_COLS.map(c => {
+        if (c.nosort) return '<th>' + c.label + '</th>';
+        const sorted = T.anchorSort.key === c.key ? (T.anchorSort.dir === 1 ? 'ascending' : 'descending') : 'none';
+        return '<th class="' + (c.num ? 'num' : '') + (c.sticky ? ' sticky' : '') + '" aria-sort="' + sorted + '"><button type="button" data-asort="' + c.key + '">' + c.label + '</button></th>';
+      }).join('') + '</tr></thead><tbody>';
+    answered.forEach(r => {
+      const open = T.openAnchor === r.id;
+      html += '<tr class="is-row" tabindex="0" data-aid="' + esc(r.id) + '" aria-expanded="' + open + '">' +
+        '<td class="sticky wrap"><span class="t-strong">' + esc(r.id) + '</span><span class="t-sub">' + esc(clip(r.stem, 34) || '（題庫沒有這一題）') + '</span>' +
+        (T.anchorScenario ? '' : '<span class="t-sub">' + esc(scenLabel(r.scenarioId)) + '</span>') + '</td>' +
+        '<td class="num">' + r.n + '</td>' +
+        '<td class="num t-strong ' + rate(r.firstRate) + '">' + fmtPct(r.firstRate) + '</td>' +
+        '<td class="num">' + fmtPct(r.recRate) + '</td>' +
+        '<td class="num' + (r.stillWrong ? ' is-low' : '') + '">' + r.stillWrong + '</td>' +
+        '<td>' + optsBar(r) + '</td>' +
+        '<td>' + esc(r.topType || '—') + '</td>' +
+        '<td class="num">' + fmt(r.sec, 1) + '</td></tr>';
+      if (open) html += '<tr class="t-detail"><td colspan="' + ANCHOR_COLS.length + '">' + anchorDetail(r) + '</td></tr>';
+    });
+    html += '</tbody></table></div>' +
+      '<p class="t-count">共 ' + answered.length + ' 題有作答紀錄' + (unanswered ? '；題庫另有 ' + unanswered + ' 題尚無作答' : '') + '。</p>';
+
+    view.innerHTML = html;
+    bindAnchorControls(view, answered);
+  }
+
+  function anchorDetail(r) {
+    const b = r.bank;
+    if (!b) return '<p class="zh-dim">題庫 AnchorBank 沒有「' + esc(r.id) + '」這一題，無法顯示選項內容。請確認代碼是否一致。</p>';
+    return '<p class="t-stem">' + esc(b.stem) + '</p>' +
+      (b.sourceRef ? '<p class="zh-dim zh-small" style="margin-top:4px">出處：' + esc(b.sourceRef) + '</p>' : '') +
+      '<div class="t-optlist">' + ['A', 'B', 'C', 'D'].map(k => {
+        const isAns = k === b.answer;
+        const c = r.choices[k] || 0;
+        return '<div class="t-optrow' + (isAns ? ' is-answer' : '') + '"><b>' + k + '</b><span>' + esc(b.opts[k] || '（空白）') + '</span>' +
+          '<span>' + (isAns ? '史實答案' : esc(b.types[k] || '未標類型')) + '</span>' +
+          '<span class="zh-num">' + c + ' 人（' + fmtPct(pct(c, r.n)) + '）</span></div>';
+      }).join('') + '</div>';
+  }
+
+  function bindAnchorControls(view, answered) {
+    $('t-anchor-scen').addEventListener('change', e => { T.anchorScenario = e.target.value; T.openAnchor = ''; renderAnchors(view); });
+    const csv = $('t-anchor-csv');
+    if (csv) csv.addEventListener('click', () => {
+      const rows = [['錨點代碼', '劇本', '題幹', '作答人數', '首答正確率', '歧路回歸率', '仍答錯人數', 'A', 'B', 'C', 'D', '史實答案', '主要誤答類型', '平均秒數']];
+      answered.forEach(r => rows.push([r.id, scenName(r.scenarioId), r.stem, r.n, fmt(r.firstRate, 1), fmt(r.recRate, 1), r.stillWrong]
+        .concat(['A', 'B', 'C', 'D'].map(k => r.choices[k] || 0)).concat([r.answer, r.topType, fmt(r.sec, 1)])));
+      downloadCsv('zongheng_anchors_' + scopeSlug() + '_' + today() + '.csv', rows);
+    });
+    view.querySelectorAll('[data-asort]').forEach(btn => btn.addEventListener('click', () => {
+      const key = btn.dataset.asort;
+      const numeric = ANCHOR_COLS.some(c => c.key === key && c.num);
+      T.anchorSort = T.anchorSort.key === key ? { key: key, dir: -T.anchorSort.dir } : { key: key, dir: numeric && key !== 'firstRate' ? -1 : 1 };
+      renderAnchors(view);
+    }));
+    view.querySelectorAll('tr[data-aid]').forEach(tr => {
+      const toggle = () => {
+        T.openAnchor = T.openAnchor === tr.dataset.aid ? '' : tr.dataset.aid;
+        renderAnchors(view);
+        const again = view.querySelector('tr[data-aid="' + CSS.escape(tr.dataset.aid) + '"]');
+        if (again) again.focus();
+      };
+      tr.addEventListener('click', toggle);
+      tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
+  }
+
+
+  // ───────────────────────── 反思與列傳 ─────────────────────────
+
+  function renderReflections(view) {
+    const d = T.data;
+    const ids = scenarioIds().filter(id => d.scenarios[id] || id === T.refl.scenarioId);
+    view.innerHTML =
+      '<div class="t-head"><h2>反思與列傳</h2></div>' +
+      '<form class="t-filters" id="t-refl-form">' +
+      '<div class="zh-field"><label for="t-refl-scen">劇本</label><select class="zh-input" id="t-refl-scen"><option value="">全部劇本</option>' +
+      ids.map(id => '<option value="' + esc(id) + '"' + (id === T.refl.scenarioId ? ' selected' : '') + '>' + esc(scenLabel(id)) + '</option>').join('') + '</select></div>' +
+      '<div class="zh-field"><label for="t-refl-kind">類型</label><select class="zh-input" id="t-refl-kind">' +
+      [['', '全部'], ['reflection', '反思'], ['biography', '列傳']].map(([v, l]) => '<option value="' + v + '"' + (v === T.refl.kind ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></div>' +
+      '<div class="zh-field"><label for="t-refl-q">關鍵字（內容、暱稱、座號）</label><input class="zh-input" id="t-refl-q" type="search" value="' + esc(T.refl.q) + '"></div>' +
+      '<button type="submit" class="zh-btn zh-btn--primary">篩選</button>' +
+      '</form>' +
+      '<div id="t-refl-out"><p class="t-empty">讀取中……</p></div>';
+
+    $('t-refl-form').addEventListener('submit', e => {
+      e.preventDefault();
+      T.refl = { scenarioId: $('t-refl-scen').value, kind: $('t-refl-kind').value, q: $('t-refl-q').value.trim() };
+      loadReflections();
+    });
+    loadReflections();
+  }
+
+  function loadReflections() {
+    const filter = { cls: T.cls, scenarioId: T.refl.scenarioId, kind: T.refl.kind, q: T.refl.q };
+    const key = JSON.stringify(filter);
+    const out = $('t-refl-out');
+    if (T.reflCache[key]) { drawReflections(T.reflCache[key]); return; }
+    out.innerHTML = '<p class="t-empty">讀取中……</p>';
+    tcall('api_teacherReflections', filter)
+      .then(res => {
+        if (!res || !res.ok) { out.innerHTML = '<p class="t-empty">' + esc((res && res.msg) || '讀取失敗。') + '</p>'; return; }
+        T.reflCache[key] = res;
+        if (T.tab === 'reflection') drawReflections(res);
+      })
+      .catch(err => { out.innerHTML = '<p class="t-empty">' + esc(err.message) + '</p>'; });
+  }
+
+  function drawReflections(res) {
+    const out = $('t-refl-out');
+    if (!out) return;
+    if (!res.items.length) {
+      out.innerHTML = '<div class="zh-panel t-empty">' + esc(scopeLabel()) + '沒有符合條件的反思或列傳。</div>';
+      return;
+    }
+    out.innerHTML = '<p class="t-count" style="margin:0 0 14px">共 ' + res.matched + ' 則' + (res.matched > res.items.length ? '，顯示最新 ' + res.items.length + ' 則' : '') + '。</p>' +
+      '<div class="t-slips">' + res.items.map(it =>
+        '<article class="zh-slip t-slip"><div class="t-slip__meta"><b>' + esc((it.classSeat || '未填') + ' ' + (it.name || it.email.split('@')[0])) + '</b>' +
+        '<span>' + esc(scenName(it.scenarioId)) + '</span><span>' + esc(KIND_LABELS[it.kind] || it.kind) + '</span><span>' + esc(shortTime(it.time)) + '</span></div>' +
+        '<div class="t-slip__text">' + esc(it.text) + '</div></article>'
+      ).join('') + '</div>';
+  }
+
+
+  // ───────────────────────── 設定 ─────────────────────────
+
+  function renderSettings(view) {
+    const d = T.data;
+    const c = d.config;
+    const check = (name, id, on) => {
+      const s = ZH.findScenario(id);
+      return '<label class="t-check"><input type="checkbox" name="' + name + '" value="' + esc(id) + '"' + (on ? ' checked' : '') + '><span>' +
+        esc(s ? ZH.episodeLabel(s) + ' ' + s.name : id) + (s ? '<span class="t-sub">' + esc(s.source) + '</span>' : '') + '</span></label>';
+    };
+    const byVolume = (name, selected) => ZH.VOLUMES.map(vol => '<h4>' + esc(vol.no + ' ' + vol.name) + '</h4>' +
+      ZH.scenariosOf(vol.key).filter(s => s.ep > 0).map(s => check(name, s.id, selected.indexOf(s.id) > -1)).join('')).join('');
+    const pickSummary = ids => (ids.length ? '已勾選 ' + ids.length + ' 話：' + ids.map(scenName).join('、') : '還沒有勾選任何一話');
+    const picker = (name, selected, id) => '<details class="t-pick"' + (id ? ' id="' + id + '"' : '') + ' data-pick="' + name + '"><summary><span class="t-pick__sum">' +
+      esc(pickSummary(selected)) + '</span><span class="t-pick__hint"></span></summary><div class="t-checks">' + byVolume(name, selected) + '</div></details>';
+
+    view.innerHTML =
+      '<div class="t-head"><h2>設定</h2></div>' +
+      '<form id="t-settings" novalidate>' +
+      '<section class="zh-panel t-block"><h3>五維權重<small>五項加總要等於 100</small></h3>' +
+      '<div class="t-weights">' + DIMS.map(([k, l]) =>
+        '<div class="zh-field"><label for="t-w-' + k + '">' + l + '（%）</label><input class="zh-input" id="t-w-' + k + '" data-w="' + k + '" type="number" min="0" max="100" step="1" inputmode="numeric" value="' + esc(c.weights[k]) + '"></div>').join('') +
+      '</div><p class="t-sum" id="t-w-sum"></p>' +
+      '<dl class="t-kv" style="margin-top:14px">' + DIMS.map(([k, l]) => '<dt>' + l + '</dt><dd>' + esc(DIM_SOURCE[k]) + '</dd>').join('') + '</dl></section>' +
+
+      '<section class="zh-panel t-block"><h3>必玩劇本與期限<small>名冊會顯示每位學生在期限內完成幾話</small></h3>' +
+      picker('required', c.required) +
+      '<div class="zh-field" style="max-width:260px;margin-top:14px"><label for="t-deadline">期限（當天 23:59 前完成才算，可留空）</label><input class="zh-input" id="t-deadline" type="date" value="' + esc(c.deadline) + '"></div></section>' +
+
+      '<section class="zh-panel t-block"><h3>訪客模式<small>未登入的人可以完整遊玩，但不留紀錄</small></h3>' +
+      '<label class="t-switch"><input type="checkbox" id="t-allow-guest"' + (c.allowGuest ? ' checked' : '') + '>開放訪客遊玩</label>' +
+      '<div style="margin-top:10px">' + picker('guest', c.guestScenarios, 't-guest-list') + '</div></section>' +
+
+      '<section class="zh-panel t-block"><h3>博通計算</h3>' +
+      '<div class="zh-field" style="max-width:260px"><label for="t-codex">每個劇本預期可收集的圖鑑數</label><input class="zh-input" id="t-codex" type="number" min="1" max="200" step="1" inputmode="numeric" value="' + esc(c.codexPerScenario) + '"></div>' +
+      '<p class="t-src">博通＝解鎖圖鑑數 ÷（已玩劇本數 × 這個數字），最高 100。</p></section>' +
+
+      '<div class="t-actions"><button type="submit" class="zh-btn zh-btn--primary" id="t-save">儲存設定</button><span class="zh-dim zh-small">儲存後會重新計算平時成績。</span></div>' +
+      '</form>' +
+
+      '<section class="zh-panel t-block" style="margin-top:28px"><h3>把五維寫回學生名冊</h3>' +
+      '<p class="zh-small">學生首頁的五維雷達圖讀的是名冊 Users 的資料。按下後，每位學生的五維會依目前的紀錄更新。想每天自動更新，請在 Apps Script 執行一次 <code>setupNightlySync</code>，之後每天凌晨 3 點會自動同步。</p>' +
+      '<div class="t-actions"><button type="button" class="zh-btn" id="t-sync">更新學生名冊的五維</button></div></section>' +
+
+      '<section class="zh-panel t-block"><h3>資料狀態</h3><dl class="t-kv">' +
+      '<dt>登入的教師</dt><dd>' + esc(d.who) + '</dd>' +
+      '<dt>資料時間</dt><dd>' + esc(d.generatedAt) + '</dd>' +
+      Object.keys(d.sheetRows).map(k => '<dt>' + esc(k) + '</dt><dd>' + d.sheetRows[k] + ' 列</dd>').join('') +
+      '<dt>程式版本</dt><dd>' + esc(ZH.boot.version || '') + '（介面 ' + esc(ZH.VERSION) + '）</dd>' +
+      '</dl></section>';
+
+    const updateSum = () => {
+      const total = DIMS.reduce((s, [k]) => s + (Number($('t-w-' + k).value) || 0), 0);
+      const el = $('t-w-sum');
+      el.textContent = '合計 ' + total + (total === 100 ? '' : '，要等於 100 才能儲存');
+      el.className = 't-sum ' + (total === 100 ? 'is-high' : 'is-low');
+      return total;
+    };
+    updateSum();
+    view.querySelectorAll('[data-w]').forEach(inp => inp.addEventListener('input', updateSum));
+    view.querySelectorAll('.t-pick').forEach(box => box.addEventListener('change', () => {
+      const ids = Array.prototype.slice.call(box.querySelectorAll('input:checked')).map(i => i.value);
+      box.querySelector('.t-pick__sum').textContent = pickSummary(ids);
+    }));
+    const syncGuest = () => { $('t-guest-list').style.opacity = $('t-allow-guest').checked ? '1' : '.45'; };
+    syncGuest();
+    $('t-allow-guest').addEventListener('change', syncGuest);
+
+    $('t-settings').addEventListener('submit', e => {
+      e.preventDefault();
+      if (updateSum() !== 100) { ZH.toast('五維權重加總要等於 100。', 'bad'); return; }
+      const weights = {};
+      DIMS.forEach(([k]) => { weights[k] = Math.round(Number($('t-w-' + k).value) || 0); });
+      const picked = name => Array.prototype.slice.call(view.querySelectorAll('input[name="' + name + '"]:checked')).map(i => i.value);
+      const payload = {
+        weights: weights,
+        required: picked('required'),
+        deadline: $('t-deadline').value,
+        allowGuest: $('t-allow-guest').checked,
+        guestScenarios: picked('guest'),
+        codexPerScenario: Math.round(Number($('t-codex').value) || 0)
+      };
+      if (payload.allowGuest && !payload.guestScenarios.length) { ZH.toast('開放訪客時至少要勾選一關。', 'bad'); return; }
+      const btn = $('t-save');
+      btn.disabled = true;
+      tcall('api_teacherSaveConfig', payload)
+        .then(res => {
+          btn.disabled = false;
+          if (!res || !res.ok) { ZH.toast((res && res.msg) || '儲存失敗。', 'bad'); return; }
+          ZH.sfx('seal');
+          ZH.toast('已儲存設定。', 'ok');
+          loadDashboard();
+        })
+        .catch(err => { btn.disabled = false; ZH.toast(err.message, 'bad'); });
+    });
+
+    $('t-sync').addEventListener('click', () => {
+      const btn = $('t-sync');
+      btn.disabled = true;
+      ZH.loading(true, '更新名冊');
+      tcall('api_teacherSyncStats')
+        .then(res => {
+          ZH.loading(false);
+          btn.disabled = false;
+          if (!res || !res.ok) { ZH.toast((res && res.msg) || '更新失敗。', 'bad'); return; }
+          ZH.sfx('ok');
+          ZH.toast('已更新名冊：' + res.updated + ' 位學生的五維有變動（名冊共 ' + res.total + ' 人）。', 'ok', 4000);
+        })
+        .catch(err => { ZH.loading(false); btn.disabled = false; ZH.toast(err.message, 'bad'); });
+    });
+  }
+
+
+  // ───────────────────────── 題庫審閱 ─────────────────────────
+
+  function renderBank(view) {
+    const cached = T.bankCache[T.bankScenario];
+    if (cached) { drawBank(view, cached); return; }
+    view.innerHTML = '<div class="t-head"><h2>題庫審閱</h2></div><p class="t-empty">讀取題庫中……</p>';
+    loadBank(T.bankScenario);
+  }
+
+  function loadBank(scenarioId) {
+    return tcall('api_teacherAnchorBank', scenarioId)
+      .then(res => {
+        if (!res || !res.ok) {
+          if (T.tab === 'bank') $('t-view').innerHTML = '<div class="t-head"><h2>題庫審閱</h2></div><p class="t-empty">' + esc((res && res.msg) || '讀取失敗。') + '</p>';
+          return;
+        }
+        T.bankScenario = res.scenarioId;
+        T.bankCache[res.scenarioId] = res;
+        if (T.tab === 'bank') drawBank($('t-view'), res);
+      })
+      .catch(err => { if (T.tab === 'bank') ZH.toast(err.message, 'bad'); });
+  }
+
+  /** 逐題檢查常見問題 */
+  function bankWarnings(a) {
+    const out = [];
+    const answer = a.options.filter(o => o.key === a.answer)[0];
+    if (!a.answer) out.push('answer 欄空白，系統不知道哪一個是史實答案。');
+    else if (!answer) out.push('answer 填的是「' + a.answer + '」，但這個選項沒有文字。');
+    if (a.options.length < 2) out.push('選項少於兩個，學生端不會出這一題。');
+    const wrong = a.options.filter(o => o.key !== a.answer);
+    const noType = wrong.filter(o => !o.type).map(o => o.key);
+    const noFork = wrong.filter(o => !o.fork).map(o => o.key);
+    if (noType.length) out.push('選項 ' + noType.join('、') + ' 沒有標誤答類型（字義、人物、動機、情節、史實），試題分析無法歸因。');
+    if (noFork.length) out.push('選項 ' + noFork.join('、') + ' 沒有歧路劇情，學生選錯時只會看到通用提示。');
+    if (!a.explanation) out.push('沒有解析。');
+    if (a.kind === 'decision' && !a.role) out.push('情境抉擇題的題幹要以【你是某某】開頭，畫面才會顯示扮演的人物。');
+    return out;
+  }
+
+  function drawBank(view, res) {
+    const isDraft = !res.anchors.length;
+    const list = isDraft ? res.drafts : res.anchors;
+    const counts = res.counts || {};
+    const option = id => {
+      const c = counts[id] || {};
+      const note = c.sheet ? '題庫 ' + c.sheet + ' 題' + (c.pending ? '，草稿 ' + c.pending + ' 題待匯入' : '') : c.pending ? '草稿 ' + c.pending + ' 題待匯入' : '沒有題目';
+      return '<option value="' + esc(id) + '"' + (id === res.scenarioId ? ' selected' : '') + '>' + esc(scenLabel(id)) + '（' + note + '）</option>';
+    };
+    const playable = list.filter(a => (isDraft || a.enabled) && a.options.length >= 2 && a.options.some(o => o.key === a.answer));
+
+    let html = '<div class="t-head"><h2>題庫審閱</h2><div class="t-head__actions">' +
+      '<label class="zh-sr-only" for="t-bank-scen">選擇劇本</label><select class="zh-input" id="t-bank-scen">' + res.scenarioIds.map(option).join('') + '</select>' +
+      '<label class="zh-sr-only" for="t-bank-mode">試玩模式</label><select class="zh-input" id="t-bank-mode">' +
+      [['history', '以正史模式試玩'], ['romance', '以演義模式試玩']].map(([v, l]) => '<option value="' + v + '"' + (v === T.previewMode ? ' selected' : '') + '>' + l + '</option>').join('') + '</select>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-bank-reload">重新讀取</button>' +
+      '<a class="zh-btn zh-btn--quiet zh-btn--sm" href="' + esc(res.sheetUrl) + '" target="_top" rel="noopener">在試算表修改</a>' +
+      '</div></div>' +
+      '<p class="t-note">這裡就是學生在遊戲中會遇到的史實錨點。審題重點：史實答案是否合於原文、誘答類型是否標對、歧路劇情會不會造成誤解。題目文字請直接在試算表的 AnchorBank 修改，改完回來按「重新讀取」，學生端也會同時更新。「試玩」用學生看到的畫面跑一次，不留任何紀錄。</p>';
+
+    if (res.pending.length) {
+      html += '<section class="zh-panel t-block t-import"><h3>「' + esc(scenName(res.scenarioId)) + '」有 ' + res.pending.length + ' 題草稿尚未匯入題庫</h3>' +
+        '<p>草稿依原文撰寫，目前學生端已經用草稿出題。匯入 AnchorBank 工作表後，你就能在試算表修改文字、在這裡停用不要的題目。已在題庫中的題目不會被覆蓋。</p>' +
+        '<div class="t-actions"><button type="button" class="zh-btn zh-btn--primary" id="t-bank-import">匯入 ' + res.pending.length + ' 題草稿</button></div></section>';
+    }
+
+    if (!list.length) {
+      html += '<div class="zh-panel t-empty">「' + esc(scenName(res.scenarioId)) + '」還沒有任何史實錨點。</div>';
+      view.innerHTML = html;
+      bindBank(view, res, list);
+      return;
+    }
+
+    const warnCount = list.filter(a => bankWarnings(a).length).length;
+    html += '<div class="t-head" style="margin-top:4px"><p class="zh-small">' +
+      (isDraft ? '以下是 ' + list.length + ' 題草稿（尚未匯入）。' : '題庫中 ' + list.length + ' 題，啟用 ' + list.filter(a => a.enabled).length + ' 題。') +
+      (warnCount ? '<span class="is-low">　' + warnCount + ' 題需要補資料。</span>' : '') + '</p>' +
+      '<div class="t-head__actions"><button type="button" class="zh-btn zh-btn--sm" id="t-bank-all"' + (playable.length ? '' : ' disabled') + '>從第 1 題連續試玩（' + playable.length + ' 題）</button></div></div>';
+
+    html += list.map((a, i) => {
+      const warns = bankWarnings(a);
+      return '<article class="zh-panel t-q' + (!isDraft && !a.enabled ? ' is-off' : '') + '">' +
+        '<header class="t-q__head"><div class="t-q__id">' +
+        '<span class="t-q__seq">第 ' + (a.seq || i + 1) + ' 題</span><b>' + esc(a.id) + '</b>' +
+        '<span class="zh-chip">' + esc(ZH.anchor.KINDS[a.kind] || a.kind) + '</span>' +
+        (a.role ? '<span class="zh-chip zh-chip--cinnabar">你是' + esc(a.role) + '</span>' : '') +
+        (isDraft ? '<span class="zh-chip zh-chip--gilt">草稿</span>' : !a.enabled ? '<span class="zh-chip">已停用</span>' : '') +
+        '</div><div class="t-q__btns">' +
+        '<button type="button" class="zh-btn zh-btn--sm" data-play="' + i + '">試玩</button>' +
+        (isDraft ? '' : '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-toggle="' + i + '">' + (a.enabled ? '停用' : '重新啟用') + '</button>') +
+        '</div></header>' +
+        (a.passage ? '<p class="t-q__passage">' + esc(a.passage) + '</p>' : '') +
+        '<p class="t-stem">' + esc(a.stem) + '</p>' +
+        '<ol class="t-q__opts">' + a.options.map(o => {
+          const isAns = o.key === a.answer;
+          return '<li class="t-q__opt' + (isAns ? ' is-answer' : '') + '"><span class="t-q__key">' + o.key + '</span><div>' +
+            '<p>' + esc(o.text) + '</p>' +
+            (isAns ? '<span class="zh-chip zh-chip--patina">史實答案</span>' : '<span class="zh-chip zh-chip--cinnabar">' + esc(o.type || '未標誤答類型') + '</span>') +
+            (!isAns && o.fork ? '<details><summary>歧路劇情</summary><p>' + esc(o.fork) + '</p></details>' : '') +
+            '</div></li>';
+        }).join('') + '</ol>' +
+        '<dl class="t-kv"><dt>答對後</dt><dd>' + esc(a.followUp || '—') + '</dd><dt>解析</dt><dd>' + esc(a.explanation || '—') + '</dd><dt>出處</dt><dd>' + esc(a.sourceRef || '—') + '</dd></dl>' +
+        (warns.length ? '<ul class="t-q__warn">' + warns.map(w => '<li>' + esc(w) + '</li>').join('') + '</ul>' : '') +
+        '</article>';
+    }).join('');
+
+    view.innerHTML = html;
+    bindBank(view, res, list, playable);
+  }
+
+  function bindBank(view, res, list, playable) {
+    $('t-bank-scen').addEventListener('change', e => { T.bankScenario = e.target.value; renderBank(view); });
+    $('t-bank-mode').addEventListener('change', e => { T.previewMode = e.target.value; });
+    $('t-bank-reload').addEventListener('click', () => {
+      delete T.bankCache[res.scenarioId];
+      view.innerHTML = '<div class="t-head"><h2>題庫審閱</h2></div><p class="t-empty">讀取題庫中……</p>';
+      loadBank(res.scenarioId).then(() => ZH.toast('已重新讀取題庫，學生端也已更新。', 'ok'));
+    });
+    const importBtn = $('t-bank-import');
+    if (importBtn) importBtn.addEventListener('click', () => {
+      importBtn.disabled = true;
+      ZH.loading(true, '匯入草稿');
+      tcall('api_teacherImportAnchors', res.scenarioId)
+        .then(r => {
+          ZH.loading(false);
+          if (!r || !r.ok) { importBtn.disabled = false; ZH.toast((r && r.msg) || '匯入失敗。', 'bad'); return; }
+          ZH.sfx('seal');
+          ZH.toast('已匯入 ' + r.added + ' 題' + (r.skipped ? '，略過已存在的 ' + r.skipped + ' 題' : '') + '。', 'ok', 4000);
+          delete T.bankCache[res.scenarioId];
+          renderBank(view);
+        })
+        .catch(err => { ZH.loading(false); importBtn.disabled = false; ZH.toast(err.message, 'bad'); });
+    });
+    const allBtn = $('t-bank-all');
+    if (allBtn) allBtn.addEventListener('click', () => {
+      ZH.anchor.runAll(playable, { scenarioId: res.scenarioId, preview: true, mode: T.previewMode }).then(results => {
+        const done = results.filter(r => !r.cancelled);
+        if (done.length) ZH.toast('試玩結束：' + done.length + ' 題中，第一次就選中史實 ' + done.filter(r => r.correct).length + ' 題。', 'ok', 4000);
+      });
+    });
+    view.querySelectorAll('[data-play]').forEach(btn => btn.addEventListener('click', () => {
+      const a = list[Number(btn.dataset.play)];
+      ZH.anchor.run(a, { scenarioId: res.scenarioId, preview: true, mode: T.previewMode, index: a.seq, total: list.length });
+    }));
+    view.querySelectorAll('[data-toggle]').forEach(btn => btn.addEventListener('click', () => {
+      const a = list[Number(btn.dataset.toggle)];
+      btn.disabled = true;
+      tcall('api_teacherSetAnchorEnabled', a.id, !a.enabled)
+        .then(r => {
+          if (!r || !r.ok) { btn.disabled = false; ZH.toast((r && r.msg) || '更新失敗。', 'bad'); return; }
+          a.enabled = r.enabled;
+          (res.counts[res.scenarioId] || {}).enabled = res.anchors.filter(x => x.enabled).length;
+          ZH.toast((r.enabled ? '已重新啟用 ' : '已停用 ') + a.id + '。學生端已同步更新。', 'ok');
+          const y = window.scrollY;
+          drawBank(view, res);
+          window.scrollTo(0, y);
+        })
+        .catch(err => { btn.disabled = false; ZH.toast(err.message, 'bad'); });
+    }));
+  }
+
+
+  // ───────────────────────── 學生詳細 ─────────────────────────
+
+  let drawerReturn = null;
+
+  function closeDrawer() {
+    const el = document.querySelector('.t-drawer');
+    if (!el) return;
+    el.remove();
+    document.removeEventListener('keydown', onDrawerKey);
+    if (drawerReturn && drawerReturn.focus) drawerReturn.focus();
+    drawerReturn = null;
+  }
+  function onDrawerKey(e) {
+    if (e.key === 'Escape') closeDrawer();
+  }
+
+  function openStudent(email) {
+    const s = T.data.students.filter(x => x.email === email)[0];
+    if (!s) return;
+    closeDrawer();
+    drawerReturn = document.activeElement;
+    ZH.sfx('click');
+    const wrap = ZH.html(
+      '<div class="t-drawer" role="dialog" aria-modal="true" aria-labelledby="t-drawer-title">' +
+      '<div class="t-drawer__panel"><div class="t-drawer__head"><div>' +
+      '<h2 id="t-drawer-title">' + esc((s.studentId || s.classSeat || '未填') + ' ' + (s.name || s.email.split('@')[0])) + '</h2>' +
+      '<p class="zh-dim zh-small">' + esc(s.email) + '　名位 ' + esc(s.rank) + '　登入 ' + s.loginCount + ' 次</p></div>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="t-drawer-close">關閉</button></div>' +
+      '<div id="t-drawer-body"><p class="t-empty">讀取中……</p></div></div></div>'
+    );
+    wrap.addEventListener('click', e => { if (e.target === wrap) closeDrawer(); });
+    document.body.appendChild(wrap);
+    document.addEventListener('keydown', onDrawerKey);
+    $('t-drawer-close').addEventListener('click', closeDrawer);
+    $('t-drawer-close').focus();
+
+    tcall('api_teacherStudent', email)
+      .then(res => {
+        const body = $('t-drawer-body');
+        if (!body) return;
+        if (!res || !res.ok) { body.innerHTML = '<p class="t-empty">' + esc((res && res.msg) || '讀取失敗。') + '</p>'; return; }
+        res.student.name=s.name;body.innerHTML = '<div id="t-player-admin"></div>'+studentDetail(res);if(ZH.player)ZH.player.teacher(document.getElementById('t-player-admin'),T.token,email);
+      })
+      .catch(err => { const body = $('t-drawer-body'); if (body) body.innerHTML = '<p class="t-empty">' + esc(err.message) + '</p>'; });
+  }
+
+  document.addEventListener('zh:player-moderated',e=>{const p=e.detail.profile,s=T.data&&T.data.students.find(x=>x.email===e.detail.email);if(s){s.name=p.nickname;s.nameLocked=p.nameLocked;}const title=document.getElementById('t-drawer-title');if(title&&s)title.textContent=(s.studentId||s.classSeat||'未填')+' '+p.nickname;});
+  function studentDetail(res) {
+    const s = res.student;
+    const dims = Object.assign({ total: s.total }, s.dims);
+    const req = T.data.config.required;
+    let html = '<section><div class="t-radar-wrap">' + radar(dims, res.classAvg, res.dimsAvailable) +
+      '<div>' + dimsTable(dims, res.classAvg) +
+      '<div class="t-legend"><span><i></i>這位學生</span><span><i class="is-compare"></i>同班平均（數字在斜線後）</span></div></div></div></section>';
+
+    html += '<section><dl class="t-stats">' +
+      stat('已玩劇本', s.played, '話') +
+      stat('局數', s.plays, '局') +
+      stat('遊玩時間', s.minutes, '分鐘') +
+      stat('圖鑑', s.codex, '個') +
+      (req.length ? stat('必玩完成', s.requiredDone, '/ ' + req.length) : '') +
+      '</dl>';
+    const codexTypes = Object.keys(res.codexTypes || {});
+    if (codexTypes.length) {
+      html += '<p class="zh-small zh-dim">圖鑑：' + codexTypes.map(k => esc(CODEX_LABELS[k] || k) + ' ' + res.codexTypes[k]).join('、') + '</p>';
+    }
+    if (req.length) {
+      const missing = req.filter(id => !res.scenarios.some(x => x.scenarioId === id));
+      if (missing.length) html += '<p class="zh-small is-low" style="margin-top:6px">尚未完成的必玩：' + missing.map(id => esc(scenName(id))).join('、') + '</p>';
+    }
+    html += '</section>';
+
+    html += '<section><h3>劇本紀錄</h3>';
+    if (!res.scenarios.length) html += '<p class="t-empty">還沒有完成任何一話。</p>';
+    else {
+      html += '<div class="t-tablewrap"><table class="t-table"><thead><tr><th class="sticky">劇本</th><th>第一次結局</th><th>陣營</th>' +
+        '<th class="num">謀略</th><th class="num">德望</th><th class="num">局數</th><th class="num">最佳謀略</th><th>第一次完成</th></tr></thead><tbody>' +
+        res.scenarios.map(x => '<tr><td class="sticky t-strong">' + esc(scenName(x.scenarioId)) + '<span class="t-sub">' + esc(MODE_LABELS[x.mode] || x.mode) + '</span></td>' +
+          '<td>' + esc(x.ending || '—') + '</td><td>' + esc(x.faction || '—') + '</td>' +
+          '<td class="num">' + fmt(x.strategy, 1) + '</td><td class="num">' + fmt(x.virtue, 1) + '</td><td class="num">' + x.plays + '</td>' +
+          '<td class="num">' + fmt(x.bestStrategy, 1) + '</td><td class="zh-dim">' + esc(shortTime(x.firstAt)) + '</td></tr>').join('') +
+        '</tbody></table></div>';
+    }
+    html += '</section>';
+
+    const wrong = res.anchors.filter(a => !a.correct);
+    html += '<section><h3>史實錨點<small class="zh-dim" style="font-family:var(--f-body);font-size:13px;margin-left:8px">首答正確 ' +
+      (res.anchors.length - wrong.length) + ' / ' + res.anchors.length + ' 題</small></h3>';
+    if (!res.anchors.length) html += '<p class="t-empty">還沒有作答紀錄。</p>';
+    else if (!wrong.length) html += '<p class="zh-small is-high">每一題第一次就選對史實答案。</p>';
+    else {
+      html += '<ul class="t-list">' + wrong.map(a => '<li><span class="t-strong">' + esc(a.anchorId) + '</span>　' + esc(clip(a.stem, 40)) +
+        '<span class="t-sub">第一次選 ' + esc(a.choice) + (a.optionText ? '「' + esc(clip(a.optionText, 24)) + '」' : '') + '，誤答類型：' + esc(a.type || '未分類') +
+        '。' + (a.recovered ? '走完歧路後選回史實。' : '之後仍未答對。') + '</span></li>').join('') + '</ul>';
+    }
+    html += '</section>';
+
+    if (res.games.length) {
+      html += '<section><h3>小遊戲</h3><ul class="t-list">' + res.games.map(g =>
+        '<li><span class="t-strong">' + esc(g.gameId) + '</span>　' + esc(scenName(g.scenarioId)) +
+        '<span class="t-sub">第一次 ' + fmtPct(100 * g.first) + '，最佳 ' + fmtPct(100 * g.best) + '，共 ' + g.plays + ' 次' +
+        (g.gameId.indexOf(LETTERS_PREFIX) === 0 ? '（計入文辭）' : '') + '</span></li>').join('') + '</ul></section>';
+    }
+
+    html += '<section><h3>反思與列傳</h3>';
+    if (!res.reflections.length) html += '<p class="t-empty">還沒有寫過反思。</p>';
+    else {
+      html += '<div class="t-slips" style="grid-template-columns:1fr">' + res.reflections.map(r =>
+        '<article class="zh-slip t-slip"><div class="t-slip__meta"><b>' + esc(scenName(r.scenarioId)) + '</b><span>' + esc(KIND_LABELS[r.kind] || r.kind) + '</span><span>' + esc(shortTime(r.time)) + '</span></div>' +
+        '<div class="t-slip__text">' + esc(r.text) + '</div></article>').join('') + '</div>';
+    }
+    return html + '</section>';
+  }
+
+
+  async function renderAccess(view) {
+    let loadedEmail = '', loadSerial = 0, collection = null;
+    view.innerHTML = '<section class="zh-panel t-block"><h2>帳號與蒐集設定</h2><p class="zh-dim">指定完整的學校帳號，直接開啟某話的人物、道具、成語、原文及相關諸子六經。授予不增加通關與挑戰賽成績。</p>' +
+      '<div class="t-access-form"><div class="zh-field"><label for="ta-email">指定帳號</label><input class="zh-input" type="email" id="ta-email" list="ta-roster" autocomplete="off" value="' + esc(ZH.user.email) + '"><datalist id="ta-roster">' + T.data.students.map(s => '<option value="' + esc(s.email) + '">' + esc((s.classSeat || '') + ' ' + (s.name || '')) + '</option>').join('') + '</datalist></div><button class="zh-btn zh-btn--primary" type="button" id="ta-load">讀取帳號</button></div>' +
+      '<p id="ta-status" role="status" aria-live="polite">尚未讀取。</p><div id="ta-controls" hidden><div class="zh-field"><label for="ta-chapter">指定章節</label><select class="zh-input zh-select" id="ta-chapter"></select></div><div class="zh-row ta-actions"><button class="zh-btn zh-btn--primary" data-access="grant">解鎖本話蒐集</button><button class="zh-btn zh-btn--quiet" data-access="revoke">撤回本話授予</button><button class="zh-btn zh-btn--seal" data-access="resetChapter">清空本話蒐集</button></div><p class="zh-small zh-dim">撤回授予會保留玩家親自收錄的項目。清空本話會刪除由此話首次收錄的項目，其他章節收錄的共享項目保留。</p><h3>整個帳號</h3><div class="zh-row ta-actions"><button class="zh-btn zh-btn--primary" data-access="all">全蒐集展示</button><button class="zh-btn zh-btn--quiet" data-access="earned">切回實際蒐集</button><button class="zh-btn zh-btn--seal" data-access="resetAll">全部改回未解鎖</button></div><p class="zh-small zh-dim">全蒐集展示保留實際遊玩蒐集，日後新增圖鑑也會套用。全部改回未解鎖會清空蒐集與授予，保留成績和存檔。</p><div id="ta-grants"></div></div></section>';
+    const emailEl = view.querySelector('#ta-email'), controls = view.querySelector('#ta-controls'), status = view.querySelector('#ta-status'), select = view.querySelector('#ta-chapter');
+    function display(c) {
+      collection = c;
+      status.textContent = loadedEmail + '｜' + (c.mode === 'all' ? '全蒐集展示' : '實際蒐集') + '｜實際收錄 ' + c.earned + ' 項｜目前開啟 ' + c.items.length + ' 項';
+      view.querySelector('#ta-grants').innerHTML = '<h3>已授予章節</h3><p>' + (c.grants.length ? c.grants.map(id => esc(scenLabel(id))).join('、') : '尚未授予章節。') + '</p>';
+    }
+    async function load() {
+      const serial = ++loadSerial, email = emailEl.value.trim().toLowerCase();
+      loadedEmail = ''; collection = null; controls.hidden = true; status.textContent = '讀取中……';
+      try {
+        const res = await tcall('api_teacherProgressGet', email);
+        if (serial !== loadSerial || !view.isConnected) return;
+        if (!res || !res.ok) throw new Error(res && res.msg || '讀取失敗。');
+        loadedEmail = email;
+        select.innerHTML = res.chapters.map(s => '<option value="' + esc(s.id) + '">' + esc(scenLabel(s.id) + '・' + s.count + ' 項') + '</option>').join('');
+        controls.hidden = false; display(res.collection);
+        if (!res.accountExists) status.textContent += '｜尚未建立玩家資料，可先設定，首次登入即套用。';
+      } catch (e) { if (serial === loadSerial) status.textContent = e.message; }
+    }
+    emailEl.addEventListener('input', () => { loadSerial++; loadedEmail = ''; collection = null; controls.hidden = true; status.textContent = '帳號已改動，請重新讀取。'; });
+    view.querySelector('#ta-load').addEventListener('click', load);
+    emailEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); load(); } });
+    controls.querySelectorAll('[data-access]').forEach(btn => btn.addEventListener('click', async () => {
+      if (!loadedEmail || emailEl.value.trim().toLowerCase() !== loadedEmail) return;
+      const action = btn.dataset.access, target = loadedEmail, sid = select.value;
+      if (action === 'resetAll' || action === 'resetChapter') {
+        const ok = await ZH.modal({ title: '確認清空蒐集', body: '<p>' + esc(target) + '：' + (action === 'resetAll' ? '全部蒐集與教師授予會清空。' : '會清空「' + esc(scenName(sid)) + '」由此話首次收錄的蒐集及授予，並關閉全蒐集展示。') + '成績與存檔保留。</p><p class="zh-dim">清空後可以重新蒐集；原蒐集紀錄無法復原。</p>', actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '確認清空', value: true, kind: 'seal' }] });
+        if (!ok) return;
+      }
+      const buttons = [...controls.querySelectorAll('button')]; buttons.forEach(b => { b.disabled = true; });
+      try {
+        const res = await tcall('api_teacherProgressSet', target, sid, action);
+        if (!res || !res.ok) throw new Error(res && res.msg || '設定失敗。');
+        if (view.isConnected && loadedEmail === target) display(res.collection);
+        if (target === ZH.user.email.toLowerCase()) { ZH.access.apply(res.collection); await ZH.access.read(true); }
+        ZH.toast('已儲存，該帳號重新整理遊戲後套用。', 'ok');
+      } catch (e) { ZH.toast(e.message, 'bad'); }
+      finally { buttons.forEach(b => { b.disabled = false; }); }
+    }));
+    await load();
+  }
+
+
+  // ───────────────────────── 啟動 ─────────────────────────
+
+  ZH.ready(() => {
+    setTopVar();
+    window.addEventListener('resize', setTopVar);
+    bindLogin();
+    $('t-mark').addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); });
+    $('t-home').addEventListener('click', () => ZH.go('hub'));
+    $('t-logout').addEventListener('click', () => {
+      const token = T.token;
+      ZH.call('api_teacherLogout', token).catch(() => null);
+      showLogin('已登出。');
+    });
+
+    if (!T.token) {
+      showLogin('');
+      return;
+    }
+    ZH.call('api_teacherCheck', T.token)
+      .then(res => { if (res && res.ok) loadDashboard(); else showLogin('通行證已過期，請重新輸入密碼。'); })
+      .catch(() => showLogin(''));
+  });
+})();
+</script></body></html>

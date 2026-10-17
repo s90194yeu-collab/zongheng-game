@@ -1,0 +1,1226 @@
+<!-- 本話任務：毛遂說明楚利，如姬報恩取符，信陵君循布局帶兵；有功也有矯令責任。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!-- Re:縱橫鼎業・戰國第十二話 邯鄲之圍；v1.1.0（2026-10-11），status ready。
+30主線節點、12錨點 hd_01–12、12指定圖鑑、3項必要挑戰。
+沿用六份優化核心，保留首頁、登入、結算與中央諸子史冊。
+宮室路線、巡哨與援軍行程為教學推演；原生潛行局部嵌入，不替換其他共用檔。
+-->
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top">
+<script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script>
+<?!= include('Core_css') ?>
+<style>.zg12-page{overflow-x:hidden}.zg12-page button,.zg12-page .sty-icon,.zg12-page .sty-opt{min-height:44px;min-width:44px;font-size:16px;white-space:normal}.zg12-page button:focus-visible{outline:3px solid var(--gilt);outline-offset:-3px}.zg12-page .sty-place,.zg12-page .sty-place span,.zg12-page .sty-m,.zg12-page .sty-game__status,.zg12-page .sty-opt__desc{font-size:15px}.zg12-page .sty-game__head{flex-wrap:wrap;gap:6px}.zg12-page:has(.hd-game) .sty-meters{display:none}
+.hd-title{max-width:1060px;margin:auto;padding:18px var(--gutter) 40px;display:grid;gap:20px}.hd-title-bar{display:flex;justify-content:space-between;gap:10px;align-items:center}.hd-kicker{color:var(--gilt);font-size:15px;letter-spacing:.08em}.hd-title h1{font-size:clamp(40px,8vw,80px);letter-spacing:.08em;line-height:1.2}.hd-subtitle{font-size:clamp(18px,3vw,24px);margin-top:8px}.hd-note{font-size:15px;color:var(--text-dim);line-height:1.65}.hd-title-scene{height:290px;position:relative;border:1px solid var(--gilt);border-radius:12px;overflow:hidden;background:#151b36}.hd-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}.hd-title-cast{position:absolute;inset:10% 18% 0;display:flex;justify-content:center;align-items:end;gap:12%}.hd-title-cast>span{height:90%;width:30%;max-width:190px;position:relative}.hd-title-cast>span::after{content:'';position:absolute;bottom:2%;left:15%;width:70%;height:4%;background:#0004;border-radius:50%;z-index:0}.hd-title-cast .ck{height:100%;width:100%;position:relative;z-index:1}.hd-start{display:grid;grid-template-columns:64px 1fr 220px;gap:16px;align-items:center;border:1px solid var(--gilt);border-radius:12px;padding:18px;background:var(--night-2)}.hd-seal{display:grid;place-items:center;width:64px;height:64px;border:3px double #a8622c;border-radius:8px;font-size:32px;color:#dfaa6e}.hd-start h2{font-size:22px}.hd-start-actions{display:grid;gap:8px}.hd-points{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.hd-points>div{padding:16px;border:1px solid var(--line-soft);border-radius:10px;background:var(--night-2)}.hd-points b{display:block;color:var(--gilt);margin-bottom:5px;font-size:18px}
+.hd-game{max-width:900px;margin:auto;display:grid;gap:10px;padding:12px;line-height:1.65;font-size:16px}.hd-game h2{font-size:24px;color:var(--gilt)}.hd-game p,.hd-game button,.hd-game span{font-size:16px}.hd-live{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:9px 12px;border:1px solid var(--gilt);border-radius:8px;background:var(--night);font-variant-numeric:tabular-nums}.hd-feedback{padding:10px;border-left:3px solid var(--patina);min-height:46px;background:var(--night-2)}.hd-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hd-cards button{padding:12px;min-height:80px;text-align:left}.hd-cards button b,.hd-cards button span{display:block}.hd-cards button span{color:var(--text-dim);font-size:15px}.hd-cards button.is-picked{border-color:var(--patina);background:var(--night-3)}.hd-help-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between}.hd-help-row button{flex:1 1 170px}.hd-board{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#263349;aspect-ratio:16/7}.hd-board>svg{display:block;width:100%;height:100%}.hd-flood-level{transition:transform .3s linear}.hd-board text{font-family:var(--f-body);font-size:24px;fill:#faeac3}
+.hd-anchor{z-index:100}.hd-anchor blockquote{padding:14px;margin:12px 0;background:var(--slip);color:var(--slip-ink);border:1px solid var(--gilt);border-radius:8px;font-family:var(--f-display);font-size:20px;line-height:1.8}.hd-anchor .sty-choice__card{max-height:88dvh;overflow-y:auto}.hd-anchor h2{font-size:22px}.hd-anchor .zh-choice__text{font-size:16px}.hd-anchor .zh-choice{min-height:60px}.hd-follow{padding:12px;border:1px solid var(--patina);border-radius:8px;color:var(--slip);line-height:1.8}.hd-save-status{font-size:15px;color:var(--text-dim)}
+@media(max-width:700px){.hd-start{grid-template-columns:64px 1fr}.hd-start-actions{grid-column:1/-1}.hd-points{grid-template-columns:1fr}.hd-title-scene{height:240px}.hd-title-cast{inset:10% 8% 0}.hd-game{padding:8px;gap:8px}.hd-game p,.hd-game button,.hd-game span{font-size:15px}.hd-game h2{font-size:21px}.hd-cards{gap:6px}.hd-cards button{padding:9px;min-height:84px}.hd-crowd{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.hd-candidate-art{height:132px}.hd-talk-scene{height:180px}.hd-talk-cast{inset:4% 8% 0}.hd-board{aspect-ratio:16/9}.hd-anchor blockquote{font-size:19px}.hd-crowd .hd-candidate{min-height:200px}.hd-note{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){.zg12-page *, .hd-anchor *{scroll-behavior:auto!important}.hd-flood-level{transition:none}}
+
+
+.hd-paper{padding:14px;background:var(--slip);color:var(--slip-ink);border:1px solid var(--gilt);border-radius:9px;line-height:1.7}.hd-event{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}.hd-event-art{height:170px}.hd-event-art .ck{height:100%;width:100%}.hd-talk-scene{height:225px;position:relative;overflow:hidden;border-radius:9px;border:1px solid var(--gilt)}.hd-talk-scene>.sc,.hd-army-stage>.sc{position:absolute;inset:0;width:100%;height:100%}.hd-talk-cast{position:absolute;inset:10px 20% 0;display:flex;justify-content:space-between}.hd-talk-cast span{width:40%;height:100%}.hd-talk-cast .ck{width:100%;height:100%}.hd-stairs{display:flex;gap:4px;padding:10px 2px;align-items:end}.hd-stairs span{flex:1;text-align:center;border:1px solid var(--gilt);background:#443e39;color:#e8cc9d;padding:4px 0;border-radius:4px}.hd-stairs span.is-up{background:#547968}.hd-stairs span:nth-child(n+5){transform:translateY(-4px)}.hd-stairs span:nth-child(n+8){transform:translateY(-8px)}.hd-routes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hd-routes button span,.hd-routes button b{display:block}.hd-routes button span{font-size:15px;color:var(--text-dim)}.hd-army-stage{height:170px;border:1px solid var(--gilt);overflow:hidden;position:relative;border-radius:9px}.hd-army-person{position:absolute;bottom:5%;left:calc(2% + var(--p));width:75px;height:125px}.hd-army-person .ck{width:100%;height:100%}.hd-handan{position:absolute;right:10px;top:12px;background:var(--night);color:var(--gilt);padding:4px 10px;border:1px solid var(--gilt);border-radius:6px}.zg12-page:has(.hd-game) .sty .sc *{animation-play-state:paused!important}@media(max-width:700px){.hd-event{grid-template-columns:75px 1fr;gap:8px}.hd-event-art{height:115px}.hd-talk-scene{height:180px}.hd-talk-cast{inset:8px 12% 0}.hd-routes{grid-template-columns:1fr}.hd-stairs{gap:3px}.hd-stairs span{font-size:14px}.hd-paper{padding:11px}.hd-cards{grid-template-columns:1fr}.hd-cards button{min-height:54px}.hd-army-stage{height:130px}.hd-army-person{height:100px;width:65px}}
+</style></head><body class="zg12-page"><div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<style>
+  .stl {
+    position: fixed; inset: 0; z-index: 40;
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    background: #070a16; color: var(--text);
+    animation: zh-fade-in .4s ease both;
+  }
+  .stl-top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px;
+    padding: calc(8px + var(--safe-t)) 14px 8px; background: rgba(12, 16, 32, .92); border-bottom: 1px solid var(--line);
+  }
+  .stl-title b { font-family: var(--f-display); font-size: 19px; letter-spacing: .12em; }
+  .stl-title span { margin-left: 8px; font-size: 13px; color: var(--text-dim); }
+  .stl-goal { font-size: 14px; color: var(--gilt); }
+  .stl-stat { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .stl-moon { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .stl-moon i { width: 16px; height: 16px; border-radius: 50%; background: #f3e7c0; box-shadow: 0 0 10px rgba(243, 231, 192, .7); }
+  .stl-moon.is-dark i { background: #59607a; box-shadow: none; }
+  .stl-stage { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; }
+  .stl-canvas { display: block; touch-action: none; border-radius: 6px; box-shadow: 0 0 0 1px rgba(224, 180, 76, .25), 0 20px 60px rgba(0, 0, 0, .6); cursor: pointer; }
+  .stl-msg {
+    position: absolute; left: 0; right: 0; top: 18px; margin: 0 auto; width: fit-content; z-index: 2;
+    max-width: min(560px, 92%); padding: 10px 16px; border-radius: 12px; pointer-events: none;
+    background: rgba(12, 16, 32, .9); border: 1px solid var(--gilt); font-family: var(--f-display); font-size: 17px; text-align: center;
+    animation: zh-rise .25s ease both;
+  }
+  .stl-msg.is-bad { border-color: var(--cinnabar); color: #ffb4aa; }
+  .stl-msg.is-good { border-color: var(--patina); color: #a9e2d4; }
+  .stl-flash { position: absolute; inset: 0; pointer-events: none; background: rgba(217, 72, 59, .35); opacity: 0; transition: opacity .2s ease; }
+  .stl-flash.is-on { opacity: 1; }
+  .stl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px; padding: 10px 14px calc(12px + var(--safe-b)); background: rgba(12, 16, 32, .92); border-top: 1px solid var(--line); }
+  .stl-hint { font-size: 14px; color: var(--text-dim); text-align: center; max-width: 640px; }
+  .stl-hold {
+    min-width: 200px; min-height: 58px; font-size: 19px; font-family: var(--f-display); letter-spacing: .3em;
+    user-select: none; -webkit-user-select: none; touch-action: none;
+  }
+  .stl-hold.is-on { transform: translateY(2px); box-shadow: 0 0 0 4px var(--gilt-glow); }
+  .stl-pad { display: none; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(2, 46px); gap: 6px; }
+  .stl-pad button { border-radius: 10px; border: 1px solid var(--line); background: rgba(39, 49, 79, .9); color: var(--text); font-size: 20px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .stl-pad [data-d="up"] { grid-column: 2; grid-row: 1; }
+  .stl-pad [data-d="left"] { grid-column: 1; grid-row: 2; }
+  .stl-pad [data-d="down"] { grid-column: 2; grid-row: 2; }
+  .stl-pad [data-d="right"] { grid-column: 3; grid-row: 2; }
+  .stl-ask { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 16px; background: rgba(6, 8, 20, .7); }
+  .stl-ask__card { width: min(460px, 100%); padding: 18px 20px; border: 1px solid var(--gilt); border-radius: 14px; background: var(--night-2); text-align: center; }
+  .stl-ask__card h3 { font-size: 20px; margin-bottom: 8px; }
+  .stl-ask__card p { line-height: 1.75; }
+  .stl-ask__card .zh-row { justify-content: center; margin-top: 14px; }
+  body.stl-lock { overflow: hidden; }
+  .stl-arena { position: fixed; inset: 0; z-index: 39; display: grid; grid-template-rows: auto minmax(0, 1fr); background: #070a16; animation: zh-fade-in .3s ease both; }
+  .stl-arena__bg { position: absolute; inset: 0; opacity: .6; pointer-events: none; }
+  .stl-arena__bg svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stl-arena .ar-hud { grid-row: 1; position: relative; z-index: 2; padding-top: calc(6px + var(--safe-t)); }
+  .stl-arena__frame { grid-row: 2; position: relative; z-index: 1; min-height: 0; }
+  .stl-arena__body { position: absolute; inset: 0; }
+  body.stl-lock .zc-pop { top: auto; bottom: calc(110px + var(--safe-b)); pointer-events: none; } /* 圖鑑卡片移到下方，不擋垂降的警覺條 */
+  @media (pointer: coarse), (max-width: 760px) {
+    .stl-phase-ground .stl-pad { display: grid; }
+  }
+  @media (max-width: 560px) {
+    body.stl-lock .zc-pop { bottom: calc(180px + var(--safe-b)); }
+    .stl-title span { display: none; }
+    .stl-goal { width: 100%; order: 5; font-size: 13px; }
+    .stl-hint { font-size: 13px; }
+  }
+
+.zg12-page .stl-pad{display:grid}.zg12-page .stl-title span{font-size:15px}.zg12-page .stl-hint,.zg12-page .stl-goal{font-size:15px}.zg12-page .stl-stat{flex-wrap:wrap}.zg12-page .stl-foot{gap:8px}.zg12-page:has(.stl-arena) .sty .sc *,.zg12-page:has(.stl-arena) .sty .ck *{animation-play-state:paused!important}.zg12-page .stl-ask .zh-row{display:flex;flex-wrap:wrap}.zg12-page .stl-arena__bg{contain:paint}.zg12-page .stl-arena__bg *{animation-play-state:paused!important}
+@media(max-width:560px){.zg12-page .stl-top{padding:6px 10px}.zg12-page .stl-foot{padding:8px}.zg12-page .stl-hint{max-width:100%;font-size:14px}.zg12-page .stl-goal{font-size:14px}.zg12-page .stl-msg{top:3px;font-size:15px}.zg12-page .stl-foot [data-interact]{width:100%}.zg12-page .stl-ask__card{max-height:100%;overflow:auto}}
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+  // 本話局部 Eng_Stealth v0.2.0 衍生：取符返程、操作證據、接續；不替換共用檔。
+
+  const global = window;
+  const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  const KEYS = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+  const BLOCK = 'WTtFfC~';        // 不能走
+  const SIGHT_BLOCK = 'WTtC';     // 擋住視線
+  const COVER = '"x';             // 可以藏身
+  const BEAM = 0.16;              // 垂降時火光的半寬（占畫面寬度）
+  const esc = s => ZH.esc(s);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const angDiff = (a, b) => { let d = a - b; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+
+  // ───────── Q 版人物（v0.2.0：有 Art_kit 時，把立繪轉成圖片畫在畫布上） ─────────
+  const SPRITES = {};
+  function sprite(key, spec) {
+    const A = global.ART;
+    if (!A || !A.chibi || !A.specOf) return null;
+    const rec = SPRITES[key];
+    if (rec) return rec.ready ? rec.img : null;
+    try {
+      let svg = A.chibi(A.specOf(spec), { expr: 'normal' });
+      svg = svg.replace('<svg ', '<svg width="200" height="300" ').replace(/(<svg[^>]*>)/, '$1<style>.ck-m2{opacity:0}</style>');
+      const img = new Image();
+      const r = { img: img, ready: false };
+      SPRITES[key] = r;
+      img.onload = () => { r.ready = true; };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    } catch (err) {
+      SPRITES[key] = { ready: false };
+    }
+    return null;
+  }
+
+  function run(config) {
+    const C = Object.assign({
+      title: '潛行', subtitle: '', goal: '', player: { name: '你', glyph: '我', color: '#3f9d84', speed: 2.1 },
+      rope: null, guards: [], moon: { bright: 7, dark: 5 }, assistAfter: 3, skipAfter: 6
+    }, config);
+    // 欄位給了 null 或缺項時，補回預設值（v0.1.1）
+    if (!C.moon || !(Number(C.moon.bright) > 0)) C.moon = { bright: 7, dark: 5 };
+    if (!(Number(C.moon.dark) >= 0)) C.moon.dark = 0;
+    C.player = Object.assign({ name: '你', glyph: '我', color: '#3f9d84', speed: 2.1 }, C.player || {});
+    if (!Array.isArray(C.guards)) C.guards = [];
+    const grid = C.level.grid.map(r => r.split(''));
+    const ROWS = grid.length;
+    const COLS = grid[0].length;
+    const at = (x, y) => (y >= 0 && y < ROWS && x >= 0 && x < COLS ? grid[y][x] : 'W');
+    const find = ch => { const out = []; grid.forEach((r, y) => r.forEach((c, x) => { if (c === ch) out.push([x, y]); })); return out; };
+    const start = find('S')[0] || [1, 1];
+    const exits = find('E');
+    const checkpoints = find('K');
+    const fires = find('F').concat(find('f'));
+    const walkable = (x, y) => BLOCK.indexOf(at(x, y)) === -1;
+    const cover = (x, y) => COVER.indexOf(at(x, y)) > -1;
+    // 主角、巡哨的 Q 版圖（先開始載入，垂降時就準備好）
+    const heroKey = 'hero:' + C.player.name + ':' + JSON.stringify(C.player.art || {});
+    const heroSpec = { name: C.player.name, art: C.player.art || {} };
+    const guardKey = 'guard:' + JSON.stringify(C.guardArt || {});
+    const guardSpec = { name: '巡哨兵', title: '兵', art: Object.assign({ hat: 'kui', armor: true, jade: false, prop: 'ji' }, C.guardArt || {}) };
+    sprite(heroKey, heroSpec);
+    sprite(guardKey, guardSpec);
+
+    return new Promise(resolve => {
+      const S = {
+        phase: C.rope ? 'rope' : 'ground', t: 0, caught: 0, ropeCaught: 0, assisted: false, skipped: false,
+        startedAt: Date.now(), done: false, paused: false, freeze: 0,
+        rope: { y: 0, alert: 0, holding: false },
+        player: null, guards: [], held: null, path: [], target: null, check: start.slice(), moonT: 0, dark: false
+      };
+      let T = 32;
+      let raf = 0;
+      let last = 0, lastFrame = 0, savedBucket = -1;
+
+      Object.assign(S,{picked:false,delivered:false,moves:0,actions:[],guided:false,firstScore:null,activeSeconds:0});
+      if(C.resume){for(const k of ['t','caught','ropeCaught','offeredAssist','assisted','guided','firstScore','picked','delivered','moves','actions','activeSeconds','check','moonT','dark','done','phase'])if(C.resume[k]!==undefined)S[k]=JSON.parse(JSON.stringify(C.resume[k]));}
+      const evidence=action=>{if(S.actions.length<60)S.actions.push({action,x:Math.round(S.player.x),y:Math.round(S.player.y)});};
+      function persist(){if(!C.onProgress)return;const out={};for(const k of ['t','caught','ropeCaught','offeredAssist','assisted','guided','firstScore','picked','delivered','moves','actions','activeSeconds','check','moonT','dark','done','phase','player','path','target'])if(S[k]!==undefined)out[k]=S[k];out.recovering=S.freeze>0;out.guards=(S.guards||[]).map(({def,...g})=>g);C.onProgress(JSON.parse(JSON.stringify(out)));}
+      function scoreNow(){return Math.max(2,10-S.caught*2-(S.assisted?1:0));}
+      function guide(early){S.firstScore=S.firstScore===null?(early?0:scoreNow()):S.firstScore;S.guided=true;S.path=[];S.target=null;S.held=null;S.freeze=0;S.after=null;S.guards.forEach(g=>g.alert=0);message('原分保留。仍要親走到王臥內取符，再走回出口交符。','good',4000);persist();}
+      function requestGuide(early){ask('不限時親走補做',early?'提前協助原分0；仍須走到取符處取符、返回出口交符。':'本次期限或被發現次數已到，保留原分後親走取符與返程。',[
+        {label:'親走補做',kind:'primary',fn:()=>guide(early)},...(early?[{label:'繼續挑戰',kind:'quiet',fn:()=>{}}]:[])]);}
+      // ───────── 畫面 ─────────
+      const root = ZH.html(
+        '<div class="stl stl-phase-' + S.phase + '" role="application" aria-label="' + esc(C.title) + '">' +
+        '<header class="stl-top"><div class="stl-title"><b>' + esc(C.title) + '</b><span>' + esc(C.subtitle) + '</span></div>' +
+        '<div class="stl-goal"></div><button type="button" class="zh-btn zh-btn--quiet" data-guide>不限時親走</button>' +
+        '<div class="stl-stat"><span class="stl-moon" aria-live="polite"><i></i><span></span></span>' +
+        '<span class="zh-chip stl-caught">被發現 0 次</span>' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="help">說明</button></div></header>' +
+        '<div class="stl-stage"><canvas class="stl-canvas"></canvas><div class="stl-flash"></div></div>' +
+        '<footer class="stl-foot"><p class="stl-hint"></p>' +
+        '<button type="button" class="zh-btn zh-btn--primary" data-interact disabled>走到王臥內取符</button>' + '<button type="button" class="zh-btn zh-btn--primary stl-hold" hidden>放繩</button>' +
+        '<div class="stl-pad" aria-label="移動">' + ['up', 'left', 'down', 'right'].map(d => '<button type="button" data-d="' + d + '" aria-label="' + { up: '上', left: '左', down: '下', right: '右' }[d] + '">' + { up: '▲', left: '◀', down: '▼', right: '▶' }[d] + '</button>').join('') + '</div>' +
+        '</footer></div>'
+      );
+      document.body.appendChild(root);
+      document.body.classList.add('stl-lock');
+      const stage = root.querySelector('.stl-stage');
+      const cvs = root.querySelector('.stl-canvas');
+      const g = cvs.getContext('2d');
+      const hold = root.querySelector('.stl-hold');
+      const hint = root.querySelector('.stl-hint');
+      const goal = root.querySelector('.stl-goal');
+      const flash = root.querySelector('.stl-flash');
+      const moonEl = root.querySelector('.stl-moon');
+      const caughtEl = root.querySelector('.stl-caught');
+      let base = null; // 靜態地形
+      const fog = document.createElement('canvas'); // 夜色（每格重畫，畫布重複使用）
+
+      function message(text, kind, ms) {
+        const old = stage.querySelector('.stl-msg');
+        if (old) old.remove();
+        const m = ZH.html('<div class="stl-msg' + (kind ? ' is-' + kind : '') + '" role="status">' + esc(text) + '</div>');
+        stage.appendChild(m);
+        if (ms !== 0) setTimeout(() => m.remove(), ms || 2200);
+      }
+
+      function setPhase(p) {
+        S.phase = p;
+        root.classList.remove('stl-phase-rope', 'stl-phase-ground');
+        root.classList.add('stl-phase-' + p);
+        hold.hidden = p !== 'rope';
+        if (p === 'rope') {
+          goal.textContent = '先從城牆垂降到地面';
+          hint.textContent = C.ropeHint || '按住「放繩」（或空白鍵）慢慢往下。火光掃過來時就放手，被照到還在動，就會被發現。';
+        } else {
+          goal.textContent = C.goal || '';
+          hint.textContent = C.intro || '點地面就會走過去，也可以用方向鍵。蘆葦和壕溝可以藏身；扇形是巡哨看得到的範圍。';
+        }
+        resize();
+      }
+
+      // ───────── 尺寸 ─────────
+      function resize() {
+        const r = stage.getBoundingClientRect();
+        const pad = 12;
+        let w;
+        let h;
+        if (S.phase === 'rope') {
+          w = Math.max(240, Math.min(r.width - pad * 2, 560));
+          h = Math.max(260, Math.min(r.height - pad * 2, 640));
+          T = 1;
+        } else {
+          T = Math.max(14, Math.floor(Math.min((r.width - pad * 2) / COLS, (r.height - pad * 2) / ROWS)));
+          w = COLS * T;
+          h = ROWS * T;
+        }
+        const dpr = Math.min(2, global.devicePixelRatio || 1);
+        cvs.style.width = w + 'px';
+        cvs.style.height = h + 'px';
+        cvs.width = Math.round(w * dpr);
+        cvs.height = Math.round(h * dpr);
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        S.W = w;
+        S.H = h;
+        S.dpr = dpr;
+        if (S.phase === 'ground') buildBase();
+      }
+
+      // ───────── 地形（靜態） ─────────
+      function noise(x, y) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+      function buildBase() {
+        base = document.createElement('canvas');
+        base.width = cvs.width;
+        base.height = cvs.height;
+        const b = base.getContext('2d');
+        b.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const c = grid[y][x];
+            const px = x * T;
+            const py = y * T;
+            // 底色
+            b.fillStyle = C.theme==='palace'?'#604735':'#26352a';
+            b.fillRect(px, py, T, T);
+            for (let i = 0; i < 4; i++) {
+              b.fillStyle = 'rgba(120,150,110,' + (0.06 + noise(x * 3 + i, y * 5) * 0.08) + ')';
+              b.fillRect(px + noise(x, y + i) * T, py + noise(y, x + i) * T, 2, 2);
+            }
+            if (c === ',' ) { b.fillStyle = '#5c4d36'; b.fillRect(px, py, T, T); b.fillStyle = 'rgba(255,240,200,.06)'; b.fillRect(px + T * .2, py + T * .45, T * .6, T * .1); }
+            if (c === '~' || c === '=') {
+              b.fillStyle = c === '~' ? '#16304a' : '#24506a';
+              b.fillRect(px, py, T, T);
+              if (c === '=') { b.fillStyle = '#6d7f86'; [[.25, .3], [.65, .55], [.35, .78]].forEach(p => { b.beginPath(); b.ellipse(px + p[0] * T, py + p[1] * T, T * .12, T * .08, 0, 0, 7); b.fill(); }); }
+            }
+            if (c === 'x') {
+              b.fillStyle = '#2b2116'; b.fillRect(px + 1, py + 1, T - 2, T - 2);
+              b.strokeStyle = '#6b5638'; b.lineWidth = Math.max(1, T * .05);
+              b.strokeRect(px + 2, py + 2, T - 4, T - 4);
+            }
+            if (c === 'W') {
+              b.fillStyle = '#4a4238'; b.fillRect(px, py, T, T);
+              b.strokeStyle = 'rgba(0,0,0,.35)'; b.lineWidth = 1;
+              for (let k = 0; k < 3; k++) { b.beginPath(); b.moveTo(px, py + k * T / 3); b.lineTo(px + T, py + k * T / 3); b.stroke(); }
+              b.beginPath(); b.moveTo(px + ((y % 2) ? T / 2 : 0), py); b.lineTo(px + ((y % 2) ? T / 2 : 0), py + T); b.stroke();
+            }
+            if (c === 'T' || c === 't') {
+              const col = c === 'T' ? '#9c3328' : '#2c2f38';
+              b.fillStyle = col;
+              b.beginPath(); b.moveTo(px + T * .08, py + T * .9); b.lineTo(px + T * .5, py + T * .1); b.lineTo(px + T * .92, py + T * .9); b.closePath(); b.fill();
+              b.strokeStyle = c === 'T' ? '#2b1410' : '#c9a24a'; b.lineWidth = Math.max(1, T * .05); b.stroke();
+              b.beginPath(); b.moveTo(px + T * .5, py + T * .1); b.lineTo(px + T * .5, py + T * .9); b.stroke();
+            }
+            if(C.theme==='palace'&&c==='B'){b.fillStyle='#b49156';b.fillRect(px+T*.1,py+T*.3,T*.8,T*.5);b.fillStyle='#e8c868';b.font='bold '+Math.round(T*.5)+'px serif';b.textAlign='center';b.fillText('符',px+T*.5,py+T*.67);}
+            if(C.theme==='palace'&&c==='x'){b.fillStyle='#6d4568';b.fillRect(px+2,py+2,T-4,T-4);b.strokeStyle='#bca278';b.beginPath();for(let i=1;i<5;i++){b.moveTo(px+T*i/5,py+2);b.lineTo(px+T*i/5,py+T-2);}b.stroke();}
+            if (c === 'C'&&C.theme==='palace'){b.fillStyle='#76443c';b.fillRect(px+T*.12,py+T*.08,T*.76,T*.84);b.strokeStyle='#d2af6c';b.lineWidth=2;b.strokeRect(px+T*.12,py+T*.08,T*.76,T*.84);b.beginPath();b.moveTo(px+T*.5,py+T*.08);b.lineTo(px+T*.5,py+T*.92);b.stroke();}
+            else if (c === 'C') {
+              b.fillStyle = '#5a4128'; b.fillRect(px + T * .12, py + T * .3, T * .76, T * .36);
+              b.fillStyle = '#2b2016'; [.28, .72].forEach(w => { b.beginPath(); b.arc(px + w * T, py + T * .72, T * .12, 0, 7); b.fill(); });
+            }
+            if (c === 'E') {
+              b.fillStyle = '#2c2f38'; b.fillRect(px + T * .1, py + T * .1, T * .12, T * .85); b.fillRect(px + T * .78, py + T * .1, T * .12, T * .85);
+              b.fillStyle = '#c9a24a'; b.fillRect(px + T * .05, py + T * .08, T * .9, T * .14);
+            }
+          }
+        }
+        // 標籤
+        (C.level.labels || []).forEach(l => {
+          b.font = '700 ' + Math.round(T * .52) + 'px "LXGW WenKai TC","Noto Serif CJK TC",serif';
+          b.textAlign = 'center';
+          b.textBaseline = 'middle';
+          b.lineWidth = Math.max(2, T * .12);
+          b.strokeStyle = 'rgba(0,0,0,.75)';
+          b.strokeText(l.text, (l.x + .5) * T, (l.y + .5) * T);
+          b.fillStyle = l.color || '#efe2bf';
+          b.fillText(l.text, (l.x + .5) * T, (l.y + .5) * T);
+        });
+      }
+
+      // ───────── 角色 ─────────
+      function resetActors() {
+        S.player = { x: S.check[0], y: S.check[1], tx: S.check[0], ty: S.check[1], moving: false };
+        S.path = [];
+        S.target = null;
+        const slow = S.assisted ? 0.75 : 1;
+        S.guards = C.guards.map(gd => {
+          const p = gd.kind === 'sweep' ? gd.at : gd.path[0];
+          const ang = (gd.angle || 0) * Math.PI / 180;
+          return {
+            def: gd, x: p[0], y: p[1], i: 1, dir: 1, wait: 0, alert: 0, angle: ang,
+            speed: (gd.speed || 1.4) * slow, range: (gd.range || 4) * (S.assisted ? 0.85 : 1),
+            fov: (gd.fov || 70) * Math.PI / 360
+          };
+        });
+        // warm：開場前先讓巡哨走幾秒，錯開大家的節奏
+        S.guards.forEach(gd => {
+          if (gd.def.kind === 'sweep' || !gd.def.warm) return;
+          for (let w = 0; w < gd.def.warm; w += 0.05) moveGuard(gd, 0.05, w);
+        });
+      }
+
+      // 巡哨移動：sweep 原地左右看；patrol 沿路線來回走，走到端點會停一下
+      function moveGuard(gd, dt, t) {
+        const def = gd.def;
+        if (def.kind === 'sweep') {
+          const base0 = (def.angle || 0) * Math.PI / 180;
+          const span = (def.span || 50) * Math.PI / 180;
+          gd.angle = base0 + span * Math.sin(t * 2 * Math.PI / (def.period || 5));
+        } else if (gd.wait > 0) {
+          gd.wait -= dt;
+          gd.angle += Math.sin(t * 2) * dt * 0.6;
+        } else {
+          const tgt = def.path[gd.i];
+          const dx = tgt[0] - gd.x;
+          const dy = tgt[1] - gd.y;
+          const d = Math.hypot(dx, dy);
+          const want = Math.atan2(dy, dx);
+          gd.angle += clamp(angDiff(want, gd.angle), -4 * dt, 4 * dt);
+          const step = gd.speed * dt;
+          if (d <= step) {
+            gd.x = tgt[0];
+            gd.y = tgt[1];
+            gd.wait = def.pause === undefined ? 0.9 : def.pause;
+            if (gd.i + gd.dir >= def.path.length || gd.i + gd.dir < 0) gd.dir *= -1;
+            gd.i += gd.dir;
+          } else {
+            gd.x += dx / d * step;
+            gd.y += dy / d * step;
+          }
+        }
+      }
+
+      function tileOf(p) { return [Math.round(p.x), Math.round(p.y)]; }
+
+      // 找路（只走能走的格子）
+      function bfs(from, to) {
+        if (!walkable(to[0], to[1])) return null;
+        const key = (x, y) => x + ',' + y;
+        const prev = {};
+        const q = [from];
+        prev[key(from[0], from[1])] = null;
+        while (q.length) {
+          const [x, y] = q.shift();
+          if (x === to[0] && y === to[1]) break;
+          [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+            const nx = x + dx;
+            const ny = y + dy;
+            const k = key(nx, ny);
+            if (k in prev || !walkable(nx, ny)) return;
+            prev[k] = [x, y];
+            q.push([nx, ny]);
+          });
+        }
+        if (!(key(to[0], to[1]) in prev)) return null;
+        const path = [];
+        let cur = to;
+        while (cur && !(cur[0] === from[0] && cur[1] === from[1])) {
+          path.unshift(cur);
+          cur = prev[key(cur[0], cur[1])];
+        }
+        return path;
+      }
+
+      function lineOfSight(x0, y0, x1, y1) {
+        const d = Math.hypot(x1 - x0, y1 - y0);
+        const n = Math.ceil(d / 0.25);
+        for (let i = 1; i < n; i++) {
+          const x = Math.round(x0 + (x1 - x0) * i / n);
+          const y = Math.round(y0 + (y1 - y0) * i / n);
+          if (SIGHT_BLOCK.indexOf(at(x, y)) > -1) return false;
+        }
+        return true;
+      }
+
+      // ───────── 垂降 ─────────
+      function updateRope(dt) {
+        const r = S.rope;
+        const period = C.rope.period || 5;
+        const beamX = 0.5 + 0.42 * Math.sin(S.t * 2 * Math.PI / period);
+        r.beam = beamX;
+        const lit = Math.abs(beamX - 0.5) < BEAM;
+        r.lit = lit;
+        if (r.holding) r.y = Math.min(1, r.y + dt / (C.rope.length || 8));
+        if (lit) r.alert += dt * (r.holding ? 2.6 : 0.25);
+        else r.alert = Math.max(0, r.alert - dt * 0.6);
+        if (r.alert >= 1) {
+          S.ropeCaught += 1;
+          S.caught += 1;
+          caughtEl.textContent = '被發現 ' + S.caught + ' 次';
+          ZH.sfx('ng');
+          flashOn();
+          message('城下有人喊：「牆上有人！」' + (C.player.name || '你') + '趕緊被拉回城頭。', 'bad', 2400);
+          r.alert = 0;
+          r.y = 0;
+          r.holding = false;
+          hold.classList.remove('is-on');
+          S.freeze = 1.6;
+          return;
+        }
+        if (r.y >= 1) {
+          ZH.sfx('ok');
+          message('雙腳踩到地面了。', 'good', 1800);
+          S.freeze = 1.2;
+          S.after = () => { setPhase('ground'); resetActors(); message(C.groundMsg || '避開巡哨，抵達目的地。', '', 2600); };
+        }
+      }
+
+      function drawRope() {
+        const W = S.W;
+        const H = S.H;
+        const r = S.rope;
+        const sky = g.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#0b1230');
+        sky.addColorStop(1, '#1a1f35');
+        g.fillStyle = sky;
+        g.fillRect(0, 0, W, H);
+        for (let i = 0; i < 40; i++) {
+          g.fillStyle = 'rgba(255,248,220,' + (0.3 + noise(i, 3) * 0.6) + ')';
+          g.fillRect(noise(i, 1) * W, noise(i, 2) * H * 0.5, 1.5, 1.5);
+        }
+        g.fillStyle = '#e9dcae';
+        g.beginPath(); g.arc(W * 0.82, H * 0.12, Math.min(W, H) * 0.05, 0, 7); g.fill();
+        // 城牆
+        const wx = W * 0.22;
+        const ww = W * 0.56;
+        const top = H * 0.1;
+        const groundY = H * 0.86;
+        g.fillStyle = '#4a4238';
+        g.fillRect(wx, top, ww, groundY - top);
+        for (let i = 0; i < 9; i++) g.fillRect(wx + i * ww / 8.5, top - H * 0.035, ww / 17, H * 0.035);
+        g.strokeStyle = 'rgba(0,0,0,.35)';
+        g.lineWidth = 1;
+        const rowH = H * 0.045;
+        for (let yy = top; yy < groundY; yy += rowH) {
+          g.beginPath(); g.moveTo(wx, yy); g.lineTo(wx + ww, yy); g.stroke();
+          const off = ((yy - top) / rowH) % 2 ? 0 : ww / 12;
+          for (let xx = wx + off; xx < wx + ww; xx += ww / 6) { g.beginPath(); g.moveTo(xx, yy); g.lineTo(xx, yy + rowH); g.stroke(); }
+        }
+        g.fillStyle = '#1d2a20';
+        g.fillRect(0, groundY, W, H - groundY);
+        // 火光
+        const bx = r.beam * W;
+        const bw = W * (BEAM + 0.02);
+        const beam = g.createLinearGradient(bx - bw, 0, bx + bw, 0);
+        beam.addColorStop(0, 'rgba(255,190,90,0)');
+        beam.addColorStop(0.5, r.lit ? 'rgba(255,170,80,.45)' : 'rgba(255,190,90,.32)');
+        beam.addColorStop(1, 'rgba(255,190,90,0)');
+        g.fillStyle = beam;
+        g.beginPath();
+        g.moveTo(W * 0.06, H * 0.9);
+        g.lineTo(bx - bw, top);
+        g.lineTo(bx + bw, top);
+        g.closePath();
+        g.fill();
+        // 城下巡哨
+        const gImg = sprite(guardKey, guardSpec);
+        if (gImg) {
+          const gh = H * 0.15;
+          g.drawImage(gImg, W * 0.06 - gh / 3, H * 0.95 - gh, gh * 2 / 3, gh);
+        } else {
+          g.fillStyle = '#0b0b10';
+          g.beginPath(); g.arc(W * 0.06, H * 0.84, H * 0.022, 0, 7); g.fill();
+          g.fillRect(W * 0.045, H * 0.86, W * 0.03, H * 0.08);
+        }
+        g.fillStyle = '#ffb347';
+        g.beginPath(); g.arc(W * 0.085, H * 0.85, H * 0.012 + Math.sin(S.t * 20) * 1, 0, 7); g.fill();
+        // 繩子與燭之武
+        const rx = W * 0.5;
+        const py = top + (groundY - top - H * 0.08) * r.y + H * 0.02;
+        g.strokeStyle = '#c9b48a';
+        g.lineWidth = 2;
+        g.beginPath(); g.moveTo(rx, top - H * 0.02); g.lineTo(rx + Math.sin(S.t * 3) * (r.holding ? 2 : 0.5), py); g.stroke();
+        drawElder(rx, py + H * 0.04, Math.min(W, H) * 0.12, false);
+        // 警覺條
+        g.fillStyle = 'rgba(0,0,0,.5)';
+        g.fillRect(W * 0.1, H * 0.035, W * 0.8, 10);
+        g.fillStyle = r.alert > 0.6 ? '#d9483b' : '#e0b44c';
+        g.fillRect(W * 0.1, H * 0.035, W * 0.8 * r.alert, 10);
+        g.font = '13px "Noto Sans TC", sans-serif';
+        g.fillStyle = '#ece6d6';
+        g.textAlign = 'left';
+        g.textBaseline = 'bottom';
+        g.fillText('城下巡哨的警覺', W * 0.1, H * 0.033);
+        g.textAlign = 'right';
+        g.fillText('垂降 ' + Math.round(r.y * 100) + '%', W * 0.9, H * 0.033);
+      }
+
+      // ───────── 潛行 ─────────
+      function updateGround(dt) {
+        // 月色
+        S.moonT += dt;
+        const cyc = C.moon.bright + C.moon.dark;
+        const dark = (S.moonT % cyc) > C.moon.bright;
+        if (dark !== S.dark) {
+          S.dark = dark;
+          moonEl.classList.toggle('is-dark', dark);
+          moonEl.querySelector('span').textContent = dark ? '雲遮月' : '月明';
+        }
+        // 玩家移動
+        const p = S.player;
+        const speed = (C.player.speed || 2.1);
+        if (!p.moving) {
+          let next = null;
+          if (S.path.length) next = S.path.shift();
+          else if (S.held) {
+            const d = DIRS[S.held];
+            const nx = p.tx + d[0];
+            const ny = p.ty + d[1];
+            if (walkable(nx, ny)) next = [nx, ny];
+          }
+          if (next) { p.tx = next[0]; p.ty = next[1]; p.moving = true; }
+          else S.target = null;
+        }
+        if (p.moving) {
+          const dx = p.tx - p.x;
+          const dy = p.ty - p.y;
+          const d = Math.hypot(dx, dy);
+          const step = speed * dt;
+          if (d <= step) {
+            p.x = p.tx;
+            p.y = p.ty;
+            p.moving = false;
+            arrive(p.tx, p.ty);
+            if (S.done || S.freeze) return;
+          } else {
+            p.x += dx / d * step;
+            p.y += dy / d * step;
+          }
+        }
+        // 巡哨
+        if(S.guided){S.hidden=cover(...tileOf(p));return;}
+        const pt = tileOf(p);
+        const hidden = cover(pt[0], pt[1]);
+        S.hidden = hidden;
+        S.guards.forEach(gd => {
+          moveGuard(gd, dt, S.t);
+          // 看到了嗎
+          const ex = p.x - gd.x;
+          const ey = p.y - gd.y;
+          const dist = Math.hypot(ex, ey);
+          const range = gd.range * (S.dark ? 0.72 : 1);
+          let seen = dist <= range && Math.abs(angDiff(Math.atan2(ey, ex), gd.angle)) <= gd.fov && lineOfSight(gd.x, gd.y, p.x, p.y);
+          if (seen && hidden && dist > 1.5) seen = false;
+          if (dist < 0.9) seen = true;
+          gd.seeing = seen;
+          if (seen) {
+            const close = 0.6 + 1.0 * (1 - dist / Math.max(range, 0.1));
+            gd.alert += dt * 1.3 * (p.moving ? 1.25 : 0.6) * close * (S.dark ? 0.8 : 1) * (S.assisted ? 0.7 : 1);
+          } else {
+            gd.alert = Math.max(0, gd.alert - dt * 0.7);
+          }
+        });
+        const spotter = S.guards.find(gd => gd.alert >= 1);
+        if (spotter) caught(spotter);
+      }
+
+      function arrive(x, y) {
+        const c = at(x, y); S.moves+=1;
+        if (c === 'K' && (S.check[0] !== x || S.check[1] !== y)) {
+          S.check = [x, y];
+          ZH.sfx('chime');
+          message('記下這個位置：被發現時會回到這裡。', 'good', 1800);
+        }
+        if (!C.requireItem&&c==='E') win();
+        persist();
+      }
+
+      function caught(gd) {
+        S.caught += 1;
+        caughtEl.textContent = '被發現 ' + S.caught + ' 次';
+        ZH.sfx('ng');
+        flashOn();
+        message((gd.def.name || '巡哨') + '大喊：「什麼人！」——只好退回藏身處。', 'bad', 2400);
+        S.freeze = 1.6;
+        S.after = () => {
+          resetActors();
+          maybeAssist();persist();
+        };persist();
+      }
+
+      function maybeAssist(){
+        if(S.guided)return;
+        if(S.caught>=6){requestGuide(false);return;}
+        if(!S.assisted&&!S.offeredAssist&&S.caught>=3){S.offeredAssist=true;ask('要放慢巡哨嗎？','巡哨速度與視距降低；本次再扣1分，仍須親走取符並返程。',[
+          {label:'放慢巡哨',kind:'primary',fn:()=>{S.assisted=true;resetActors();persist();}},
+          {label:'維持原樣',kind:'quiet',fn:()=>{persist();}}]);}
+      }
+
+      function ask(title, text, opts) {
+        S.paused = true;
+        const box = ZH.html('<div class="stl-ask hm-anchor" role="dialog" aria-modal="true"><div class="stl-ask__card"><h3>' + esc(title) + '</h3><p>' + esc(text) + '</p><div class="zh-row"></div></div></div>');
+        const row = box.querySelector('.zh-row');
+        opts.forEach(o => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'zh-btn zh-btn--' + (o.kind || 'quiet');
+          b.textContent = o.label;
+          b.addEventListener('click', () => { box.remove(); S.paused = false; last = performance.now(); o.fn(); });
+          row.appendChild(b);
+        });
+        stage.appendChild(box);
+        row.querySelector('button:last-child').focus();
+      }
+
+      function flashOn() {
+        flash.classList.add('is-on');
+        setTimeout(() => flash.classList.remove('is-on'), 450);
+      }
+
+      function win() {
+        if (S.done) return;
+        S.done = true;
+        ZH.sfx('seal');
+        message(C.winMsg || '抵達目的地。', 'good', 0);
+        persist(); setTimeout(finish, 750);
+      }
+
+      function drawElder(x, y, size, hidden) {
+        const s = size;
+        const img = sprite(heroKey, heroSpec);
+        if (img) {
+          const h = s * 1.4;
+          const w = h * 2 / 3;
+          g.save();
+          g.fillStyle = 'rgba(0,0,0,.35)';
+          g.beginPath(); g.ellipse(x, y + s * .38, s * .26, s * .08, 0, 0, 7); g.fill();
+          g.globalAlpha = hidden ? 0.55 : 1;
+          g.drawImage(img, x - w / 2, y + s * .42 - h, w, h);
+          if (hidden) {
+            g.globalAlpha = 1;
+            g.strokeStyle = 'rgba(169,226,212,.9)';
+            g.setLineDash([3, 3]);
+            g.lineWidth = 1.5;
+            g.beginPath(); g.arc(x, y + s * .05, s * .5, 0, 7); g.stroke();
+            g.setLineDash([]);
+          }
+          g.restore();
+          return;
+        }
+        g.save();
+        g.globalAlpha = hidden ? 0.6 : 1;
+        g.fillStyle = 'rgba(0,0,0,.35)';
+        g.beginPath(); g.ellipse(x, y + s * .38, s * .26, s * .08, 0, 0, 7); g.fill();
+        g.fillStyle = C.player.color || '#3f9d84';
+        g.strokeStyle = '#0d2b24';
+        g.lineWidth = Math.max(1, s * .05);
+        g.beginPath();
+        g.moveTo(x - s * .22, y + s * .36);
+        g.lineTo(x + s * .22, y + s * .36);
+        g.lineTo(x + s * .12, y - s * .08);
+        g.lineTo(x - s * .12, y - s * .08);
+        g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = '#e9d3b0';
+        g.beginPath(); g.arc(x, y - s * .2, s * .12, 0, 7); g.fill();
+        g.fillStyle = '#1b1712';
+        g.fillRect(x - s * .06, y - s * .36, s * .12, s * .08);
+        g.fillStyle = '#f3efe4';
+        g.beginPath(); g.moveTo(x - s * .05, y - s * .12); g.lineTo(x + s * .05, y - s * .12); g.lineTo(x, y + s * .02); g.closePath(); g.fill();
+        g.strokeStyle = '#8a6d45';
+        g.lineWidth = Math.max(1, s * .045);
+        g.beginPath(); g.moveTo(x + s * .2, y - s * .04); g.lineTo(x + s * .28, y + s * .38); g.stroke();
+        if (hidden) {
+          g.globalAlpha = 1;
+          g.strokeStyle = 'rgba(169,226,212,.9)';
+          g.setLineDash([3, 3]);
+          g.lineWidth = 1.5;
+          g.beginPath(); g.arc(x, y + s * .05, s * .48, 0, 7); g.stroke();
+          g.setLineDash([]);
+        }
+        g.restore();
+      }
+
+      function drawGuard(gd) {
+        const x = (gd.x + .5) * T;
+        const y = (gd.y + .5) * T;
+        const s = T;
+        const img = sprite(guardKey, guardSpec);
+        if (img) {
+          const h = s * 1.35;
+          const w = h * 2 / 3;
+          g.fillStyle = 'rgba(0,0,0,.35)';
+          g.beginPath(); g.ellipse(x, y + s * .34, s * .24, s * .07, 0, 0, 7); g.fill();
+          g.save();
+          if (Math.cos(gd.angle) < -0.2) { g.translate(x, 0); g.scale(-1, 1); g.translate(-x, 0); } // 往左看時翻面
+          g.drawImage(img, x - w / 2, y + s * .38 - h, w, h);
+          g.restore();
+          const fx2 = x + Math.cos(gd.angle + 1.2) * s * .3;
+          const fy2 = y + Math.sin(gd.angle + 1.2) * s * .3;
+          g.fillStyle = '#ffb347';
+          g.beginPath(); g.arc(fx2, fy2, s * (.08 + Math.sin(S.t * 18 + gd.x) * .015), 0, 7); g.fill();
+          if (gd.alert > 0.1) {
+            const r = s * .2;
+            const ay2 = y + s * .38 - h - r * .6;
+            g.fillStyle = 'rgba(0,0,0,.6)';
+            g.beginPath(); g.arc(x, ay2, r, 0, 7); g.fill();
+            g.strokeStyle = gd.alert > 0.7 ? '#ff6b5a' : '#e0b44c';
+            g.lineWidth = Math.max(2, s * .06);
+            g.beginPath(); g.arc(x, ay2, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, gd.alert)); g.stroke();
+            g.fillStyle = gd.alert > 0.7 ? '#ff6b5a' : '#f3e7c0';
+            g.font = '700 ' + Math.round(s * .3) + 'px sans-serif';
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            g.fillText(gd.alert > 0.7 ? '！' : '？', x, ay2 + 1);
+          }
+          return;
+        }
+        g.fillStyle = 'rgba(0,0,0,.35)';
+        g.beginPath(); g.ellipse(x, y + s * .34, s * .24, s * .07, 0, 0, 7); g.fill();
+        g.fillStyle = '#8c2f27';
+        g.strokeStyle = '#2b1410';
+        g.lineWidth = Math.max(1, s * .05);
+        g.beginPath(); g.moveTo(x - s * .2, y + s * .34); g.lineTo(x + s * .2, y + s * .34); g.lineTo(x + s * .13, y - s * .08); g.lineTo(x - s * .13, y - s * .08); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = '#d8b88f';
+        g.beginPath(); g.arc(x, y - s * .2, s * .11, 0, 7); g.fill();
+        g.fillStyle = '#3b2f22';
+        g.beginPath(); g.arc(x, y - s * .24, s * .12, Math.PI, 0); g.fill();
+        // 長戈指向面向的方向
+        const ax = Math.cos(gd.angle);
+        const ay = Math.sin(gd.angle);
+        g.strokeStyle = '#8a6d45';
+        g.lineWidth = Math.max(1, s * .04);
+        g.beginPath(); g.moveTo(x - ax * s * .2, y - ay * s * .2); g.lineTo(x + ax * s * .45, y + ay * s * .45); g.stroke();
+        // 火把
+        const fx = x + Math.cos(gd.angle + 1.2) * s * .28;
+        const fy = y + Math.sin(gd.angle + 1.2) * s * .28;
+        g.fillStyle = '#ffb347';
+        g.beginPath(); g.arc(fx, fy, s * (.08 + Math.sin(S.t * 18 + gd.x) * .015), 0, 7); g.fill();
+        // 警覺
+        if (gd.alert > 0.1) {
+          const r = s * .2;
+          g.fillStyle = 'rgba(0,0,0,.6)';
+          g.beginPath(); g.arc(x, y - s * .62, r, 0, 7); g.fill();
+          g.strokeStyle = gd.alert > 0.7 ? '#ff6b5a' : '#e0b44c';
+          g.lineWidth = Math.max(2, s * .06);
+          g.beginPath(); g.arc(x, y - s * .62, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, gd.alert)); g.stroke();
+          g.fillStyle = gd.alert > 0.7 ? '#ff6b5a' : '#f3e7c0';
+          g.font = '700 ' + Math.round(s * .3) + 'px sans-serif';
+          g.textAlign = 'center';
+          g.textBaseline = 'middle';
+          g.fillText(gd.alert > 0.7 ? '！' : '？', x, y - s * .61);
+        }
+      }
+
+      function drawCone(gd) {
+        const range = gd.range * (S.dark ? 0.72 : 1) * T;
+        const x = (gd.x + .5) * T;
+        const y = (gd.y + .5) * T;
+        const grad = g.createRadialGradient(x, y, T * .3, x, y, range);
+        const hot = gd.seeing || gd.alert > 0.3;
+        grad.addColorStop(0, hot ? 'rgba(255,110,80,.34)' : 'rgba(255,200,100,.26)');
+        grad.addColorStop(1, hot ? 'rgba(255,110,80,.05)' : 'rgba(255,200,100,.03)');
+        g.fillStyle = grad;
+        g.beginPath();
+        g.moveTo(x, y);
+        g.arc(x, y, range, gd.angle - gd.fov, gd.angle + gd.fov);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = hot ? 'rgba(255,120,90,.55)' : 'rgba(255,205,120,.32)';
+        g.lineWidth = 1;
+        g.stroke();
+      }
+
+      function drawGround() {
+        const W = S.W;
+        const H = S.H;
+        g.clearRect(0, 0, W, H);
+        if (base) g.drawImage(base, 0, 0, W, H);
+        // 動態：蘆葦、水波、火
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const c = grid[y][x];
+            const px = x * T;
+            const py = y * T;
+            if (c === '"') {
+              g.strokeStyle = '#6f8a4a';
+              g.lineWidth = Math.max(1, T * .05);
+              for (let i = 0; i < 6; i++) {
+                const bx = px + T * (.12 + i * .15);
+                const sway = Math.sin(S.t * 1.6 + x + i) * T * .05;
+                g.beginPath(); g.moveTo(bx, py + T * .95); g.quadraticCurveTo(bx + sway, py + T * .5, bx + sway * 2, py + T * (.12 + (i % 3) * .08)); g.stroke();
+              }
+            } else if (c === '~') {
+              g.strokeStyle = 'rgba(150,200,230,.18)';
+              g.lineWidth = 1;
+              const o = (S.t * 8 + x * 7) % T;
+              g.beginPath(); g.moveTo(px + o * .5, py + T * .4); g.lineTo(px + o * .5 + T * .3, py + T * .4); g.stroke();
+            } else if (c === 'F' || c === 'f') {
+              const fl = 0.85 + Math.sin(S.t * 14 + x) * 0.15;
+              g.fillStyle = '#3b2a1a';
+              g.fillRect(px + T * .2, py + T * .62, T * .6, T * .14);
+              g.fillStyle = 'rgba(255,140,40,' + fl + ')';
+              g.beginPath(); g.moveTo(px + T * .5, py + T * (.12 + (1 - fl) * .3)); g.quadraticCurveTo(px + T * .85, py + T * .6, px + T * .5, py + T * .66); g.quadraticCurveTo(px + T * .15, py + T * .6, px + T * .5, py + T * .12); g.fill();
+            } else if (c === 'K' && (S.check[0] !== x || S.check[1] !== y)) {
+              g.strokeStyle = 'rgba(224,180,76,.75)';
+              g.lineWidth = 1.5;
+              g.strokeRect(px + T * .3, py + T * .2, T * .4, T * .6);
+            }
+          }
+        }
+        // 黑夜與光
+        if (fog.width !== cvs.width || fog.height !== cvs.height) { fog.width = cvs.width; fog.height = cvs.height; }
+        const d = fog.getContext('2d');
+        d.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+        d.globalCompositeOperation = 'source-over';
+        d.clearRect(0, 0, W, H);
+        d.fillStyle = 'rgba(3,6,18,' + (S.dark ? 0.72 : 0.55) + ')';
+        d.fillRect(0, 0, W, H);
+        d.globalCompositeOperation = 'destination-out';
+        const light = (lx, ly, r) => {
+          const gr = d.createRadialGradient(lx, ly, 0, lx, ly, r);
+          gr.addColorStop(0, 'rgba(0,0,0,.95)');
+          gr.addColorStop(1, 'rgba(0,0,0,0)');
+          d.fillStyle = gr;
+          d.beginPath(); d.arc(lx, ly, r, 0, 7); d.fill();
+        };
+        fires.forEach(([x, y]) => light((x + .5) * T, (y + .5) * T, T * 2.8));
+        exits.forEach(([x, y]) => light((x + .5) * T, (y + .5) * T, T * 1.8));
+        S.guards.forEach(gd => light((gd.x + .5) * T, (gd.y + .5) * T, T * 1.9));
+        light((S.player.x + .5) * T, (S.player.y + .5) * T, T * 1.1);
+        g.drawImage(fog, 0, 0, W, H);
+        // 視線、角色
+        S.guards.forEach(drawCone);
+        if (S.target) {
+          g.strokeStyle = 'rgba(224,180,76,.85)';
+          g.lineWidth = 2;
+          g.setLineDash([4, 4]);
+          g.strokeRect(S.target[0] * T + 3, S.target[1] * T + 3, T - 6, T - 6);
+          g.setLineDash([]);
+        }
+        S.guards.forEach(drawGuard);
+        drawElder((S.player.x + .5) * T, (S.player.y + .45) * T, T * 1.05, S.hidden);
+      }
+
+      // ───────── 迴圈 ─────────
+      function frame(now) {
+        raf = requestAnimationFrame(frame);
+        if(now-lastFrame<32)return;lastFrame=now;
+        const dt = Math.min(0.1, (now - (last || now)) / 1000);
+        last = now;
+        if (S.paused || document.hidden || document.querySelector('.zh-modal,.zc-detail')) {S.held=null;S.rope.holding=false;return;}
+        S.t += dt; if(!S.done)S.activeSeconds+=dt;
+        if(!S.guided&&S.activeSeconds>=95&&!S.done){requestGuide(false);return;}
+        const interact=root.querySelector('[data-interact]'),pt=tileOf(S.player),tile=at(...pt);
+        interact.disabled=S.done||S.freeze>0||S.player.moving||S.path.length>0||!((tile==='B'&&!S.picked)||(tile==='E'&&S.picked));
+        interact.textContent=S.picked?'回到出口，親按交符':'走到王臥內，親按取符';
+        if(tile==='B'&&!S.picked)interact.textContent='親取晉鄙兵符';else if(tile==='E'&&S.picked)interact.textContent='親交兵符，離開魏宮';
+        goal.textContent=(S.picked?'已取兵符 → 返回出口交符':'未取兵符 → 王臥內取符')+'・'+(S.guided?'親走補做':Math.max(0,95-Math.floor(S.activeSeconds))+'秒');
+        const bucket=Math.floor(S.activeSeconds/5);if(bucket!==savedBucket){savedBucket=bucket;persist();}
+        if (S.freeze > 0) {
+          S.freeze -= dt;
+          if (S.freeze <= 0) {
+            S.freeze = 0;
+            const fn = S.after;
+            S.after = null;
+            if (fn) fn();
+          }
+        } else if (!S.done) {
+          if (S.phase === 'rope') updateRope(dt);
+          else updateGround(dt);
+        }
+        if (S.phase === 'rope') drawRope(); else drawGround();
+      }
+
+      // ───────── 操作 ─────────
+      const onKey = e => {
+        if (S.paused||S.done||document.hidden||document.querySelector('.zh-modal,.zc-detail')) return;
+        if (S.phase === 'rope' && (e.code === 'Space' || e.code === 'ArrowDown' || e.code === 'KeyS')) {
+          e.preventDefault();
+          setHold(e.type === 'keydown');
+          return;
+        }
+        const d = KEYS[e.code];
+        if (!d || S.phase !== 'ground') return;
+        e.preventDefault();
+        if (e.type === 'keydown') { S.held = d; S.path = []; S.target = null; }
+        else if (S.held === d) S.held = null;
+      };
+      function setHold(on) {
+        if (S.freeze || S.done) on = false;
+        S.rope.holding = !!on;
+        hold.classList.toggle('is-on', !!on);
+      }
+      document.addEventListener('keydown', onKey);
+      document.addEventListener('keyup', onKey);
+      hold.addEventListener('pointerdown', e => { e.preventDefault(); setHold(true); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => hold.addEventListener(t, () => setHold(false)));
+      hold.addEventListener('contextmenu', e => e.preventDefault());
+      cvs.addEventListener('pointerdown', e => {
+        if (S.phase !== 'ground' || S.freeze || S.done || S.paused) return;
+        const r = cvs.getBoundingClientRect();
+        const tx = Math.floor((e.clientX - r.left) / T);
+        const ty = Math.floor((e.clientY - r.top) / T);
+        const from = [S.player.tx, S.player.ty];
+        const path = bfs(from, [tx, ty]);
+        if (!path) { message('那裡過不去。', '', 1200); return; }
+        S.path = path;
+        S.held = null;
+        S.target = [tx, ty];
+        ZH.sfx('click');
+      });
+      root.querySelectorAll('.stl-pad [data-d]').forEach(b => {
+        b.addEventListener('pointerdown', e => { e.preventDefault(); S.held = b.dataset.d; S.path = []; S.target = null; });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { if (S.held === b.dataset.d) S.held = null; }));
+      });
+      root.querySelector('[data-a="help"]').addEventListener('click', () => {
+        S.paused = true;
+        ZH.modal({ title: '潛行說明', body: C.helpHtml || '', actions: [{ label: '繼續', value: true, kind: 'primary' }] })
+          .then(() => { S.paused = false; last = performance.now(); });
+      });
+      root.querySelector('[data-guide]').onclick=()=>{if(!S.done&&!S.paused&&!S.guided)requestGuide(true);};
+      root.querySelector('[data-interact]').onclick=()=>{if(S.done||S.paused||S.freeze||S.player.moving||S.path.length)return;const tile=at(...tileOf(S.player));if(tile==='B'&&!S.picked){S.picked=true;evidence('pick');S.check=tileOf(S.player);ZH.sfx('seal');message('取得兵符；仍要沿道路回到出口。','good',2600);persist();}else if(tile==='E'&&S.picked){S.delivered=true;evidence('deliver');win();}};
+      const onBlur=()=>{S.held=null;S.rope.holding=false;persist();};
+      document.addEventListener('visibilitychange',onBlur);global.addEventListener('blur',onBlur);
+      const onResize = () => resize();
+      global.addEventListener('resize', onResize);
+
+      function finish() {
+        cancelAnimationFrame(raf);
+        document.removeEventListener('keydown', onKey);
+        document.removeEventListener('keyup', onKey);
+        global.removeEventListener('resize', onResize);document.removeEventListener('visibilitychange',onBlur);global.removeEventListener('blur',onBlur);
+        root.remove();
+        document.body.classList.remove('stl-lock');
+        resolve({
+          caught: S.caught, ropeCaught: S.ropeCaught,
+          seconds: Math.round(S.activeSeconds), picked:S.picked,delivered:S.delivered,moves:S.moves,actions:JSON.parse(JSON.stringify(S.actions)),guided:S.guided,originalScore:S.firstScore,completed:S.picked&&S.delivered,
+          assisted: S.assisted, skipped: S.skipped
+        });
+      }
+
+      setPhase(S.phase);
+      resetActors();
+      if(C.resume?.player&&!C.resume.recovering){S.player=JSON.parse(JSON.stringify(C.resume.player));S.path=C.resume.path||[];S.target=C.resume.target||null;if(C.resume.guards)S.guards.forEach((gd,i)=>Object.assign(gd,C.resume.guards[i]||{}));}
+      if(S.done){finish();return;}
+      persist();
+      moonEl.querySelector('span').textContent = '月明';
+      raf = requestAnimationFrame(frame);
+    });
+  }
+
+  /** 檢查關卡：起點能不能走到終點、只靠藏身處能走多遠（測試與除錯用） */
+  function inspect(level) {
+    const grid = level.grid.map(r => r.split(''));
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const bad = grid.some(r => r.length !== cols);
+    const at = (x, y) => (y >= 0 && y < rows && x >= 0 && x < cols ? grid[y][x] : 'W');
+    let s = null;
+    const ends = [];
+    grid.forEach((r, y) => r.forEach((c, x) => { if (c === 'S') s = [x, y]; if (c === 'E') ends.push([x, y]); }));
+    const seen = {};
+    const q = s ? [s] : [];
+    if (s) seen[s.join(',')] = true;
+    while (q.length) {
+      const [x, y] = q.shift();
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+        const nx = x + dx;
+        const ny = y + dy;
+        const k = nx + ',' + ny;
+        if (seen[k] || BLOCK.indexOf(at(nx, ny)) > -1) return;
+        seen[k] = true;
+        q.push([nx, ny]);
+      });
+    }
+    return { cols: cols, rows: rows, ragged: bad, start: s, reachable: ends.some(e => seen[e.join(',')]) };
+  }
+
+  // ───────── 挑戰賽（v0.2.0） ─────────
+  function defaultScore(r) {
+    if (!r || r.skipped||!r.completed) return { passed: false, score: 0, max: 10 };
+    return {passed:!r.guided,score:r.originalScore!==null?r.originalScore:Math.max(2,10-2*(r.caught||0)-(r.assisted?1:0)),max:10};
+  }
+
+  function challenge(config, opts) {
+    const o = Object.assign({ attempts: 3 }, opts || {});
+    const scoreOf = typeof o.score === 'function' ? o.score : defaultScore;
+    const withScore = r => Object.assign({}, r, scoreOf(r));
+    if (!ZH.arena || !o.scenarioId || !o.gameId) return run(config).then(withScore);
+    return new Promise(resolve => {
+      const bd = Object.assign({ base: 'night', tod: 'night' }, o.backdrop || {});
+      const bg = global.ART && global.ART.scene && global.ART.hasScene && global.ART.hasScene(bd.base)
+        ? global.ART.scene(bd.base, { tod: bd.tod, banner: bd.banner, glyph: bd.glyph }) : '';
+      const wrap = ZH.html('<div class="stl-arena" role="dialog" aria-label="' + esc(o.title || config.title || '潛行') + '">' +
+        '<div class="stl-arena__bg">' + bg + '</div><div class="ar-hud" hidden></div>' +
+        '<div class="stl-arena__frame"><div class="stl-arena__body"></div></div></div>');
+      document.body.appendChild(wrap);
+      const playOnce = (hud,attempt) => run(Object.assign({},config,{resume:o.getRunProgress?o.getRunProgress(attempt):null,onProgress:s=>o.saveRunProgress&&o.saveRunProgress(attempt,s)})).then(r => {
+        const rr = withScore(r);
+        if (!r.skipped && ZH.track) {
+          ZH.track('minigame', { scenarioId: o.scenarioId, gameId: String(o.gameId), score: Math.round(rr.score || 0), maxScore: Math.round(rr.max || 0), durationSec: Math.round(r.seconds || 0) });
+        }
+        return rr;
+      });
+      const session = ZH.arena.session({
+        scenarioId: o.scenarioId, gameId: String(o.gameId), title: o.title || config.title, goal: o.goal || config.goal,
+        help: o.help || config.helpHtml, attempts: o.attempts,
+        getProgress:o.getProgress,saveProgress:o.saveProgress,attemptElapsed:o.attemptElapsed,hideClock:true,
+        frame: wrap.querySelector('.stl-arena__frame'), hud: wrap.querySelector('.ar-hud'), body: wrap.querySelector('.stl-arena__body')
+      }, playOnce);
+      session.promise.then(best => {
+        wrap.remove();
+        if (ZH.flush && ZH.isGuest && !ZH.isGuest()) ZH.flush();
+        resolve(best && typeof best === 'object' ? best : { skipped: true, passed: false, score: 0, max: 10 });
+      });
+    });
+  }
+
+  ZH.stealth = { run: run, challenge: challenge, inspect: inspect,chapterVersion:'hd-v1.1.0' };
+})(window.ZH);
+</script>
+
+<script>(function(global){'use strict';
+const copy=v=>JSON.parse(JSON.stringify(v)),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+function shuffle(a,rng){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const arguments10=[
+['赴楚所為何事？','合縱救趙，也保楚國自身安全。','稱王頭冠好看。','代秦要求楚臣服。','只求一席酒宴。'],
+['楚王以眾人為恃，先辨什麼？','十步內的距離使遠方兵眾不能即時護王。','楚兵已全在魏宮。','毛遂一人能打敗楚軍。','所有臣下都不重要。'],
+['如何說出楚國本有的力量？','地方五千里，持戟百萬。','楚國完全沒有資源。','趙替楚統治全國。','只數宴席酒杯。'],
+['以湯的例子說明什麼？','地七十里而王天下，資源大小不能代替作為。','只有地方大才能立國。','湯領秦兵包圍楚都。','放棄所有治理。'],
+['文王例證怎樣接續？','地方百里而臣諸侯，能運用力量才重要。','領土少就絕無可能有所作為。','文王當場在楚廷發令。','楚王應立即改名文王。'],
+['白起事例用來喚起什麼？','鄢郢、夷陵與先人受辱，使抗秦成為楚自身的事。','白起是毛遂隨行門客。','前事可證楚永遠安全。','鼓勵楚繼續助秦滅趙。'],
+['把抗秦與楚國利益如何連起？','趙若被破，楚也承受秦繼續東進的壓力。','救趙只會讓秦感謝楚。','楚可永遠不問鄰國安危。','只要辱罵便能退敵。'],
+['毛遂的按劍如何理解？','是迫使楚王正視近身處境的威懾，論證仍須有據。','是遊戲可得分的刺殺指令。','證明毛遂不需任何言辭。','表示楚王已被殺。'],
+['合縱最後要為誰的利益說明？','合縱者為楚，非只為趙。','只談平原君的私人財富。','尊秦為帝是毛遂的合縱方案。','秦兵將永遠保護楚。'],
+['什麼才是廷議的目標？','讓楚王答應定從，將兵力和共同安全連起。','把十九人排成攻擊隊。','讓楚當天滅秦稱帝。','以口才換取趙國王位。']
+].map((r,i)=>({id:i,question:r[0],options:r.slice(1),read:['遠援要轉為楚國可辨的自身利益。','近身形勢與國家資源是兩個層次，不能說楚國已無兵。','有廣土眾兵，仍須決定如何使用。','引古代成事者，反問楚的資源為何未化為行動。','湯、文王的例證服務「不在眾寡，在用其力」。','毛遂借楚受辱的歷史喚起危機，不是計算殺敵數。','此處是說服策略的推演，不是保證各國未來相同。','原文按劍歷階而上；本關親選論點，沒有行刺操作。','合縱者為楚，非為趙，將援趙與楚自身的安全相連。','楚王答應定從，後歃血定盟；盟誓以敘事呈現。'][i]}));
+function shibu(saved,rng){const init=orders=>({phase:'plan',kind:'shibu',stair:0,left:60,elapsed:0,stepTime:0,resolve:20,anger:55,correct:0,wrong:0,orders,actions:[],guideSteps:0,note:'每階4活動秒；閱讀與準備暫停。'}),s=saved?copy(saved):{...init(arguments10.map(()=>shuffle([0,1,2,3],rng))),assisted:false};
+const record=a=>{if(s.actions.length<80)s.actions.push({...a,stair:s.stair});s.guideSteps+=Number(s.assisted);},finish=(passed,early=false)=>({score:early?0:clamp(Math.floor(s.correct/Math.max(1,s.correct+s.wrong)*6)+Number(s.resolve>=80)*2+Number(s.left>=15)*2,0,10),max:10,passed,stair:s.stair,resolve:s.resolve,anger:s.anger,correct:s.correct,wrong:s.wrong,manual:s.actions.filter(a=>a.action==='argue'&&a.correct).length,actions:copy(s.actions)});
+return{s,snapshot:()=>copy(s),current:()=>arguments10[s.stair],race:()=>({me:s.stair/10,rival:Math.min(1,s.elapsed/60)}),begin(){if(s.phase!=='plan')return false;s.phase='argue';return true;},argue(index){if(s.phase!=='argue'||![0,1,2,3].includes(Number(index)))return false;const good=Number(index)===0;if(s.assisted&&!good){s.note='請親選提示的論點：'+this.current().options[0];return false;}record({action:'argue',argument:s.stair,index:Number(index),correct:good});if(good){s.correct++;s.resolve=clamp(s.resolve+8,0,100);s.anger=clamp(s.anger-5,0,100);s.note=this.current().read;s.stair++;}else{s.wrong++;s.resolve=clamp(s.resolve-5,0,100);s.anger=clamp(s.anger+8,0,100);s.stair=Math.max(0,s.stair-1);s.note='論點未合，退一階；從楚的利益與原文例證重整。';}s.phase='event';s.stepTime=0;return true;},next(){if(s.phase!=='event')return false;record({action:'read'});if(s.stair===10){s.first=s.first||finish(s.resolve>=60&&s.left>0);s.phase=s.assisted||s.first.passed?'done':'failed';return true;}s.phase='argue';return true;},advance(dt){if(s.assisted||s.phase!=='argue')return false;s.elapsed+=dt;s.stepTime+=dt;s.left=Math.max(0,60-s.elapsed);if(!s.left){s.first=s.first||finish(false);s.phase='failed';s.note='廷議演練期限到；保留原分，親自登完十階。';return true;}if(s.stepTime>=4){record({action:'timeout',correct:false});s.wrong++;s.resolve=clamp(s.resolve-5,0,100);s.anger=clamp(s.anger+8,0,100);s.stair=Math.max(0,s.stair-1);s.stepTime=0;s.phase='event';s.note='本階4秒已到，退一階；讀完後再親選論點。';return true;}return false;},assist(){if(s.phase==='done'||s.assisted)return false;s.first=s.first||finish(false,true);Object.assign(s,init(copy(s.orders)),{assisted:true,note:'原分保留；不限時依提示親選十階論點。'});return true;},result(){return copy({...s.first,completed:s.phase==='done',assisted:s.assisted,guideSteps:s.guideSteps,assistance:s.assisted?{actions:s.actions,stair:s.stair,resolve:s.resolve}:null});}};
+}
+const commands=[{question:'父子俱在軍中',options:['父親歸家，兒子留軍。','兒子歸家，父親留軍。','父子都留下。'],read:'父歸。以軍令照顧家庭的延續，不是所有士卒都遣返。'}, {question:'兄弟俱在軍中',options:['哥哥歸家，弟弟留軍。','弟弟歸家，哥哥留軍。','兄弟都留下。'],read:'兄歸。不能以「留更年長」代替原文軍令。'}, {question:'獨子無兄弟',options:['歸家奉養。','全部留在前鋒。','要求父母也隨軍。'],read:'歸養。史實先選兵，得八萬人，再進兵擊秦。'}];
+const routes=[{id:'road',name:'大道',hint:'短、快；易遇秦探騎',cost:2,question:'大道前方有探騎，怎樣處理？',options:['先偵察、錯開探騎後前進。','為求快暴露整支隊伍。','不辨方向，連夜折回魏都。'],read:'先辨敵情再前進，能降低被阻的風險。'}, {id:'mountain',name:'山路',hint:'慢；地形掩護、岔路多',cost:1,question:'山路岔道多，怎樣處理？',options:['派前導核對山口，分隊依序通過。','全軍各走不同岔路。','丟掉軍令，讓士卒隨意散走。'],read:'地形掩護仍需辨路與聯繫，不能把慢路當作必然安全。'}, {id:'river',name:'渡河',hint:'需渡點；水情影響通行',cost:1,question:'渡點水勢變化，怎樣處理？',options:['核對水情，守住渡點依序渡河。','不查水情，強令同時涉水。','將所有舟具推走，再叫士卒渡河。'],read:'觀察與有序渡河降低風險；場景示意不指定史實河道。'}];
+function yuanjun(saved,rng,defense=46){const init=orders=>({kind:'yuanjun',phase:'plan',cursor:0,leg:0,left:75,elapsed:0,defense,initialDefense:defense,morale:50,commandsGood:0,responsesGood:0,orders,route:null,step:0,moves:0,choices:[],actions:[],guideSteps:0,note:'先下三道選兵令，再帶八萬選兵出發。'}),s=saved?copy(saved):{...init(commands.map(()=>shuffle([0,1,2],rng))),assisted:false};
+const record=a=>{if(s.actions.length<70)s.actions.push(a);s.guideSteps+=Number(s.assisted);},finish=(passed,early=false)=>({score:early?0:clamp(s.commandsGood+s.responsesGood+Number(s.leg===3)*2+Number(s.defense>=40)+Number(s.morale>=70),0,10),max:10,passed,defense:Math.round(s.defense),morale:s.morale,commandsGood:s.commandsGood,responsesGood:s.responsesGood,moves:s.moves,leg:s.leg,troops:s.cursor===3?80000:100000,actions:copy(s.actions)});
+return{s,snapshot:()=>copy(s),race:()=>({me:(s.cursor+s.leg*5+s.step)/18,rival:Math.min(1,s.elapsed/75)}),begin(){if(s.phase!=='plan')return false;s.phase='order';return true;},order(index){if(s.phase!=='order'||![0,1,2].includes(Number(index)))return false;const good=Number(index)===0;if(s.assisted&&!good){s.note='請親下軍令：'+commands[s.cursor].options[0];return false;}record({action:'order',slot:s.cursor,index:Number(index),correct:good});s.commandsGood+=Number(good);s.morale=clamp(s.morale+(good?6:-8),0,100);s.note=commands[s.cursor].read;s.cursor++;s.phase='event';s.after='order';return true;},route(id){if(s.phase!=='route')return false;const r=routes.find(r=>r.id===id);if(!r)return false;s.route=id;s.choices.push(id);record({action:'route',leg:s.leg,id});s.defense=Math.max(0,s.defense-r.cost);s.phase='respond';s.note='第'+(s.leg+1)+'段：'+r.question;return true;},respond(index){if(s.phase!=='respond'||![0,1,2].includes(Number(index)))return false;const good=Number(index)===0;if(s.assisted&&!good){s.note='請親選：'+routes.find(r=>r.id===s.route).options[0];return false;}record({action:'respond',leg:s.leg,index:Number(index),correct:good});s.responsesGood+=Number(good);s.morale=clamp(s.morale+(good?5:-10),0,100);if(!good)s.defense=Math.max(0,s.defense-7);s.note=routes.find(r=>r.id===s.route).read;s.phase='event';s.after='march';return true;},march(){if(s.phase!=='march')return false;record({action:'march',leg:s.leg,step:s.step});s.step++;s.moves++;if(!s.assisted){const cost={road:.3,mountain:1.2,river:.8}[s.route];s.elapsed+=cost;s.left=Math.max(0,75-s.elapsed);s.defense=Math.max(0,s.defense-cost*.04);}if(s.step===5){s.leg++;s.step=0;s.phase='event';s.after='route';s.note=s.leg===3?'魏軍抵達邯鄲城外。城中守軍與楚援也在抵抗秦軍。':'本段行軍已完成，親讀後選下一段路。';}return true;},next(){if(s.phase!=='event')return false;record({action:'read'});if(s.leg===3){s.first=s.first||finish(s.commandsGood===3&&s.responsesGood===3&&s.defense>=15&&s.left>0&&s.moves===15);s.phase=s.assisted||s.first.passed?'done':'failed';return true;}s.phase=s.after==='order'?(s.cursor<3?'order':'route'):s.after;return true;},advance(dt){if(s.assisted||!['order','route','respond','march'].includes(s.phase))return false;s.elapsed+=dt;s.left=Math.max(0,75-s.elapsed);s.defense=Math.max(0,s.defense-dt*.04);if(!s.left||s.defense<15){s.first=s.first||finish(false);s.phase='failed';s.note='本次行軍演練未完，保留原分後親自補做。';return true;}return false;},assist(){if(s.phase==='done'||s.assisted)return false;s.first=s.first||finish(false,true);Object.assign(s,init(copy(s.orders)),{assisted:true,note:'原分保留；親下三道軍令、三次應對、十五次前進。'});return true;},result(){return copy({...s.first,completed:s.phase==='done',assisted:s.assisted,guideSteps:s.guideSteps,assistance:s.assisted?{actions:s.actions,leg:s.leg,moves:s.moves,commandsGood:s.commandsGood,responsesGood:s.responsesGood}:null});}};
+}
+global.ZG12Models={shibu,yuanjun,arguments10,commands,routes,shuffle};
+})(window);
+
+(function(){'use strict';
+const SID='S_zg12_handan',VERSION='v1.1.0',SCHEMA='handan-20261011',MODE='history';
+const ROOT=document.getElementById('ep-root'),E=ZH.esc,copy=v=>JSON.parse(JSON.stringify(v)),params=ZH.params||window.ZH_BOOT.params||{},M=window.ZG12Models;
+const ORDER=Array.from({length:12},(_,i)=>'hd_'+String(i+1).padStart(2,'0'));
+const CODEX_KEYS=['person:zg_maosui','person:zg_pingyuanjun','person:zg_xinlingjun','person:zg_houying','person:zg_ruji','person:zg_luzhonglian','idiom:maosuizijian','idiom:tuoyingerchu','idiom:sancunzhishe','idiom:qiefujiuzhao','idiom:yibudiqin','treasure:zg_hufu'];
+const CHARACTERS=[{id:'mao',name:'毛遂',glyph:'遂',title:'序幕扮演・平原君門客'},{id:'ping',name:'平原君',glyph:'平',title:'趙・趙勝'},{id:'chu',name:'楚考烈王',glyph:'楚',title:'楚國君主',art:{state:'楚',hat:'mian',robe:'#805377',beard:2}},{id:'xin',name:'信陵君',glyph:'魏',title:'本話主角・魏公子無忌'},{id:'hou',name:'侯嬴',glyph:'侯',title:'大梁夷門監'},{id:'zhu',name:'朱亥',glyph:'朱',title:'市井隱士'},{id:'ru',name:'如姬',glyph:'如',title:'竊符關扮演・魏宮',art:{state:'魏',female:true,hat:'none',robe:'#9c6588',beard:0}},{id:'jin',name:'晉鄙',glyph:'晉',title:'魏將・鄴地軍營',art:{state:'魏',hat:'helmet',armor:true,robe:'#5f6658'}},{id:'wei',name:'魏安釐王',glyph:'王',title:'魏國君主',art:{state:'魏',hat:'mian',robe:'#52756b',beard:2}},{id:'lu',name:'魯仲連',glyph:'魯',title:'間幕扮演・齊國高士'},{id:'yuan',name:'新垣衍',glyph:'衍',title:'魏使・主張尊秦為帝',art:{state:'魏',robe:'#65756d',hat:'guan',beard:1,prop:'scroll'}},{id:'gong',name:'公孫龍',glyph:'龍',title:'留在平原君門下・未隨赴楚',art:{state:'趙',robe:'#706484',hat:'guan',beard:1,prop:'scroll'}},{id:'ke',name:'門客',glyph:'客',title:'進諫公子',art:{state:'魏',robe:'#8b755c',hat:'guan',beard:1}},{id:'shi',name:'史官',glyph:'史',title:'原文與事件回顧',art:{hat:'jin',beard:2,prop:'scroll',robe:'#8d7c64'}}];
+const C=id=>CHARACTERS.find(c=>c.id===id);
+const SCENES={night:{base:'city',tod:'night',glyph:'趙',banner:'#a6533d'},hall:{base:'hall',tod:'day',glyph:'楚',banner:'#964d5c'},market:{base:'market',tod:'day',glyph:'魏',banner:'#507869'},banquet:{base:'banquet',tod:'dusk',glyph:'魏',banner:'#507869'},palace:{base:'palace',tod:'night',glyph:'魏',banner:'#507869'},camp:{base:'camp',tod:'day',glyph:'魏',banner:'#507869'},road:{base:'road',tod:'day',glyph:'魏',banner:'#507869'},battlefield:{base:'battlefield',tod:'dusk',glyph:'趙',banner:'#a6533d'},room:{base:'room',tod:'day',glyph:'趙',banner:'#a6533d'},academy:{base:'academy',tod:'night',glyph:'魏',banner:'#507869'}};
+const HELP='<p>十步之內：60活動秒，每階4秒，親選十次說服論點。正確登一階、怒氣下降、援楚決心上升；失誤退一階。每階時間到也算一次失誤。十階俱登、決心至少60才過。正確率占6分、決心至少80占2分、餘時至少15秒占2分。按劍是原文的威懾姿態，本關操作是論證，沒有攻擊人物。</p><p>夜入魏宮：原生潛行挑戰。點地面尋路、方向鍵或四箭頭移動；屏風阻視線，帷幕可藏身。從入口走到王臥內，親按取符，再走回出口親按交符。巡哨、雲遮月與存檔藏身點可觀察；被發現三次可選放慢，六次或95活動秒到會保留原分，改為親走補做。正常10分，每次被發現扣2、放慢扣1，最低2。提前選不限時親走則原分0。宮室及路線是教學示意，不能當作考證平面。</p><p>援軍北上：75活動秒。先親選父子父歸、兄弟兄歸、獨子歸養，再帶八萬選兵走三段。路段點大道、山路或渡河，讀風險後親選應對；每個路段需親下五次前進令。大道快而暴露、山路慢而有掩護、渡河有渡點；城防隨活動與行程代價下降，士氣依軍令與應對變化。三道選兵令、三段路及三次應對俱做、城防至少15才過。選兵3分、應對3分、到達2分、城防至少40及士氣至少70各1分。路程和風險是推演；原文是先勒兵選八萬，再進兵擊秦。</p><p>每關最多三次，首次與最佳分開；協助仍須親登十階、走取兵符再交符、下三道軍令並走完三段。提前協助原分0，失敗後保留原分。閱讀、說明、隱藏分頁暫停活動時間。十二個對讀都在主線，首次錯誤在修正及接續後仍保留。量表只評本局推演，不改寫楚魏救趙、秦軍解圍的史實。</p>';
+const firstGood=(ctx,id)=>!!ctx.state.anchors.find(a=>a.anchorId===id)?.correct;
+const firstScore=r=>(r.firstResult||r).score;
+
+let game=null,journal=null,latest=null,loading=false;
+const checkpoint=()=>game?game.save():Promise.resolve();
+function snapshot(snap,live){
+  const v=live.vars||{};snap.vars=snap.vars||{};
+  const completedAway=id=>{const k={hd_shibu:'shibu',hd_qiefu:'qiefu',hd_yuanjun:'yuanjun'}[id],node={shibu:'n_06',qiefu:'n_16',yuanjun:'n_23'}[k];return node&&snap.node!==node&&snap.vars[k]?.completed;};
+  for(const key of ['schema','runId','firstAnchors','choices','submitted','finishPayload'])if(v[key]!==undefined)snap.vars[key]=copy(v[key]);
+  if(Number.isFinite(live.rng))snap.rng=live.rng;
+  // Completed attempts resume from Arena's result card; their working decks
+  // need not occupy cloud saves. Keep the active attempt, first/best results
+  // and all required-operation evidence, including assisted actions.
+  for(const key of Object.keys(snap.progress||{})){
+    if(/^arena:(hd_shibu|hd_qiefu|hd_yuanjun)$/.test(key)){
+      // An ended run resumes straight into onEnd. Its complete first/best
+      // evidence is already in vars and finishPayload, and scores in games.
+      if(snap.ended||completedAway(key.slice(6))){delete snap.progress[key];continue;}
+      const ar=snap.progress[key];
+      // Arena resumes from ar.first; best/last also carry identical copies.
+      // Drop only those redundant references in the serialized snapshot.
+      if(ar?.first){if(ar.best)delete ar.best.first;if(ar.last)delete ar.last.first;}
+    }
+    const m=key.match(/^(hd_shibu|hd_qiefu|hd_yuanjun):(\d+)$/);if(!m)continue;
+    if(snap.ended||completedAway(m[1])){delete snap.progress[key];continue;}
+    const ar=snap.progress['arena:'+m[1]];
+    if(ar?.last&&(!ar.active||Number(m[2])<Number(ar.tries)))delete snap.progress[key];
+  }
+  if(snap.ended&&snap.vars.finishPayload){
+    // After submission, full first/best and manual-operation evidence lives
+    // once in finishPayload.experience. Keep validation and score summaries.
+    for(const key of ['shibu','qiefu','yuanjun']){
+      const r=snap.vars[key];if(!r)continue;
+      snap.vars[key]={completed:r.completed,firstScore:r.firstScore,firstMax:r.firstMax,score:r.score,max:r.max,passed:r.passed,assisted:r.assisted,guideSteps:r.guideSteps};
+    }
+  }
+}
+function save(s){latest=s;return journal.enqueue(s);}
+async function load(){let cloud=null;try{const r=await ZH.load(SID,MODE);cloud=r?.state?.engine||null;}catch(e){}return journal.load(cloud);}
+function pause(){return document.hidden||!!document.querySelector('.zh-modal,.hd-anchor');}
+function portrait(id,expr='normal'){return ART.portrait(C(id),{expr});}
+function panorama(scene,ids){const d=SCENES[scene];return ART.scene(d.base,d)+'<div class="hd-title-cast">'+ids.map(id=>'<span>'+portrait(id)+'</span>').join('')+'</div>';}
+async function scene(ctx,key,place,time,cast){await ctx.scene(key,{place,time});ctx.cast(cast||[]);}
+async function choice(ctx,id,options){const saved=ctx.state.vars.choices?.[id];if(saved!==undefined)return saved;const value=await ctx.choose(options);ctx.state.vars.choices=ctx.state.vars.choices||{};ctx.state.vars.choices[id]=value;await checkpoint();return value;}
+function anchorRunner(a,opt){return new Promise(resolve=>{
+ const v=game.state.vars;v.firstAnchors=v.firstAnchors||{};let rec=v.firstAnchors[a.id];if(rec?.completed)return resolve(copy(rec));
+ const ordered=rec?.order||M.shuffle(a.options.map(x=>x.key),game.ctx.rng);let order=ordered.map(key=>a.options.find(o=>o.key===key));
+ let reading=rec?.finalAnswer===a.answer,finished=false,started=performance.now();const prior=document.activeElement;
+ const title=(a.role&&!a.stem.startsWith('【你是')?'【你是'+a.role+'】':'')+a.stem;
+ const wrap=ZH.html('<div class="sty-choice hd-anchor" role="dialog" aria-modal="true" aria-labelledby="hd-question"><div class="sty-choice__card"><p class="hd-kicker">原文對讀 '+opt.index+'／12</p><h2 id="hd-question">'+E(title)+'</h2><blockquote>'+E(a.passage)+'</blockquote><div class="zh-choices">'+order.map((o,i)=>'<button class="zh-choice" type="button" data-answer="'+E(o.key)+'"><span class="zh-choice__key">'+'甲乙丙丁'[i]+'</span><span class="zh-choice__text">'+E(o.text)+'</span></button>').join('')+'</div><p class="hd-feedback" role="status" data-feedback hidden></p><p class="hd-follow" data-follow hidden>'+E(a.followUp||'')+'</p><button type="button" class="zh-btn zh-btn--primary" data-read-done hidden>讀畢，回到劇情</button><p class="hd-note">首次判斷會保留，答錯後請親自修正。</p></div></div>');
+ document.body.append(wrap);wrap.querySelector('button').focus();
+ function read(){reading=true;wrap.querySelectorAll('[data-answer]').forEach(b=>b.disabled=true);const fb=wrap.querySelector('[data-feedback]');fb.hidden=false;fb.textContent=a.explanation;wrap.querySelector('[data-follow]').hidden=!a.followUp;const b=wrap.querySelector('[data-read-done]');b.hidden=false;b.focus();}
+ if(reading)read();
+ wrap.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const bs=[...wrap.querySelectorAll('button:not([hidden]):not(:disabled)')];if(e.shiftKey&&document.activeElement===bs[0]){e.preventDefault();bs.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===bs.at(-1)){e.preventDefault();bs[0].focus();}});
+ wrap.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled||finished)return;
+  if(b.hasAttribute('data-read-done')&&reading){finished=true;rec.completed=true;v.firstAnchors[a.id]=rec;await checkpoint();wrap.remove();if(prior?.isConnected)prior.focus({preventScroll:true});resolve(copy(rec));return;}
+  if(!b.dataset.answer||reading)return;const key=b.dataset.answer,correct=key===a.answer,seconds=Math.round((performance.now()-started)/100)/10,op=a.options.find(o=>o.key===key);
+  if(!rec)rec={anchorId:a.id,choice:key,correct,seconds,attempts:0,completed:false,order:ordered};
+  rec.attempts++;rec.path=correct?(rec.attempts===1?'direct':'fork'):'fork';
+  ZH.track('anchor',{scenarioId:SID,anchorId:a.id,attempt:rec.attempts,choice:key,correct,firstTry:rec.attempts===1,path:rec.path,distractorType:correct?'':op.type||'',seconds});
+  if(correct){rec.finalAnswer=key;read();}else{const fb=wrap.querySelector('[data-feedback]');fb.hidden=false;fb.textContent=(op.fork||'請重新對讀原文。')+' 請再判斷一次。';started=performance.now();}
+  v.firstAnchors[a.id]=rec;await checkpoint();
+ });
+});}
+
+function eventBoard(who,title,text,label){return '<div class="hd-event"><div class="hd-event-art">'+portrait(who,'serious')+'</div><div class="hd-paper"><b>'+E(title)+'</b><p>'+E(text)+'</p></div></div><button class="zh-btn zh-btn--primary" data-next>'+label+'</button>';}
+function argumentBoard(m){const s=m.s;if(s.phase==='event')return eventBoard('mao','楚廷・第'+s.stair+'階',s.note,s.stair===10?'已讀，完成十階說服':'已讀，繼續登階');const a=m.current();return '<div class="hd-talk"><div class="hd-talk-scene">'+ART.scene('hall',SCENES.hall)+'<div class="hd-talk-cast"><span>'+portrait('mao',s.stair>5?'serious':'normal')+'</span><span>'+portrait('chu',s.anger>60?'angry':s.resolve>70?'surprised':'serious')+'</span></div></div><div class="hd-stairs" aria-label="已登'+s.stair+'階">'+Array.from({length:10},(_,i)=>'<span class="'+(i<s.stair?'is-up':'')+'">'+(i+1)+'</span>').join('')+'</div></div><div class="hd-paper"><b>'+E(a.question)+'</b><p>'+(s.assisted?'提示：'+E(a.options[0]):'以楚國的資源、受辱與自身利益組織論點。')+'</p></div><div class="hd-cards">'+s.orders[s.stair].map(i=>'<button class="zh-btn" data-argue="'+i+'" '+(s.phase==='plan'?'disabled':'')+'>'+E(a.options[i])+'</button>').join('')+'</div>'+(s.phase==='plan'?'<button class="zh-btn zh-btn--primary" data-begin>準備好了，開始十階廷議</button>':'')+'<p class="hd-note">按劍是原文的威懾姿態；這裡親選論點，不操作刺殺。</p>';}
+function armyBoard(m){const s=m.s;if(s.phase==='event')return eventBoard('xin',s.after==='order'?'選兵軍令':'援軍行程',s.note,s.leg===3?'已讀，親交行軍紀錄':'已讀，親下下一道令');let panel='';if(['plan','order'].includes(s.phase)){const c=M.commands[Math.min(2,s.cursor)];panel='<div class="hd-paper"><b>'+E(c.question)+'</b><p>'+(s.assisted?'提示：'+E(c.options[0]):'以原文的家庭責任為準，親下軍令。')+'</p></div><div class="hd-cards">'+s.orders[Math.min(2,s.cursor)].map(i=>'<button class="zh-btn" data-order="'+i+'" '+(s.phase==='plan'?'disabled':'')+'>'+E(c.options[i])+'</button>').join('')+'</div>';}else if(s.phase==='route'){panel='<div class="hd-paper"><b>第'+(s.leg+1)+'段・親選行軍路線</b><p>城防隨活動與行程代價下降；還要辨路段風險。此圖為推演示意；選兵先照顧家庭責任，行軍接到解除邯鄲之圍。</p></div><div class="hd-routes">'+M.routes.map(r=>'<button class="zh-btn" data-route="'+r.id+'"><b>'+r.name+'</b><span>'+r.hint+'</span></button>').join('')+'</div>';}else if(s.phase==='respond'){const r=M.routes.find(r=>r.id===s.route);panel='<div class="hd-paper"><b>'+r.question+'</b><p>'+(s.assisted?'提示：'+r.options[0]:'親下應對令，確認後讀回應。')+'</p></div><div class="hd-cards">'+[1,0,2].map(i=>'<button class="zh-btn" data-respond="'+i+'">'+r.options[i]+'</button>').join('')+'</div>';}else panel='<div class="hd-paper"><b>'+M.routes.find(r=>r.id===s.route).name+'・第'+(s.leg+1)+'段</b><p>親下前進令 '+s.step+'／5。八萬是原文選兵後的人數，沒有在路上重扣成另一史實兵數。</p></div><button class="zh-btn zh-btn--primary" data-march>前進一段，保持隊列</button>';
+return '<div class="hd-army-stage">'+ART.scene('road',SCENES.road)+'<div class="hd-army-person" style="--p:'+((s.leg*5+s.step)/15*75)+'%">'+portrait('xin','serious')+'</div><div class="hd-handan">邯鄲</div></div>'+panel+(s.phase==='plan'?'<button class="zh-btn zh-btn--primary" data-begin>先整軍，再北上</button>':'');}
+function play(kind){return(body,g)=>new Promise(resolve=>{
+ const model=M[kind](g.getProgress().model,g.rng,game.ctx.meter('defense')),s=model.s;let alive=true,last=performance.now(),lastFrame=0,lastUi=0,raf=0,bucket=-1,ui={};
+ const race=g.race({me:kind==='shibu'?'毛遂登階':'選兵與援軍',rival:kind==='shibu'?'廷議期限':'邯鄲危急',goal:kind==='shibu'?'親選十次論點':'三道軍令、三次應對、十五次前進'});
+ const persist=()=>g.setProgress({model:model.snapshot()});
+ function clock(){if(ui.index)ui.index.textContent=kind==='shibu'?'登階 '+s.stair+'／10':s.cursor<3?'軍令 '+s.cursor+'／3':'路段 '+s.leg+'／3・八萬選兵';if(ui.clock)ui.clock.textContent=s.assisted?'親做補足・不限時':['done','failed'].includes(s.phase)?'本次已結束':['plan','event'].includes(s.phase)?'準備／閱讀・暫停':'剩 '+Math.ceil(s.left)+'秒'+(kind==='shibu'?'・本階 '+Math.ceil(4-s.stepTime)+'秒':'');if(ui.counters)ui.counters.textContent=kind==='shibu'?'怒氣 '+s.anger+'・決心 '+s.resolve:'城防 '+Math.round(s.defense)+'・士氣 '+s.morale;if(ui.note)ui.note.textContent=s.note;const r=model.race();race.me(r.me);race.rival(r.rival);}
+ function paint(){if(!alive)return;const done=s.phase==='done',failed=s.phase==='failed',hadFocus=body.contains(document.activeElement);body.innerHTML='<div class="hd-game" data-kind="'+kind+'"><h2>'+({shibu:'十步之內',yuanjun:'援軍北上'}[kind])+'</h2><div class="hd-live"><b data-index></b><span data-clock></span><span data-counters></span></div>'+(!done&&!failed?(kind==='shibu'?argumentBoard:armyBoard)(model):'')+'<p class="hd-feedback" role="status" data-note></p>'+(done?'<p class="hd-follow">本次原分 '+s.first.score+'／10'+(s.assisted?'，親自補做完成，原分保留。':'。')+'</p><button class="zh-btn zh-btn--primary" data-finish>交回挑戰成績</button>':'<button class="zh-btn '+(failed?'zh-btn--primary':'zh-btn--quiet')+'" data-assist '+(s.assisted?'hidden':'')+'>協助補做・不限時</button>')+'</div>';ui={index:body.querySelector('[data-index]'),clock:body.querySelector('[data-clock]'),counters:body.querySelector('[data-counters]'),note:body.querySelector('[data-note]')};clock();if(hadFocus)(body.querySelector('[data-next],[data-finish]')||body.querySelector('button:not(:disabled):not([hidden])'))?.focus({preventScroll:true});persist();g.setStatus(done?'必要體驗完成':failed?'請親自補足':s.assisted?'原分保留・親做補足':'正在挑戰');}
+ const click=async e=>{if(!alive||pause())return;const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-assist')){const ok=await ZH.modal({title:'不限時親自補做',body:'<p>提前協助原分0，失敗後原分保留；仍須親選十階論點，或親下三道軍令、三次應對與十五次前進。</p>',actions:[{label:'繼續挑戰',value:false,kind:'quiet'},{label:'開始補做',value:true,kind:'primary'}]});if(ok&&alive){model.assist();last=performance.now();paint();}return;}if(b.hasAttribute('data-finish')){if(s.phase!=='done')return;persist();alive=false;resolve({...model.result(),sec:s.elapsed});return;}for(const n of ['argue','order','route','respond','march','next','begin'])if(b.hasAttribute('data-'+n)){const changed=model[n](b.getAttribute('data-'+n));if(changed)g.sfx('click');paint();return;}};
+ body.addEventListener('click',click);
+ function frame(now){if(!alive)return;raf=requestAnimationFrame(frame);if(now-lastFrame<32)return;lastFrame=now;const dt=Math.max(0,Math.min(.25,(now-last)/1000));last=now;if(pause())return;const phase=s.phase;model.advance(dt);if(s.phase!==phase)paint();else if(now-lastUi>=250){lastUi=now;clock();}const next=Math.floor(s.elapsed/5);if(next!==bucket){bucket=next;persist();}}
+ g.onCleanup(()=>{alive=false;cancelAnimationFrame(raf);body.removeEventListener('click',click);});paint();raf=requestAnimationFrame(frame);
+ });}
+async function challenge(ctx,id,kind,title,goal){const r=await ctx.minigame({id,title,goal,help:HELP,hideClock:true,skip:false,attempts:3},play(kind));const first=r.firstResult||r;if(!r.completed)throw Error('必要操作尚未完成，請接續親自補做。');ctx.state.vars[kind]=copy({...r,firstScore:first.score,firstMax:first.max});return r;}
+const PALACE={grid:['WWWWWWWWWWW','WE,S,,C,,,W','W,xK,,C,,,W','W,x,,,C,,,W','W,,,C,,,,,W','W,,,C,,xK,W','W,,,C,,xB,W','W,,,,,,,,,W','WWWWWWWWWWW'],labels:[{x:8,y:6,text:'臥內'},{x:2,y:2,text:'帷幕'},{x:7,y:5,text:'幕'},{x:1,y:1,text:'門'}]};
+async function qiefu(ctx){const id='hd_qiefu',p=ctx.state.progress||(ctx.state.progress={});if(ctx.state.vars.qiefu?.completed)return ctx.state.vars.qiefu;
+ const r=await ZH.stealth.challenge({title:'夜入魏宮・竊符救趙',subtitle:'你扮演如姬',goal:'取符後親走返程',player:{name:'如姬',speed:3.2,art:C('ru').art},guardArt:{state:'魏',robe:'#54776c'},theme:'palace',requireItem:true,level:PALACE,rope:null,moon:{bright:6,dark:6},guards:[{name:'西廊巡哨',kind:'patrol',path:[[1,5],[3,5],[3,3]],speed:.7,range:1.8,fov:65,pause:1.8,warm:0},{name:'東廊巡哨',kind:'sweep',at:[9,3],angle:90,span:60,period:7,range:2.3,fov:55}],intro:'屏風阻擋視線，紫色帷幕可藏身。走到王臥內親取符，再返回左上出口。',winMsg:'親取兵符並返程完成，把兵符交給公子。',helpHtml:HELP},{scenarioId:SID,gameId:id,title:'夜入魏宮',goal:'親走到王臥內取符，再返回出口交符。',help:HELP,attempts:3,backdrop:SCENES.palace,getProgress:()=>copy(p['arena:'+id]||{}),saveProgress:v=>{p['arena:'+id]=copy(v);checkpoint();},getRunProgress:n=>copy(p[id+':'+n]?.model||null),saveRunProgress:(n,v)=>{p[id+':'+n]={model:copy(v),activeSeconds:v.activeSeconds};checkpoint();},attemptElapsed:n=>p[id+':'+n]?.activeSeconds||0});
+ if(!r.completed||!r.picked||!r.delivered||r.skipped)throw Error('必須親取兵符並帶回出口。');const first=r.firstResult||r;ctx.state.vars.qiefu=copy({...r,firstScore:first.score,firstMax:first.max});ctx.state.games=ctx.state.games.filter(g=>g.gameId!==id);ctx.state.games.push({gameId:id,score:r.score,maxScore:r.max,firstScore:first.score,firstMax:first.max,passed:!!r.passed,skipped:false,sec:r.sec});await checkpoint();return r;
+}
+
+const NODES={
+n_01:async ctx=>{await scene(ctx,'night','趙・邯鄲城','長平之後・秦軍圍城',['ping','mao','gong']);await ctx.chapter('第一幕　囊中之錐','先扮演毛遂');await ctx.say([{text:'邯鄲被圍，城中物資與守軍承受壓力。平原君要赴楚求援，挑十九名門客，還缺一人。'},{who:'gong',expr:'normal',text:'我在門下談堅白、白馬與馬的名實。這次赴楚的行列，由毛遂與十九人組成。'},{who:'mao',expr:'serious',text:'我願備員而行。身份低微，是否就沒有被看見的能力？'}]);ctx.unlock('person:zg_pingyuanjun');ctx.unlock('person:zg_maosui');return 'n_02';},
+n_02:async ctx=>{await ctx.say([{who:'ping',expr:'serious',text:'有才的士人，就像錐放在囊中，錐尖應很快顯露。'},{text:'平原君用一個比喻判斷人才。你要先辨比喻的意思，再判斷未被聽聞是否足以證明無才。'}]);await ctx.anchor('hd_01');return 'n_03';},
+n_03:async ctx=>{await ctx.say([{who:'ping',expr:'worried',text:'三年未曾聽到稱誦，我尚未看到你的才能。這趟不能帶你，請留下。'}]);await ctx.anchor('hd_02');ctx.unlock('idiom:maosuizijian');ctx.unlock('idiom:tuoyingerchu');ctx.add('morale',firstGood(ctx,'hd_02')?5:-2);return 'n_04';},
+n_04:async ctx=>{await scene(ctx,'hall','楚・楚廷','日中・廷議未決',['ping','chu','mao']);await ctx.say([{text:'楚廷從早談到日中，合縱之議仍未決。同行十九人請毛遂上前，毛遂按劍歷階而上。'},{who:'chu',expr:'angry',text:'胡不下！吾乃與而君言，汝何為者也？'},{who:'mao',expr:'serious',text:'先讓王正視十步之內的處境，再說楚的力量與利益。'}]);return 'n_05';},
+n_05:async ctx=>{await ctx.say([{text:'你要親選十階論點。每階四活動秒，從赴楚目的、近身情勢、楚資源，到湯與文王例證、楚受辱及合縱為楚。正確登階，失誤退階。'},{text:'六十活動秒是說服演練，不是古代廷議實際只談一分鐘。按劍不做成刺殺遊戲；以論證推動楚王答應援趙。'}]);return 'n_06';},
+n_06:async ctx=>{const r=await challenge(ctx,'hd_shibu','shibu','十步之內','親選十階論點，使楚王正視合縱對楚的利益。');ctx.add('aid',firstScore(r)*2);ctx.add('morale',firstScore(r));ctx.add('defense',-2);return 'n_07';},
+n_07:async ctx=>{await ctx.say([{who:'mao',expr:'serious',text:'楚有廣土眾兵；白起三次攻楚，鄢郢、夷陵與先人受辱。抗秦也關楚自身。'},{text:'回讀毛遂的近身威懾。分辨眼前十步與楚國兵眾，不能把一步登階寫成殺人。'}]);await ctx.anchor('hd_03');return 'n_08';},
+n_08:async ctx=>{await ctx.say([{who:'chu',expr:'surprised',text:'合縱者為楚，非為趙。這一點，我須正視。'},{text:'楚王答應定從，其後歃血定盟。盟誓以敘事呈現。平原君歸趙，承認自己未識毛遂，稱讚他的言辭力量。'}]);await ctx.anchor('hd_04');ctx.unlock('idiom:sancunzhishe');return 'n_09';},
+n_09:async ctx=>{await scene(ctx,'banquet','魏・信陵君客舍','回看待士・黃昏',['xin','hou']);await ctx.chapter('第二幕　虛左迎士','你改扮魏公子無忌');await ctx.say([{text:'現在轉到魏國，回看信陵君平日如何待士。趙國求援將至，他的門客能否有所作為，與這份關係相連。'},{who:'xin',expr:'normal',text:'士無賢不肖，皆謙而禮交之。不敢以富貴驕士。'}]);ctx.unlock('person:zg_xinlingjun');return 'n_10';},
+n_10:async ctx=>{await ctx.say([{text:'公子接納眾士，不因富貴而驕人。這是交往態度，也為平日不顯的隱士留下被看見的空間。'}]);await ctx.anchor('hd_05');ctx.add('morale',firstGood(ctx,'hd_05')?5:-2);return 'n_11';},
+n_11:async ctx=>{await scene(ctx,'market','魏・大梁夷門','白日・親迎侯嬴',['xin','hou','zhu']);await ctx.say([{text:'侯嬴七十歲，家貧，守大梁夷門；不因監門困窘而受公子財。公子設宴，空出車左尊位，親自駕車迎他。'},{who:'hou',expr:'serious',text:'我的朋友朱亥在市屠中，願公子枉車過之。'},{text:'侯嬴久與朱亥交談，暗察公子。從騎不耐，公子顏色愈和、終不變。'}]);await ctx.anchor('hd_06');ctx.unlock('person:zg_houying');return 'n_12';},
+n_12:async ctx=>{await scene(ctx,'banquet','魏・公子宴席','其後・侯嬴為上客',['xin','hou']);await ctx.say([{who:'hou',expr:'happy',text:'我久立市中，是看公子是否真能下士。公子越發恭敬，這份禮遇有實。'},{who:'xin',expr:'normal',text:'請居上坐。我願聽君所見。'},{text:'平日待士不只是收集人才卡。城門監與屠者的見識，可能在危難時成為有效的計畫。'}]);return 'n_13';},
+n_13:async ctx=>{await scene(ctx,'hall','魏・王廷','邯鄲求援・魏王畏秦',['wei','xin']);await ctx.say([{text:'魏王起初命晉鄙率十萬人救趙。秦使威脅：趙破後，先攻敢救趙者。魏王畏秦，令晉鄙停在鄴，持兩端觀望。'},{who:'xin',expr:'worried',text:'平原君屢書求救，我的姊姊也在趙。多次請王與賓客辯說，王仍不允。'},{who:'wei',expr:'serious',text:'秦兵的威脅，不能輕看。'}]);return 'n_14';},
+n_14:async ctx=>{await scene(ctx,'market','魏・夷門','去而復返・屏人問計',['xin','hou']);await ctx.say([{text:'公子原欲帶百餘乘赴秦軍，與趙俱死。侯嬴指出以肉投餒虎，無益解圍；公子引車返回問計。'},{who:'hou',expr:'serious',text:'若要援趙，先解決魏軍停留不前。如姬能接近王臥內的兵符。'}]);await ctx.anchor('hd_07');ctx.unlock('treasure:zg_hufu');return 'n_15';},
+n_15:async ctx=>{await scene(ctx,'palace','魏・王宮','夜・受託取符',['ru']);await ctx.chapter('第三幕　兵符在誰手中？','你暫時扮演如姬');await ctx.say([{text:'公子曾助如姬解父仇，如姬願相助，受請取得晉鄙兵符。史文只記出入王臥內及取符；這一關宮室、帷幕和巡哨是教學場景。'},{who:'ru',expr:'worried',text:'取到兵符，還要把它帶回公子手裡。它是符驗，不等於魏王准許公子擅取。'},{text:'點地面或方向鍵走，觀察巡哨視線。帷幕可藏身，屏風可阻視。走到臥內親取符，再返回入口交符。'}]);ctx.unlock('person:zg_ruji');return 'n_16';},
+n_16:async ctx=>{const r=await qiefu(ctx);ctx.add('aid',firstScore(r)*2);ctx.add('morale',firstScore(r));ctx.add('defense',-2);return 'n_17';},
+n_17:async ctx=>{await scene(ctx,'camp','魏・晉鄙軍營','前往鄴地・侯嬴的提醒',['xin','hou','zhu']);await ctx.say([{who:'hou',expr:'serious',text:'合符之後，晉鄙仍可能不授兵而再請王命。國之重任，將軍會有自己的判斷。'},{who:'xin',expr:'sad',text:'晉鄙是宿將，恐不聽而須殺之，所以我哭。這不是畏自己死。'},{text:'帶朱亥同行的計畫有嚴重代價，不能把合符當成一道自動合法的開門密碼。'}]);await ctx.anchor('hd_08');return 'n_18';},
+n_18:async ctx=>{await ctx.say([{who:'jin',expr:'serious',text:'今吾擁十萬之眾，屯於境上，國之重任，今單車來代之，何如哉？'},{text:'晉鄙合符仍疑，不欲交軍；朱亥殺晉鄙，公子接掌軍隊。此事平實記述，不做擊殺挑戰，也不給暴力加分。'}]);return 'n_19';},
+n_19:async ctx=>{await scene(ctx,'room','趙・邯鄲客舍','同一危局・帝秦之議',['lu','yuan','ping']);await ctx.chapter('間幕　誰來決定天下的名分？','你暫扮魯仲連');await ctx.say([{text:'城中同時承受另一個壓力。魏使新垣衍提議尊秦昭王為帝，認為秦或可罷兵。這是他提出的主張，不是已獲保證的停戰條件。'},{who:'yuan',expr:'serious',text:'若尊秦為帝，是否可免眼前的圍困？'},{who:'lu',expr:'angry',text:'我不能接受秦的統治方式與價值。名分一變，權力後果也會跟著變。'}]);ctx.unlock('person:zg_luzhonglian');await ctx.anchor('hd_09');ctx.unlock('idiom:yibudiqin');return 'n_20';},
+n_20:async ctx=>{const v=await choice(ctx,'debate',{title:'你是魯仲連，先從哪個後果切入？',text:'三個方向皆可；親選後看它如何連到「不帝秦」。不以立場本身計分。',options:[{label:'帝秦後，諸侯用人與權力受制。',value:'power'},{label:'秦對禮義與士民的方式。',value:'people'},{label:'眼前求停戰，能否忽略長期代價？',value:'cost'}]});await ctx.say([{who:'lu',expr:'serious',text:{power:'若秦為帝，還可能變易諸侯大臣；名分不是空名，會影響誰能主政。',people:'秦棄禮義而上首功，權使其士、虜使其民。我從統治方式與士民處境反對臣服。',cost:'尊帝只是新垣衍期待罷兵的方案，不能以未保證的眼前緩解，忽略被支配的代價。'}[v]},{who:'yuan',expr:'surprised',text:'我聞先生之說，願不復言帝秦。'},{text:'魯仲連促使新垣衍改變主張；圍城真正解除，仍須守軍抵抗與楚魏援兵，不能寫成辯論立刻讓全軍消失。'}]);return 'n_21';},
+n_21:async ctx=>{await scene(ctx,'camp','魏・鄴地整軍','合符之後・先勒兵下令',['xin','zhu']);await ctx.chapter('第四幕　八萬選兵，從軍令開始','回到信陵君');await ctx.say([{who:'xin',expr:'serious',text:'父子俱在軍中，父歸；兄弟俱在軍中，兄歸；獨子無兄弟，歸養。'},{text:'先下三道軍令，照顧家庭責任。原文記由十萬軍中得選兵八萬，再進兵擊秦；不是八萬出發後又沿途遣返成另一個史實人數。'}]);return 'n_22';},
+n_22:async ctx=>{await scene(ctx,'road','魏・援趙之路','白日・邯鄲城防仍承壓',['xin']);await ctx.say([{text:'親選三道軍令，再選三段路與三次風險應對，每段親下五次前進令。大道快而暴露，山路慢有掩護，渡河須核水情。'},{text:'七十五活動秒、行程與城防是推演量表。趙守軍在等待援軍，也在出力；路線不是史文考證地圖。'}]);return 'n_23';},
+n_23:async ctx=>{const r=await challenge(ctx,'hd_yuanjun','yuanjun','援軍北上','親下三道選兵令、三次風險應對，帶八萬選兵走完三段。');ctx.add('aid',firstScore(r)*3);ctx.add('defense',(r.firstResult||r).defense-ctx.meter('defense'));ctx.add('morale',(r.firstResult||r).morale-50);return 'n_24';},
+n_24:async ctx=>{await scene(ctx,'battlefield','趙・邯鄲城外','黃昏・援軍至，秦軍解去',['xin','ping']);await ctx.say([{text:'城內趙人守戰，平原君接受李同之議，散財動員；城外楚魏軍至。魏公子進兵擊秦，秦軍解去，邯鄲得救，趙國得存。'},{who:'ping',expr:'happy',text:'迎公子於界，這場救援不是任何一人獨力完成。'},{text:'本局行軍評語依首次紀錄而異，歷史仍接到解圍，不把答錯變成改寫趙亡。'}]);ctx.unlock('idiom:qiefujiuzhao');return 'n_25';},
+n_25:async ctx=>{await scene(ctx,'banquet','趙・解圍後的相聚','功勞與代價',['xin','shi']);await ctx.say([{who:'shi',expr:'serious',text:'毛遂使楚定盟，侯嬴提出計畫，如姬取符，朱亥相助，公子整軍；楚援與趙人守戰共同促成解圍。'},{who:'xin',expr:'worried',text:'有救趙之功，也有竊符矯令、奪兵與晉鄙之死的代價。功與責不能互相抹去。'}]);return 'n_26';},
+n_26:async ctx=>{await scene(ctx,'room','趙・平原君客舍','解圍之後・魯仲連拒千金',['ping','lu']);await ctx.say([{who:'ping',expr:'happy',text:'先生排難解紛，願以千金為壽。'},{who:'lu',expr:'serious',text:'我願為人解難而無所取；若以報酬為求，是此事我所不為。'},{text:'拒酬發生在秦軍解去之後。這表現魯仲連自己的高節，不由此否定所有有償勞動。'}]);await ctx.anchor('hd_10');return 'n_27';},
+n_27:async ctx=>{await scene(ctx,'hall','魏・王廷與趙國的兩端','解圍後・魏王怒公子',['wei','xin']);await ctx.say([{who:'wei',expr:'angry',text:'兵符被盜，王令被矯，晉鄙被殺，這份責任仍在。'},{text:'公子知魏王之怒，使將率軍歸魏，自己與客留趙。趙王與平原君感其救趙，欲以五城相封；公子一時有自功之色。'}]);return 'n_28';},
+n_28:async ctx=>{await scene(ctx,'banquet','趙・公子客舍','門客進諫',['xin','ke']);await ctx.say([{who:'ke',expr:'serious',text:'別人對你的恩，不可忘；自己對人的功，願你不自居。於趙有功，於魏未為忠，也須記得。'}]);await ctx.anchor('hd_11');await ctx.say([{who:'xin',expr:'sad',text:'我立自責，不應因救趙便自驕。'},{text:'趙王親迎，公子辭讓，自言負魏。學習下士，也包含能聽門客的提醒。'}]);return 'n_29';},
+n_29:async ctx=>{await scene(ctx,'academy','史官・魏公子列傳','夜・回看夷門與邯鄲',['shi','xin']);await ctx.say([{who:'shi',expr:'normal',text:'太史公過大梁之墟，問夷門，說信陵君不恥下交，名聲有其根據。'},{text:'從車左的空位，到救趙的計畫，請把待士態度與實際作為連在一起。'}]);await ctx.anchor('hd_12');await choice(ctx,'reflection',{title:'你的魏公子列傳，先追問哪件事？',text:'立場不計分；以一段原文、首次判斷與一次親自操作支持。',options:[{label:'毛遂自薦與謙虛，可怎樣並存？',value:'recommend'},{label:'竊符救趙對魏王算忠嗎？',value:'loyalty'},{label:'魯仲連的無所取，今天可能嗎？',value:'reward'}]});return 'n_30';},
+n_30:async ctx=>{const key=ctx.meter('defense')<15?'bad':ctx.meter('defense')>=40&&ctx.meter('morale')>=70?'great':'good';ctx.end({key});return null;}
+};
+const ENDINGS={great:{key:'great',title:'邯鄲解圍',good:true,text:'本局保住城防、士氣較佳。以原文與親做的論點、取符返程、選兵行軍，說明多人如何合力；歷史仍為楚魏救趙、秦軍解去。'},good:{key:'good',title:'竊符救趙',good:true,text:'三項必要體驗已親自完成。回看首次判斷與取符、軍令、行程，找出還可改進的處理；不要以成功抹去矯令的責任。'},bad:{key:'bad',title:'慘勝',good:false,text:'本局城防偏低，評語提醒救援時效與行程代價。補做已完成，史實仍接到邯鄲解圍；這是本局推演評語，不宣稱史文另有慘勝結局。'}};
+function payload(s,ending){const scores=['shibu','qiefu','yuanjun'].map(k=>s.vars[k].firstScore);return{scenarioId:SID,chapterVersion:VERSION,runId:s.vars.runId,mode:MODE,faction:'魏',country:'魏',role:'信陵君',roleKind:'liezhuan',bioTitle:'魏公子列傳',bioOpening:'魏公子無忌者，魏昭王少子而魏安釐王異母弟也。',ending,scoreStrategy:Math.round(scores.reduce((a,b)=>a+b,0)/30*100),scoreVirtue:Math.round(s.anchors.filter(a=>a.correct).length/12*100),turns:s.steps,durationSec:Math.min(5400,Math.round((Date.now()-s.startedAt)/1000)),deeds:['扮毛遂親選十階論點，從楚自身利益促成合縱；首次'+scores[0]+'分。','對讀虛左迎侯生、不敢以富貴驕士，理解待士與計畫的關係。','扮如姬親走王臥內取符，再返回出口交符；首次'+scores[1]+'分。','扮信陵君親下三道選兵令、三次風險應對、十五次前進；首次'+scores[2]+'分。','扮魯仲連辨帝秦後果，回讀無所取；對讀救趙之功與於魏之責。'],anchors:copy(s.anchors),games:copy(s.games),codex:s.codex.slice(),opener:'遊戲史官評語（自擬）：余思夷門虛左之事，位尊而能下交，故抱關屠者亦得盡其才。邯鄲之救，非一士一言之功；楚定從、魏發兵、趙守戰，皆在其間。竊符能解困，矯令亦負責；願不忘人恩，不自居功，以原文辨名實，以親行知取捨。',prompts:['毛遂自薦與謙虛矛盾嗎？對讀錐處囊中與請處囊中，用一個親選論點說明。','竊符救趙對魏王算忠嗎？對讀將在外與門客之諫，結合取符返程或軍令操作，分辨趙之功、魏之責。','魯仲連無所取的高節，今天還可能嗎？對讀拒千金的原文，說明其個人立場與有償勞動的差別。'],experience:{firstAnchors:copy(s.vars.firstAnchors),shibu:copy(s.vars.shibu),qiefu:copy(s.vars.qiefu),yuanjun:copy(s.vars.yuanjun),decisions:copy(s.vars.choices)}};}
+async function onEnd(r,ctx){const s=ctx.state;if(ORDER.some(id=>!s.anchors.some(a=>a.anchorId===id))||['hd_shibu','hd_qiefu','hd_yuanjun'].some(id=>!s.games.some(g=>g.gameId===id&&!g.skipped))||['shibu','qiefu','yuanjun'].some(k=>!s.vars[k]?.completed)||CODEX_KEYS.some(id=>!s.codex.includes(id)))throw Error('必要體驗或對讀尚未完成，請接續本話。');const ending=ENDINGS[r.key]||ENDINGS.good,p=s.vars.finishPayload||payload(s,ending);await ctx.banner(ending.title,'魏公子列傳・本局評語');await ctx.say([{text:ending.text},{who:'shi',expr:'serious',text:'到結算寫反思，把原文、首次判斷和親自操作放在一起。'}]);if(s.vars.submitted){ZH.session.set('result:'+SID,p);ZH.go('result',{s:SID});return;}s.vars.finishPayload=p;await checkpoint();await journal.flush();ZH.finishScenario(p);s.vars.submitted=true;await checkpoint();}
+async function start(saved){if(loading)return;loading=true;ROOT.innerHTML='';game=ZH.story.create(ROOT,{id:SID,mode:MODE,title:'邯鄲之圍',subtitle:'楚廷十步、魏宮一符、八萬選兵',seed:Number(params.seed)||0,start:'n_01',characters:CHARACTERS,scenes:SCENES,nodes:NODES,meters:[{id:'defense',label:'邯鄲城防',icon:'shield',max:100,start:50},{id:'aid',label:'援軍',icon:'people',max:100,start:0},{id:'morale',label:'士氣',icon:'sword',max:100,start:50}],help:HELP,anchorOrder:ORDER,anchorTotal:12,anchorRunner,snapshot,save,onProgress:save,onEnd,initState:()=>({vars:{schema:SCHEMA,runId:'hd_'+Date.now().toString(36)+'_'+crypto.getRandomValues(new Uint32Array(1))[0].toString(36),firstAnchors:{},choices:{}}})});window.__ep=game;loading=false;game.start(saved||null);}
+function title(saved){const compatible=saved?.vars?.schema===SCHEMA,st=compatible?saved:null;ROOT.innerHTML='<main class="hd-title"><div class="hd-title-bar"><span class="hd-kicker">戰國篇・第十二話</span><button class="zh-btn zh-btn--quiet" data-home>回首頁</button></div><header><h1>邯鄲之圍</h1><p class="hd-subtitle">一個空位、一枚兵符，眾人合力的一場救援</p></header><div class="hd-title-scene">'+panorama('battlefield',['mao','xin','ru'])+'</div><section class="hd-start"><div class="hd-seal">援</div><div><h2>毛遂 → 如姬 → 信陵君・你・說楚、取符與援趙</h2><p class="hd-note">古典介面、Q版人形，間幕扮魯仲連，三項必要體驗。</p></div><div class="hd-start-actions">'+(st?'<button class="zh-btn zh-btn--primary" data-continue>接續這一局</button>':'')+'<button class="zh-btn '+(st?'zh-btn--quiet':'zh-btn--primary')+'" data-new>'+(st?'重新開始':'開始遊戲')+'</button></div></section><section class="hd-points"><div><b>十步之內</b><p class="hd-note">十階廷議，親選資源、受辱與合縱利益的論點。</p></div><div><b>夜入魏宮</b><p class="hd-note">巡哨、屏風與帷幕；親取兵符，返回出口交符。</p></div><div><b>援軍北上</b><p class="hd-note">下選兵令，辨三段路的風險，帶八萬選兵援趙。</p></div></section>'+(saved&&!compatible?'<p class="hd-follow">偵測到不同版本進度。新版另開一局，先前登錄的成績與史冊保留。</p>':'')+'<p class="hd-note">預留約20～30分鐘，十二段原文對讀。卡關可親自補做，首次紀錄保留。沿用學校登入、存檔與排行榜。 v1.1.0</p></main>';ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');const cont=ROOT.querySelector('[data-continue]');if(cont)cont.onclick=()=>start(st);ROOT.querySelector('[data-new]').onclick=async()=>{if(loading)return;if(saved){const ok=await ZH.modal({title:'另開一局？',body:'<p>此話未完成的進度會清除；已登錄的成績與史冊保留。</p>',actions:[{label:'取消',value:false,kind:'quiet'},{label:'重新開始',value:true,kind:'primary'}]});if(!ok)return;}await journal.clear();start(null);};}
+ZH.ready(async()=>{if(!ZH.story?.createJournal||!ZH.arena||!window.ART||!ZH.stealth?.challenge){ROOT.innerHTML='<main class="hd-title"><h1>共用核心尚未齊備</h1><p>請使用目前的 Eng_Story、Art_kit 與挑戰賽共用檔。</p><button class="zh-btn zh-btn--primary" data-home>回首頁</button></main>';ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');return;}journal=ZH.story.createJournal({id:SID,mode:MODE,scope:ZH.user?.email||window.ZH_BOOT.user?.email||'guest',remote:s=>ZH.save(SID,MODE,{engine:s,chapterVersion:VERSION})});ZH.loading(true,'展開邯鄲之圍的竹簡');try{const [saved]=await Promise.all([load(),ZH.anchor.load(SID),ZH.codex.init()]);if(ORDER.some(id=>!ZH.anchor.get(SID,id)))throw Error('第十二話題庫尚未加入，請一併放入 S_zg12_handan_data，並清除題庫快取後部署。');ZH.loading(false);if(String(params.mode||'')===MODE&&saved?.vars?.schema===SCHEMA)start(saved);else title(saved);}catch(e){ZH.loading(false);ROOT.innerHTML='<main class="hd-title"><h1>載入尚未完成</h1><p>'+E(e.message||String(e))+'</p><button class="zh-btn zh-btn--primary" data-reload>重新載入</button></main>';ROOT.querySelector('[data-reload]').onclick=()=>location.reload();}});
+})();
+</script><script>ZH.ready(function(){ZH.textplay?.install("S_zg12_handan",null);});</script>
+</body></html>

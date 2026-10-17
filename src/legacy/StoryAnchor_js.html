@@ -1,0 +1,35 @@
+<!-- Re:縱橫鼎業｜StoryAnchor_js.html v0.1.0（2026-10-14）
+     在既有 Anchor_js 之後載入；只替換讀取與查找，保留原有作答、技能與紀錄介面。 -->
+<script>
+(function (ZH) {
+  'use strict';
+  if (!ZH.anchor || ZH.anchor.storyGuardVersion) return;
+  const store = Object.create(null), pending = Object.create(null);
+  ZH.anchor.storyGuardVersion = '0.1.0';
+  ZH.anchor.load = async function (scenarioId, options) {
+    const sid = String(scenarioId || ''), opt = options || {};
+    const required = Array.isArray(opt.required) ? opt.required : [];
+    const complete = list => Array.isArray(list) && list.length > 0 && required.every(id => list.some(a => a.id === id));
+    if (!opt.force && complete(store[sid])) return store[sid];
+    if (pending[sid]) {
+      await pending[sid];
+      if (!opt.force && complete(store[sid])) return store[sid];
+    }
+    const request = Promise.resolve().then(() => ZH.call('api_getStoryAnchors', sid, required)).then(res => {
+      if (!res || !res.ok || !Array.isArray(res.anchors)) throw new Error(res && res.msg || '原文題庫尚未就緒，請確認 StoryGuard.gs 已建立並部署新版本。');
+      const list = res.anchors.filter(a => a && a.scenarioId === sid);
+      if (required.some(id => !list.some(a => a.id === id))) throw new Error('原文題庫缺少必要題目，請重新讀取或請管理者檢查。');
+      // 空題庫不是完成載入；下一次呼叫仍會向伺服器讀取。
+      if (list.length) store[sid] = list; else delete store[sid];
+      return list;
+    }).catch(err => { delete store[sid]; throw err; }).finally(() => {
+      if (pending[sid] === request) delete pending[sid];
+    });
+    pending[sid] = request;
+    return request;
+  };
+  ZH.anchor.get = function (scenarioId, anchorId) {
+    return (store[scenarioId] || []).find(a => a.id === anchorId) || null;
+  };
+})(window.ZH);
+</script>

@@ -1,0 +1,60 @@
+<!-- 天下通用規則 v0.1.0（2026-10-12）。先載入 Core_js，再載入本檔與 Eng_World。
+     新卡只需新增 cards 資料；sources 填既有劇本代碼，effects 使用下列受支援操作。
+     無動態程式碼、無 eval。數值是教學遊戲參數，可在此統一調整。 -->
+<script>
+(function (ZH) {
+  'use strict';
+  ZH.WORLD_RULES = {
+    version: '0.1.0',
+    // 原企劃的「謀略與辯才 × 利害」架構；國勢是本次新增的第三因子。
+    // 五維人物尚無獨立辯才欄，預設以謀、德、特性與技能換算；戰役 chars 的第12欄可加 {speech:85} 覆寫。
+    speech: {
+      wisdomWeight: .5, rhetoricWeight: .5, rhetoricWisdom: .55, rhetoricVirtue: .45,
+      traits: { bianshi:18, yunchou:15, qiji:10 }, skill:12,
+      relationWeight:.003, interestMin:.25, interestMax:1.15, nationMin:.7, nationMax:1.3,
+      nationTroops:.12, nationCities:.08, nationFame:.002, cap:95,
+      interests: { ally:.66, truce:.70, submit:.40, split:.55, hostage:.78, passage:.70 },
+      offers: [
+        {id:'plain',name:'共議利害',text:'不附贈資源，依雙方關係與國勢交涉。',gold:0,food:0,interest:0},
+        {id:'gift',name:'厚禮通聘',text:'送金100給對方；無論成敗都已送達。',gold:100,food:0,interest:.16},
+        {id:'grain',name:'糧援結好',text:'送糧300給對方；無論成敗都已送達。',gold:0,food:300,interest:.20}
+      ]
+    },
+    nation: { majorCities:4, establishedCities:2, majors:{cq:['qi','jin','chu','qin'],zg:['qin','qi','chu','yan','han','wei','zhao'],ch:['han','chu']}, meetingCooldown:6, migrationCooldown:12, hostageMonths:12, reformMonths:6 },
+    reforms: [
+      {id:'fields',name:'修渠勸農',text:'糧產 +12%；安定後，各城民心 +4。',fx:{food:.12},once:{mx:4}},
+      {id:'markets',name:'整頓市易',text:'金收入 +12%；安定後，各城商業 +5。',fx:{gold:.12},once:{co:5}},
+      {id:'talent',name:'禮賢通聘',text:'交涉辯才換算 +6，登用成功率 +6；安定後名望 +4。',fx:{dip:6,recruit:6},once:{fame:4}},
+      {id:'military',name:'軍功整編',text:'大國可行：攻擊力 +8%、徵兵效果 +15%；安定後民心 +2。',major:true,fx:{atk:.08,draft:.15},once:{mx:2}}
+    ],
+    // 舊卡的效果模板也移到資料層，保持原 id 與存檔相容。
+    templates: {
+      diplomacy:{target:'country',effects:[{op:'relation',value:18}]},
+      admin:{target:'self',effects:[{op:'admin',months:6,mx:12}]},
+      armyBuff:{target:'army',effects:[{op:'armyBuff',atk:'@atk',months:'@months',noRetreat:'@noRetreat',outnumbered:'@outnumbered'}]},
+      stealth:{target:'army',effects:[{op:'armyBuff',stealth:true,surprise:true,months:'@months'}]},
+      uprising:{target:'enemyCity',maxMx:60,effects:[{op:'uprising',troopLoss:.5,mxLoss:15,relation:-20}]},
+      morale:{target:'enemyForce',effects:[{op:'forceLoss',morale:.5,troops:.2,defence:.3}]},
+      discord:{target:'enemyPerson',effects:[{op:'discord',loyalty:50,threshold:25,chance:.65,joinChance:.5}]},
+      escape:{target:'passive',effects:[{op:'escape',chance:1,retain:.3}]}
+    },
+    cards: [
+      {id:'cw_chihan',name:'唇亡齒寒',glyph:'唇',kind:'diplomacy',worlds:['cq','zg','ch'],target:'country',
+        desc:'選一國：關係 +10；對該國的結盟、停戰交涉，利害係數 +0.18，持續六個月。',note:'讀懂彼此依存，爭取共同安全；仍須派使者交涉。',
+        sources:['S_cq04_chonger','S_zg06_hezong','S_ch06_xingyang'],effects:[{op:'relation',value:10},{op:'speechSupport',value:.18,months:6,kinds:['ally','truce']}]},
+      {id:'cw_jiatu',name:'假途滅虢',glyph:'途',kind:'passage',worlds:['cq','zg','ch'],target:'passageCountry',
+        desc:'派使者向一國請求六個月借道。獲准後，可穿過其據點；借道不等於奪城。',note:'借道仍需交涉。向借道國動兵將破約，名望 −10、關係 −40。',
+        sources:['S_cq04_chonger','S_zg09_mengchang','S_ch05_sanqin'],effects:[{op:'passage',months:6}]},
+      {id:'cw_sanshe',name:'退避三舍',glyph:'舍',kind:'armyBuff',worlds:['cq','zg','ch'],target:'army',atk:1.20,months:3,
+        desc:'選一支軍隊：三個月內攻擊力 +20%，保留撤退選擇。',note:'以退讓爭取後續主動；不是按卡就自動贏得城濮。',
+        sources:['S_cq07_chengpu','S_zg10_changping','S_ch07_hanxin'],effects:[{op:'armyBuff',atk:1.20,months:3}]},
+      {id:'cw_weizhao',name:'圍魏救趙',glyph:'援',kind:'armyBuff',worlds:['cq','zg','ch'],target:'army',atk:1.25,months:3,
+        desc:'選一支軍隊：三個月內攻擊力 +25%；自行選擇敵方薄弱處出兵。',note:'調動敵軍以解友軍之圍，仍需考慮道路與兵糧。',
+        sources:['S_zg05_maling','S_cq12_jinchu','S_ch03_julu'],effects:[{op:'armyBuff',atk:1.25,months:3}]},
+      {id:'cw_yuanjiao',name:'遠交近攻',glyph:'遠',kind:'diplomacy',worlds:['cq','zg','ch'],target:'distantCountry',
+        desc:'選不與你接壤的遠國：關係 +15；結盟利害係數 +0.22，持續六個月。',note:'遠方合作不會自動變成同盟，也不會替你攻打近鄰。',
+        sources:['S_zg06_hezong','S_zg13_tongyi','S_cq08_weizheng','S_ch04_hongmen'],effects:[{op:'relation',value:15},{op:'speechSupport',value:.22,months:6,kinds:['ally']}]}
+    ]
+  };
+})(window.ZH);
+</script>

@@ -1,0 +1,94 @@
+<!-- SpringModels v1.2.0：情境推演模型。與原文題、正式首次成績分開；所有變動保存在原章節存檔。 -->
+<script>
+(function(global){
+ 'use strict';
+ const copy=x=>JSON.parse(JSON.stringify(x)),clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),kinds=['route','formation','network','evidence','diplomacy','music','hydraulic','policy','convoy','crossing','council'];
+ function random(s,n){let x=(s.seed+Math.imul(n+1,2654435761))>>>0;x^=x>>>16;x=Math.imul(x,2246822507);x^=x>>>13;return(x>>>0)/4294967296;}
+ function adjacent(a,b,w=3){return Math.abs(a%w-b%w)+Math.abs(Math.floor(a/w)-Math.floor(b/w))===1;}
+ function create(config,saved,seed){
+  if(!config||!kinds.includes(config.kind))throw Error('場景玩法尚未登記。');
+  const s=saved&&saved.v===1&&saved.kind===config.kind?copy(saved):{v:1,kind:config.kind,seed:(Number(seed)||4127)>>>0,turn:0,phase:'brief',supply:8,trust:5,cohesion:5,reports:[],actions:[],local:null};
+  if(!Array.isArray(s.actions)||!Array.isArray(s.reports)||s.turn<0||s.turn>3)throw Error('場景存檔格式不正確。');
+  const round=()=>config.rounds[Math.min(2,s.turn)],record=(action,data={})=>{s.actions.push({turn:s.turn,action,...data});if(s.actions.length>240)s.actions.splice(0,s.actions.length-240);};
+  function setup(){
+   const n=s.turn,r=round();
+   if(s.kind==='route')s.local={at:3,visited:[3],intel:0,steps:0,blocked:[4,1,7][n],hazard:[5,4,2][n],watch:[0,6,0][n],goal:5};
+   if(s.kind==='formation')s.local={slots:[null,null,null],selected:0,order:'hold',scouted:false,threat:(Math.floor(random(s,n)*3)+n)%3};
+   if(s.kind==='network')s.local={built:[4],budget:6+Math.min(2,s.carry||0),blocked:[6,5,10][n],targets:[3,11],optional:8};
+   if(s.kind==='evidence')s.local={seen:[],selected:[],budget:4,records:[
+    {name:r.sources?.[0]||'當值者',source:'親見紀錄',event:'當日',group:'a',reliable:true,text:r.clues?.[0]||'我在交接時親眼點過，數量與現場相合。'},
+    {name:r.sources?.[1]||'交接簿',source:'另一份獨立記錄',event:'當日',group:'b',reliable:true,text:r.clues?.[1]||'這份交接簿由另一人留下，日期、地點與物件可以逐項核對。'},
+    {name:'巷口傳聞',source:'轉述',event:'日期不明',group:'c',reliable:false,text:'只聽人說情勢非常危急，沒有說何時、何地，也沒有原始記錄。'},
+    {name:'抄寫的簡牘',source:'抄自第一份記錄',event:'當日',group:'a',reliable:true,text:'文字與第一份記錄相同，來源也是同一人；不能算另一份獨立證據。'},
+    {name:'舊年文書',source:'親見紀錄',event:'舊年',group:'d',reliable:true,text:'這份記錄有完整來歷，但寫的是去年同一地點，尚不能證明今日情況。'}]};
+   if(s.kind==='evidence'){const a=s.local.records;for(let i=a.length-1;i>0;i--){const j=Math.floor(random(s,n*11+i)* (i+1));[a[i],a[j]]=[a[j],a[i]];}}
+   if(s.kind==='diplomacy')s.local={offers:[0,0,0],heard:false,need:(n+Math.floor(random(s,99)*3))%3,pledge:false};
+   if(s.kind==='music')s.local={notes:[],target:[[0,2,4,2],[1,3,2,0],[4,2,1,0]][n]};
+   if(s.kind==='hydraulic')s.local={gates:[0,0,0],operated:false,inflow:r.inflow||[9,11,10][n],limits:r.waterNeed||[2,4,1,2,2]};
+   if(s.kind==='policy')s.local={allocation:[0,0,0],budget:5+Math.min(2,s.reserve||0),needs:copy(r.needs||[[2,2,1],[3,2,1],[2,2,2]][n])};
+   if(s.kind==='convoy')s.local={at:0,goal:11,blocked:[5,6,9][n],danger:[6,9,5][n],rest:[4,2,10][n],village:[3,8,7][n],cargo:5+Math.min(2,s.cargoReserve||0),mode:'guard',scouted:false,visited:[0],steps:0};
+   if(s.kind==='crossing')s.local={cargo:[{name:'先遣',weight:1},{name:'輜重',weight:2},{name:'接應',weight:1},{name:'糧袋',weight:2},{name:'傷者',weight:1},{name:'藥箱',weight:1}],aboard:[],arrived:[],damaged:[],trip:0,tide:(Math.floor(random(s,n+51)*3)+n)%3,waits:0,care:false,rough:0,last:'先安排這一船的人員與載貨。'};
+   if(s.kind==='council')s.local={people:(config.people||['來使','守門者','隨行者','軍吏','傳令者']).map((name,i)=>({name,need:(i+n+Math.floor(random(s,n+81)*3))%3})),selected:0,revealed:[],support:[],attempts:0,pressure:0,last:'選一人觀察，再決定如何說明。'};
+   s.phase='play';
+  }
+  function report(quality,text){
+   const q=clamp(Math.round(quality),0,10);s.supply=clamp(s.supply,0,12);s.trust=clamp(s.trust,0,12);s.cohesion=clamp(s.cohesion,0,12);s.reports.push({turn:s.turn,title:round().title,quality:q,text,supply:s.supply,trust:s.trust,cohesion:s.cohesion});
+   s.phase='report';record('resolve',{quality:q});
+  }
+  const model={s,config,round,snapshot:()=>copy(s),begin(){if(s.phase!=='brief')return false;record('begin');setup();return true;},next(){if(s.phase!=='report')return false;record('readReport');s.turn++;if(s.turn===3){s.phase='done';s.local=null;}else setup();return true;},
+   move(to){const l=s.local;if(s.phase!=='play'||s.kind!=='route'||!Number.isInteger(to)||to<0||to>8||to===l.blocked||!adjacent(l.at,to)||l.steps>=18)return false;
+    l.at=to;l.steps++;l.visited.push(to);s.supply=Math.max(0,s.supply-.25);
+    if(to===l.watch&&!l.scouted){l.scouted=true;l.intel++;s.cohesion=Math.min(12,s.cohesion+1);}
+    if(to===l.hazard){if(l.intel){l.intel--;l.safe=true;}else{s.cohesion=Math.max(0,s.cohesion-1);s.supply=Math.max(0,s.supply-.5);}}
+    record('move',{to});if(to===l.goal){const q=clamp(10-(l.steps-4)-Number(!l.scouted)*2-Number(!s.supply)*2,1,10);s.trust+=Number(l.scouted);report(q,l.scouted?'先察看再行動，途中有足夠線索應對變化。':'抵達了目的地；下次可比較沿途觀察帶來的收穫。');}else if(l.steps===18)report(2,'隊伍已花太多力氣繞行，先在安全處會合，再處理下一段。');return true;},
+   select(unit){if(s.phase!=='play'||s.kind!=='formation'||!Number.isInteger(unit)||unit<0||unit>2)return false;s.local.selected=unit;return true;},
+   place(slot,unit=s.local?.selected){const l=s.local;if(s.phase!=='play'||s.kind!=='formation'||!Number.isInteger(slot)||slot<0||slot>2||!Number.isInteger(unit)||unit<0||unit>2)return false;const old=l.slots.indexOf(unit),displaced=l.slots[slot];if(old>=0)l.slots[old]=displaced;l.slots[slot]=unit;record('place',{unit,slot});return true;},
+   scout(){const l=s.local;if(s.phase!=='play'||s.kind!=='formation'||l.scouted||s.supply<1)return false;s.supply--;l.scouted=true;record('scout');return true;},
+   order(value){if(s.phase!=='play'||s.kind!=='formation'||!['hold','advance','support'].includes(value))return false;s.local.order=value;record('order',{value});return true;},
+   build(index){const l=s.local;if(s.phase!=='play'||s.kind!=='network'||!Number.isInteger(index)||index<0||index>11||index===l.blocked||index===4)return false;
+    if(l.built.includes(index)){const kept=l.built.filter(x=>x!==index),seen=new Set([4]),q=[4];while(q.length){const a=q.shift();kept.forEach(b=>{if(!seen.has(b)&&adjacent(a,b,4)){seen.add(b);q.push(b);}});}if(seen.size!==kept.length)return false;l.built=kept;}
+    else{if(l.built.length-1>=l.budget||!l.built.some(x=>adjacent(x,index,4)))return false;l.built.push(index);}record('build',{index});return true;},
+   resetNetwork(){if(s.phase!=='play'||s.kind!=='network')return false;s.local.built=[4];record('redraw');return true;},
+   inspect(index){const l=s.local;if(s.phase!=='play'||s.kind!=='evidence'||!Number.isInteger(index)||index<0||index>4)return false;if(!l.seen.includes(index)){if(l.seen.length>=l.budget)return false;l.seen.push(index);record('inspect',{index});}l.active=index;return true;},
+   evidence(index){const l=s.local;if(s.phase!=='play'||s.kind!=='evidence'||!l.seen.includes(index))return false;if(l.selected.includes(index))l.selected=l.selected.filter(x=>x!==index);else if(l.selected.length<2)l.selected.push(index);else return false;record('evidence',{index});return true;},
+   hear(){const l=s.local;if(s.phase!=='play'||s.kind!=='diplomacy'||l.heard||s.supply<1)return false;s.supply--;l.heard=true;record('hear');return true;},
+   offer(index,delta){const l=s.local;if(s.phase!=='play'||s.kind!=='diplomacy'||!Number.isInteger(index)||index<0||index>2||![1,-1].includes(delta))return false;const total=l.offers.reduce((a,b)=>a+b,0);if(delta===1&&(total>=4||total>=Math.floor(s.supply)))return false;if(delta===-1&&!l.offers[index])return false;l.offers[index]+=delta;record('offer',{index,delta});return true;},
+   pledge(){if(s.phase!=='play'||s.kind!=='diplomacy'||s.turn===2)return false;s.local.pledge=!s.local.pledge;record('pledge',{on:s.local.pledge});return true;},
+   tap(note){if(s.phase!=='play'||s.kind!=='music'||!Number.isInteger(note)||note<0||note>4||s.local.notes.length>=4)return false;s.local.notes.push(note);record('tap',{note});return true;},
+   undo(){if(s.phase!=='play'||s.kind!=='music'||!s.local.notes.length)return false;s.local.notes.pop();record('undo');return true;},
+   water(){if(s.kind!=='hydraulic'||!s.local)return null;const l=s.local;let remaining=l.inflow;const field=Math.min(remaining,l.gates[0]*2);remaining-=field;const town=Math.min(remaining,l.gates[1]*2);remaining-=town;const spill=Math.min(remaining,l.gates[2]*3);remaining-=spill;const [fmin,fmax,tmin,tmax,safe]=l.limits;return{field,town,spill,level:remaining,risk:Math.max(0,fmin-field)+Math.max(0,field-fmax)+Math.max(0,tmin-town)+Math.max(0,town-tmax)+Math.max(0,remaining-safe)};},
+   gate(index,delta){if(s.phase!=='play'||s.kind!=='hydraulic'||!Number.isInteger(index)||index<0||index>2||![1,-1].includes(delta))return false;const old=s.local.gates[index],next=old+delta;if(next<0||next>4)return false;s.local.gates[index]=next;s.local.operated=true;record('gate',{index,delta});return true;},
+   allocate(index,delta){if(s.phase!=='play'||s.kind!=='policy'||!Number.isInteger(index)||index<0||index>2||![1,-1].includes(delta))return false;const l=s.local;if(delta===1&&l.allocation.reduce((a,b)=>a+b,0)>=l.budget||delta===-1&&l.allocation[index]===0)return false;l.allocation[index]+=delta;record('allocate',{index,delta});return true;},
+   convoyMode(value){if(s.phase!=='play'||s.kind!=='convoy'||s.local.steps||!['guard','swift'].includes(value))return false;s.local.mode=value;record('convoyMode',{value});return true;},
+   convoyScout(){if(s.phase!=='play'||s.kind!=='convoy'||s.local.scouted||s.supply<1)return false;s.supply--;s.local.scouted=true;record('convoyScout');return true;},
+   convoyMove(to){const l=s.local;if(s.phase!=='play'||s.kind!=='convoy'||!Number.isInteger(to)||to<0||to>11||to===l.blocked||!adjacent(l.at,to,4)||l.steps>=20)return false;const fresh=!l.visited.includes(to);l.at=to;l.steps++;l.visited.push(to);s.supply=Math.max(0,s.supply-(l.mode==='guard'?.35:.2));
+    if(fresh&&to===l.danger){const loss=Math.max(0,(l.mode==='guard'?1:2)-Number(l.scouted));l.cargo=Math.max(0,l.cargo-loss);l.last=loss?'路況造成載貨損失 '+loss+' 份。':'先前的察看與穩護，化解了這次風險。';}
+    else if(fresh&&to===l.rest){l.cargo=Math.min(7,l.cargo+1);l.last='在休整點補回一份載貨。';}
+    else if(fresh&&to===l.village&&l.cargo){l.cargo--;s.trust+=2;l.helped=true;l.last='拿出一份載貨接濟沿途聚落，信任增加。';}else l.last='車隊向前移動一格。';
+    if(!s.supply&&!l.exhausted){l.exhausted=true;l.cargo=Math.max(0,l.cargo-1);l.last+=' 補給已盡，另損失一份載貨。';}
+    record('convoyMove',{to});if(to===l.goal){s.supply+=Math.min(2,l.cargo/2);s.cargoReserve=Math.min(2,Math.max(0,l.cargo-3));s.cohesion+=l.cargo>=4?1:-1;report(l.cargo*2+Number(l.helped)-Math.max(0,l.steps-6)*.25,'到達接應處，保留 '+l.cargo+' 份載貨。'+(l.helped?'途中也照應到聚落。':'可以比較繞行休整與直接通行的代價。'));}else if(l.steps===20){s.cargoReserve=0;report(2,'車隊已花太多力氣繞行，先就近交接並整理下一段。');}return true;},
+   stow(index){const l=s.local;if(s.phase!=='play'||s.kind!=='crossing'||!Number.isInteger(index)||index<0||index>=l.cargo.length||l.arrived.includes(index))return false;if(l.aboard.includes(index))l.aboard=l.aboard.filter(x=>x!==index);else{if(l.aboard.reduce((sum,i)=>sum+l.cargo[i].weight,0)+l.cargo[index].weight>3)return false;l.aboard.push(index);}record('stow',{index});return true;},
+   crossingWait(){const l=s.local;if(s.phase!=='play'||s.kind!=='crossing'||l.waits>=2)return false;l.waits++;l.tide=(l.tide+1)%3;s.supply=Math.max(0,s.supply-.2);l.last='等候一個水流階段，消耗 0.2 份補給。';record('crossingWait');return true;},
+   sail(){const l=s.local;if(s.phase!=='play'||s.kind!=='crossing'||!l.aboard.length||l.trip>=3)return false;const carried=l.aboard.slice(),risk=Math.max(0,l.tide-Number(l.arrived.includes(0)));l.rough+=risk;if(risk){const item=carried.find(i=>[1,3].includes(i));if(item!==undefined)l.damaged.push(item);}if(carried.includes(4)&&carried.includes(5)){l.care=true;s.cohesion++;}l.arrived.push(...carried);s.supply=Math.max(0,s.supply-.25);record('sail',{cargo:carried,tide:l.tide,risk});l.aboard=[];l.trip++;l.last=risk?'這航遇到側流或浪高，部分載貨或交接受到影響。':'這航平穩交接，人員與載貨已到對岸。';l.tide=(l.tide+1)%3;l.waits=0;if(l.trip===3){const missing=l.cargo.reduce((sum,x,i)=>sum+Number(!l.arrived.includes(i))*x.weight,0);s.supply+=1.5;s.trust+=Number(l.care);report(9-missing-l.damaged.length*2-l.rough+Number(l.care),'三航交接 '+l.arrived.length+' / 6 項，'+l.damaged.length+' 項載貨受潮。'+(l.care?'傷者與藥箱同行，照護有接上。':'可再比較傷者與藥箱同船的安排。'));}return true;},
+   councilSelect(index){if(s.phase!=='play'||s.kind!=='council'||!Number.isInteger(index)||index<0||index>=s.local.people.length)return false;s.local.selected=index;return true;},
+   councilListen(){const l=s.local;if(s.phase!=='play'||s.kind!=='council'||l.revealed.includes(l.selected)||l.revealed.length>=2)return false;l.revealed.push(l.selected);l.last='已觀察所選人物的關切；這是教學台詞，不是史書引文。';record('councilListen',{index:l.selected});return true;},
+   councilSpeak(value){const l=s.local,index=l?.selected;if(s.phase!=='play'||s.kind!=='council'||!['interest','respect','proof'].includes(value)||l.attempts>=4||l.support.includes(index))return false;const right=['interest','respect','proof'][l.people[index].need]===value;l.attempts++;s.supply=Math.max(0,s.supply-.25);if(right){l.support.push(index);s.trust=Math.min(12,s.trust+1);l.last=l.people[index].name+'：這樣的說明回應了我的關切，可以接應。';}else{l.pressure+=2;s.trust=Math.max(0,s.trust-.5);l.last=l.people[index].name+'：我在意的事情還沒有說清楚。席間壓力增加。';}record('councilSpeak',{index,value,right});return true;},
+   canCommit(){if(s.phase!=='play')return false;const l=s.local;return s.kind==='formation'?l.slots.every(x=>x!==null):s.kind==='network'?l.targets.every(x=>l.built.includes(x)):s.kind==='evidence'?l.selected.length===2:s.kind==='diplomacy'?true:s.kind==='music'?l.notes.length===4:s.kind==='hydraulic'?l.operated:s.kind==='policy'?l.allocation.some(Boolean):s.kind==='council'?l.attempts>=2:false;},
+   commit(){if(!model.canCommit())return false;const l=s.local;
+    if(s.kind==='formation'){const guarded=l.slots[l.threat]===0,supported=l.slots[(l.threat+1)%3]===1,rear=l.slots[(l.threat+2)%3]===2;let q=3+Number(guarded)*3+Number(supported)*2+Number(rear)*2;if(l.order==='advance'){s.supply=Math.max(0,s.supply-1);s.cohesion+=guarded?2:-1;}if(l.order==='support'){s.trust++;s.supply=Math.max(0,s.supply-.5);}if(l.order==='hold'){s.cohesion++;q=Math.min(10,q+1);}if(rear)s.supply=Math.min(12,s.supply+1);report(q,guarded?'主要來路有人接應，隊伍能按部署行動。':'來路與部署未能完全銜接，下一段可先察看，再分配隊伍。');}
+    if(s.kind==='network'){const used=l.built.length-1,optional=l.built.includes(l.optional);s.carry=l.budget-used;s.supply+=Math.max(0,7-used);s.trust+=2+Number(optional);s.cohesion+=Number(used<=5);report(6+Number(used<=5)*3+Number(optional),'兩處需求都已接通。'+(optional?'也照顧到較偏遠的一戶。':'保留的工力可帶到下一期。'));}
+    if(s.kind==='evidence'){const a=l.records[l.selected[0]],b=l.records[l.selected[1]],independent=a.group!==b.group,same=a.event==='當日'&&b.event==='當日',valid=a.reliable&&b.reliable;const q=Number(independent)*3+Number(same)*3+Number(valid)*4;s.trust+=q>=8?2:-1;s.cohesion+=Number(q>=8);report(q,q===10?'兩份當日、獨立且可追查的紀錄互相支持。':'這組線索仍有日期、來源或獨立性需要補查；結論保留這個界線。');}
+    if(s.kind==='diplomacy'){const spent=l.offers.reduce((a,b)=>a+b,0),match=l.offers[l.need],prior=s.promise||0;const honored=s.supply-spent>=prior;s.supply=Math.max(0,s.supply-spent-prior);s.trust+=honored?1:-2;let q=Math.min(10,match*3+Number(l.heard)*2+Number(honored)*2+Number(l.pledge&&s.trust>=5));s.promise=l.pledge?1:0;s.cohesion+=q>=7?1:-1;s.trust+=q>=7?1:-1;report(q,(match>=2?'安排回應了對方最在意的需要。':'對方仍希望你正面回應他的需要。')+(l.pledge?'承諾下一輪要留下可履行的資源。':''));}
+    if(s.kind==='music'){const correct=l.notes.filter((x,i)=>x===l.target[i]).length;s.cohesion+=correct>=3?2:1;s.trust+=Number(correct===4);report(correct*2.5,correct===4?'四聲前後相應，聽得見呼應與收束。':'合奏已完成，可在下段再比較高低與收束的安排。');}
+    if(s.kind==='hydraulic'){const v=model.water(),q=clamp(10-v.risk*2,0,10);s.trust+=q>=8?2:-1;s.cohesion+=q>=8?1:-1;s.supply-=v.risk*.25;report(q,'田間 '+v.field+'、城內 '+v.town+'、洩洪 '+v.spill+'，水位留下 '+v.level+'。'+(v.risk?'有一部分供水或水位超出本輪需要，下一輪再調整。':'供水與保留水位都在本輪範圍內。'));}
+    if(s.kind==='policy'){const used=l.allocation.reduce((a,b)=>a+b,0),covered=l.needs.reduce((a,v,i)=>a+Math.min(v,l.allocation[i]),0),deficit=l.needs.reduce((a,b)=>a+b,0)-covered;s.reserve=Math.min(2,l.budget-used);s.supply+=l.allocation[0]-l.needs[0]*.5;s.cohesion+=l.allocation[1]-l.needs[1]*.5;s.trust+=l.allocation[2]-l.needs[2]*.5;report(10-deficit*2+Number(s.reserve>0),'本期需求照應 '+covered+' / '+l.needs.reduce((a,b)=>a+b,0)+'，留下 '+s.reserve+' 份工力。'+(deficit?'仍有需求待補，保留這個取捨供下一期比較。':'各處需要都有安排。'));}
+    if(s.kind==='council'){const q=2+l.support.length*3+l.revealed.length-l.pressure;s.cohesion+=l.support.length>=2?1:-1;report(q,'交涉 '+l.attempts+' 次，得到 '+l.support.length+' 人接應，席間壓力 '+l.pressure+'。'+(l.support.length>=2?'說明有回應不同關切。':'可先觀察，再選擇說明的角度。'));}
+    return true;
+   },
+   result(){return copy({completed:s.phase==='done',kind:s.kind,reports:s.reports,supply:s.supply,trust:s.trust,cohesion:s.cohesion,quality:s.reports.reduce((a,r)=>a+r.quality,0),actions:s.actions});}
+  };
+  return model;
+ }
+ global.SpringWorldModels={version:'1.2.0',create,adjacent,kinds};
+})(window);
+</script>

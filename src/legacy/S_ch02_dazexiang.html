@@ -1,0 +1,899 @@
+<!-- 本話任務：魚書、狐鳴與扶蘇項燕名號共同影響相信與響應；行軍需維持支持。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!DOCTYPE html>
+<!--
+Re:縱橫鼎業 — S_ch02_dazexiang.html
+v1.1.0 / 2026-10-08 / 楚漢篇第二話〈大澤鄉〉 / 約25分鐘
+依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story。
+伺服器：既有Code、Save、Log、AnchorBank；資料：S_ch02_dazexiang_data.gs。
+30短節點、12錨點、12圖鑑、8張準備牌抽3張、2必要遊戲。
+dz_09用老師指定「天下雲集響應」。數值與事件牌屬教學模擬；史實固定。
+核心體驗依老師要求不可直接略過，使用逐步輔助；不修改共用檔。
+網址：?page=S_ch02_dazexiang；實際登入權限依現有網站設定。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+.ep-title { min-height:100vh; min-height:100dvh; display:grid; grid-template-rows:auto 1fr; background:radial-gradient(900px 520px at 70% 0%,var(--gilt-glow),transparent 65%),var(--night); }
+.ep-title__bar { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:calc(10px + var(--safe-t)) var(--gutter) 10px; }
+.ep-title__main { width:min(1040px,100%); margin:0 auto; padding:8px var(--gutter) calc(32px + var(--safe-b)); display:grid; gap:22px; align-content:start; min-width:0; }
+.ep-kicker { font-size:15px; color:var(--gilt); letter-spacing:.1em; }
+.ep-h1 { margin-top:4px; font-size:clamp(46px,10vw,92px); letter-spacing:.18em; line-height:1.12; }
+.ep-episode { margin-top:10px; font-family:var(--f-display); font-size:clamp(17px,2.6vw,22px); }
+.ep-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+.ep-note { font-size:15px; color:var(--text-dim); line-height:1.7; }
+.ep-start { display:grid; grid-template-columns:auto minmax(0,1fr) minmax(220px,auto); gap:16px; align-items:center; padding:18px; border-radius:14px; border:1px solid var(--gilt); background:var(--night-2); box-shadow:var(--shadow); }
+.ep-seal { display:grid; place-items:center; width:64px; height:64px; border-radius:8px; border:3px solid var(--ep-color,var(--cinnabar)); box-shadow:inset 0 0 0 3px var(--night-2),inset 0 0 0 5px var(--ep-color,var(--cinnabar)); font-family:var(--f-display); font-weight:700; font-size:34px; color:var(--ep-color,var(--cinnabar)); background:var(--night); }
+.ep-start__name { font-family:var(--f-display); font-size:22px; }
+.ep-start__lead { font-size:15px; color:var(--text-dim); line-height:1.7; }
+.ep-start__act { display:grid; gap:8px; }
+.ep-points { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+.ep-point { padding:14px 16px; border-radius:12px; border:1px solid var(--line-soft); background:var(--night-2); }
+.ep-point b { display:block; font-family:var(--f-display); font-size:17px; margin-bottom:4px; color:var(--gilt); }
+.ep-point span { font-size:15px; color:var(--text-dim); line-height:1.7; }
+.ch02-page { overflow-x:hidden; }
+.ch02-page .zh-btn { min-height:44px; font-size:15px; }
+.ch02-page .zh-chip { font-size:15px; }
+.ch02-page:has(.ch02-march) .sty-meters { display:none; }
+.ch02-page .sty-icon { width:44px; height:44px; }
+.ch02-page .sty-m, .ch02-page .sty-title span, .ch02-page .sty-place span,
+.ch02-page .sty-say__more, .ch02-page .sty-game__status,
+.ch02-page .sty-actor__title, .ch02-page .sty-choice .zh-choice__text small { font-size:15px; }
+.ch02-game { width:min(850px,100%); min-width:0; margin:0 auto; display:grid; gap:12px; padding:18px; font-size:16px; line-height:1.65; overflow-wrap:anywhere; }
+.ch02-game p { margin:0; }
+.ch02-lead { color:var(--text); }
+.ch02-small { color:var(--text-dim); font-size:15px; }
+.ch02-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.ch02-actions .zh-btn { min-height:52px; white-space:normal; line-height:1.5; }
+.ch02-aids { display:flex; flex-wrap:wrap; gap:8px; }
+.ch02-aids .zh-btn { flex:1; }
+.ch02-game [hidden] { display:none !important; }
+.ch02-night { position:relative; border:1px solid var(--line); border-radius:12px; padding:55px 10px 12px; min-height:150px; overflow:hidden; background:linear-gradient(var(--night),var(--night-3)); }
+.ch02-moon { position:absolute; top:12px; right:24px; width:30px; height:30px; border-radius:50%; background:var(--slip); }
+.ch02-path { position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+.ch02-tile { position:relative; display:grid; justify-items:center; gap:6px; padding:6px 2px; min-height:80px; border:1px solid var(--line-soft); border-radius:8px; background:var(--night-2); font-size:15px; }
+.ch02-tile.is-lit { border-color:var(--gilt); background:var(--gilt-glow); }
+.ch02-lantern { color:var(--gilt); opacity:0; position:absolute; top:-30px; font-size:15px; }
+.ch02-tile.is-lit .ch02-lantern { opacity:1; }
+.ch02-figure { display:grid; place-items:center; width:32px; height:32px; border:2px solid var(--patina); border-radius:50%; color:var(--patina); opacity:0; font-family:var(--f-display); font-size:20px; }
+.ch02-tile.is-here .ch02-figure { opacity:1; }
+.ch02-fox-signal { min-height:3.3em; color:var(--gilt); }
+.ch02-callbar { height:10px; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.ch02-callbar i { display:block; width:0; height:100%; background:var(--patina); }
+.ch02-callcount { font-variant-numeric:tabular-nums; }
+.ch02-route { list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; font-size:15px; }
+.ch02-route li { padding:10px 4px; min-width:0; text-align:center; border:1px solid var(--line-soft); border-radius:8px; color:var(--text-dim); }
+.ch02-route .is-current { border-color:var(--gilt); color:var(--gilt); background:var(--gilt-glow); }
+.ch02-route .is-done { color:var(--patina); border-color:var(--patina); }
+.ch02-resources { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; font-size:16px; }
+.ch02-resources span { text-align:center; padding:10px; border-radius:8px; background:var(--night-3); }
+.ch02-resources b { color:var(--gilt); }
+.ch02-event { padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--night-2); }
+.ch02-event h3 { color:var(--gilt); font-size:21px; margin:6px 0 10px; }
+.ch02-march-choices button { display:grid; text-align:left; align-content:start; padding:12px; }
+.ch02-march-choices small { color:var(--text-dim); font-size:15px; font-weight:400; }
+@media (max-width:860px) {
+  .ep-start { grid-template-columns:auto minmax(0,1fr); }
+  .ep-start__act { grid-column:1 / -1; }
+  .ch02-game { padding:12px; }
+  .ch02-actions { grid-template-columns:1fr; gap:8px; }
+  .ch02-fox .ch02-actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .ch02-fox [data-fox="start"] { grid-column:1 / -1; }
+  .ch02-aids { display:grid; grid-template-columns:1fr 1fr; }
+  .ch02-route { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .ch02-page .sty-menu .zh-btn { min-height:44px; padding:6px 10px; }
+  .ch02-page .sty-icon { width:44px; height:44px; }
+  .ch02-page .sty-m { font-size:15px; grid-template-columns:16px auto minmax(0,1fr) 2em; gap:3px; }
+  .ch02-page .sty-title span, .ch02-page .sty-place span,
+  .ch02-page .sty-say__more, .ch02-page .sty-game__status,
+  .ch02-page .sty-choice .zh-choice__text small { font-size:15px; }
+  .ch02-page .sty-actor__title { display:none; }
+  .ch02-page .sty-game { inset:8px; }
+}
+@media (prefers-reduced-motion:reduce) { .ch02-callbar i { transition:none; } }
+
+
+.hm-title-scene{position:relative;height:320px;overflow:hidden;border:1px solid var(--gilt);border-radius:10px;margin:25px 0;background:#30221b}
+.hm-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}
+.hm-title-cast{position:absolute;inset:30px 8% 0;display:flex;align-items:end;justify-content:center;gap:2%}
+.hm-title-cast>span{width:21%;max-width:150px;filter:drop-shadow(0 8px 6px #0005)}
+.hm-title-cast .ck{display:block;width:100%;height:100%}
+.hm-portrait{display:block!important;width:70px!important;height:90px!important;border:0!important;background:transparent!important;border-radius:0!important;margin:0 auto!important}
+.hm-portrait .ck{height:100%;width:100%;display:block}
+.ch04-observer{position:relative;padding:8px 4px!important;min-height:190px;background:linear-gradient(#322c32,#191b2e)!important;touch-action:manipulation}
+.ch04-observer .hm-portrait{width:100px!important;height:135px!important}
+.ch04-watch-stage{padding:24px 10px 12px;background:linear-gradient(#502e2455,#291c1688);border:1px solid var(--line);border-radius:8px;gap:8px!important}
+.ch04-observer.is-moving .ck{animation:hm-gesture .45s ease-in-out infinite alternate}
+.ch04-observer.is-noticed{box-shadow:0 0 0 2px var(--patina),0 0 20px #4a9c8a44}
+.ch04-motion{min-height:48px;display:grid;justify-content:center;align-content:center;gap:4px;color:var(--slip)}
+.ch04-sign-jade{width:32px;height:32px;display:block;border:7px solid #a9d9bf;border-right-color:transparent;border-radius:50%;filter:drop-shadow(0 0 6px #a9d9bf)}
+.hm-returner{position:absolute;left:5%;bottom:2px;width:55px;height:85px;pointer-events:none}.hm-returner>.ck{height:100%;width:100%}
+.hm-anchor .sty-choice__card{max-height:85dvh;overflow:auto}.hm-anchor h2{font-family:var(--f-display);font-size:23px;line-height:1.5}
+.hm-anchor blockquote{margin:16px 0;padding:14px;color:var(--slip-ink);background:var(--slip);border-left:4px solid var(--gilt);font:21px/1.65 var(--f-display)}
+.hm-follow,.hm-feedback{padding:12px;background:#c9a24a18;line-height:1.7;border:1px solid var(--line);border-radius:6px}
+.hm-book details{border-bottom:1px solid var(--line);padding:12px}.hm-book summary{display:flex;align-items:center;gap:12px;cursor:pointer}.hm-book summary small{display:block;color:var(--text-dim)}.hm-book blockquote{color:var(--gilt);line-height:1.7}.hm-book p{line-height:1.8}.hm-book .is-locked{opacity:.6}.hm-thumb{display:block;width:54px;height:74px}.hm-thumb svg{width:100%;height:100%}
+.hm-small-seal{width:44px!important;height:44px!important;font-size:26px!important}.hm-actions{display:flex;gap:10px;flex-wrap:wrap}.hm-import{display:none}.hm-savebar{font-size:13px;color:var(--text-dim)}
+.ar-clock[hidden]{display:none!important}.ch04-game .zh-btn{min-height:44px}.ch04-hold{touch-action:none}.ch04-game .ch04-bank{margin-bottom:12px}
+.sty-game__stage{min-height:440px}.ar-layer{overflow:auto}.ar-card{max-height:calc(100dvh - var(--sty-top,80px) - 90px);overflow:auto}
+.hm-still *{animation:none!important;transition:none!important}
+@keyframes hm-gesture{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-6px) rotate(2deg)}}
+@media(max-width:700px){.hm-title-scene{height:230px}.hm-title-cast{inset:35px 2% 0}.hm-title-cast>span{width:24%}.ch04-person{padding:6px!important}.ch04-person .hm-portrait{width:42px!important;height:60px!important}.ch04-observer .hm-portrait{width:64px!important;height:96px!important}.ch04-observer{min-height:160px;font-size:13px!important}.ch04-watch-stage{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:8px!important}.ch04-motion{font-size:12px}.ch04-watch-stage .ch04-observer:nth-child(4){grid-column:1 / 2}.hm-anchor .sty-choice__card{padding:16px}.hm-anchor h2{font-size:20px}.hm-anchor blockquote{font-size:19px}.sty-game__body{padding:12px}.sty-game__stage{min-height:480px}.ch04-seat-board{min-height:320px}.ar-card{max-height:calc(100dvh - var(--sty-top,100px) - 70px)}.ch04-wait-scene{height:190px}.ch04-wait p,.ch04-watch p,.ch04-seats p{font-size:15px;line-height:1.6}}
+
+.dz-title-scene{height:290px;position:relative;overflow:hidden;border:1px solid var(--gilt);border-radius:12px;background:#302b33}.dz-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}.dz-title-cast{position:absolute;inset:36px 12% -6px;display:flex;justify-content:center;align-items:end;gap:6%}.dz-title-cast>span{width:25%;max-width:150px;filter:drop-shadow(0 7px 5px #0005)}.dz-title-cast svg{display:block;width:100%;height:100%}.dz-taskhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font:21px var(--f-display);color:var(--gilt)}.dz-taskhead b{font:15px var(--f-ui);white-space:nowrap}.dz-fox-scene{position:relative;isolation:isolate;height:260px;overflow:hidden;background:#151e28;border:1px solid var(--line);border-radius:12px}.dz-fox-scene>.sc{position:absolute;inset:0;width:100%;height:100%}.dz-light{position:absolute;top:12px;bottom:24px;width:110px;transform:translateX(-50%);background:linear-gradient(180deg,#f6d88e11,#ffedb84d);clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);filter:drop-shadow(0 0 8px #ffb64b);pointer-events:none}.dz-cover-path{position:absolute;inset:auto 6px 9px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.dz-cover{min-height:107px;display:flex;flex-direction:column;align-items:center;justify-content:end;border-bottom:2px solid #a0ba9166;color:#eee5cb;background:linear-gradient(transparent,#101e1977);border-radius:8px;font-size:15px}.dz-cover.is-lit{border-bottom-color:var(--gilt);color:var(--gilt);background:linear-gradient(transparent,#ffcb6b22)}.dz-wuguang{width:60px;height:85px;opacity:0;filter:drop-shadow(0 4px 3px #0007)}.dz-wuguang svg{display:block;width:100%;height:100%}.dz-cover.is-here .dz-wuguang{opacity:1}.dz-hold{touch-action:none;user-select:none}.ch02-fox-signal{min-height:3.1em}.ch02-aids button{min-height:44px}.dz-route-map{overflow:hidden;border:1px solid #b5985c;border-radius:9px;background:#e8d7ad}.dz-route-map svg{display:block;width:100%;height:auto;min-height:105px}.dz-march-cast{display:flex;align-items:center;gap:15px;padding:8px 12px;background:#b7944e11;border:1px solid var(--line-soft);border-radius:8px}.dz-march-cast>span{flex:0 0 60px;width:60px;height:80px}.dz-march-cast svg{display:block;width:100%;height:100%}.dz-march-cast p{flex:1}.dz-march-cast small{display:block;color:var(--text-dim);font-size:13px}.ch02-march .ch02-event{background:repeating-linear-gradient(90deg,#f0e3c2 0 24px,#e8d8b2 25px 26px);color:#3e342b;border-color:#c8ac68}.ch02-march .ch02-event h3{color:#8c382b;font:23px var(--f-display)}.ch02-march .ch02-event .ch02-small{color:#776348}.ch02-game{width:min(880px,100%)}.ch02-page .sty-game__body{min-width:0}.ch02-page .sty-game__stage{min-height:460px}.ch02-page .sty-game__head{flex-wrap:wrap}.ch02-page .ar-card{max-height:calc(100dvh - var(--sty-top,100px) - 90px);overflow:auto}
+@media(max-width:700px){.dz-title-scene{height:230px}.dz-title-cast{inset:25px 4% -7px}.dz-title-cast>span{width:30%}.dz-fox-scene{height:210px}.dz-cover{min-height:92px;font-size:13px}.dz-wuguang{width:43px;height:68px}.dz-cover-path{gap:3px}.dz-light{width:70px}.dz-march-cast{gap:8px;padding:6px 8px;font-size:14px}.dz-march-cast>span{flex-basis:43px;height:62px}.dz-march-cast small{font-size:12px}.dz-taskhead{font-size:19px}.ch02-resources{gap:5px;font-size:15px}.ch02-resources span{padding:8px 4px}.ch02-march .ch02-actions{grid-template-columns:1fr}.ch02-march .ch02-march-choices button{padding:9px 12px;min-height:54px}.ch02-game{padding:0;font-size:15px;gap:9px}.ch02-fox .ch02-actions{grid-template-columns:1fr 1fr}.ch02-march .ch02-event{padding:13px}.ch02-march .ch02-event h3{font-size:20px}.ch02-game .ch02-small{font-size:13px}.ch02-page .sty-menu .zh-btn{padding:6px 7px;font-size:14px}.ch02-page .sty-m{font-size:13px}.ch02-page .sty-game{inset:5px}.ch02-page .sty-game__body{padding:10px}.dz-route-map svg{min-height:95px}}
+
+.ch02-march-choices .zh-btn--primary small{color:#513d27}.dz-map-hint{display:none}@media(max-width:700px){.dz-route-map{overflow-x:auto;overscroll-behavior-x:contain}.dz-route-map svg{width:740px;min-height:139px}.dz-map-hint{display:block;color:var(--text-dim);font-size:12px;margin-top:-5px}}
+</style></head><body class="ch02-page"><div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+  // Chapter helpers use the platform APIs. They do not replace the router,
+  // catalogue, identity, saves, logging, codex or result services.
+  const SID = 'S_ch02_dazexiang', E = ZH.esc;
+  const KEY = 'dazexiang-platform-v1:' + (ZH.user.email || 'guest') + ':';
+  let run = '', first = {}, progress = {}, latest = null;
+  const clone = v => JSON.parse(JSON.stringify(v));
+  const read = (k, d) => ZH.local.get(KEY + k, d);
+  const write = (k, v) => ZH.local.set(KEY + k, v);
+  const freshId = () => 'dz_' + Date.now().toString(36) + '_' + crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+  const status = text => document.querySelectorAll('[data-dz-save]').forEach(el => { el.textContent = text; });
+  const current = () => window.__ep && window.__ep.state;
+  function meta(state) {
+    state.vars = state.vars || {};
+    state.vars.dzRunId = run;
+    state.vars.dzFirst = clone(first);
+    state.vars.dzProgress = clone(progress);
+  }
+  window.DZ = {
+    read, write, runId: () => run,
+    newRun() { run = freshId(); first = {}; progress = {}; latest = null; write('save', null); },
+    useState(state) {
+      const v = state && state.vars || {};
+      run = v.dzRunId || freshId(); first = clone(v.dzFirst || {}); progress = clone(v.dzProgress || {});
+      if (state) {
+        state.progress=state.progress || {};
+        // Preserve old recorded scores on their original scale. Existing runs
+        // carry a legacy marker; do not invent missing first-attempt records.
+        for(const rec of state.anchors || []) if(!first[rec.anchorId])first[rec.anchorId]=Object.assign({},rec,{completed:true,legacy:true});
+        for(const rec of state.games || []) {
+          if(state.progress['arena:'+rec.gameId])continue;
+          const raw=Object.assign({},state.vars[rec.gameId==='ch02_fox'?'fox':'march']||{}, {score:rec.score,max:rec.maxScore,passed:rec.passed,completed:true,legacy:true,sec:rec.sec || 0});
+          const normalized=Math.round((raw.score/Math.max(1,raw.max))*10);
+          const key={ch02_fox:'fox',ch02_march:'march'}[rec.gameId];
+          if(key){state.vars[key+'Legacy']={score:raw.score,max:raw.max};state.vars[key+'Score']=normalized;}
+          const attempt={r:clone(raw),mine:{score:normalized,sec:raw.sec},stars:normalized>=9?3:normalized>=7?2:normalized>=4?1:0,first:clone(raw)};
+          state.progress['arena:'+rec.gameId]={tries:1,active:false,best:attempt,last:attempt,first:clone(raw)};
+          rec.legacy=true;
+        }
+        if(state.vars.march && !state.vars.march.meters)state.vars.march.meters=clone(state.meters);
+        const number=Number(String(state.node || '').split('_')[1]);for(const [minimum,key] of [[3,'text:ch_dazexiang'],[23,'text:ch_zhangchu']])if(number>=minimum && !(state.codex || []).includes(key)){state.codex=state.codex || [];state.codex.push(key);const [t,id]=key.split(':');ZH.codex.unlock(t,id,SID);}
+        meta(state);
+      }
+    },
+    snapshot(snap) { meta(snap); },
+    progress(k) { return progress[k] || {}; },
+    saveProgress(k, value) { progress[k] = clone(value); },
+    cacheProgress(state) { meta(state); latest = {engine:clone(state), updatedAt:Date.now(), chapterVersion:'v1.1.0'}; if(ZH.isGuest()) ZH.save(SID,'history',latest); else write('save',latest); },
+    async saveState(state) {
+      meta(state);
+      const value = { engine: clone(state), updatedAt: Date.now(), chapterVersion: 'v1.1.0' };
+      latest = value; write('save', value);
+      status(ZH.isGuest() ? '訪客進度已暫存於此分頁' : '正在保存進度');
+      try {
+        const r = await ZH.save(SID, 'history', value);
+        status(r && r.ok ? (ZH.isGuest() ? '訪客進度已暫存於此分頁' : '進度已保存') : '已存此裝置・雲端尚未保存，請匯出備份');
+        return r;
+      } catch (e) { status('已存此裝置・雲端暫時未連線，請匯出備份'); return { ok: false }; }
+    },
+    async loadState() {
+      const local = read('save', null);
+      try {
+        const r = await ZH.load(SID, 'history');
+        const cloud = r && r.ok && r.state && r.state.engine ? r.state : null;
+        // Guest progress follows Core_js's per-tab lifetime. School backups
+        // cover failed RPCs and are scoped to the authenticated account.
+        const value = ZH.isGuest() ? cloud : local && (!cloud || Number(local.updatedAt) > Number(cloud.updatedAt || 0)) ? local : cloud;
+        latest = value;
+        if (value) write('save', value);
+        return value;
+      } catch (e) { latest = ZH.isGuest() ? null : local; return latest; }
+    },
+    checkpoint() {
+      const state = current();
+      if (state) meta(state);
+      // Commit the first answer before any modal continuation or page reload.
+      if (window.__ep && window.__ep.save) return window.__ep.save().then(()=>ZH.flushAll ? ZH.flushAll() : null);
+      return Promise.resolve();
+    },
+    download(value, name) {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+    async exportSave() {
+      await DZ.checkpoint();
+      DZ.download({ format: 'dazexiang-full', version: 1, save: latest, run, progress, first }, '大澤鄉_進度.json');
+    },
+    async importSave(data) {
+      if (JSON.stringify(data.save).length > 45000) throw Error('進度檔過大，請使用本話匯出的檔案。');
+      const state = clone(data.save.engine);
+      state.vars = state.vars || {};
+      state.vars.dzRunId = data.run || state.vars.dzRunId || freshId();
+      state.vars.dzFirst = data.first || state.vars.dzFirst || {};
+      state.vars.dzProgress = data.progress || state.vars.dzProgress || {};
+      DZ.useState(state); await DZ.saveState(state);
+    },
+    teacher() { ZH.go('teacher'); },
+    async finish(payload) {
+      const state=current(),v=state?.vars || {},required=['ch02_fox','ch02_march'];
+      if(payload.anchors.length!==12 || payload.codex.length!==12 || required.some(id=>!payload.games.some(g=>g.gameId===id&&!g.skipped)) || !v.fox?.completed || !v.march?.completed || v.march.actions.length!==7) throw Error('必要體驗尚未完成，請接續本話。');
+      payload.runId=run;payload.chapterVersion='v1.1.0';
+      payload.experience={fox:v.fox,march:v.march,preparation:[v.prep0,v.prep1,v.prep2],decisions:clone(progress),firstAnchors:clone(first)};
+      await DZ.checkpoint();
+      // Core_js logs the scenario and transfers the complete payload to Result.
+      if(read('finishedRun','')===run){const prior=ZH.session.get('result:'+SID,null);ZH.session.set('result:'+SID,Object.assign({},payload,prior || {}));ZH.go('result',{s:SID});return;}
+      write('finishedRun',run);
+      return ZH.finishScenario(payload);
+    }
+  };
+
+  // Read questions through Anchor_js.load/get so edits made by the teacher in
+  // AnchorBank remain authoritative. This chapter's overlay adds durable
+  // first-answer records while reporting every attempt through Core_js.track.
+  DZ.runAnchor = (a,options={}) => new Promise(resolve => {
+    let rec = first[a.id];
+    if (rec && rec.completed) return resolve(clone(rec));
+    let reading = false, finished = false, shownAt = performance.now();
+    const previous = document.activeElement;
+    const order = a.options.slice();
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor((window.__ep ? window.__ep.ctx.rng() : crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const wrap = ZH.html('<div class="sty-choice hm-anchor" role="dialog" aria-modal="true" aria-labelledby="hm-question"><div class="sty-choice__card"><p class="hm-kicker">原文對讀 ' + (options.index || a.seq) + '／12</p><h2 id="hm-question">' + E(a.stem) + '</h2><blockquote>' + E(a.passage) + '</blockquote>' + (a.followUp ? '<p class="hm-follow" data-follow hidden>' + E(a.followUp) + '</p>' : '') + '<div class="zh-choices">' + order.map((o, i) => '<button type="button" class="zh-choice" data-answer="' + E(o.key) + '"><span class="zh-choice__key">' + '甲乙丙丁'[i] + '</span><span class="zh-choice__text">' + E(o.text) + '</span></button>').join('') + '</div><p class="hm-feedback" role="status" hidden></p><button type="button" class="zh-btn zh-btn--primary" data-read-done hidden>讀畢，回到劇情</button><p class="ep-note">首次判斷會保留，答錯後需親自修正。</p></div></div>');
+    document.body.append(wrap);  wrap.querySelector('button').focus();
+    wrap.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const bs = [...wrap.querySelectorAll('button:not([hidden]):not(:disabled)')];
+      if (e.shiftKey && document.activeElement === bs[0]) { e.preventDefault(); bs.at(-1).focus(); }
+      else if (!e.shiftKey && document.activeElement === bs.at(-1)) { e.preventDefault(); bs[0].focus(); }
+    });
+    function complete() {
+      finished = true; rec.completed = true; first[a.id] = rec; DZ.checkpoint();
+      wrap.remove();  if (previous?.isConnected) previous.focus({preventScroll:true}); resolve(clone(rec));
+    }
+    function showRead() {
+      reading = true; const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = a.explanation;
+      wrap.querySelectorAll('[data-answer]').forEach(x => { x.disabled = true; });
+      const follow = wrap.querySelector('[data-follow]'); if (follow) follow.hidden = false;
+      const done = wrap.querySelector('[data-read-done]'); done.hidden = false; done.focus();
+    }
+    if (rec?.finalAnswer === a.answer) showRead();
+    wrap.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || b.disabled || finished) return;
+      if (b.hasAttribute('data-read-done') && reading) { complete(); return; }
+      if (!b.dataset.answer || reading) return;
+      const answer = b.dataset.answer, correct = answer === a.answer, seconds = Math.round((performance.now() - shownAt) / 100) / 10;
+      if (!rec) rec = { anchorId: a.id, choice: answer, correct, seconds, attempts: 0, completed: false };
+      rec.attempts++; rec.path = correct ? (rec.attempts === 1 ? 'direct' : 'fork') : rec.attempts === 1 ? 'fork' : 'fail';
+      const op = a.options.find(o => o.key === answer);
+      ZH.track('anchor', { scenarioId: SID, anchorId: a.id, attempt: rec.attempts, choice: answer, correct, firstTry: rec.attempts === 1, path: rec.path, distractorType: correct ? '' : op.type || '', seconds });
+      if (correct) { rec.finalAnswer = answer; showRead(); }
+      else { const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = (op.fork || '請重新對讀原文。') + ' 請再判斷一次。'; shownAt = performance.now(); }
+      first[a.id] = rec; DZ.checkpoint();
+    });
+  });
+
+  const who = {ch_chensheng:'chensheng',ch_wuguang:'wuguang',ch_jiayi:'jiayi'};
+  DZ.book = () => {
+    const items = (ZH.CODEX || []).filter(c => c.scenarioId === SID);
+    const unlocked = new Set(ZH.codex.keys());
+    (current()?.codex || []).forEach(k => unlocked.add(k));
+    ZH.modal({ title: '史冊・' + items.filter(c => unlocked.has(c.type + ':' + c.id)).length + '／' + items.length, body: '<div class="hm-book">' + items.map(c => {
+      const ok = unlocked.has(c.type + ':' + c.id);
+      return '<details' + (ok ? '' : ' class="is-locked"') + '><summary>' + (ok && who[c.id] ? '<span class="hm-thumb">' + ART.portrait({id:who[c.id],name:c.name}) + '</span>' : '<span class="ep-seal hm-small-seal">' + E(ok ? c.glyph : '？') + '</span>') + '<span>' + E(ok ? c.name : '尚待解鎖') + '<small>' + E(ok ? c.title : '隨劇情完成原文對讀') + '</small></span></summary>' + (ok ? '<blockquote>' + E(c.quote) + '</blockquote><p>' + E(c.text) + '</p>' : '') + '</details>';
+    }).join('') + '</div>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+  };
+  DZ.saveMenu = () => {
+    ZH.modal({ title: '存檔與設定', body: '<p>進度會自動保存。你也可以下載進度備份，或調整文字速度。</p><p class="hm-savebar" data-dz-save>已保留目前進度</p>', actions: [{label:'回到遊戲',value:'close',kind:'quiet'},{label:'遊玩設定',value:'settings',kind:'quiet'},{label:'下載進度',value:'export',kind:'primary'}] }).then(action => { if(action==='export')DZ.exportSave(); if(action==='settings')DZ.settings(); });
+  };
+  DZ.settings = () => {
+    ZH.modal({ title: '遊玩設定', body: '<label>文字速度 <select id="dz-speed"><option value="normal">逐字</option><option value="instant">立即顯示</option></select></label><label><input type="checkbox" id="dz-still" ' + (read('still', false) ? 'checked' : '') + '>減少場景動態</label><p>關閉或移到其他分頁時，巡燈、狐鳴與回應倒數都會暫停。</p>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+    const s = document.querySelector('#dz-speed'); s.value = ZH.settings.textSpeed; s.addEventListener('change', () => ZH.setSetting('textSpeed', s.value));
+    document.querySelector('#dz-still').addEventListener('change', e => { write('still', e.target.checked); document.documentElement.classList.toggle('hm-still', e.target.checked); });
+  };
+})(window);
+
+</script>
+<script>
+
+(function () {
+  'use strict';
+  // ═════════════════════════ 1. 基本設定 ═════════════════════════
+  const SID = 'S_ch02_dazexiang';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['dz_01', 'dz_02', 'dz_03', 'dz_04', 'dz_05', 'dz_06', 'dz_07', 'dz_08', 'dz_09', 'dz_10', 'dz_11', 'dz_12'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => null);
+  const META = ZH.findScenario(SID) || {
+    id: SID, vol: 'ch', ep: 2, name: '大澤鄉', episode: '下雨遲到要斬首？那乾脆起義吧', year: 209,
+    genre: '隨機冒險起義', source: '〈陳涉世家〉〈過秦論〉', guest: false, status: 'ready'
+  };
+  const ROLE = {
+    name: '陳勝', glyph: '涉', color: 'var(--cinnabar)', title: '屯長・你的起事之路',
+    lead: '道路被大雨截斷，九百人等著你的決定。你要安排糧食、聚集人心、帶隊前進，再面對稱王以後的難題。'
+  };
+  const POINTS = [
+    { title: '你是陳勝', text: '從傭耕、大雨失期到入陳稱王，親自面對人物處境。' },
+    { title: '三張準備牌', text: '處理同伴與物資，每局抽三張不同事件，看到安排的後果。' },
+    { title: '夜行與行軍', text: '指揮吳廣完成狐鳴，逐城安排蘄、銍、酇、苦、柘、譙、陳，必要時使用操作輔助。' },
+    { title: '號召與治理', text: '聚眾後仍要維持人心，最後對讀〈過秦論〉並生成世家小傳。' }
+  ];
+  const bounded = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  const deltaText = d => ['people', 'grain', 'star'].filter(k => d[k]).map(k => ({ people: '人心', grain: '糧', star: '聲勢' })[k] + (d[k] > 0 ? '+' : '') + d[k]).join('、');
+  const effects = (ctx, d) => Object.keys(d).forEach(k => ctx.add(k, d[k]));
+
+  // ═════════════════════════ 2. 人物 ═════════════════════════
+  const CHARACTERS = [
+    { id: 'chensheng', name: '陳勝', glyph: '涉', color: 'var(--cinnabar)', title: '你・字涉' },
+    { id: 'chenshengking', name: '陳勝', glyph: '涉', color: 'var(--cinnabar)', title: '張楚王・你', art: {hat:'mian',robe:'#b04b37',beard:1} },
+    { id: 'wuguang', name: '吳廣', glyph: '廣', color: 'var(--patina)', title: '屯長・字叔' },
+    { id: 'soldier', name: '戍卒', glyph: '卒', color: 'var(--gilt)', title: '同行的夥伴', art: {hat:'kui',robe:'#797050',armor:false,beard:0,jade:false} },
+    { id: 'diviner', name: '卜者', glyph: '卜', color: 'var(--gilt)', title: '察知來意', art: {hat:'jin',robe:'#605077',age:'old',beard:2,prop:'staff',jade:false} },
+    { id: 'elder', name: '三老', glyph: '老', color: 'var(--patina)', title: '陳地議事者', art: {hat:'guan',robe:'#58795b',age:'old',beard:2,prop:'scroll'} },
+    { id: 'friend', name: '故人', glyph: '友', color: 'var(--patina)', title: '昔日傭耕同伴', art: {hat:'jin',robe:'#887449',beard:0,jade:false} },
+    { id: 'shiguan', name: '史官', glyph: '史', color: 'var(--gilt)', title: '原典與遊戲的對讀' }
+  ];
+
+  // ═════════════════════════ 3. 數值 ═════════════════════════
+  const METERS = [
+    { id: 'people', label: '人心', icon: 'people', max: 100, start: 50, danger: 29 },
+    { id: 'grain', label: '糧', icon: 'grain', max: 100, start: 60, danger: 19 },
+    { id: 'star', label: '聲勢', icon: 'star', max: 100, start: 20, danger: 19 }
+  ];
+
+  // ═════════════════════════ 4. 說明 ═════════════════════════
+  const HELP = '<p><b>你是陳勝。</b>每段先體驗人物處境，再對讀史書。點對話框繼續；抉擇也可按數字鍵。</p>' +
+    '<p><b>人心、糧、聲勢：</b>安排會影響三項數值，取捨和人物回應都會留下紀錄。數字、事件牌與操作是教學模擬。</p>' +
+    '<p><b>必要體驗：</b>兩個遊戲都要完成。狐鳴可放慢或用逐步輔助，行軍缺糧時可籌糧。仍須自己操作。</p>' +
+    '<p><b>史實錨點：</b>12題固定必經。史實答案表示書中記載，答對不直接增加人心；重大史實保持原典結果。</p>' +
+    '<p><b>接續：</b>中途離開自動存檔，回來接續關卡內操作，對話從短段開頭接續；首次成績與最佳成績分開保存。小傳自擬句子標示為遊戲生成。</p>';
+
+  const PREP_CARDS = [
+    { id: 'wet', title: '糧袋浸水', who: 'soldier', text: '袋底已經濕了。先搬糧，還是先讓大家避雨？', options: [
+      { label: '集中人手搶救糧袋', d: { grain: 8, people: -3 }, quality: 1, result: '糧袋搬上高處，幾名淋雨的同伴卻抱怨沒人照顧。' },
+      { label: '先避雨，再分人清點', d: { people: 6, grain: -6 }, quality: 2, result: '同伴暖了身子，但部分浸水糧食已不能食用。' }
+    ] },
+    { id: 'market', title: '市集糧價', who: 'wuguang', text: '市集還有糧，只是得花時間找願意交易的人。', options: [
+      { label: '花時間議價，買足糧食', d: { grain: 12, star: -4 }, quality: 2, result: '糧袋充實了，準備的節奏也慢了下來。' },
+      { label: '只買應急份量，趕回整隊', d: { grain: 4, star: 3 }, quality: 1, result: '你很快趕回隊伍，糧食卻只夠應急。' }
+    ] },
+    { id: 'complaint', title: '戍卒牢騷', who: 'soldier', text: '有人想逃，有人不肯走。你得先處理大家的恐懼。', options: [
+      { label: '輪流聽取大家的難處', d: { people: 8, star: -3 }, quality: 2, result: '幾人說出不安，願意留下來聽你安排；集結多花了一些時間。' },
+      { label: '先嚴令整隊，不准議論', d: { people: -8, star: 5 }, quality: 0, result: '隊形很快整齊了，私下的議論卻更多。' }
+    ] },
+    { id: 'injury', title: '同袍傷足', who: 'soldier', text: '他的腳腫了，還想跟上。誰願意扶他一程？', options: [
+      { label: '分糧並安排全隊輪流扶行', d: { people: 7, grain: -5 }, quality: 2, result: '大家輪流扶行，幾份糧食也分給了照護者。' },
+      { label: '留少數人照護，主隊先整備', d: { people: -3, star: 4 }, quality: 1, result: '主隊整備較快，留下的人擔心自己會被忘記。' }
+    ] },
+    { id: 'inspection', title: '巡營查帳', who: 'wuguang', text: '巡營的人正往這邊來，準備物還放在帳外。', options: [
+      { label: '收起準備物，暫停集結', d: { people: 3, star: -3 }, quality: 2, result: '準備物沒有引人注意，同伴安心了些，集結則暫停。' },
+      { label: '派人掩護，其他人繼續集結', d: { star: 6, people: -4 }, quality: 1, result: '集結沒有停，但負責掩護的人十分緊張。' }
+    ] },
+    { id: 'doubt', title: '老卒起疑', who: 'soldier', text: '老卒問：我們憑什麼相信你能帶大家走下去？', options: [
+      { label: '請吳廣私下聽取疑慮', d: { people: 7, star: -2 }, quality: 2, result: '吳廣聽完他的疑慮，更多人願意繼續商量。' },
+      { label: '先聚人造勢，壓下疑問', d: { star: 7, people: -6 }, quality: 0, result: '聲音變大了，疑慮卻沒有真正消失。' }
+    ] },
+    { id: 'sharing', title: '乾糧私分', who: 'soldier', text: '幾人私下多拿了乾糧，其他人正在看你如何處理。', options: [
+      { label: '清點後按份重新分配', d: { people: 8, star: -2 }, quality: 2, result: '分配重新清楚了，多拿糧的人不滿，更多同伴則點了頭。' },
+      { label: '默許多拿，換取他們支持', d: { star: 6, people: -9 }, quality: 0, result: '幾人答應追隨你，旁邊的同伴卻不再願意交出私糧。' }
+    ] },
+    { id: 'letter', title: '家書斷訊', who: 'soldier', text: '有人一直等不到家中消息，整隊時也心不在焉。', options: [
+      { label: '分人查訊，安撫等待者', d: { people: 6, star: -3 }, quality: 2, result: '消息未必能找到，願意幫忙的安排仍讓同伴安心。' },
+      { label: '先集中人手，完成整隊', d: { star: 5, people: -5 }, quality: 1, result: '整隊提早完成，等待家書的人卻覺得自己無人關心。' }
+    ] }
+  ];
+
+  async function chooseOnce(ctx,key,opts) {
+    const p=DZ.progress('choice:'+key);
+    if(Object.prototype.hasOwnProperty.call(p,'value'))return p.value;
+    p.value=await ctx.choose(opts);DZ.saveProgress('choice:'+key,p);await DZ.checkpoint();return p.value;
+  }
+
+  async function prepEvent(ctx, round) {
+    let deck = DZ.progress('deck').order || ctx.state.vars.prepDeck;
+    if (!Array.isArray(deck) || deck.length !== 3) {
+      const bag = PREP_CARDS.map((c, i) => i);
+      for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(ctx.rng() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+      deck = bag.slice(0, 3);
+      ctx.state.vars.prepDeck = deck;DZ.saveProgress('deck',{order:deck});await DZ.checkpoint();
+    }
+    const c = PREP_CARDS[deck[round]];
+    await ctx.scene('camp', { place: '大澤鄉・起事準備', tod:'dusk', banner:'#566071', glyph:'秦', time: '教學模擬・第' + (round + 1) + '張牌' });
+    ctx.cast(['chensheng', 'wuguang', 'soldier']);
+    await ctx.say([{ text: '準備牌：' + c.title + '。' }, { who: c.who, expr: 'worried', text: c.text }, { who: 'chensheng', expr: 'serious', text: '先把這件事安排清楚，大家才能接著做。' }]);
+    const pick = await chooseOnce(ctx, 'prep:'+round, { title: c.title, text: '這張牌的安排會影響隊伍。', options: c.options.map((o, i) => ({ label: o.label, desc: deltaText(o.d), value: i })) });
+    const o = c.options[pick];
+    await ctx.say([{ text: o.result }, { who: 'wuguang', expr: 'happy', text: '這個安排，我會讓同伴知道。' }]);
+    effects(ctx, o.d);
+    ctx.state.vars['prep' + round] = { card: c.id, pick: pick, quality: o.quality };
+    ctx.log('準備牌「' + c.title + '」：' + o.label + '；' + deltaText(o.d) + '。');
+  }
+
+  // ═════════════════════════ 5. 劇情節點 ═════════════════════════
+  const NODES = {
+    n_01: async ctx => {
+      await ctx.chapter('第一幕　壟上之志', '你是陳勝・起事之前');
+      await ctx.scene('field', { tod:'day', banner:'#566071', glyph:'秦', place: '傭耕田野', time: '起事之前' });
+      ctx.cast(['chensheng', 'friend']);
+      await ctx.say([{ text: '你叫陳勝，字涉。眼前是替人耕作的田地。' }, { who: 'chensheng', expr: 'smirk', text: '若有一天富貴了，別忘了彼此。' }, { who: 'friend', expr: 'surprised', text: '我們替人耕田，哪來的富貴？' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '同伴笑了', text: '你如何回應這份不被理解？', options: [
+        { label: '記住彼此的約定', desc: '人心+5', value: 'promise' },
+        { label: '先把志向藏在心裡', desc: '聲勢+3', value: 'quiet' }
+      ] });
+      await ctx.say([{ text: p === 'promise' ? '你記住了這位同伴的臉，也記住自己的話。' : '你沒有繼續爭辯，心中的念頭卻沒有消失。' }, { who: 'shiguan', expr: 'normal', text: '接著對讀陳勝在原文中的感嘆。' }]);
+      ctx.flag('plough', p); effects(ctx, p === 'promise' ? { people: 5 } : { star: 3 });
+      ctx.unlock('person:ch_chensheng');
+      return 'n_02';
+    },
+    n_02: async ctx => {
+      await ctx.say([{ text: '同伴的笑聲還在田間。' }, { who: 'chensheng', expr: 'smirk', text: '眼前的日子，真能決定一輩子嗎？' }, { who: 'shiguan', expr: 'normal', text: '讀他的比喻，辨認這份志向。' }]);
+      await ctx.anchor('dz_01'); ctx.unlock('idiom:honghuzhizhi');
+      return 'n_03';
+    },
+    n_03: async ctx => {
+      await ctx.chapter('第二幕　雨斷前路', '秦二世元年・七月・前209年');
+      await ctx.scene('rain', { tod:'day', banner:'#566071', glyph:'秦', place: '大澤鄉', time: '九百人屯戍途中' });
+      ctx.cast(['chensheng', 'wuguang', 'soldier']);ctx.unlock('text:ch_dazexiang');
+      await ctx.say([{ text: '你和吳廣都是屯長，九百人將往漁陽戍守。' }, { who: 'soldier', expr: 'worried', text: '前路沖斷了，怎麼走？' }, { who: 'wuguang', expr: 'serious', text: '先看眼前的人和糧，再算期限。' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '雨還在下', text: '先安排一件能做的事；道路與失期的史實不變。', options: [
+        { label: '先分人保糧、輪流避雨', desc: '人心+6、糧-3', value: 'share' },
+        { label: '集中搶糧，稍後再休息', desc: '糧+5、人心-5', value: 'save' }
+      ] });
+      await ctx.say([{ text: p === 'share' ? '你分出乾糧，同伴輪流照看糧袋；雨仍阻住道路。' : '糧袋保住了，淋雨的人開始疲倦；雨仍阻住道路。' }, { who: 'wuguang', expr: 'serious', text: '期限不會等雨停。我們得正視它。' }]);
+      ctx.flag('rain', p); effects(ctx, p === 'share' ? { people: 6, grain: -3 } : { grain: 5, people: -5 });
+      return 'n_04';
+    },
+    n_04: async ctx => {
+      await ctx.say([{ text: '你估算剩下的路程，發現已無法如期到達。' }, { who: 'soldier', expr: 'worried', text: '照篇中的記述，失期要面對斬刑。' }, { who: 'shiguan', expr: 'normal', text: '這裡依〈陳涉世家〉的記述，判讀危機從何而來。' }]);
+      await ctx.anchor('dz_02');
+      return 'n_05';
+    },
+    n_05: async ctx => {
+      await ctx.scene('tent', { tod:'night', banner:'#566071', glyph:'秦', weather:'none', place: '大澤鄉・密議', time: '雨夜' });
+      ctx.cast(['chensheng', 'wuguang']);
+      await ctx.say([{ who: 'wuguang', expr: 'serious', text: '九百人都在等。逃走有風險，留下也有風險。' }, { who: 'chensheng', expr: 'serious', text: '我們得一起作決定，不能各走各的。' }, { who: 'shiguan', expr: 'normal', text: '先作情境抉擇，再看原典中的陳勝怎麼想。' }]);
+      await ctx.anchor('dz_03'); ctx.unlock('person:ch_wuguang');
+      await ctx.say([{ who: 'wuguang', expr: 'happy', text: '那就一起準備。但只有我們兩人想做，還不夠。' }]);
+      return 'n_06';
+    },
+    n_06: async ctx => {
+      await ctx.say([{ text: '扶蘇的賢名、楚將項燕的事蹟，在人們口中流傳。' }, { who: 'wuguang', expr: 'happy', text: '大家知道這兩個名字，卻未必清楚他們的下落。' }, { who: 'shiguan', expr: 'normal', text: '陳勝打算怎麼運用這份認知？請讀他的原話。' }]);
+      await ctx.anchor('dz_04');
+      return 'n_07';
+    },
+    n_07: async ctx => { await prepEvent(ctx, 0); return 'n_08'; },
+    n_08: async ctx => { await prepEvent(ctx, 1); return 'n_09'; },
+    n_09: async ctx => { await prepEvent(ctx, 2); return 'n_10'; },
+    n_10: async ctx => {
+      await ctx.scene('field', { tod:'day', banner:'#566071', glyph:'秦', place: '卜者處', time: '起事準備' });
+      ctx.cast(['chensheng', 'wuguang', 'diviner']);
+      await ctx.say([{ text: '你與吳廣問卜，卜者察知你們的來意。' }, { who: 'diviner', expr: 'smirk', text: '你們要問的，並不只是吉凶吧。' }, { who: 'wuguang', expr: 'serious', text: '他這番話，像是留了另一層意思。' }]);
+      await ctx.anchor('dz_05');
+      return 'n_11';
+    },
+    n_11: async ctx => {
+      await ctx.scene('camp', { tod:'day', banner:'#566071', glyph:'秦', place: '市集至伙房', time: '魚腹丹書的準備' });
+      ctx.cast(['chensheng', 'wuguang']);
+      await ctx.say([{ text: '依史書，你們寫下帛書，再藏入將被買去烹食的魚腹。' }, { who: 'wuguang', expr: 'serious', text: '安排誰照看傳遞？人越多，越容易露出痕跡。' }, { who: 'shiguan', expr: 'normal', text: '藏書是固定史實，以下傳遞安排是教學模擬。' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '安排傳遞', text: '藏書之後，如何安排人手？', options: [
+        { label: '由少數知情者輪流照看', desc: '人心+3、糧-2', value: 'care' },
+        { label: '迅速交接，盡快完成', desc: '聲勢+5、人心-2', value: 'fast' }
+      ] });
+      await ctx.say([{ text: p === 'care' ? '你給照看者留了一份乾糧，讓他知道有人接班。' : '交接很快完成，知情者卻擔心沒有人替自己掩護。' }]);
+      ctx.flag('fish', p); effects(ctx, p === 'care' ? { people: 3, grain: -2 } : { star: 5, people: -2 });
+      return 'n_12';
+    },
+    n_12: async ctx => {
+      await ctx.say([{ text: '伙房買魚烹食，戍卒發現腹中的帛書。' }, { who: 'soldier', expr: 'worried', text: '魚肚裡怎會有文字？' }, { who: 'shiguan', expr: 'normal', text: '讀者知道誰作了安排，也要讀清原文的動作與位置。' }]);
+      await ctx.anchor('dz_06'); ctx.unlock('treasure:ch_yufudanshu');
+      return 'n_13';
+    },
+    n_13: async ctx => {
+      await ctx.scene('shrine', { tod:'night', banner:'#566071', glyph:'秦', place: '營地旁的叢祠', time: '夜' });
+      ctx.cast(['chensheng', 'wuguang']);
+      await ctx.say([{ who: 'wuguang', expr: 'serious', text: '叢祠就在營旁，巡燈卻一直在移動。' }, { who: 'chensheng', expr: 'serious', text: '我看燈光，你照信號前進。' }, { text: '你仍是陳勝；接下來由你指揮吳廣完成史書中的夜行。' }]);
+      ctx.flag('foxDirected', true);
+      return 'n_14';
+    },
+    n_14: async ctx => {
+      const r = await ctx.minigame({ id: 'ch02_fox', title: '篝火狐鳴・指揮吳廣', skip: false, goal:'避開巡燈到叢祠，親自完成三次狐鳴。提示保留使用前的成績。',
+        help: '<p>巡燈照不到下一格時按「前進」。抵達叢祠後，避開燈光按住「狐鳴」三次。方向右鍵前進、空白鍵狐鳴。可放慢或啟用逐步輔助，仍須完成所有動作。</p>' }, foxGame);
+      if (!r.completed) {
+        await ctx.say([{ who: 'shiguan', expr: 'normal', text: '這段操作尚未完成，回到夜行重新安排；可使用逐步輔助。' }]);
+        return 'n_14';
+      }
+      await ctx.say([{ text: '三次叫聲從叢祠傳向營地，戍卒在夜裡驚疑。' }, { who: 'wuguang', text: r.assisted ? '信號更清楚了，我照你的安排完成了。' : '燈光與叫聲的時機，你都掌握住了。' }, { who: 'shiguan', expr: 'normal', text: '夜路操作是模擬，接著對讀原文。' }]);
+      effects(ctx, { star: r.assisted ? 8 : 14, people: r.caught > 2 ? -3 : 2 });
+      ctx.state.vars.fox = Object.assign({},r.firstResult || r,{completed:true,bestScore:r.score});
+      ctx.log('狐鳴完成：被發現' + r.caught + '次；' + (r.assisted ? '逐步輔助' : r.slowed ? '放慢巡燈' : '獨立操作') + '；成績' + (r.firstResult || r).score + '/10。');
+      return 'n_15';
+    },
+    n_15: async ctx => {
+      await ctx.scene('camp', { tod:'day', banner:'#566071', glyph:'秦', place: '大澤鄉營地', time: '翌日' });
+      ctx.cast(['chensheng', 'wuguang', 'soldier']);
+      await ctx.say([{ who: 'soldier', expr: 'worried', text: '昨夜的聲音，你也聽到了？' }, { text: '戍卒互相交談，目光漸漸轉向陳勝。' }, { who: 'shiguan', expr: 'normal', text: '分清火光與聲音的原文用法。' }]);
+      await ctx.anchor('dz_07'); ctx.unlock('idiom:gouhuohuming');
+      return 'n_16';
+    },
+    n_16: async ctx => {
+      await ctx.say([{ text: '將尉醉，吳廣故意多次說要逃亡，激怒將尉。' }, { text: '衝突中，吳廣殺一尉，陳勝相助，兩尉皆死。' }, { who: 'wuguang', expr: 'serious', text: '大家都看著我們，現在得把隊伍召集起來。' }]);
+      return 'n_17';
+    },
+    n_17: async ctx => {
+      await ctx.chapter('第三幕　揭竿而起', '九百人的共同回應');
+      ctx.cast(['chensheng', 'wuguang', 'soldier']);
+      await ctx.say([{ text: '你召集徒屬，談到共同面臨的危機。' }, { who: 'soldier', expr: 'worried', text: '我們原本只是戍卒，真能有所作為嗎？' }, { who: 'shiguan', expr: 'normal', text: '請選出陳勝在原典中的號召。' }]);
+      await ctx.anchor('dz_08'); ctx.unlock('idiom:wanghoujiangxiang');
+      return 'n_18';
+    },
+    n_18: async ctx => {
+      await ctx.scene('camp', { tod:'day', banner:'#aa4431', glyph:'楚', place: '大澤鄉・盟壇', time: '起事' });
+      await ctx.say([{ text: '徒屬敬受命，袒右稱大楚。陳勝為將軍，吳廣為都尉。' }, { who: 'wuguang', expr: 'serious', text: '人聚起來了。糧和軍紀，現在也得有安排。' }, { who: 'chensheng', expr: 'serious', text: '我們帶人上路，就要讓他們知道怎麼走。' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '上路前的安排', text: '分糧、約束徵取與集結速度都有代價。', options: [
+        { label: '分糧立約，約束徵取', desc: '人心+8、糧-6、聲勢+4', value: 'discipline' },
+        { label: '集中物資，先擴大集結', desc: '糧+5、聲勢+8、人心-6', value: 'gather' }
+      ] });
+      await ctx.say([{ text: p === 'discipline' ? '同伴知道糧如何分，也知道向沿路人家徵取的界限。' : '隊伍很快集結，幾名戍卒卻說分配仍不清楚。' }]);
+      ctx.flag('marchRule', p); effects(ctx, p === 'discipline' ? { people: 8, grain: -6, star: 4 } : { grain: 5, star: 8, people: -6 });
+      return 'n_19';
+    },
+    n_19: async ctx => {
+      const r = await ctx.minigame({ id: 'ch02_march', title: '揭竿而起・帶隊至陳', skip: false, goal:'逐城讀事件、下令與查看回報，帶隊完成七城行軍；善用分糧與整隊。',
+        help: '<p>每城先讀事件，再以趕路、整頓或籌糧安排隊伍。按數字1～3或選按鈕，查看回報後再前進。地圖合併站仍逐城經歷，抵達陳即完成。</p>' },
+        (body, g) => marchGame(body, g, { people: ctx.meter('people'), grain: ctx.meter('grain'), star: ctx.meter('star') }));
+      if (!r.completed) {
+        await ctx.say([{ who: 'shiguan', expr: 'normal', text: '行軍安排尚未完成，回到路線重新開始；缺糧時可籌糧。' }]);
+        return 'n_19';
+      }
+      await ctx.say([{ text: '隊伍抵達陳。沿途的分配與回應，都留在同行者心裡。' }, { who: 'wuguang', expr: 'serious', text: '一路有人加入，也有人不願留下；你看見原因了。' }, { who: 'shiguan', expr: 'normal', text: '城邑經過依史書，資源與事件回報是本局模擬。' }]);
+      effects(ctx, { people: r.meters.people - ctx.meter('people'), grain: r.meters.grain - ctx.meter('grain'), star: r.meters.star - ctx.meter('star') });
+      ctx.state.vars.march = Object.assign({},r.firstResult || r,{completed:true,bestScore:r.score});
+      r.reports.forEach(t => ctx.log(t));
+      return 'n_20';
+    },
+    n_20: async ctx => {
+      await ctx.scene('city', { tod:'day', banner:'#aa4431', glyph:'楚', place: '陳城外', time: '行軍之後' });
+      ctx.cast(['chensheng', 'wuguang']);
+      await ctx.say([{ text: '史書記至陳時，隊伍已有車騎與數萬士卒。' }, { who: 'wuguang', expr: 'serious', text: '最初的九百人，如今已牽動更多地方。' }, { who: 'shiguan', expr: 'normal', text: '換讀賈誼的文字，看看他如何描寫響應者。' }]);
+      await ctx.anchor('dz_09'); ctx.unlock('idiom:jieganerqi');
+      return 'n_21';
+    },
+    n_21: async ctx => {
+      await ctx.say([{ text: '你回想傭耕的田地，再看眼前的隊伍。' }, { who: 'shiguan', expr: 'normal', text: '賈誼以「甕牖繩樞」描寫貧寒出身，形成與強秦的對照。' }, { who: 'chensheng', expr: 'serious', text: '出身沒有替我準備這支隊伍。接下來，也不能只靠口號。' }]);
+      ctx.unlock('idiom:yongyoushengshu');
+      return 'n_22';
+    },
+    n_22: async ctx => {
+      await ctx.scene('hall', { tod:'day', banner:'#aa4431', glyph:'楚', place: '陳城議事', time: '入陳數日後' });
+      ctx.cast(['chensheng', 'elder']);
+      await ctx.say([{ text: '入據陳後，你召三老豪傑會集議事。' }, { who: 'elder', expr: 'serious', text: '將軍領人討秦，我們有一件大事要請你決定。' }, { who: 'shiguan', expr: 'normal', text: '先看請王之言，再選原典中的回應。' }]);
+      await ctx.anchor('dz_10');
+      return 'n_23';
+    },
+    n_23: async ctx => {
+      await ctx.chapter('第四幕　張楚之後', '號召之外，還有人心');
+      await ctx.scene('hall', { tod:'day', banner:'#aa4431', glyph:'楚', place: '張楚王廷', time: '稱王後・治理模擬' });
+      ctx.cast(['chenshengking', 'elder']);ctx.unlock('text:ch_zhangchu');
+      await ctx.say([{ text: '你已立為王，號為張楚，治理的請求也接連到來。' }, { who: 'elder', expr: 'serious', text: '糧要分，軍要整，王廷也有人等著看。' }, { who: 'chenshengking', expr: 'serious', text: '先處理哪一件，其他事就得稍候。' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '王廷的第一批安排', text: '稱王是固定史實；資源優先順序由你演練。', options: [
+        { label: '先安撫與分糧', desc: '人心+8、糧-8、聲勢-3', value: 'relief' },
+        { label: '先整儀制與號令', desc: '聲勢+8、糧-4、人心-5', value: 'ceremony' },
+        { label: '委人清點，公開分配', desc: '人心+5、糧+3、聲勢-2', value: 'delegate' }
+      ] });
+      const d = { relief: { people: 8, grain: -8, star: -3 }, ceremony: { star: 8, grain: -4, people: -5 }, delegate: { people: 5, grain: 3, star: -2 } };
+      await ctx.say([{ text: { relief: '同伴拿到糧，王廷整備慢了些。', ceremony: '號令更響亮了，等待分糧的人卻不滿。', delegate: '清點公開了，也有人嫌回報太慢。' }[p] }, { who: 'elder', expr: 'serious', text: '這些回應，王也得聽見。' }]);
+      ctx.flag('kingPolicy', p); effects(ctx, d[p]);
+      return 'n_24';
+    },
+    n_24: async ctx => {
+      await ctx.scene('palace', { tod:'day', banner:'#aa4431', glyph:'楚', place: '陳王宮門', time: '故人來訪' });
+      ctx.cast(['chenshengking', 'friend']);
+      await ctx.say([{ text: '昔日傭耕的故人前來，想見陳涉，宮門一度不肯通報。' }, { who: 'friend', expr: 'surprised', text: '我認得涉。我只想見見他。' }, { text: '史書記陳王後來召見並同載入宮；你安排接見的過程。' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '故人到了', text: '仍會召見；如何安排他的等待與入宮？', options: [
+        { label: '親自說明，讓故人同車入宮', desc: '人心+6、聲勢-2', value: 'welcome' },
+        { label: '先由侍從接待，稍後相見', desc: '聲勢+3、人心-5', value: 'formal' }
+      ] });
+      await ctx.say([{ text: p === 'welcome' ? '故人看到你，才放下了在門外的不安。' : '故人終於入宮，仍記著門外等候的難堪。' }, { who: 'friend', expr: 'surprised', text: '眼前的殿屋帷帳，和從前真不一樣。' }]);
+      ctx.flag('friendWelcome', p); effects(ctx, p === 'welcome' ? { people: 6, star: -2 } : { star: 3, people: -5 });
+      return 'n_25';
+    },
+    n_25: async ctx => {
+      await ctx.scene('hall', { tod:'day', banner:'#aa4431', glyph:'楚', place: '陳王宮室', time: '故人的感嘆' });
+      await ctx.say([{ text: '故人看著宮室，仍用昔日的稱呼叫你。' }, { who: 'chenshengking', expr: 'serious', text: '我們曾在同一片田裡耕作。' }, { who: 'shiguan', expr: 'normal', text: '讀他的感嘆，辨認兩個字詞所指的景象。' }]);
+      await ctx.anchor('dz_11');
+      return 'n_26';
+    },
+    n_26: async ctx => {
+      ctx.cast(['chenshengking', 'shiguan']);
+      await ctx.say([{ text: '故人多說陳王舊事，有人指他言語損害王威；陳王斬之。' }, { text: '故人因此離去。陳王又信任苛察群臣者，諸將漸不親附。' }, { who: 'shiguan', expr: 'normal', text: '這是固定史實。你此前的接待演練，可與陳王後來的行動比較。' }]);
+      ctx.add('people', -22); ctx.log('固定史實回報：故人與諸將疏離；人心-22。');
+      return 'n_27';
+    },
+    n_27: async ctx => {
+      await ctx.scene('tent', { tod:'dusk', banner:'#aa4431', glyph:'楚', place: '張楚軍帳', time: '軍報與人心' });
+      ctx.cast(['chenshengking', 'soldier']);
+      await ctx.say([{ text: '軍報接連傳來，諸軍失利，同行者也開始動搖。' }, { who: 'soldier', expr: 'worried', text: '有人還沒拿到糧，也有人想回去。' }, { who: 'chenshengking', expr: 'serious', text: '剩下的資源，得再作一次安排。' }]);
+      const p = await chooseOnce(ctx, ctx.state.node, { title: '最後的資源安排', text: '分配演練影響本局人心；戰局與人物下場依原典。', options: [
+        { label: '先分糧、聽取士卒難處', desc: '人心+7、糧-7、聲勢-2', value: 'listen' },
+        { label: '集中補給前線、重申軍令', desc: '聲勢+5、糧-5、人心-8', value: 'front' }
+      ] });
+      await ctx.say([{ text: p === 'listen' ? '留下的人拿到一份糧，也知道自己的話有人聽見。' : '補給送向前線，營裡的私語卻沒有停止。' }, { who: 'shiguan', expr: 'normal', text: '比較號召、分配與信任，再看史書中的下場。' }]);
+      ctx.flag('lastSupply', p); effects(ctx, p === 'listen' ? { people: 7, grain: -7, star: -2 } : { star: 5, grain: -5, people: -8 });
+      return 'n_28';
+    },
+    n_28: async ctx => {
+      await ctx.scene('road', { tod:'dusk', banner:'#aa4431', glyph:'楚', place: '下城父', time: '篇中所記臘月' });
+      ctx.cast([]);
+      await ctx.say([{ text: '臘月，陳王之汝陰，還至下城父，其御莊賈殺以降秦。' }]);
+      return 'n_29';
+    },
+    n_29: async ctx => {
+      await ctx.chapter('第五幕　後世讀史', '賈誼〈過秦論〉');
+      await ctx.scene('academy', { tod:'day', banner:'#aa4431', glyph:'漢', place: '後世讀史', time: '西漢・回望秦亡' });
+      ctx.cast(['shiguan']);
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '陳勝身死，反秦的起兵仍延續。〈陳涉世家〉肯定他的首事之功。' }, { who: 'shiguan', expr: 'normal', text: '賈誼是後世論政者。現在比較強秦與陳涉，讀他的秦亡結論。' }, { text: '回想你如何聚眾，又如何維持隊伍，再作最後的判讀。' }]);
+      await ctx.anchor('dz_12'); ctx.unlock('person:ch_jiayi'); ctx.unlock('text:guoqinlun');
+      return 'n_30';
+    },
+    n_30: async ctx => {
+      await ctx.say([{ who: 'shiguan', expr: 'normal', text: '起事、入陳、稱王與下場依史書。過程中的安排，留下了你的體驗。' }, { text: '接下來的小傳包含自擬文言，標示為遊戲生成；原典引文另列。' }, { who: 'shiguan', expr: 'normal', text: '請以本局回報和原文，思考號召與治理的關係。' }]);
+      const key = ctx.meter('people') < 30 ? 'bad' : ctx.meter('star') >= 70 && ctx.meter('people') >= 50 ? 'great' : 'good';
+      return ctx.end({ type: 'final', key: key });
+    }
+  };
+
+  // Necessary operations keep their serializable progress in the story engine.
+  const blocked = () => document.hidden || !!document.querySelector('.zh-modal,.zc-detail,.hm-anchor');
+  const shuffled = (values,g) => { const a=values.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(g.rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; };
+  function gameLoop(g,step,onPause=()=>{}) {
+    let raf,last=performance.now(),alive=true,paused=false;
+    function loop(now){const dt=Math.min(.1,Math.max(0,(now-last)/1000));last=now;
+      if(blocked()){if(!paused)onPause();paused=true;}else{paused=false;step(dt);}
+      if(alive)raf=requestAnimationFrame(loop);
+    }
+    raf=requestAnimationFrame(loop);const stop=()=>{alive=false;cancelAnimationFrame(raf);};g.onCleanup(stop);return stop;
+  }
+  function listen(el,type,fn,g,opts){el.addEventListener(type,fn,opts);g.onCleanup(()=>el.removeEventListener(type,fn,opts));}
+  const portrait = (id,expr='normal') => ART.portrait(CHARACTERS.find(c=>c.id===id)||{id,name:id},{expr});
+  function foxGame(body,g){return new Promise(resolve=>{
+    const prior=g.getProgress();
+    const s=Object.keys(prior).length?Object.assign({},prior):{pos:0,furthest:0,calls:0,longest:0,caught:0,phase:g.rng()*Math.PI*2,elapsed:0,motion:0,cooldown:0,started:false,completed:false,assisted:false,slowed:false,frozenScore:null,scoreScale:10};
+    let holding=false,latch=false,hold=0,ended=false,saveClock=0,stop=()=>{};
+    body.innerHTML='<div class="ch02-game ch02-fox"><div class="dz-taskhead"><span>陳勝的夜行信號</span><b data-fox-stage></b></div><p>你指揮吳廣，藏身時安全；前進或發聲時須避開巡燈。抵達叢祠後完成三次狐鳴。</p>'+ 
+      '<div class="dz-fox-scene" aria-label="叢祠夜行場景">'+ART.scene('shrine',{tod:'night',weather:'clear'})+'<div class="dz-light" aria-hidden="true"></div><div class="dz-cover-path">'+['營外','矮牆','樹影','草叢','叢祠'].map((name,i)=>'<div class="dz-cover" data-tile="'+i+'"><span class="dz-wuguang">'+portrait('wuguang','serious')+'</span><b>'+g.esc(name)+'</b></div>').join('')+'</div></div>'+ 
+      '<p class="ch02-fox-signal" role="status">先讀操作，再開始夜行。</p><div class="ch02-callbar" role="progressbar" aria-label="狐鳴進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>'+ 
+      '<p class="ch02-callcount"></p><div class="ch02-actions"><button class="zh-btn zh-btn--primary" data-fox="start">開始夜行</button><button class="zh-btn zh-btn--primary" data-fox="move">前進一格 →</button><button class="zh-btn zh-btn--primary dz-hold" data-fox="call">按住狐鳴</button></div>'+ 
+      '<div class="ch02-aids"><button class="zh-btn zh-btn--quiet" data-fox="slow">放慢巡燈</button><button class="zh-btn zh-btn--quiet" data-fox="assist">逐步輔助</button></div><p class="ch02-small">→ 前進，空白鍵按住狐鳴；觸控可按住。輔助後仍須親自完成，使用前的成績保留。</p><button class="zh-btn zh-btn--primary" data-fox="finish" hidden>完成狐鳴，回營</button></div>';
+    const q=sel=>body.querySelector(sel),msg=q('.ch02-fox-signal'),move=q('[data-fox="move"]'),call=q('[data-fox="call"]');
+    const lit=()=>Math.min(4,Math.floor((Math.sin(s.phase)+1)*2.5));
+    const score=()=>bounded(Math.max(0,s.furthest+2*s.longest-1.5*s.caught));
+    const save=()=>g.setProgress(s);
+    const freeze=()=>{if(s.frozenScore===null)s.frozenScore=score();};
+    function draw(){const light=lit();q('.dz-light').style.left=((light+.5)/5*100)+'%';q('.dz-light').hidden=s.assisted;
+      body.querySelectorAll('[data-tile]').forEach(t=>{t.classList.toggle('is-here',Number(t.dataset.tile)===s.pos);t.classList.toggle('is-lit',!s.assisted&&Number(t.dataset.tile)===light);});
+      move.disabled=!s.started||s.completed||s.pos>=4||s.motion>0||s.cooldown>0;call.disabled=!s.started||s.completed||s.pos!==4||s.motion>0||s.cooldown>0;
+      call.textContent=s.assisted?'發出一次狐鳴':'按住狐鳴';q('[data-fox="start"]').hidden=s.started;q('[data-fox="finish"]').hidden=!s.completed;
+      q('[data-fox="slow"]').disabled=s.slowed||s.completed;q('[data-fox="assist"]').disabled=s.assisted||s.completed;
+      q('.ch02-callcount').textContent='狐鳴 '+s.calls+'／3・被發現 '+s.caught+' 次';q('[data-fox-stage]').textContent=s.completed?'夜行完成':s.assisted?'輔助演練':Math.max(0,90-Math.floor(s.elapsed))+' 秒';
+      const percent=Math.round(Math.min(1,hold/.65)*100);q('.ch02-callbar').setAttribute('aria-valuenow',percent);q('.ch02-callbar i').style.width=percent+'%';
+      g.setStatus(s.completed?'必要操作完成':s.assisted?'逐步輔助・自行完成':'巡燈所到之處，停下隱蔽');
+    }
+    function release(){holding=false;latch=false;hold=0;}
+    function detected(){s.caught++;s.pos=Math.max(0,s.pos-1);s.calls=0;s.motion=0;s.cooldown=.65;release();g.shake();g.flash('bad');msg.textContent='巡燈照到動作，吳廣退回一處掩體。等燈離開，再發信號。';save();draw();}
+    function assist(){if(ended||s.completed||s.assisted||blocked())return;freeze();s.assisted=true;s.motion=0;s.cooldown=0;release();msg.textContent='信號改為逐步提示：自行前進四處，抵達叢祠後按三次狐鳴。使用前的成績已保留。';save();draw();}
+    function advance(){if(ended||blocked()||!s.started||move.disabled)return;s.pos++;if(!s.assisted&&lit()===s.pos){detected();return;}s.furthest=Math.max(s.furthest,s.pos);s.motion=s.assisted?0:.35;msg.textContent=s.pos===4?'到叢祠了。等燈離開，再按住狐鳴；每次完成後放開。':'吳廣已藏好。看下一處掩體，等巡燈離開。';g.sfx('click');save();draw();}
+    function finishCall(){if(ended||s.completed||s.pos!==4)return;s.calls++;s.longest=Math.max(s.longest,s.calls);release();g.combo(s.calls);msg.textContent='第'+s.calls+'次：「大楚興，陳勝王」。';
+      if(s.calls===3){s.completed=true;stop();msg.textContent='三次狐鳴已完成。回營後對讀原文。';g.pop('大楚興，陳勝王','gold');q('[data-fox="finish"]').hidden=false;}save();draw();}
+    function beginCall(){if(ended||blocked()||call.disabled||latch)return;if(s.assisted){finishCall();return;}latch=true;if(lit()===4){detected();return;}holding=true;hold=0;}
+    listen(q('[data-fox="start"]'),'click',()=>{if(blocked()||s.started)return;s.started=true;msg.textContent='觀察下一處掩體，等燈光離開。';save();draw();},g);
+    listen(move,'click',advance,g);listen(q('[data-fox="assist"]'),'click',assist,g);
+    listen(q('[data-fox="slow"]'),'click',()=>{if(blocked()||s.slowed||s.completed)return;freeze();s.slowed=true;msg.textContent='巡燈放慢。仍要觀察下一處掩體並自己發信號。';save();draw();},g);
+    listen(call,'pointerdown',e=>{if(s.assisted)return;e.preventDefault();call.setPointerCapture?.(e.pointerId);beginCall();},g);
+    listen(call,'pointerup',release,g);listen(call,'pointercancel',release,g);
+    listen(call,'click',e=>{if(s.assisted){beginCall();}else if(e.detail===0)beginCall();},g);
+    listen(document,'keydown',e=>{if(ended||blocked()||e.repeat)return;if(e.key==='ArrowRight'){e.preventDefault();advance();}else if(e.code==='Space'&&(!e.target.closest('button,input,textarea,select,a')||e.target===call)){e.preventDefault();beginCall();}},g);
+    listen(document,'keyup',e=>{if(e.code==='Space'){e.preventDefault();release();}},g);listen(window,'blur',release,g);listen(document,'visibilitychange',()=>{release();save();},g);
+    listen(q('[data-fox="finish"]'),'click',()=>{if(blocked()||!s.completed||ended)return;ended=true;stop();save();const value=s.frozenScore===null?score():s.frozenScore;resolve({completed:true,passed:value>=7&&!s.assisted&&!s.slowed,score:value,max:10,caught:s.caught,assisted:s.assisted,slowed:s.slowed,furthest:s.furthest,calls:s.calls,elapsed:s.elapsed});},g);
+    g.onCleanup(()=>{ended=true;release();});
+    if(s.completed)msg.textContent='已接續：三次狐鳴完成，請確認回營。';else if(s.started)msg.textContent='已接續夜行。你仍須指揮吳廣完成剩下的操作。';
+    draw();save();if(!s.completed)stop=gameLoop(g,dt=>{if(s.started){s.elapsed+=dt;s.phase+=dt*(s.slowed?.45:1.1);s.cooldown=Math.max(0,s.cooldown-dt);
+      if(!s.assisted&&(s.motion>0||holding)&&lit()===s.pos)detected();else{s.motion=Math.max(0,s.motion-dt);if(holding){hold+=dt;if(hold>=.65)finishCall();}}
+      if(s.elapsed>=90&&!s.completed&&!s.assisted)assist();}saveClock+=dt;if(saveClock>=.5){saveClock=0;save();}draw();},release);
+  });}
+
+  const MARCH_CITIES = [{name:'蘄',station:1},{name:'銍',station:2},{name:'酇',station:3},{name:'苦',station:4},{name:'柘',station:5},{name:'譙',station:6},{name:'陳',station:7}];
+  const MARCH_EVENTS = [
+    {title:'道旁有人等候',text:'幾名鄉人想加入，卻不知道這支隊伍的分配規矩。',best:'rest',ok:'規矩說清楚，新來者願意跟上。',bad:'有人點頭，也有人仍站在原處。'},
+    {title:'糧袋漸輕',text:'伙房回報存糧不足，沿路仍有人願意議價交易。',best:'food',ok:'交易談成，糧袋多了幾份。',bad:'交易不如預期，補給比預計少。'},
+    {title:'路面泥濘',text:'前方泥路拖慢隊伍，後隊看不見旗號。',best:'rest',ok:'重新整隊，前後隊又接在一起。',bad:'後隊仍有些散亂，行進多費力氣。'},
+    {title:'響應者帶糧',text:'幾人帶糧前來，想知道你們是否接納。',best:'food',ok:'你安排接納、清點，來者交出糧食。',bad:'清點沒說清楚，部分來者留下自己的糧。'},
+    {title:'前隊催促',text:'前隊想趁旗號已傳出，接上下一城聲勢；後隊已有約定信號。',best:'rush',ok:'前後隊接上信號，聲勢隨行進擴大。',bad:'消息和隊伍一時沒有接上。'},
+    {title:'新舊同伴爭份',text:'新來者與原有戍卒爭糧份，大家等你安排。',best:'rest',ok:'分配說清楚，爭執暫時平息。',bad:'分配仍有人不服，合作不如先前。'},
+    {title:'附近有人願意接應',text:'接應者願提供物資，但要先說明分配。',best:'food',ok:'雙方說明分配，隊伍補到一批糧。',bad:'接應沒談妥，補給比估計少。'},
+    {title:'旗號傳向下一城',text:'起事消息向前傳去，已整隊的同伴盼及早接上。',best:'rush',ok:'旗號與隊伍接續，沿路有人加入。',bad:'消息傳得比隊伍快，未及接上響應。'}
+  ];
+  function marchGame(body,g,initial){return new Promise(resolve=>{
+    const saved=g.getProgress();const s=Object.keys(saved).length?Object.assign({},saved):{index:0,order:shuffled(MARCH_EVENTS.map((_,i)=>i),g).slice(0,7),rolls:Array.from({length:7},()=>g.rng()),m:{people:bounded(initial.people),grain:bounded(initial.grain),star:bounded(initial.star)},actions:[],reports:[],phase:'choice',quality:0,deserted:0,aid:0,done:false};
+    const root=ZH.html('<div class="ch02-game ch02-march"></div>');body.append(root);let stopped=false;
+    const choices=[{id:'rush',label:'趕路接上聲勢',d:{grain:-7,people:-4,star:6}},{id:'rest',label:'整頓、說明分配',d:{grain:-6,people:6,star:3}},{id:'food',label:'議價籌糧、接納',d:{grain:12,people:2,star:0}}];
+    const save=()=>g.setProgress(s),apply=d=>Object.keys(d).forEach(k=>s.m[k]=bounded(s.m[k]+d[k]));
+    const points=()=>Math.round(Math.min(10,s.quality/14*8+Math.min(1,s.m.people/65)*2));
+    const city=()=>MARCH_CITIES[Math.min(6,s.index)],card=()=>MARCH_EVENTS[s.order[Math.min(6,s.index)]];
+    function draw(){const c=city(),e=card(),finished=s.phase==='finish',names=['大澤鄉',...MARCH_CITIES.map(x=>x.name)],coords=[[65,105],[168,78],[283,108],[393,80],[506,112],[609,80],[706,100],[816,72]];
+      root.innerHTML='<div class="dz-taskhead"><span>陳勝的行軍圖</span><b>'+c.name+'・'+(s.index+1)+'／7 城</b></div>'+ 
+        '<div class="dz-route-map" aria-label="示意行軍路線"><svg viewBox="0 0 880 165" role="img" aria-label="大澤鄉至陳的八個地名"><defs><pattern id="dz-paper" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M0 0H26V26" fill="none" stroke="#806844" stroke-opacity=".07"/></pattern></defs><rect width="880" height="165" fill="#e8d7ad"/><rect width="880" height="165" fill="url(#dz-paper)"/><path d="M0 45Q130 0 245 46T510 40T880 25" stroke="#b4a075" stroke-width="35" fill="none" opacity=".35"/><path d="M0 140Q195 152 310 135T540 145T880 135" stroke="#718c93" stroke-width="9" fill="none" opacity=".5"/><polyline points="'+coords.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="#9d7446" stroke-width="4" stroke-dasharray="6 5"/>'+coords.map((p,i)=>'<g transform="translate('+p[0]+' '+p[1]+')"><circle r="'+(i===c.station?19:14)+'" fill="'+(i<=c.station?'#a33e2b':'#a89a76')+'" stroke="#faf0d1" stroke-width="3"/><text y="5" text-anchor="middle" fill="#fff4d7" font-size="14">'+(i===0?'起':i)+'</text><text y="-27" text-anchor="middle" fill="#3d3228" font-size="23" font-family="serif">'+names[i]+'</text>'+(i===c.station?'<path d="M18 -3V-47H42L37 -36H18" stroke="#923b27" stroke-width="3" fill="#bb4531"/>':'')+'</g>').join('')+'</svg></div><p class="dz-map-hint">左右滑動行軍圖，查看沿途城邑。</p>'+ 
+        '<div class="dz-march-cast"><span>'+portrait('chensheng','serious')+'</span><p>你是陳勝。逐城親自下令，從事件與資源判斷隊伍需要什麼。<small>地名順序依篇中記載，地圖與資源為教學模擬。</small></p><span>'+portrait('wuguang','normal')+'</span></div>'+ 
+        '<div class="ch02-resources"><span>人心 <b>'+s.m.people+'</b></span><span>糧 <b>'+s.m.grain+'</b></span><span>聲勢 <b>'+s.m.star+'</b></span></div>'+ 
+        '<section class="ch02-event" aria-live="polite"><p class="ch02-small">'+c.name+'・'+(s.phase==='choice'?'讀事件，再下令':'本城回報')+'</p><h3>'+g.esc(finished?'抵達陳':e.title)+'</h3><p>'+g.esc(finished?'七城均已親自安排。號召之後，還有治理的責任。':s.phase==='choice'?e.text:s.reports.at(-1))+'</p></section>'+ 
+        (s.phase==='choice'?'<div class="ch02-actions ch02-march-choices">'+choices.map((a,i)=>'<button class="zh-btn zh-btn--primary" data-march="'+a.id+'" '+(a.id!=='food'&&s.m.grain < -a.d.grain?'disabled':'')+'><b>'+(i+1)+'・'+a.label+'</b><small>'+g.esc(deltaText(a.d))+(a.id==='food'&&s.m.grain<6?'；求援另使聲勢-4':'')+'</small></button>').join('')+'</div>':'<button class="zh-btn zh-btn--primary" data-march="next">'+(finished?'完成行軍，進入陳城':s.index===6?'查看抵達成績':'接著前往'+MARCH_CITIES[s.index+1].name)+'</button>')+ 
+        '<p class="ch02-small">成績依安排是否切合事件與人心維持，最高十分。糧不足時仍可籌糧；不會跳過沿途城邑。</p>';
+      const map=root.querySelector('.dz-route-map');map.scrollLeft=(c.station/7)*Math.max(0,map.scrollWidth-map.clientWidth);
+      body.dataset.marchCity=c.name;body.dataset.marchPhase=s.phase;g.setStatus(c.name+'・'+s.actions.length+'／7 道安排');save();
+    }
+    function act(id){if(stopped||blocked()||s.phase!=='choice')return;const a=choices.find(x=>x.id===id);if(!a||(id!=='food'&&s.m.grain < -a.d.grain))return;
+      const c=city(),e=card(),before=Object.assign({},s.m);apply(a.d);let aidText='',desertText='';
+      if(id==='food'&&before.grain<6){s.aid++;apply({star:-4});aidText='求援補給，聲勢稍減。';}
+      const rate=Math.min(.9,Math.max(.15,.25+s.m.people/250+s.m.star/400+s.m.grain/500+(id===e.best?.15:0))),ok=s.rolls[s.index]<rate;
+      s.quality+=id===e.best?2:1;apply({star:3,people:1});apply(ok?{people:3,star:4,grain:id==='food'?3:0}:{people:-4,star:-4,grain:-2});
+      if(s.m.people<30){s.deserted++;apply({people:-3,star:-4});desertText='人心低落，幾名同伴離隊。';}
+      const actual={people:s.m.people-before.people,grain:s.m.grain-before.grain,star:s.m.star-before.star};
+      s.actions.push({city:c.name,event:e.title,action:id,ok,appropriate:id===e.best});s.reports.push(c.name+'：'+(ok?e.ok:e.bad)+aidText+desertText+' '+deltaText(actual)+'。');s.phase='report';g.sfx('click');g.combo(s.actions.length);draw();}
+    function next(){if(stopped||blocked()||s.phase==='choice')return;if(s.phase==='finish'){stopped=true;s.done=true;save();resolve({completed:true,passed:points()>=7,score:points(),max:10,meters:Object.assign({},s.m),quality:s.quality,deserted:s.deserted,aid:s.aid,actions:s.actions,reports:s.reports});return;}if(s.index===6)s.phase='finish';else{s.index++;s.phase='choice';}draw();}
+    listen(root,'click',e=>{const b=e.target.closest('[data-march]');if(!b||b.disabled)return;if(b.dataset.march==='next')next();else act(b.dataset.march);},g);
+    listen(document,'keydown',e=>{if(e.repeat||blocked())return;if(s.phase==='choice'&&/^[123]$/.test(e.key)){e.preventDefault();act(choices[Number(e.key)-1].id);}},g);
+    g.onCleanup(()=>{stopped=true;});draw();
+  });}
+
+  // ═════════════════════════ 7. 結局與結算 ═════════════════════════
+  const ENDINGS = {
+    great: { id: 'great', title: '首事之功', good: true, text: '涉雖身死，首事之功猶存。此局聲勢既振，人心尚聚。' },
+    good: { id: 'good', title: '揭竿而起', good: true, text: '涉起大澤，入陳為王。此局行軍有得有失，聚眾之後，治理尤難。' },
+    bad: { id: 'bad', title: '無親陳王', good: false, text: '諸故人引去，諸將不親附。此局人心離散，宜察用人與分配之失。' }
+  };
+  function onEnd(result, ctx) {
+    const s = ctx.state;
+    const e = ENDINGS[(result && result.key) || 'good'] || ENDINGS.good;
+    ZH.sfx('seal');
+    return ctx.banner(e.title, '大澤鄉・終')
+      .then(() => ctx.say([{ who: 'shiguan', expr: 'normal', text: '陳勝的史實下場相同；結局評語呈現你的本局安排。' }, { text: '結算中的自擬文言為遊戲生成小傳與史官評語。' }]))
+      .then(() => DZ.finish(payload(s, e)));
+  }
+  function payload(s, ending) {
+    const f = s.flags || {}, v = s.vars || {};
+    const prep = [v.prep0, v.prep1, v.prep2].filter(Boolean);
+    const prepQuality = prep.reduce((sum, p) => sum + p.quality, 0) / 6;
+    const marchQuality = v.march ? v.march.quality / 14 : 0;
+    const foxScore = v.fox ? v.fox.score / (v.fox.max || 100) : 0;
+    const policy = [f.rain === 'share', f.fish === 'care', f.marchRule === 'discipline', f.kingPolicy === 'relief' || f.kingPolicy === 'delegate', f.friendWelcome === 'welcome', f.lastSupply === 'listen'].filter(Boolean).length / 6;
+    const deeds = ['少與人傭耕，志不安於阡陌。', '會雨失期，與吳廣謀起事。', '借扶蘇、項燕之名，以號其眾。'];
+    deeds.push(prepQuality >= 0.75 ? '此局聽眾之難，分糧而相扶。' : '此局急於集眾，眾心有聚有離。');
+    deeds.push(v.fox && (v.fox.assisted || v.fox.slowed) ? '此局得輔助，猶親指吳廣以成夜鳴。' : '此局察巡燈，指吳廣以成夜鳴。');
+    deeds.push('丹書置魚腹，既而號令徒屬，稱大楚。');
+    deeds.push(v.march && v.march.deserted ? '此局行軍至陳，途中亦有離散者。' : '此局整隊籌糧，行軍至陳。');
+    deeds.push('至陳立為王，號為張楚。');
+    deeds.push(f.friendWelcome === 'welcome' ? '此局念傭耕之約，親迎故人；史書終載故人引去。' : '此局重宮門之儀；史書終載故人引去。');
+    deeds.push('陳王既敗，其御莊賈殺以降秦，而首事之功不泯。');
+    return {
+      scenarioId: SID, mode: MODE, faction: '楚', role: '陳勝', roleKind: 'shijia', country: '楚',
+      bioTitle: '陳涉世家', bioOpening: '陳勝者，陽城人也，字涉。', ending: ending,
+      scoreStrategy: bounded(prepQuality * 25 + marchQuality * 50 + foxScore * 25),
+      scoreVirtue: bounded(prepQuality * 40 + policy * 60),
+      turns: s.steps || 1,
+      durationSec: Math.min(5400, Math.max(0, Math.round((Date.now() - (s.startedAt || Date.now())) / 1000))),
+      deeds: deeds, anchors: s.anchors, games: s.games, codex: s.codex,
+      opener: '遊戲生成史官評語：余讀〈陳涉世家〉，至「王侯將相寧有種乎」，壯其首事，亦察其失眾之由。',
+      prompts: [
+        '陳勝能號召起義，為何後來仍失敗？請用本局一次安排的回報與一處原文說明。',
+        '「王侯將相寧有種乎」對今天的身分與機會有何意義？取得位置後還要承擔什麼責任？',
+        '魚腹丹書、篝火狐鳴與現代假訊息有何相似？聚眾成功可能對信任造成什麼代價？'
+      ]
+    };
+  }
+
+  // ═════════════════════════ 8. 開始（沿用官方範例） ═════════════════════════
+
+  const saveState = DZ.saveState;
+
+  function startGame(saved) {
+    if(saved)DZ.useState(saved);else DZ.newRun();
+    document.documentElement.classList.toggle('hm-still',DZ.read('still',false));
+    ROOT.innerHTML = '';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_01',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd: onEnd, save: saveState, snapshot:DZ.snapshot, anchorRunner:DZ.runAnchor, onProgress:DZ.cacheProgress, actions:[{label:"史冊",run:DZ.book},{label:"存檔",run:DZ.saveMenu}]
+    });
+    window.__ep = game;
+    game.start(saved || null);
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header><section class="dz-title-scene" aria-label="大澤鄉雨營與本話人物">'+ART.scene('camp',{tod:'dusk',weather:'rain',banner:'#586270',glyph:'秦'})+'<div class="dz-title-cast">'+['chensheng','wuguang','soldier'].map(id=>'<span>'+ART.portrait(CHARACTERS.find(c=>c.id===id),{expr:id==='soldier'?'worried':'serious'})+'</span>').join('')+'</div></section>' +
+      '<section class="ep-start"><span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>' +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個史實錨點。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave = DZ.loadState;
+
+  function showCoreMessage(){ROOT.innerHTML='<main class="ep-title__main"><h1>共用核心待更新</h1><p>請先安裝 Eng_Story v0.2.2、Arena_js 與 Art_kit，再開啟第二話。</p><button class="zh-btn zh-btn--primary" data-core-home>回首頁</button></main>';ROOT.querySelector('[data-core-home]').onclick=()=>ZH.go('hub');}
+  ZH.ready(() => {
+    if(!ZH.story?.createJournal||!ZH.arena||!window.ART){showCoreMessage();return;}
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), anchorsReady]).then(([saved]) => {
+      ZH.loading(false);
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+
+</script>
+<script>ZH.ready(function(){ZH.textplay?.install("S_ch02_dazexiang",null);});</script>
+</body></html>

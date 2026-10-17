@@ -1,0 +1,500 @@
+<!-- 核心玩法整合 v2.0.0：新玩法內部暫停與親讀時停表。 -->
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Arena_js.html
+ 版本：v0.1.1（2026-10-08）
+ 依賴：Core_css.html、Core_js.html（ZH.call、ZH.sfx、ZH.modal、ZH.esc、ZH.isGuest、ZH.session）
+       伺服器端 Rank.gs（api_gameBoard）
+       Eng_Story 會自動帶入（伺服器 Code.gs v0.1.5 起，頁面 include Eng_Story 時會先插入本檔）
+ 說明：小遊戲競技場。有代碼（id）的小遊戲，外框會自動變成「挑戰賽」：
+   1. 挑戰卡：你的最佳、班上最佳、全校前五名（排行榜來自 MiniGameLog，每人取最佳一次）
+   2. 3、2、1、開始！
+   3. 遊戲中：上方的競技列顯示用時與目標；小遊戲可以加上對手競速條、倒數、連擊（見下方 g 的工具）
+   4. 成績卡：星等（一到三顆）、分數、用時、個人新紀錄、班排與校排、前五名
+   5. 每關最多挑戰 3 次，劇情採計最好的一次；每一次都會記進小遊戲紀錄
+ 小遊戲函式拿到的 g 多了這些工具（全部選用，沒用也能玩）：
+   g.race({ me, rival, rivalColor, goal })  → { me(0～1), rival(0～1) }   對手競速條：兩條跑道，誰先到右邊
+   g.timer(秒, { onEnd, warn })            → { left(), add(秒), stop() }  倒數（說明視窗開著時會暫停；最後 warn 秒變紅並滴答響）
+   g.combo(n)                               連擊數（0 會隱藏）；回傳加成倍率（1、1.2、1.5、2）
+   g.pop(文字, 'ok'|'bad'|'gold')           畫面中央跳出的大字（完美！、＋3、失誤）
+   g.shake()、g.flash('ok'|'bad')           震動、閃光
+   g.best                                   { me, classBest, schoolBest }：開始時的紀錄（可能是 null）
+   g.attempt                                第幾次挑戰（1～3）
+ 成績的算法照舊：小遊戲 resolve { passed, score, max }；星等＝分數比例（90% 三顆、70% 兩顆、過關或 40% 一顆）。
+ Config 工作表的 leaderboard 填 FALSE 可以關閉排行（學生只看得到自己的最佳）。訪客不列入排行。
+ v0.1.1：初版。
+============================================================
+-->
+<style>
+  .ar-hud {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 6px 12px;
+    border-bottom: 1px solid var(--line); background: linear-gradient(90deg, rgba(20, 26, 46, .95), rgba(39, 49, 79, .92));
+    font-size: 13.5px; font-variant-numeric: tabular-nums;
+  }
+  .ar-hud[hidden] { display: none; }
+  .ar-chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line-soft); background: rgba(11, 14, 29, .6); white-space: nowrap; }
+  .ar-chip b { color: var(--gilt); font-weight: 700; }
+  .ar-chip--target { border-color: rgba(224, 180, 76, .5); }
+  .ar-race { flex: 1 1 260px; display: grid; gap: 3px; min-width: 200px; }
+  .ar-lane { position: relative; height: 16px; border-radius: 999px; background: rgba(236, 230, 214, .1); overflow: hidden; }
+  .ar-lane i { position: absolute; left: 0; top: 0; bottom: 0; width: var(--p, 0%); border-radius: inherit; transition: width .25s linear; }
+  .ar-lane--me i { background: linear-gradient(90deg, var(--patina), #8fe0c4); }
+  .ar-lane--rival i { background: linear-gradient(90deg, #7a2a24, var(--rc, var(--cinnabar))); }
+  .ar-lane span { position: absolute; left: 8px; top: 0; line-height: 16px; font-size: 11.5px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
+  .ar-lane em { position: absolute; top: -1px; width: 18px; height: 18px; margin-left: -9px; left: var(--p, 0%); border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255, 255, 255, .8); transition: left .25s linear; }
+  .ar-race.is-behind .ar-lane--rival em { animation: ar-pulse .6s ease-in-out infinite; background: #ffb4aa; }
+  .ar-race__goal { font-size: 11.5px; color: var(--text-dim); }
+  .ar-timer { min-width: 120px; }
+  .ar-timer__bar { width: 70px; height: 7px; border-radius: 999px; background: rgba(236, 230, 214, .14); overflow: hidden; }
+  .ar-timer__bar i { display: block; height: 100%; width: var(--p, 100%); background: linear-gradient(90deg, var(--cinnabar), var(--gilt)); transition: width .25s linear; }
+  .ar-timer.is-warn { border-color: var(--cinnabar); color: #ffb4aa; animation: ar-pulse .5s ease-in-out infinite; }
+  .ar-combo { border-color: var(--gilt); color: var(--gilt); font-weight: 700; }
+  .ar-combo.is-bump { animation: ar-bump .3s ease; }
+  .ar-combo[hidden] { display: none; }
+
+  .ar-layer { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; padding: 12px; overflow: auto; background: rgba(8, 10, 22, .78); animation: zh-fade-in .2s ease both; }
+  .ar-card {
+    width: min(560px, 100%); padding: 18px 18px 16px; border: 1px solid var(--gilt); border-radius: 14px;
+    background: linear-gradient(180deg, var(--night-3, #27314f), var(--night-2, #1b2238)); box-shadow: var(--shadow);
+  }
+  .ar-kicker { display: inline-block; padding: 1px 12px; border-radius: 4px; background: var(--cinnabar); color: #fff4ec; font-family: var(--f-display); font-weight: 700; letter-spacing: .2em; }
+  .ar-card h3 { margin: 8px 0 4px; font-family: var(--f-display); font-size: 24px; letter-spacing: .08em; }
+  .ar-goal { margin: 0 0 12px; color: var(--text-dim); line-height: 1.7; }
+  .ar-recs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .ar-rec { padding: 8px 10px; border-radius: 10px; background: rgba(11, 14, 29, .55); border: 1px solid var(--line-soft); min-width: 0; }
+  .ar-rec small { display: block; font-size: 12px; color: var(--text-dim); }
+  .ar-rec b { display: block; font-size: 16px; color: var(--gilt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ar-rec span { display: block; font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ar-top { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 4px; }
+  .ar-top li { display: grid; grid-template-columns: 2em minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 4px 10px; border-radius: 8px; background: rgba(236, 230, 214, .05); font-size: 14px; }
+  .ar-top li.is-me { background: rgba(74, 156, 138, .28); outline: 1px solid var(--patina); }
+  .ar-top li b { font-family: var(--f-display); color: var(--gilt); text-align: center; }
+  .ar-top li span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ar-top li small { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ar-top li em { font-style: normal; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ar-note { margin: 0 0 12px; font-size: 13px; color: var(--text-dim); }
+  .ar-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .ar-btns .zh-btn { min-height: 44px; }
+
+  .ar-count { position: absolute; inset: 0; z-index: 9; display: grid; place-items: center; pointer-events: none; background: rgba(8, 10, 22, .55); }
+  .ar-count b { font-family: var(--f-display); font-size: clamp(72px, 18vw, 150px); color: var(--gilt); text-shadow: 0 6px 30px rgba(0, 0, 0, .8); animation: ar-count .8s ease both; }
+  .ar-count b.is-go { color: #fff4ec; font-size: clamp(56px, 13vw, 110px); letter-spacing: .2em; }
+
+  .ar-res { text-align: center; }
+  .ar-stars { font-size: 44px; letter-spacing: .12em; line-height: 1; color: rgba(236, 230, 214, .2); }
+  .ar-stars i { font-style: normal; display: inline-block; }
+  .ar-stars i.is-on { color: var(--gilt); text-shadow: 0 0 18px rgba(224, 180, 76, .7); animation: ar-star .5s cubic-bezier(.3, 1.6, .5, 1) both; }
+  .ar-grade { margin: 6px 0 2px; font-family: var(--f-display); font-size: 26px; letter-spacing: .2em; }
+  .ar-score { font-size: 16px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ar-score b { font-size: 30px; color: var(--text); }
+  .ar-stamp {
+    display: inline-block; margin: 10px 0 0; padding: 4px 16px; border: 3px solid var(--cinnabar); border-radius: 8px;
+    color: var(--cinnabar); font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .3em;
+    transform: rotate(-6deg); animation: ar-stamp .45s cubic-bezier(.3, 1.6, .5, 1) .5s both;
+  }
+  .ar-rank { margin: 12px 0 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .ar-rank span { padding: 4px 12px; border-radius: 999px; background: rgba(11, 14, 29, .6); border: 1px solid var(--line-soft); font-size: 14px; }
+  .ar-rank b { color: var(--gilt); font-size: 18px; }
+  .ar-res .ar-top { text-align: left; }
+  .ar-dim { color: var(--text-dim); font-size: 13px; }
+
+  .ar-pop {
+    position: absolute; left: 0; right: 0; margin: 0 auto; top: 38%; z-index: 9; width: max-content; max-width: 90%;
+    pointer-events: none; font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 7vw, 52px);
+    color: #fff4ec; text-shadow: 0 3px 18px rgba(0, 0, 0, .85); animation: ar-pop .9s ease-out forwards;
+  }
+  .ar-pop.is-ok { color: #9ff0d2; }
+  .ar-pop.is-bad { color: #ffb4aa; }
+  .ar-pop.is-gold { color: var(--gilt); }
+  .ar-flash { position: absolute; inset: 0; z-index: 7; pointer-events: none; animation: ar-flash .35s ease-out forwards; }
+  .ar-flash.is-ok { background: rgba(74, 156, 138, .35); }
+  .ar-flash.is-bad { background: rgba(217, 72, 59, .38); }
+  .is-shake { animation: ar-shake .35s ease; }
+
+  @keyframes ar-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+  @keyframes ar-bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  @keyframes ar-count { 0% { opacity: 0; transform: scale(1.8); } 25% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: scale(.85); } }
+  @keyframes ar-star { from { opacity: 0; transform: scale(2.2) rotate(-30deg); } to { opacity: 1; transform: none; } }
+  @keyframes ar-stamp { from { opacity: 0; transform: scale(2.4) rotate(-6deg); } to { opacity: 1; transform: rotate(-6deg); } }
+  @keyframes ar-pop { 0% { opacity: 0; transform: translateY(16px) scale(.8); } 18% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-30px); } }
+  @keyframes ar-flash { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes ar-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+
+  @media (max-width: 860px) {
+    .ar-hud { padding: 5px 8px; gap: 5px 8px; font-size: 13px; }
+    .ar-recs { gap: 6px; }
+    .ar-rec { padding: 6px 8px; }
+    .ar-rec b { font-size: 15px; }
+    .ar-card { padding: 14px 12px 12px; }
+    .ar-card h3 { font-size: 21px; }
+    .ar-top li { font-size: 13.5px; padding: 4px 8px; }
+  }
+  @media (max-width: 420px) {
+    .ar-recs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ar-recs .ar-rec:last-child { grid-column: 1 / -1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ar-count b, .ar-stars i.is-on, .ar-stamp, .ar-pop, .ar-flash, .is-shake, .ar-timer.is-warn, .ar-combo.is-bump, .ar-race.is-behind .ar-lane--rival em { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+  if (!ZH || ZH.arena) return;
+
+  const esc = s => ZH.esc(s);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const MAX_ATTEMPTS = 3;
+  const GRADE = ['再接再厲', '差強人意', '可圈可點', '神乎其技'];
+
+  // ───────── 音效 ─────────
+  if (ZH.sfx && ZH.sfx.register && ZH.sfx.tools) {
+    const T = ZH.sfx.tools;
+    ZH.sfx.register('tick', (ctx, dest, t) => T.partial(ctx, dest, 1320, t, 0.06, 0.25));
+    ZH.sfx.register('go', (ctx, dest, t) => { T.bell(ctx, dest, t, 523); T.bell(ctx, dest, t + 0.02, 659); });
+    ZH.sfx.register('combo', (ctx, dest, t) => T.chime(ctx, dest, t, 990));
+    ZH.sfx.register('star', (ctx, dest, t) => T.chime(ctx, dest, t, 1175));
+    ZH.sfx.register('record', (ctx, dest, t) => { T.bell(ctx, dest, t, 523); T.bell(ctx, dest, t + 0.14, 659); T.bell(ctx, dest, t + 0.28, 784); T.chime(ctx, dest, t + 0.42, 1568); });
+  }
+
+  /** 秒數 → 0:42 */
+  function fmt(sec) {
+    const s = Math.max(0, Math.round(Number(sec) || 0));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+  /** 星等：0～3 */
+  function stars(r) {
+    if (!r || r.skipped) return 0;
+    const max = Number(r.max) || 0;
+    const ratio = max > 0 ? (Number(r.score) || 0) / max : (r.passed ? 0.75 : 0);
+    if (ratio >= 0.9) return 3;
+    if (ratio >= 0.7) return 2;
+    if (r.passed || ratio >= 0.4) return 1;
+    return 0;
+  }
+  /** a 是否比 b 好（分數高優先，同分比用時短） */
+  const better = (a, b) => !b || a.score > b.score || (a.score === b.score && a.sec < b.sec);
+  const paused = () => document.hidden || !!document.querySelector('.zh-modal, .zc-detail, .hm-anchor, .g2[data-paused="true"], .g2[data-reading="true"], [data-t3-paused="true"], [data-t3-reading="true"]');
+
+  // ───────── 排行榜 ─────────
+  const boards = {};
+  function board(sid, gid) {
+    const key = sid + '|' + gid;
+    if (ZH.isGuest && ZH.isGuest()) return Promise.resolve({ ok: true, guest: true });
+    if (!boards[key]) {
+      boards[key] = ZH.call('api_gameBoard', sid, gid)
+        .then(r => r || { ok: false, msg: '排行榜暫時讀不到。' })
+        .catch(err => { delete boards[key]; return { ok: false, msg: '排行榜暫時讀不到（' + (err && err.message || err) + '）' }; });
+    }
+    return boards[key];
+  }
+  // 訪客或伺服器還沒收到時，這個分頁裡的最佳紀錄
+  function localBest(sid, gid) { return ZH.session ? ZH.session.get('arenaBest10:' + (ZH.user.email || 'guest') + ':' + sid + ':' + gid, null) : null; }
+  function saveLocalBest(sid, gid, rec) { if (ZH.session) ZH.session.set('arenaBest10:' + (ZH.user.email || 'guest') + ':' + sid + ':' + gid, rec); }
+
+  function topList(b, myName, mine) {
+    if (!b || !Array.isArray(b.top) || !b.top.length) return '';
+    let list = b.top.map(t => Object.assign({}, t));
+    // 自己這一局的新成績如果擠進前五，先放進去（伺服器的排行兩分鐘更新一次）
+    if (mine) {
+      list = list.filter(t => !t.me);
+      list.push({ name: myName || (b.me && b.me.name) || '你', cls: b.cls ? b.cls + '班' : '', score: mine.score, sec: mine.sec, me: true });
+      list.sort((x, y) => (y.score - x.score) || (x.sec - y.sec));
+      list = list.slice(0, 5);
+    }
+    return '<ol class="ar-top">' + list.map((t, i) => '<li class="' + (t.me ? 'is-me' : '') + '"><b>' + (i + 1) + '</b><span>' + esc(t.name) + (t.me && t.name !== '你' ? '（你）' : '') + '</span><small>' + esc(t.cls || '') + '</small><em>' + t.score + ' 分・' + fmt(t.sec) + '</em></li>').join('') + '</ol>';
+  }
+  function rankOf(list, mine) {
+    if (!Array.isArray(list) || !mine) return null;
+    let n = 1;
+    list.forEach(p => { if (p[0] > mine.score || (p[0] === mine.score && p[1] < mine.sec)) n += 1; });
+    return { rank: n, total: list.length + 1 };
+  }
+
+  // ───────── 遊戲中的競技列 ─────────
+  function makeHud(hud, frame, body, info) {
+    hud.innerHTML = '';
+    hud.hidden = false;
+    const parts = {};
+    const chip = (cls, html) => { const c = ZH.html('<span class="ar-chip ' + cls + '">' + html + '</span>'); hud.appendChild(c); return c; };
+    parts.clock = chip('ar-clock', '用時 <b>0:00</b>');
+    parts.clock.hidden = !!info.hideClock;
+    const tgt = info.best && (info.best.classBest || info.best.me);
+    if (tgt) parts.target = chip('ar-chip--target', (info.best.classBest ? '班上最佳' : '你的最佳') + ' <b>' + tgt.score + '</b> 分');
+    if (info.attempts > 1) chip('', '第 <b>' + info.attempt + '</b>／' + info.attempts + ' 次');
+    const timers = [];
+    let elapsed = Number(info.initialElapsed) * 1000 || 0;
+    let last = Date.now();
+    const tick = setInterval(() => {
+      const now = Date.now();
+      if (!paused()) {
+        elapsed += Math.min(500, now - last);
+        timers.forEach(t => t.step(Math.min(500, now - last)));
+      }
+      last = now;
+      parts.clock.querySelector('b').textContent = fmt(elapsed / 1000);
+    }, 250);
+
+    const api = {
+      elapsed: () => elapsed / 1000,
+      stop() { clearInterval(tick); timers.length = 0; },
+      race(o) {
+        const opt = o || {};
+        const el = ZH.html('<div class="ar-race"><div class="ar-lane ar-lane--me"><i></i><em></em><span>' + esc(opt.me || '你') + '</span></div>' +
+          '<div class="ar-lane ar-lane--rival" style="--rc:' + esc(opt.rivalColor || '#d9483b') + '"><i></i><em></em><span>' + esc(opt.rival || '對手') + '</span></div>' +
+          (opt.goal ? '<div class="ar-race__goal">' + esc(opt.goal) + '</div>' : '') + '</div>');
+        hud.insertBefore(el, hud.firstChild);
+        const st = { me: 0, rival: 0 };
+        const paint = () => {
+          el.querySelector('.ar-lane--me').style.setProperty('--p', (st.me * 100).toFixed(1) + '%');
+          el.querySelector('.ar-lane--rival').style.setProperty('--p', (st.rival * 100).toFixed(1) + '%');
+          el.classList.toggle('is-behind', st.rival > st.me + 0.04);
+        };
+        paint();
+        return {
+          me(p) { st.me = Math.max(0, Math.min(1, Number(p) || 0)); paint(); return st.me; },
+          rival(p) { st.rival = Math.max(0, Math.min(1, Number(p) || 0)); paint(); return st.rival; },
+          get state() { return { me: st.me, rival: st.rival }; }
+        };
+      },
+      timer(sec, o) {
+        const opt = o || {};
+        const total = Math.max(1, Number(sec) || 30);
+        let left = total;
+        let done = false;
+        let lastWhole = Math.ceil(left);
+        const warn = opt.warn === undefined ? 5 : opt.warn;
+        const el = chip('ar-timer', '剩 <b>' + Math.ceil(left) + '</b> 秒 <span class="ar-timer__bar"><i></i></span>');
+        const t = {
+          step(ms) {
+            if (done) return;
+            left -= ms / 1000;
+            const whole = Math.max(0, Math.ceil(left));
+            el.querySelector('b').textContent = whole;
+            el.querySelector('i').style.setProperty('--p', Math.max(0, 100 * left / total).toFixed(1) + '%');
+            const isWarn = left <= warn;
+            el.classList.toggle('is-warn', isWarn);
+            if (isWarn && whole !== lastWhole && whole > 0) ZH.sfx('tick');
+            lastWhole = whole;
+            if (left <= 0) {
+              done = true;
+              if (typeof opt.onEnd === 'function') { try { opt.onEnd(); } catch (err) { console.error(err); } }
+            }
+          }
+        };
+        timers.push(t);
+        return {
+          left: () => Math.max(0, left),
+          add(s) { left = Math.min(total * 2, left + (Number(s) || 0)); t.step(0); },
+          stop() { done = true; }
+        };
+      },
+      combo(n) {
+        const k = Math.max(0, Math.floor(Number(n) || 0));
+        if (!parts.combo) { parts.combo = chip('ar-combo', ''); parts.combo.hidden = true; }
+        const mult = k >= 10 ? 2 : k >= 6 ? 1.5 : k >= 3 ? 1.2 : 1;
+        if (k < 2) { parts.combo.hidden = true; return mult; }
+        parts.combo.hidden = false;
+        parts.combo.innerHTML = '連擊 <b>×' + k + '</b>';
+        parts.combo.classList.remove('is-bump');
+        void parts.combo.offsetWidth;
+        parts.combo.classList.add('is-bump');
+        if (k === 3 || k === 6 || k === 10) ZH.sfx('combo');
+        return mult;
+      },
+      pop(text, kind) {
+        const p = ZH.html('<div class="ar-pop' + (kind ? ' is-' + esc(kind) : '') + '">' + esc(text) + '</div>');
+        frame.appendChild(p);
+        setTimeout(() => p.remove(), 950);
+      },
+      flash(kind) {
+        const f = ZH.html('<div class="ar-flash is-' + (kind === 'bad' ? 'bad' : 'ok') + '"></div>');
+        frame.appendChild(f);
+        setTimeout(() => f.remove(), 400);
+      },
+      shake() {
+        if (REDUCE) return;
+        body.classList.remove('is-shake');
+        void body.offsetWidth;
+        body.classList.add('is-shake');
+      }
+    };
+    return api;
+  }
+
+  // ───────── 一場挑戰的流程 ─────────
+  /**
+   * opts：{ scenarioId, gameId, title, goal, help, attempts, frame, hud, body }
+   * playOnce(g 的競技工具, 第幾次) → Promise<結果>（結果裡加上 sec）
+   * 回傳 { promise, skip() }；promise resolve 最好的一次（全部略過則是略過的結果）
+   */
+  function session(opts, playOnce) {
+    const o = Object.assign({ attempts: MAX_ATTEMPTS }, opts);
+    const sid = o.scenarioId, gid = o.gameId;
+    const attempts = Math.max(1, Math.min(5, Number(o.attempts) || MAX_ATTEMPTS));
+    const saved = o.getProgress ? o.getProgress() : {};
+    let best = saved.best || null;          // 這次最好的一局（含 sec）
+    let tries = Math.max(0, Number(saved.tries) || 0);
+    if (saved.active) tries = Math.max(0, tries - 1);
+    let lastAttempt = saved.last || null;
+    const persist = active => { if (o.saveProgress) o.saveProgress({ tries, active, best, last: lastAttempt, first: saved.first || null }); };
+    let layer = null;
+    let resolveAll;
+    let ended = false;
+    let current = null;       // 進行中的那一局（給「略過」用）
+    const promise = new Promise(r => { resolveAll = r; });
+
+    const done = r => {
+      if (ended) return;
+      ended = true;
+      if (layer) layer.remove();
+      o.hud.hidden = true;
+      const first = saved.first || (lastAttempt && lastAttempt.first) || null;
+      resolveAll(Object.assign({}, r, { firstResult: first }));
+    };
+    const showLayer = html => {
+      if (layer) layer.remove();
+      layer = ZH.html('<div class="ar-layer">' + html + '</div>');
+      o.frame.appendChild(layer);
+      const first = layer.querySelector('[data-ar="go"], [data-ar="next"]');
+      if (first) first.focus({ preventScroll: true });
+      return layer;
+    };
+
+    function recordsHtml(b, prevMe) {
+      const me = prevMe;
+      const cb = b && b.classBest, sb = b && b.schoolBest;
+      const rec = (label, r, sub) => '<div class="ar-rec"><small>' + label + '</small><b>' + (r ? r.score + ' 分' : '—') + '</b><span>' + (r ? esc(sub || '') + (r.sec !== undefined ? ' ' + fmt(r.sec) : '') : '還沒有紀錄') + '</span></div>';
+      if (b && b.guest) return '<p class="ar-note">訪客的成績不列入排行榜；用學校帳號登入，就能和全班一較高下。</p>' + (me ? '<div class="ar-recs">' + rec('你的最佳', me, '這個分頁') + '</div>' : '');
+      if (b && b.ok === false) return '<p class="ar-note">' + esc(b.msg || '排行榜暫時讀不到。') + '</p>';
+      if (b && b.off) return '<div class="ar-recs">' + rec('你的最佳', me, '') + '</div>';
+      return '<div class="ar-recs">' + rec('你的最佳', me, '') + rec('班上最佳', cb, cb && cb.name) + rec('全校最佳', sb, sb && sb.name) + '</div>';
+    }
+    const prevBest = b => {
+      const server = b && b.me ? { score: Number(b.me.score) || 0, sec: Number(b.me.sec) || 0 } : null;
+      const local = localBest(sid, gid);
+      return better(local || { score: -1, sec: 0 }, server) ? local : server;
+    };
+
+    function challengeCard() {
+      showLayer('<div class="ar-card" role="dialog" aria-label="挑戰卡"><span class="ar-kicker">挑　戰</span><h3>' + esc(o.title || '小遊戲') + '</h3>' +
+        (o.goal ? '<p class="ar-goal">' + esc(o.goal) + '</p>' : '') +
+        '<div class="ar-board"><p class="ar-note">讀取排行中……</p></div>' +
+        '<p class="ar-note">最多挑戰 ' + attempts + ' 次；首次表現保留，排行採最佳成績。</p>' +
+        '<div class="ar-btns">' + (o.help ? '<button type="button" class="zh-btn zh-btn--quiet" data-ar="help">怎麼玩</button>' : '') +
+        '<button type="button" class="zh-btn zh-btn--primary" data-ar="go">開始挑戰</button></div></div>');
+      const L = layer;
+      if (o.help) L.querySelector('[data-ar="help"]').addEventListener('click', () => ZH.modal({ title: o.title || '小遊戲', body: o.help, actions: [{ label: '知道了', value: true, kind: 'primary' }] }));
+      L.querySelector('[data-ar="go"]').addEventListener('click', () => { ZH.sfx('click'); countdown(); });
+      board(sid, gid).then(b => {
+        if (!L.isConnected) return;
+        const slot = L.querySelector('.ar-board');
+        if (slot) slot.innerHTML = recordsHtml(b, prevBest(b)) + (b && !b.guest && !b.off ? topList(b, null, null) : '');
+      });
+    }
+
+    function countdown() {
+      if (layer) { layer.remove(); layer = null; }
+      const c = ZH.html('<div class="ar-count" aria-live="assertive"></div>');
+      o.frame.appendChild(c);
+      const seq = REDUCE ? ['開始！'] : ['3', '2', '1', '開始！'];
+      let i = 0;
+      const step = () => {
+        if (ended) { c.remove(); return; }
+        if (i >= seq.length) { c.remove(); play(); return; }
+        const last = i === seq.length - 1;
+        c.innerHTML = '<b class="' + (last ? 'is-go' : '') + '">' + seq[i] + '</b>';
+        ZH.sfx(last ? 'go' : 'drum');
+        i += 1;
+        setTimeout(step, last ? 520 : 680);
+      };
+      step();
+    }
+
+    function play() {
+      tries += 1;
+      board(sid, gid).then(b => {
+        const info = { best: b && !b.guest && b.ok !== false ? { me: prevBest(b), classBest: b.classBest || null, schoolBest: b.schoolBest || null } : { me: prevBest(b), classBest: null, schoolBest: null }, attempt: tries, attempts: attempts, hideClock: o.hideClock, initialElapsed: o.attemptElapsed ? o.attemptElapsed(tries) : 0 };
+        const hud = makeHud(o.hud, o.frame, o.body, info);
+        current = { hud: hud }; persist(true);
+        return Promise.resolve(playOnce(Object.assign({}, hud, { best: info.best, attempt: tries }), tries))
+          .then(r => { const sec = hud.elapsed(); hud.stop(); current = null; return { r: r, sec: sec, b: b }; },
+            err => { hud.stop(); current = null; throw err; });
+      }).then(x => {
+        if (ended) return;
+        const r = x.r && typeof x.r === 'object' ? x.r : { passed: !!x.r };
+        if (r.skipped || r.error) throw new Error(r.error || '必要體驗尚未完成。');
+        const mine = { score: Math.round(Math.max(0, Math.min(1, (Number(r.score) || 0) / (Number(r.max) || 1))) * 10), sec: Math.round(x.sec) };
+        const before = prevBest(x.b);
+        const isRecord = !!before && better(mine, before) && (mine.score > before.score || mine.sec < before.sec);
+        const first = !before;
+        if (better(mine, before)) saveLocalBest(sid, gid, mine);
+        const normalized = Object.assign({}, r, { sec: mine.sec });
+        const firstResult = saved.first || (lastAttempt && lastAttempt.first) || normalized;
+        saved.first = firstResult;
+        const attempt = { r: normalized, mine: mine, stars: stars(normalized), first: firstResult };
+        lastAttempt = attempt;
+        if (!best || better(mine, best.mine) || (attempt.r.passed && !best.r.passed)) best = attempt;
+        persist(false); resultCard(attempt, x.b, isRecord, first);
+      }).catch(err => {
+        if (window.console) console.error(err);
+        persist(true); tries = Math.max(0, tries - 1);
+        showLayer('<div class="ar-card" role="alert"><h3>這次挑戰尚未完成</h3><p>' + esc(err.message || String(err)) + '</p><p>進度已保留，請重試這次挑戰。</p><button type="button" class="zh-btn zh-btn--primary" data-ar="retry">重試這次挑戰</button></div>');
+        layer.querySelector('[data-ar="retry"]').onclick = countdown;
+      });
+    }
+
+    function resultCard(a, b, isRecord, first) {
+      const n = a.stars;
+      const left = attempts - tries;
+      const r = a.r;
+      let rank = '';
+      if (b && b.ok !== false && !b.guest && !b.off) {
+        const cr = rankOf(b.classScores, a.mine), sr = rankOf(b.schoolScores, a.mine);
+        const bestMine = better(a.mine, prevBest(b)) ? a.mine : prevBest(b);
+        const cr2 = rankOf(b.classScores, bestMine), sr2 = rankOf(b.schoolScores, bestMine);
+        const show = (label, x) => x ? '<span>' + label + '第 <b>' + x.rank + '</b> 名／' + x.total + ' 人</span>' : '';
+        rank = '<div class="ar-rank">' + (b.cls ? show(b.cls + ' 班', cr2 || cr) : '') + show('全校', sr2 || sr) + '</div>' +
+          '<p class="ar-dim">排名以你的最佳成績計算</p>' + topList(b, null, bestMine);
+      } else if (b && b.guest) {
+        rank = '<p class="ar-note">訪客的成績不列入排行榜。</p>';
+      } else if (b && b.ok === false) {
+        rank = '<p class="ar-note">' + esc(b.msg || '排行榜暫時讀不到。') + '</p>';
+      }
+      const starsHtml = [0, 1, 2].map(i => '<i class="' + (i < n ? 'is-on' : '') + '" style="animation-delay:' + (0.15 + i * 0.18) + 's">★</i>').join('');
+      const failMsg = r.passed === false ? '<p class="ar-note">這一次沒有過關' + (left > 0 ? '，再試一次吧！' : '。劇情會照史實繼續。') + '</p>' : '';
+      showLayer('<div class="ar-card ar-res" role="dialog" aria-label="成績">' +
+        '<div class="ar-stars" aria-label="' + n + ' 顆星">' + starsHtml + '</div>' +
+        '<div class="ar-grade">' + GRADE[n] + '</div>' +
+        '<div class="ar-score"><b>' + a.mine.score + '</b>' + (r.max ? ' ／ 10 分' : ' 分') + '　用時 ' + fmt(a.mine.sec) + '</div>' +
+        (isRecord ? '<div class="ar-stamp">新紀錄</div>' : first ? '<div class="ar-stamp" style="border-color:var(--gilt);color:var(--gilt)">首次挑戰</div>' : '') +
+        failMsg + rank +
+        '<div class="ar-btns">' + (left > 0 ? '<button type="button" class="zh-btn ' + (r.passed === false ? 'zh-btn--primary' : 'zh-btn--quiet') + '" data-ar="again">再挑戰（剩 ' + left + ' 次）</button>' : '') +
+        '<button type="button" class="zh-btn ' + (r.passed === false && left > 0 ? 'zh-btn--quiet' : 'zh-btn--primary') + '" data-ar="next">繼續劇情</button></div></div>');
+      for (let i = 0; i < n; i++) setTimeout(() => ZH.sfx('star'), 200 + i * 180);
+      if (isRecord) setTimeout(() => ZH.sfx('record'), 700);
+      const again = layer.querySelector('[data-ar="again"]');
+      if (again) again.addEventListener('click', () => { ZH.sfx('click'); o.body.innerHTML = ''; countdown(); });
+      layer.querySelector('[data-ar="next"]').addEventListener('click', () => { ZH.sfx('click'); done(best.r); });
+    }
+
+    if (lastAttempt && !saved.active) board(sid, gid).then(b => resultCard(lastAttempt, b, false, false));
+    else challengeCard();
+    return {
+      promise: promise,
+      /** 「略過」：有成績就用最好的一次，沒有就算略過 */
+      skip() {
+        if (current && current.hud) current.hud.stop();
+        done(best ? best.r : { skipped: true, passed: false, score: 0, max: 0 });
+      },
+      get playing() { return !!current; },
+      get hasBest() { return !!best; }
+    };
+  }
+
+  ZH.arena = { session: session, board: board, stars: stars, fmt: fmt, MAX_ATTEMPTS: MAX_ATTEMPTS };
+})(window.ZH);
+</script>

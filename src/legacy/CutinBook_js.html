@@ -1,0 +1,29 @@
+<!-- CutinBook_js v0.9.0：名場面分類、通關收藏、圖片欣賞；底層沿用 text 類型，保留既有紀錄格式。 -->
+<style>
+.cb-art{display:grid;place-items:center;width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#111c2b;color:#e9d4a3;position:relative}.cb-art.ai-item{height:auto}.cb-art .ai-item__image{object-fit:contain}.cb-art__fallback{padding:12px;text-align:center;font-family:var(--f-display,serif);font-size:clamp(16px,2vw,22px)}.cb-art--locked{background:radial-gradient(ellipse at center,#324451,#101b29);border:1px dashed #aa956a;color:#d7c6a2}.cb-art--locked span{display:block;text-align:center;line-height:1.8}.cb-art--locked b{display:block;font-size:30px;font-weight:400}.zc-card--cutin{grid-column:span 2;--zc:#dab66b;--zc-soft:#dab66b18;justify-items:stretch;padding:10px}.zc-card__art{display:block;width:100%;margin-bottom:7px}.zc-detail__card.zc-is-cutin{width:min(1040px,94vw)}.zc-is-cutin .zc-detail__head>.zc-card__glyph{display:none}.cb-detailart{margin:12px 0}.cb-replay{margin-top:12px;min-height:44px}.zc-is-cutin .zc-detail__text{font-size:17px}.gallery-cutin-art{width:100%;margin:5px 0}.gallery-item--cutin{grid-column:span 2}.gallery-cutin-actions{display:flex;gap:8px;flex-wrap:wrap}.gallery-cutin-actions button{min-height:44px}
+@media(max-width:560px){.zc-card--cutin,.gallery-item--cutin{grid-column:1/-1}}
+</style>
+<script>
+(function(ZH,data){
+ 'use strict';if(!ZH||!data||ZH.cutinBookInstalled||!Array.isArray(ZH.CODEX))return;
+ ZH.cutinBookInstalled=true;
+ const entries=(data.entries||[]).filter(e=>e&&e.collectible&&e.enabled!==false&&/^[a-z0-9_]+$/.test(e.id||'')&&e.asset==='cutin:'+e.id);
+ entries.forEach(e=>{
+  const item={type:'text',id:'cutin_'+e.id,kind:'cutin',cueId:e.id,scenarioId:e.scenarioId,name:String(e.title||''),title:String(e.chapterName||'')+'・名場面',glyph:'畫',text:String(e.caption||''),source:String(e.sourceRef||'篇章原典與劇情'),assetId:e.asset};
+  if(!ZH.CODEX.some(it=>ZH.codexKey(it)===ZH.codexKey(item)))ZH.CODEX.push(item);
+  const key=ZH.codexKey(item);ZH.CODEX_GRANTS=ZH.CODEX_GRANTS||{};ZH.CODEX_GRANTS[key]=[{s:e.scenarioId,why:'完成篇章後收錄；跳過演出仍可收藏。'}];
+ });
+ if(!ZH.CODEX_TYPES.some(t=>t.key==='cutin'))ZH.CODEX_TYPES.push({key:'cutin',label:'名場面'});
+ ZH.cutinIsItem=item=>{const it=typeof item==='string'?ZH.codexItem(item):item;return !!it&&it.kind==='cutin';};
+ ZH.codexCategory=item=>ZH.cutinIsItem(item)?'cutin':item.type;
+ ZH.cutinArt=(item,owned)=>{
+  if(!owned)return '<span class="cb-art cb-art--locked" role="img" aria-label="名場面尚未收藏"><span><b>？</b>完成篇章後收藏</span></span>';
+  return '<span class="cb-art ai-item"><span class="ai-item__fallback cb-art__fallback">'+ZH.esc(item.name)+'<small>・讀取插畫中</small></span><img class="ai-item__image" data-ai-asset="'+ZH.esc(item.assetId)+'" alt="'+ZH.esc(item.text||item.name)+'" decoding="async"></span>';
+ };
+ ZH.replayCutin=item=>{
+  if(!ZH.cutinIsItem(item)||!ZH.codex.has(item.type,item.id))return Promise.resolve(false);
+  if(!ZH.cutin||!ZH.cutin.replay){ZH.toast('演出播放器尚未載入。');return Promise.resolve(false);}
+  return ZH.cutin.replay(item.cueId);
+ };
+})(window.ZH,window.ZH_CUTINS);
+</script>

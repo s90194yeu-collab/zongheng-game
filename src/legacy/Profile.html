@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!-- Profile.html v0.2.0（2026-10-14）：獨立個人頁面。?page=profile
+依賴 Core_css、Core_js、Data_catalog、Data_codex、Codex_js、ProfileApi、ProgressApi。
+現用 Code.gs 的 PAGE_ROUTES 須加入 profile: 'Profile'。 -->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><base target="_top"><title>我的策士｜Re:縱橫鼎業</title>
+<script>
+window.ZH_BOOT = {
+  appUrl: <?!= JSON.stringify(appUrl) ?>,
+  page: <?!= JSON.stringify(page) ?>,
+  params: <?!= params ?>,
+  version: <?!= JSON.stringify(version) ?>,
+  user: <?!= userJson ?>,
+  guestScenarios: <?!= guestScenariosJson ?>
+};
+</script>
+<?!= include('Core_css') ?>
+<style>
+.profile-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.profile-heading h1{font-size:30px;color:var(--gilt)}.profile-heading p{font-size:14px;color:var(--text-dim);margin-top:5px}.profile-secondary{margin-top:22px;border:1px solid var(--line);border-radius:12px;padding:16px}.profile-secondary summary{font-size:19px;color:var(--gilt);cursor:pointer;min-height:40px}.profile-identity{margin:16px 0;display:grid;gap:12px}.profile-identity form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.profile-identity label{display:grid;gap:8px}.profile-identity .zh-row,.profile-identity [role=status]{grid-column:1/-1}.profile-management h2{font-size:19px}.profile-management p{margin:8px 0}.profile-management .zh-row{gap:10px;margin-top:12px}.profile-management button{min-height:44px}.profile-return{padding:12px;border-left:3px solid var(--gilt);background:#28373d;margin-bottom:18px}.profile-gallery{display:inline-block;margin-top:8px;color:var(--gilt);font-size:14px;min-height:26px}.profile-account{font-size:13px;color:var(--text-dim)}.zh-modal__dialog{max-height:90dvh;overflow:auto}.zh-modal__body .zh-field{margin-bottom:12px}@media(max-width:560px){.profile-heading h1{font-size:26px}.profile-identity form{grid-template-columns:1fr}.profile-account{display:none}.profile-management .zh-row button{flex:1 1 145px}}
+</style>
+</head>
+<body>
+<div class="zh-app">
+<header class="zh-topbar"><a class="zh-mark" id="profile-mark" href="#"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a><div class="zh-row"><span class="profile-account" id="profile-account"></span><button class="zh-btn zh-btn--quiet zh-btn--sm" type="button" id="profile-home">回關卡選擇</button></div></header>
+<main class="zh-main">
+<div class="profile-heading"><div><h1>我的策士</h1><a class="profile-gallery" id="profile-gallery" href="#">逛逛3D收藏館 →</a><p>換裝、玩耍，也為下一局搭配技能。</p></div></div>
+<div class="profile-return" id="profile-return" hidden></div>
+<div id="profile-player"></div>
+<details class="profile-secondary" id="profile-school"><summary>學校資料與紀錄管理</summary><section class="profile-identity" id="profile-identity" aria-label="學號與班級"></section><section class="profile-management" id="profile-management" aria-label="個人紀錄與展示設定"></section></details>
+</main>
+</div>
+<?!= include('Core_js') ?>
+<?!= include('Studio3D') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<script>
+(function(){
+  'use strict';
+  const params=ZH.boot.params||{};let student=null;
+  // 返回目標僅限已開放劇本或三卷地圖，避免接受任意網址。
+  const target=String(params.returnPage||''),scenario=ZH.findScenario(target),returnPage=scenario&&scenario.status==='ready'&&ZH.canPlay(target)?target:target==='map'&&['cq','zg','ch'].includes(params.w)?'map':null;
+  function returnToGame(){ZH.go(returnPage||'hub',returnPage==='map'?{w:params.w}:returnPage&&params.mode&&/^(?:history|romance)(?::(?:qin|jin))?$/.test(params.mode)?{mode:params.mode}:null);}
+  function renderIdentity(){const box=document.getElementById('profile-identity');if(ZH.isGuest()){box.innerHTML='<p>登入學校帳號後可填寫學號，並保存遊玩紀錄。</p><button type="button" class="zh-btn zh-btn--primary" data-login>登入學校帳號</button>';box.querySelector('[data-login]').onclick=ZH.login;return;}
+    if(!student){box.innerHTML='<p>讀取學校資料……</p>';return;}
+    box.innerHTML='<h2>學號與班級</h2><p class="zh-dim">'+(ZH.user.isTeacher?'教師展示免填學號。':'進入劇本與大地圖前須填寫學號。')+'班級代碼可留空。</p><form id="profile-identity-form"><label>學號（4至12位數字）<input class="zh-input" name="studentId" inputmode="numeric" maxlength="12" required autocomplete="off" value="'+ZH.esc(student.studentId||'')+'"></label><label>班級代碼（選填）<input class="zh-input" name="classCode" maxlength="20" autocomplete="off" value="'+ZH.esc(student.classCode||'')+'"></label><p role="status" aria-live="polite"></p><div class="zh-row"><button class="zh-btn zh-btn--primary" type="submit">儲存學校資料</button></div></form>';
+    const form=box.querySelector('form');form.onsubmit=async e=>{e.preventDefault();const msg=form.querySelector('[role=status]'),btn=form.querySelector('[type=submit]'),id=form.elements.studentId.value.trim();if(!/^\d{4,12}$/.test(id)){msg.textContent='學號請填4至12位數字，通常為6位數字。';return;}btn.disabled=true;try{const r=await ZH.call('api_saveStudentProfile',id,form.elements.classCode.value.trim(),'');if(!r||!r.ok)throw Error(r&&r.msg||'儲存失敗。');student=r.profile;ZH.rememberStudentProfile(student);renderIdentity();document.querySelector('#profile-identity [role=status]').textContent='已儲存學校資料。';renderReturn();}catch(err){msg.textContent=err.message;}finally{if(btn.isConnected)btn.disabled=false;}};
+    if(params.tab==='identity'){document.getElementById('profile-school').open=true;form.elements.studentId.focus();}
+  }
+  function renderReturn(){const box=document.getElementById('profile-return');box.hidden=!returnPage;if(!returnPage)return;const can=ZH.isGuest()||ZH.user.isTeacher||student&&/^\d{4,12}$/.test(student.studentId||'');box.innerHTML='<p>'+(can?'學校資料已備妥，可以接續選定的關卡。':'請先在下方「學校資料與紀錄管理」填寫學號。')+'</p>'+(can?'<button type="button" class="zh-btn zh-btn--primary" data-return>繼續前往'+ZH.esc(scenario?scenario.name:'天下大地圖')+'</button>':'');box.querySelector('[data-return]')?.addEventListener('click',returnToGame);}
+  function renderManagement() {
+    const box = document.getElementById('profile-management'), a = ZH.access.state;
+    box.innerHTML = '<div class="zh-panel"><h2>我的紀錄</h2><p class="zh-dim">管理存檔、指定章節或全部遊玩紀錄。</p><div class="zh-row"><button class="zh-btn zh-btn--quiet" type="button" id="profile-records">管理與刪除紀錄</button></div>' +
+      (ZH.isSchool() ? '<div class="zh-row" style="margin-top:12px"><button class="zh-btn zh-btn--quiet" id="profile-unlock">輸入密碼開啟全解鎖</button><button class="zh-btn zh-btn--quiet" id="profile-earned">切回實際蒐集</button></div>' : '')+
+      (ZH.user.isTeacher && a ? '<h2 style="margin-top:20px">教師蒐集展示</h2><p>'+(a.mode==='all'?'目前：全蒐集展示':'目前：實際遊玩蒐集')+'。設定會保存至帳號。</p><div class="zh-row"><button type="button" class="zh-btn zh-btn--primary" data-own-mode="all">全蒐集展示</button><button type="button" class="zh-btn zh-btn--quiet" data-own-mode="earned">切回實際蒐集</button><button type="button" class="zh-btn zh-btn--seal" data-own-mode="reset">改回未解鎖</button></div>' : '') + '</div>';
+    box.querySelector('#profile-unlock')?.addEventListener('click',()=>ZH.unlockDialog().catch(e=>ZH.toast(e.message,'bad')));
+    box.querySelector('#profile-earned')?.addEventListener('click',async()=>{try{const r=await ZH.call('api_useMyEarnedCollections');if(!r.ok)throw Error(r.msg);ZH.access.apply(r);ZH.toast('已切回實際蒐集。','ok');}catch(e){ZH.toast(e.message,'bad');}});
+    box.querySelector('#profile-records').addEventListener('click', () => ZH.records.open().catch(e => ZH.toast(e.message,'bad')));
+    box.querySelectorAll('[data-own-mode]').forEach(b => b.addEventListener('click', async () => { const buttons=[...box.querySelectorAll('button')]; buttons.forEach(x=>x.disabled=true); try {await ZH.access.set(b.dataset.ownMode);} catch(e){ZH.toast(e.message,'bad');} finally {buttons.forEach(x=>x.disabled=false);} }));
+  }
+  async function refreshIdentity(){if(ZH.isGuest())return;try{const r=await ZH.call('api_getStudentProfile');if(!r||!r.ok)throw Error(r&&r.msg||'學校資料讀取失敗。');student=r.profile;ZH.user.isTeacher=!!r.isTeacher||ZH.user.isTeacher;ZH.rememberStudentProfile(student);renderIdentity();renderReturn();}catch(e){document.getElementById('profile-identity').innerHTML='<p role="alert">'+ZH.esc(e.message)+'</p><button type="button" class="zh-btn" data-retry>重新讀取學校資料</button>';document.querySelector('[data-retry]').onclick=refreshIdentity;}}
+  document.addEventListener('zh:collection-change',renderManagement);
+  document.addEventListener('zh:records-change',()=>{renderManagement();refreshIdentity();});
+  ZH.ready(()=>{document.getElementById('profile-gallery').href=ZH.url('gallery');document.getElementById('profile-mark').href=ZH.url('hub');document.getElementById('profile-home').onclick=()=>ZH.go('hub');document.getElementById('profile-account').textContent=ZH.isSchool()?'學校帳號':'訪客';ZH.player.editor(document.getElementById('profile-player'));renderIdentity();renderManagement();renderReturn();refreshIdentity();ZH.codex.init().catch(e=>ZH.toast(e.message,'bad'));});
+})();
+</script>
+</body>
+</html>

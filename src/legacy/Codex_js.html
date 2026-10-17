@@ -1,0 +1,460 @@
+<!-- 名場面圖鑑整合 v0.9.0；保留原圖鑑與字型修正。 -->
+
+
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Codex_js.html
+ 版本：v0.1.4（2026-10-12）
+ 依賴：Core_css.html、Core_js.html（ZH.codex、ZH.sfx、ZH.toast）、
+       Data_codex.html（圖鑑內容）、Data_catalog.html（劇本名稱）
+ 說明：史冊圖鑑的畫面。
+   ZH.codexBook.open({ type, scenarioId })  打開圖鑑（全畫面）
+   ZH.codexBook.detail(key)                  單一項目的說明
+   ZH.codexBook.announce(key)                解鎖時從上方滑出的卡片
+                                             （ZH.codex.unlock 會自動呼叫）
+   ZH.codexBook.card(item, unlocked, isNew)  卡片的 HTML（結算頁、首頁共用）
+   ZH.codexBook.reveal(keys)                 只在這一頁把指定項目視為已解鎖（結算頁示範用）
+ 所有項目可閱讀簡介；閱讀不會解鎖收藏。寶物使用共用 SVG 道具圖案。
+ v0.1.1：「諸子百家・六經」（Data_codex v0.1.4 的 ZH.CODEX_LORE）在圖鑑最前面自成一組；
+         一項可以從好幾話收入，卡片與說明會列出「玩完哪幾話可以收錄」與原因。
+         劇本資料檔如果也寫了同一項，以 ZH.CODEX_LORE 的內容為準。
+============================================================
+-->
+<style>
+  .zh-item-art { width:100%; height:100%; display:block; }
+  .zc-card__glyph:has(svg) { padding:4px; }
+  .zc-card.is-locked { cursor:pointer !important; }
+  .zc-status { color:var(--gilt); font-size:13px; line-height:1.7; margin-top:10px; }
+  body.zc-lock { overflow: hidden; }
+
+  /* 各類型的顏色 */
+  .zc-t-person   { --zc: #e8806f; --zc-soft: rgba(232, 128, 111, .13); }
+  .zc-t-idiom    { --zc: #e0b44c; --zc-soft: rgba(224, 180, 76, .13); }
+  .zc-t-treasure { --zc: #6cc0ab; --zc-soft: rgba(108, 192, 171, .13); }
+  .zc-t-text     { --zc: #d0a06a; --zc-soft: rgba(208, 160, 106, .13); }
+  .zc-t-school   { --zc: #93a7ea; --zc-soft: rgba(147, 167, 234, .13); }
+  .zc-t-classic  { --zc: #c7a3e3; --zc-soft: rgba(199, 163, 227, .13); }
+
+  /* ───────── 圖鑑本體 ───────── */
+  .zc {
+    position: fixed; inset: 0; z-index: 56; overflow-y: auto; overscroll-behavior: contain;
+    background: radial-gradient(120% 70% at 50% 0%, #27314f, #0b0e1d 70%);
+    animation: zh-fade-in .25s ease both;
+  }
+  .zc__stage { width: min(1080px, 100%); margin: 0 auto; padding: calc(20px + var(--safe-t)) var(--gutter) calc(40px + var(--safe-b)); }
+  .zc__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+  .zc__title { font-family: var(--f-display); font-size: clamp(28px, 5vw, 40px); letter-spacing: .18em; }
+  .zc__sum { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 6px; color: var(--text-dim); font-size: 14px; }
+  .zc__sum .zh-bar { width: min(220px, 50vw); }
+  .zc__close { flex: none; }
+
+  .zc__tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; margin-bottom: 20px; }
+  .zc__tab {
+    flex: none; padding: 10px 14px 9px; cursor: pointer;
+    border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-dim);
+    font-family: var(--f-display); font-size: 16px;
+  }
+  .zc__tab small { margin-left: 6px; font-family: var(--f-body); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .zc__tab[aria-selected="true"] { color: var(--gilt); border-bottom-color: var(--gilt); }
+
+  .zc__group + .zc__group { margin-top: 28px; }
+  .zc__group-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 14px; margin-bottom: 12px; }
+  .zc__group-head h3 { font-size: 19px; }
+  .zc__group-head h3 small { margin-right: 8px; font-family: var(--f-body); font-size: 13px; font-weight: 400; color: var(--gilt); }
+  .zc__group.is-focus .zc__group-head h3 { color: var(--gilt); }
+  .zc__more { margin-top: 30px; text-align: center; font-size: 14px; color: var(--text-dim); }
+  .zc__group--lore { padding: 14px 14px 16px; border: 1px solid rgba(147, 167, 234, .32); border-radius: 14px; background: linear-gradient(180deg, rgba(147, 167, 234, .08), rgba(199, 163, 227, .05)); }
+  .zc__group--lore .zc__group-head h3 { color: #c9d3f6; }
+  .zc__lore-note { margin: -4px 0 12px; font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+  .zc-where { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+  .zc-where h4 { font-size: 14px; letter-spacing: .08em; color: var(--zc); margin-bottom: 8px; }
+  .zc-where ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .zc-where li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: baseline; font-size: 14px; line-height: 1.6; }
+  .zc-where b { font-weight: 700; }
+  .zc-where span { grid-column: 1 / -1; color: var(--text-dim); font-size: 13.5px; }
+  .zc-where em { font-style: normal; font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  .zc-where li.is-open em { color: var(--patina, #6cc0ab); }
+
+  /* ───────── 卡片 ───────── */
+  .zc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .zc-card {
+    position: relative; display: grid; justify-items: center; align-content: start; gap: 6px;
+    width: 100%; min-height: 188px; padding: 16px 10px 14px; text-align: center; cursor: pointer;
+    border: 1px solid var(--line-soft); border-radius: 12px;
+    background: linear-gradient(180deg, var(--zc-soft), rgba(20, 26, 46, .55) 70%);
+    color: var(--text); transition: border-color .15s ease, transform .15s ease;
+  }
+  .zc-card:hover { border-color: var(--zc); transform: translateY(-2px); }
+  .zc-card:focus-visible { outline: 2px solid var(--gilt); outline-offset: 2px; }
+  .zc-card__glyph {
+    display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 4px;
+    border: 2px solid var(--zc); border-radius: 6px; box-shadow: 0 0 0 3px rgba(11, 14, 29, .9), 0 0 0 4px var(--zc);
+    font-family: var(--f-display); font-size: 34px; font-weight: 700; line-height: 1; color: var(--zc);
+    background: radial-gradient(circle at 50% 40%, var(--zc-soft), transparent 70%);
+  }
+  .zc-card__type { font-size: 12px; letter-spacing: .1em; color: var(--zc); }
+  .zc-card__name { font-family: var(--f-display); font-size: 18px; line-height: 1.3; }
+  .zc-card__title { font-size: 12.5px; line-height: 1.5; color: var(--text-dim); }
+  .zc-card.is-locked { background: rgba(20, 26, 46, .5); cursor: default; }
+  .zc-card.is-locked:hover { transform: none; border-color: var(--line-soft); }
+  .zc-card.is-locked .zc-card__glyph { border-style: dashed; color: var(--text-dim); box-shadow: none; background: none; opacity: .7; }
+  .zc-card.is-locked .zc-card__name { color: var(--text-dim); letter-spacing: .2em; }
+  .zc-card.is-new::after {
+    content: "新"; position: absolute; top: 8px; right: 8px;
+    display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--cinnabar); color: #fff4ec; font-family: var(--f-display); font-size: 14px; font-weight: 700;
+    transform: rotate(-8deg); animation: zh-stamp .45s .2s cubic-bezier(.2, 1.6, .4, 1) both;
+  }
+
+  /* ───────── 單項說明 ───────── */
+  .zc-detail {
+    position: fixed; inset: 0; z-index: 57; display: grid; place-items: center;
+    padding: calc(16px + var(--safe-t)) 16px calc(16px + var(--safe-b));
+    background: rgba(8, 10, 22, .74); animation: zh-fade-in .2s ease both;
+  }
+  .zc-detail__card {
+    width: min(620px, 100%); max-height: 100%; overflow: auto;
+    padding: 24px 24px 20px; border: 1px solid var(--zc); border-radius: 14px;
+    background: linear-gradient(180deg, #27314f, #1c2440); box-shadow: var(--shadow);
+    animation: zh-rise .25s ease both;
+  }
+  .zc-detail__head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; margin-bottom: 16px; }
+  .zc-detail__head .zc-card__glyph { width: 84px; height: 84px; font-size: 46px; margin: 0; }
+  .zc-detail__name { font-family: var(--f-display); font-size: 28px; line-height: 1.25; }
+  .zc-detail__title { margin-top: 4px; font-size: 14px; color: var(--text-dim); }
+  .zc-detail .zh-slip { margin: 6px 0 16px; padding: 22px 20px; font-size: 17px; line-height: 1.85; }
+  .zc-detail__text { font-size: 15.5px; line-height: 1.95; }
+  .zc-detail__meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+  /* ───────── 解鎖卡片 ───────── */
+  .zc-pop {
+    position: fixed; top: calc(14px + var(--safe-t)); left: 50%; z-index: 62;
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center;
+    width: min(92vw, 400px); padding: 12px 18px 12px 14px; cursor: pointer; text-align: left;
+    border: 1px solid var(--zc); border-radius: 14px; color: var(--text);
+    background: linear-gradient(100deg, var(--zc-soft), rgba(20, 26, 46, .97) 45%), #141a2e;
+    box-shadow: 0 14px 34px rgba(5, 8, 20, .6);
+    transform: translateX(-50%); animation: zc-drop .45s cubic-bezier(.2, 1.3, .4, 1) both;
+  }
+  .zc-pop.is-leaving { animation: zc-lift .35s ease both; }
+  .zc-pop .zc-card__glyph { width: 52px; height: 52px; font-size: 28px; margin: 0; animation: zh-stamp .45s .15s cubic-bezier(.2, 1.6, .4, 1) both; }
+  .zc-pop__kicker { font-size: 12.5px; letter-spacing: .12em; color: var(--zc); }
+  .zc-pop__name { font-family: var(--f-display); font-size: 20px; line-height: 1.3; }
+  .zc-pop__title { font-size: 13px; color: var(--text-dim); }
+  @keyframes zc-drop { from { opacity: 0; transform: translate(-50%, -24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes zc-lift { to { opacity: 0; transform: translate(-50%, -16px); } }
+
+  @media (max-width: 560px) {
+    .zc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .zc-card { min-height: 176px; padding: 14px 8px 12px; }
+    .zc-detail__card { padding: 20px 18px 16px; }
+    .zc-detail__head { grid-template-columns: auto minmax(0, 1fr); }
+    .zc-detail__head .zh-btn { grid-column: 1 / -1; grid-row: 1; justify-self: end; }
+    .zc-detail__head .zc-card__glyph { width: 68px; height: 68px; font-size: 38px; }
+    .zc-detail__name { font-size: 24px; }
+  }
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+
+  const POP_MS = 3600;
+  const revealed = {};
+  const popQueue = [];
+  let popping = false;
+  let bookEl = null;
+  let bookReturn = null;
+  let bookState = { type: 'all', scenarioId: '' };
+
+  // 諸子、六經以 Data_codex 的 ZH.CODEX_LORE 為準（劇本資料檔寫了同一項時會先被換掉，這裡換回來）
+  (ZH.CODEX_LORE || []).forEach(item => {
+    const i = ZH.CODEX.findIndex(x => x.type === item.type && x.id === item.id);
+    if (i > -1) ZH.CODEX[i] = item; else ZH.CODEX.push(item);
+  });
+  const isLore = item => !(ZH.cutinIsItem && ZH.cutinIsItem(item)) && !!(ZH.codexIsLore && ZH.codexIsLore(item));
+  const grantsOf = item => (ZH.codexGrants ? ZH.codexGrants(item) : []);
+  const isOpen = id => { const s = ZH.findScenario ? ZH.findScenario(id) : null; return !!(s && s.status === 'ready'); };
+  /** 授予這一項的劇本，開放中的排前面 */
+  function loreSources(item) {
+    const list = grantsOf(item).slice();
+    return list.filter(g => isOpen(g.s)).concat(list.filter(g => !isOpen(g.s)));
+  }
+  /** 卡片上的一行：玩完〈某話〉等 N 話收錄 */
+  function loreHint(item) {
+    const list = loreSources(item);
+    if (!list.length) return '在「' + scenarioName(item.scenarioId) + '」解鎖';
+    return '玩完「' + scenarioName(list[0].s) + '」' + (list.length > 1 ? '等 ' + list.length + ' 話' : '') + '收錄';
+  }
+
+
+  // ───────────────────────── 共用 ─────────────────────────
+
+  /** 目前已解鎖的鍵（伺服器或訪客分頁的紀錄，加上 reveal 的項目） */
+  function unlockedSet() {
+    const set = {};
+    ZH.codex.keys().forEach(k => { set[k] = true; });
+    Object.keys(revealed).forEach(k => { set[k] = true; });
+    return set;
+  }
+
+  function scenarioLabel(id) {
+    const s = ZH.findScenario ? ZH.findScenario(id) : null;
+    if (!s) return id || '其他';
+    const vol = (ZH.VOLUMES || []).find(v => v.key === s.vol);
+    return (vol ? vol.no + ' ' + vol.name + '・' : '') + ZH.episodeLabel(s) + ' ' + s.name;
+  }
+
+  function scenarioName(id) {
+    const s = ZH.findScenario ? ZH.findScenario(id) : null;
+    return s ? s.name : id;
+  }
+
+  function itemGlyph(item) { return item.type === 'treasure' && ZH.itemArt ? ZH.itemArt(item) : '<span class="zc-glyph-letter">'+ZH.esc(item.glyph || item.name.slice(0,1))+'</span>'; }
+  function cardHtml(item, unlocked, isNew) {
+    const key=ZH.codexKey(item), type=ZH.codexTypeLabel(ZH.codexCategory?ZH.codexCategory(item):item.type), cutin=ZH.cutinIsItem&&ZH.cutinIsItem(item);
+    const hint=isLore(item)?loreHint(item):'玩「'+scenarioName(item.scenarioId)+'」收錄';
+    return '<button type="button" class="zc-card zc-t-'+item.type+(cutin?' zc-card--cutin':'')+(!unlocked?' is-locked':isNew?' is-new':'')+'" data-key="'+ZH.esc(key)+'"'+(!unlocked?' data-locked="1"':'')+' aria-label="'+ZH.esc(item.name+'：查看簡介；'+(unlocked?'已收藏':'尚未收藏'))+'">'+
+      (cutin?'<span class="zc-card__art">'+ZH.cutinArt(item,unlocked)+'</span>':'<span class="zc-card__glyph" aria-hidden="true">'+itemGlyph(item)+'</span>')+'<span class="zc-card__type">'+ZH.esc(type)+' · '+(unlocked?'已收藏':'未收藏')+'</span><span class="zc-card__name">'+ZH.esc(item.name)+'</span><span class="zc-card__title">'+ZH.esc(unlocked?(item.title||''):hint)+'</span></button>';
+  }
+  function bindCards(root) {
+    root.querySelectorAll('.zc-card[data-key]').forEach(btn=>btn.addEventListener('click',()=>detail(btn.dataset.key)));
+  }
+
+  /** Tab 鍵留在視窗內 */
+  function trapTab(e, root) {
+    if (e.key !== 'Tab') return;
+    const list = Array.prototype.slice.call(root.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), [tabindex="0"]'));
+    if (!list.length) return;
+    const i = list.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); list[list.length - 1].focus(); }
+    else if (!e.shiftKey && i === list.length - 1) { e.preventDefault(); list[0].focus(); }
+  }
+
+
+  // ───────────────────────── 圖鑑本體 ─────────────────────────
+
+  function open(options) {
+    bookState = Object.assign({ type: 'all', scenarioId: '' }, options || {});
+    document.dispatchEvent(new CustomEvent('zh:codex-open'));
+    return ZH.codex.init().then(() => {
+      if (!bookEl) {
+        bookReturn = document.activeElement;
+        bookEl = ZH.html('<div class="zc" role="dialog" aria-modal="true" aria-labelledby="zc-title"><div class="zc__stage"></div></div>');
+        document.body.appendChild(bookEl);
+        document.body.classList.add('zc-lock');
+        document.addEventListener('keydown', onBookKey);
+        ZH.sfx('click');
+      }
+      renderBook();
+      const closeBtn = bookEl.querySelector('.zc__close');
+      if (closeBtn) closeBtn.focus({ preventScroll: true });
+      if (bookState.scenarioId) {
+        const group = bookEl.querySelector('.zc__group[data-scen="' + bookState.scenarioId + '"]');
+        if (group) group.scrollIntoView({ block: 'start' });
+      }
+    });
+  }
+
+  function close() {
+    if (!bookEl) return;
+    document.removeEventListener('keydown', onBookKey);
+    bookEl.remove();
+    bookEl = null;
+    if (!document.querySelector('.za')) document.body.classList.remove('zc-lock');
+    if (bookReturn && bookReturn.focus) bookReturn.focus({ preventScroll: true });
+    bookReturn = null;
+    document.dispatchEvent(new CustomEvent('zh:codex-close'));
+  }
+
+  function onBookKey(e) {
+    if (document.querySelector('.zc-detail')) return; // 說明視窗自己處理
+    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+    trapTab(e, bookEl);
+  }
+
+  function renderBook() {
+    const set = unlockedSet();
+    const all = ZH.CODEX;
+    const got = all.filter(it => set[ZH.codexKey(it)]).length;
+    const types = ZH.CODEX_TYPES.filter(t => all.some(it => (ZH.codexCategory?ZH.codexCategory(it):it.type) === t.key));
+    if (bookState.type !== 'all' && !types.some(t => t.key === bookState.type)) bookState.type = 'all';
+    const tabs = [{ key: 'all', label: '全部' }].concat(types).map(t => {
+      const items = t.key === 'all' ? all : all.filter(it => (ZH.codexCategory?ZH.codexCategory(it):it.type) === t.key);
+      const n = items.filter(it => set[ZH.codexKey(it)]).length;
+      return '<button type="button" class="zc__tab" role="tab" data-type="' + t.key + '" aria-selected="' + (t.key === bookState.type) + '">' +
+        ZH.esc(t.label) + '<small>' + n + '/' + items.length + '</small></button>';
+    }).join('');
+
+    const shownAll = all.filter(it => bookState.type === 'all' || (ZH.codexCategory?ZH.codexCategory(it):it.type) === bookState.type);
+    const lore = shownAll.filter(isLore);
+    const shown = shownAll.filter(it => !isLore(it));
+    const order = (ZH.CATALOG || []).map(s => s.id);
+    const scenIds = [];
+    shown.forEach(it => { if (scenIds.indexOf(it.scenarioId) === -1) scenIds.push(it.scenarioId); });
+    scenIds.sort((a, b) => {
+      const x = order.indexOf(a); const y = order.indexOf(b);
+      return (x === -1 ? 999 : x) - (y === -1 ? 999 : y);
+    });
+    const groups = scenIds.map(id => {
+      const items = shown.filter(it => it.scenarioId === id);
+      const n = items.filter(it => set[ZH.codexKey(it)]).length;
+      return '<section class="zc__group' + (id === bookState.scenarioId ? ' is-focus' : '') + '" data-scen="' + ZH.esc(id) + '">' +
+        '<div class="zc__group-head"><h3>' + ZH.esc(scenarioLabel(id)) + '</h3><span class="zh-dim zh-small">已收集 ' + n + ' / ' + items.length + '</span></div>' +
+        '<div class="zc-grid">' + items.map(it => cardHtml(it, !!set[ZH.codexKey(it)], false)).join('') + '</div></section>';
+    }).join('');
+    const loreGot = lore.filter(it => set[ZH.codexKey(it)]).length;
+    const loreHead = bookState.type === 'school' ? '諸子百家' : bookState.type === 'classic' ? '六經' : '諸子百家・六經';
+    const loreGroup = lore.length
+      ? '<section class="zc__group zc__group--lore" data-scen="lore">' +
+        '<div class="zc__group-head"><h3>' + loreHead + '</h3><span class="zh-dim zh-small">已收集 ' + loreGot + ' / ' + lore.length + '</span></div>' +
+        '<p class="zc__lore-note">不屬於單一劇本：每一項都可以從好幾話收入，玩完其中任一話（任何結局）就會收錄。點卡片看是哪幾話。</p>' +
+        '<div class="zc-grid">' + lore.map(it => cardHtml(it, !!set[ZH.codexKey(it)], false)).join('') + '</div></section>'
+      : '';
+
+    bookEl.querySelector('.zc__stage').innerHTML =
+      '<header class="zc__head"><div>' +
+      '<h2 class="zc__title" id="zc-title">史冊圖鑑</h2>' +
+      '<p class="zc__sum"><span>已收集 ' + got + ' / ' + all.length + '</span>' +
+      '<span class="zh-bar" role="img" aria-label="收集進度 ' + Math.round((100 * got) / Math.max(1, all.length)) + '%"><span style="--v:' + ((100 * got) / Math.max(1, all.length)).toFixed(1) + '%"></span></span>' +
+      (ZH.isGuest() ? '<span>訪客的收藏關閉分頁就會消失</span>' : '') + '</p>' +
+      '</div><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm zc__close">關閉</button></header>' +
+      '<div class="zc__tabs" role="tablist" aria-label="圖鑑類型">' + tabs + '</div>' +
+      ((loreGroup + groups) || '<p class="zh-dim">這一類還沒有收錄任何項目。</p>') +
+      '<p class="zc__more">其他劇本的人物、成語與寶物，會隨著劇本開放陸續收入史冊。</p>';
+
+    bookEl.querySelector('.zc__close').addEventListener('click', close);
+    bookEl.querySelectorAll('.zc__tab').forEach(tab => tab.addEventListener('click', () => {
+      if (tab.dataset.type === bookState.type) return;
+      bookState.type = tab.dataset.type;
+      ZH.sfx('click');
+      renderBook();
+      const again = bookEl.querySelector('.zc__tab[data-type="' + bookState.type + '"]');
+      if (again) again.focus({ preventScroll: true });
+    }));
+    bindCards(bookEl);
+  }
+
+
+  // ───────────────────────── 單項說明 ─────────────────────────
+
+  function detail(key) {
+    const item = ZH.codexItem(key);
+    if (!item) return;
+    if (document.querySelector('.zc-detail')) return;
+    const previous = document.activeElement;
+    const cutin=ZH.cutinIsItem&&ZH.cutinIsItem(item), owned=!!unlockedSet()[key];
+    const typeLabel = ZH.codexTypeLabel(ZH.codexCategory?ZH.codexCategory(item):item.type);
+    const wrap = ZH.html(
+      '<div class="zc-detail" role="dialog" aria-modal="true" aria-labelledby="zc-detail-name">' +
+      '<article class="zc-detail__card zc-t-' + item.type + (cutin?' zc-is-cutin':'') + '">' +
+      '<header class="zc-detail__head">' +
+      '<span class="zc-card__glyph" aria-hidden="true">' + itemGlyph(item) + '</span>' +
+      '<div><span class="zc-card__type">' + ZH.esc(typeLabel) + '</span>' +
+      '<h3 class="zc-detail__name" id="zc-detail-name">' + ZH.esc(item.name) + '</h3>' +
+      '<p class="zc-detail__title">' + ZH.esc(item.title || '') + '</p></div>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm">關閉</button>' +
+      '</header>' +
+      (cutin?'<div class="cb-detailart">'+ZH.cutinArt(item,owned)+'</div>'+(owned?'<button type="button" class="zh-btn zh-btn--primary cb-replay" data-cutin-replay>重播演出</button>':''):'') +
+      (item.quote ? '<blockquote class="zh-slip">' + ZH.esc(item.quote) + '</blockquote>' : '') +
+      '<p class="zc-detail__text">' + ZH.esc(item.text || item.description || item.title || '此項目尚未補齊簡介。') + '</p>' +
+      '<p class="zc-status">'+(unlockedSet()[key]?'已收入史冊。':'尚未收藏。'+(isLore(item)?loreHint(item):'玩「'+scenarioName(item.scenarioId)+'」可收錄。')+' 閱讀簡介不會直接解鎖。')+'</p>' +
+      '<div class="zc-detail__meta">' +
+      (item.source ? '<span class="zh-chip">出處：' + ZH.esc(item.source) + '</span>' : '') +
+      (isLore(item) ? '' : '<span class="zh-chip zh-chip--gilt">' + ZH.esc(scenarioLabel(item.scenarioId)) + '</span>') +
+      '</div>' +
+      (isLore(item)
+        ? '<section class="zc-where"><h4>玩完這幾話都可以收錄</h4><ul>' +
+          grantsOf(item).map(g => '<li class="' + (isOpen(g.s) ? 'is-open' : '') + '"><b>' + ZH.esc(scenarioLabel(g.s)) + '</b>' +
+            '<em>' + (isOpen(g.s) ? '已開放' : '製作中') + '</em><span>' + ZH.esc(g.why || '') + '</span></li>').join('') +
+          '</ul></section>'
+        : '') +
+      '</article></div>'
+    );
+    const shut = () => {
+      document.removeEventListener('keydown', onKey, true);
+      wrap.remove();
+      if (!bookEl && !document.querySelector('.za')) document.body.classList.remove('zc-lock');
+      if (previous && previous.focus) previous.focus({ preventScroll: true });
+    };
+    const onKey = e => {
+      if(document.querySelector('.zh-cutin'))return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); shut(); return; }
+      trapTab(e, wrap);
+    };
+    wrap.addEventListener('click', e => { if (e.target === wrap) shut(); });
+    wrap.querySelector('button').addEventListener('click', shut);
+    const replay=wrap.querySelector('[data-cutin-replay]');if(replay)replay.onclick=()=>ZH.replayCutin(item);
+    document.body.appendChild(wrap);
+    document.body.classList.add('zc-lock');
+    document.addEventListener('keydown', onKey, true);
+    wrap.querySelector('button').focus({ preventScroll: true });
+    ZH.sfx('click');
+  }
+
+
+  // ───────────────────────── 解鎖卡片 ─────────────────────────
+
+  function announce(key) {
+    const item = ZH.codexItem(key);
+    if (!item) {
+      ZH.toast('史冊解鎖：' + key, 'ok');
+      ZH.sfx('seal');
+      return;
+    }
+    popQueue.push(item);
+    if (!popping) nextPop();
+  }
+
+  function nextPop() {
+    const item = popQueue.shift();
+    if (!item) { popping = false; return; }
+    popping = true;
+    const pop = ZH.html(
+      '<button type="button" class="zc-pop zc-t-' + item.type + '" aria-live="polite">' +
+      '<span class="zc-card__glyph" aria-hidden="true">' + itemGlyph(item) + '</span>' +
+      '<span><span class="zc-pop__kicker">史冊新增・' + ZH.esc(ZH.codexTypeLabel(item.type)) + '</span>' +
+      '<span class="zc-pop__name" style="display:block">' + ZH.esc(item.name) + '</span>' +
+      '<span class="zc-pop__title">' + ZH.esc(item.title || '') + '</span></span>' +
+      '</button>'
+    );
+    let gone = false;
+    const leave = () => {
+      if (gone) return;
+      gone = true;
+      pop.classList.add('is-leaving');
+      setTimeout(() => { pop.remove(); nextPop(); }, 340);
+    };
+    pop.addEventListener('click', () => { leave(); detail(ZH.codexKey(item)); });
+    document.body.appendChild(pop);
+    ZH.sfx('seal');
+    setTimeout(leave, POP_MS);
+  }
+
+
+  // ───────────────────────── 對外 ─────────────────────────
+
+  document.addEventListener('zh:collection-change', () => { Object.keys(revealed).forEach(k => { delete revealed[k]; }); if (bookEl) renderBook(); });
+
+  ZH.codexBook = {
+    open: open,
+    close: close,
+    detail: detail,
+    announce: announce,
+    card: cardHtml,
+    bindCards: bindCards,
+    unlockedSet: unlockedSet,
+    /** 只在這一頁把指定項目視為已解鎖（不寫入紀錄） */
+    reveal: function (keys) {
+      (keys || []).forEach(k => { revealed[k] = true; });
+    }
+  };
+
+})(window.ZH);
+</script>
+<style>
+.zc-card__glyph{line-height:1;overflow:hidden;flex-shrink:0}
+.zc-glyph-letter{display:grid;place-items:center;width:100%;height:100%;line-height:1;transform:translateY(-.025em)}
+.zc-card__glyph:has(.ai-item){padding:3px}.zc-card__glyph .ai-item{width:100%;height:100%;display:block}
+</style>

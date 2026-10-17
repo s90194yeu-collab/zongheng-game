@@ -1,0 +1,16 @@
+<!-- HubArtLoader v0.1.0：沿用原四張首頁插畫，優先載入目前篇章，其他部分稍後補上。 -->
+<style>:root{--hub-art-cq:linear-gradient(145deg,#365249,#142637);--hub-art-zg:linear-gradient(145deg,#5b4b37,#142637);--hub-art-ch:linear-gradient(145deg,#42384e,#142637);--hub-art-foreground:none}</style>
+<script>
+(function(){'use strict';let started=false;const loaded=new Set();
+function start(){if(started||!window.ZH?.assets?.getHubArt)return;started=true;const scene=document.getElementById('hub-scene');
+function load(key,priority){if(loaded.has(key))return;loaded.add(key);ZH.assets.getHubArt(key,priority).then(src=>{if(!src){loaded.delete(key);return;}document.documentElement.style.setProperty('--hub-art-'+key,'url("'+src+'")');}).catch(()=>loaded.delete(key));}
+function current(){const key=scene?.dataset.volume;return ['cq','zg','ch'].includes(key)?key:'cq';}
+load(current(),0);
+setTimeout(()=>load('foreground',2),1200);
+setTimeout(()=>{for(const key of ['cq','zg','ch'])if(key!==current())load(key,3);},3200);
+if(scene)new MutationObserver(()=>load(current(),0)).observe(scene,{attributes:true,attributeFilter:['data-volume']});
+document.addEventListener('click',e=>{const tab=e.target.closest?.('.hub-tab');if(tab){const key=tab.id.replace('hub-tab-','');if(['cq','zg','ch'].includes(key))load(key,0);}});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>

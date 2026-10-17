@@ -1,0 +1,1124 @@
+<!-- 本話任務：先引趙出壁，水上軍固守使敵營空虛可被利用；背水不是單獨的勝因。
+文本因果整合 v3.0.0：本話新版任務與共用規則；原文錨點、收藏及舊局保留。 -->
+<!-- 核心玩法 v2.0.0 接點；原文、錨點、收藏與舊局函式保留。 -->
+<!DOCTYPE html>
+<!--
+ Re:縱橫鼎業・第七話〈韓信北伐〉
+ 檔名：S_ch07_hanxin.html；版本v1.1.0（2026-10-08）。
+ 依賴：Core_css、Core_js、Data_catalog、Data_codex、Codex_js、Anchor_js、Eng_Story，
+       既有Code／Save／Log／AnchorBank及本話S_ch07_hanxin_data.gs。
+ 30節點、12原文錨點、12指定圖鑑、井陘戰棋與論將兩個必做遊戲。
+ 所有友軍下令、固守、兩次換旗與補正均由學生親自完成；分步補救保留首績。
+ 盤面、聚合隊勢、回合與分數屬教學示意，非地形考古復原或史書兵力記帳。
+ 本話接續最新共用核心與天下大地圖。原典、教學演出、遊戲生成列傳分別標示。
+ 井陘標前204年；返楚報恩、降侯論將另標時間；目錄年份沿用ZH.findScenario。
+ 原典對讀《史記》卷092；hx_12依原包與三家註的信字，保留陳、詳、萆。
+ 網址：?page=S_ch07_hanxin
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<base target="_top">
+<script>
+  window.ZH_BOOT = {
+    appUrl: <?!= JSON.stringify(appUrl) ?>,
+    page: <?!= JSON.stringify(page) ?>,
+    params: <?!= params ?>,
+    version: <?!= JSON.stringify(version) ?>,
+    user: <?!= userJson ?>,
+    guestScenarios: <?!= guestScenariosJson ?>
+  };
+</script>
+<?!= include('Core_css') ?>
+<style>
+  /* ───────── 標題頁（各話共用的版型，通常不用改） ───────── */
+  .ep-title {
+    min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(900px 520px at 70% 0%, var(--ep-glow, rgba(196, 71, 58, .2)), transparent 65%),
+      radial-gradient(700px 600px at 0% 100%, rgba(224, 180, 76, .12), transparent 60%);
+  }
+  .ep-title__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: calc(10px + var(--safe-t)) var(--gutter) 10px; }
+  .ep-title__main { width: min(1040px, 100%); margin: 0 auto; padding: 8px var(--gutter) calc(32px + var(--safe-b)); display: grid; gap: 22px; align-content: start; }
+  .ep-kicker { font-size: 14px; color: var(--gilt); letter-spacing: .1em; }
+  .ep-h1 { margin-top: 4px; font-size: clamp(46px, 10vw, 92px); letter-spacing: .18em; line-height: 1.05; }
+  .ep-episode { margin-top: 10px; font-family: var(--f-display); font-size: clamp(17px, 2.6vw, 22px); }
+  .ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ep-note { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, auto); gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--gilt); background: rgba(20, 26, 46, .82); box-shadow: var(--shadow);
+  }
+  .ep-seal {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 8px; flex: none;
+    border: 3px solid var(--ep-color, #c4473a); box-shadow: inset 0 0 0 3px var(--night-2), inset 0 0 0 5px var(--ep-color, #c4473a);
+    font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--ep-color, #c4473a); background: rgba(11, 14, 29, .6);
+  }
+  .ep-start__name { font-family: var(--f-display); font-size: 22px; }
+  .ep-start__lead { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; }
+  .ep-start__act { display: grid; gap: 8px; }
+  .ep-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .ep-point { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(20, 26, 46, .7); }
+  .ep-point b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; color: var(--gilt); }
+  .ep-point span { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  @media (max-width: 860px) {
+    .ep-start { grid-template-columns: auto minmax(0, 1fr); }
+    .ep-start__act { grid-column: 1 / -1; }
+  }
+
+
+  .ch07-page { overflow-x:hidden; }
+  .ch07-page .ep-kicker, .ch07-page .ep-note, .ch07-page .ep-start__lead, .ch07-page .ep-point span,
+  .ch07-page .zh-chip, .ch07-page .sty-m, .ch07-page .sty-title span, .ch07-page .sty-game__status,
+  .ch07-page .sty-place, .ch07-page .sty-place span, .ch07-page .sty-say__name, .ch07-page .sty-choice__text,
+  .ch07-page .sty-opt__desc, .ch07-page .zh-small { font-size:15px; }
+  .ch07-page .zh-btn, .ch07-page .sty-icon, .ch07-page .sty-opt { min-width:44px; min-height:44px; font-size:16px; }
+  .ch07-page .ep-h1 { font-size:clamp(38px,8vw,80px); letter-spacing:.08em; overflow-wrap:anywhere; }
+  .ch07-page .sty-game__head { flex-wrap:wrap; gap:8px; }
+  .ch07-page:has(.ch07-game) .sty-meters { display:none; }
+  .ch07-page button:focus-visible, .ch07-page summary:focus-visible { outline:3px solid var(--gilt); outline-offset:-3px; }
+  .ch07-game { width:min(850px,100%); margin:0 auto; padding:16px; display:grid; gap:12px; align-content:start; font-size:16px; line-height:1.6; }
+  .ch07-game h2 { font-family:var(--f-display); font-size:clamp(21px,3vw,28px); color:var(--gilt); }
+  .ch07-game p, .ch07-game span, .ch07-game b, .ch07-game summary, .ch07-game button { font-size:16px; overflow-wrap:anywhere; }
+  .ch07-live, .ch07-panel, .ch07-preview, .ch07-guide { padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--night-2); }
+  .ch07-live, .ch07-guide { color:var(--gilt); border-color:var(--gilt); font-variant-numeric:tabular-nums; }
+  .ch07-panel b { color:var(--gilt); }
+  .ch07-goals { display:flex; flex-wrap:wrap; gap:6px; }
+  .ch07-goals span { padding:5px 8px; background:var(--night-2); border:1px solid var(--patina); border-radius:6px; }
+  .ch07-controls { position:sticky; top:0; z-index:2; display:grid; gap:7px; padding:8px; border:1px solid var(--patina); border-radius:10px; background:var(--night); }
+  .ch07-command-row { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; }
+  .ch07-command-row .zh-btn { padding:5px 2px; }
+  .ch07-preview { min-height:46px; padding:6px 8px; }
+  .ch07-confirm-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .ch07-confirm-row .zh-btn { padding:6px; }
+  .ch07-axis { width:min(448px,100%); margin:0 auto; display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:1px; text-align:center; color:var(--gilt); }
+  .ch07-board { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:1px; width:min(448px,100%); margin:0 auto; }
+  .ch07-cell { aspect-ratio:1; min-height:44px; min-width:0; display:grid; place-items:center; padding:0; border:1px solid var(--line); color:var(--text); font-family:var(--f-display); font-size:16px; cursor:pointer; border-radius:3px; background:var(--night-2); }
+  .ch07-cell.ch07-terrain-river { background:var(--night-3); color:var(--patina); cursor:default; }
+  .ch07-cell.ch07-terrain-mountain { background:var(--night); border-style:dashed; color:var(--patina); }
+  .ch07-cell.ch07-terrain-camp { background:var(--night-3); border-color:var(--patina); }
+  .ch07-cell.is-legal { box-shadow:inset 0 0 0 2px var(--patina); }
+  .ch07-cell.is-selected { outline:2px solid var(--gilt); outline-offset:-2px; }
+  .ch07-cell.is-pending { outline:3px solid var(--gilt); outline-offset:-3px; }
+  .ch07-unit { display:grid; place-items:center; width:calc(100% - 4px); min-height:33px; border:1px solid var(--patina); border-radius:4px; font-weight:700; letter-spacing:0; }
+  .ch07-unit-han { background:var(--cinnabar); color:var(--text); }
+  .ch07-unit-zhao { background:var(--night-3); color:var(--gilt); }
+  .ch07-unit-row { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; }
+  .ch07-unit-row .zh-btn { padding:5px 2px; }
+  .ch07-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .ch07-actions .zh-btn { flex:1 1 220px; }
+  .ch07-rules { border:1px solid var(--line); border-radius:10px; padding:9px 11px; }
+  .ch07-rules summary { cursor:pointer; color:var(--gilt); min-height:44px; }
+  .ch07-options { display:grid; gap:10px; }
+  .ch07-options .zh-btn { min-height:64px; text-align:left; white-space:normal; }
+  .ch07-feedback { border-left:3px solid var(--patina); padding:7px 9px; background:var(--night-2); }
+  @media(max-width:860px) {
+    .ch07-game { padding:10px; gap:10px; }
+    .ch07-battle { padding:4px; }
+    .ch07-game p, .ch07-game span, .ch07-game b, .ch07-game summary, .ch07-game button { font-size:15px; }
+    .ch07-controls { padding:5px; }
+    .ch07-command-row { gap:4px; }
+    .ch07-command-row .zh-btn, .ch07-unit-row .zh-btn { min-width:44px; font-size:15px; }
+    .ch07-actions .zh-btn { flex-basis:100%; }
+    .ch07-preview { padding:5px; }
+    .ch07-live, .ch07-guide { padding:7px; }
+    .ch07-goals span { padding:4px 6px; }
+  }
+
+
+.hm-title-scene{position:relative;height:320px;overflow:hidden;border:1px solid var(--gilt);border-radius:10px;margin:25px 0;background:#30221b}
+.hm-title-scene>.sc{position:absolute;inset:0;width:100%;height:100%}
+.hm-title-cast{position:absolute;inset:30px 8% 0;display:flex;align-items:end;justify-content:center;gap:2%}
+.hm-title-cast>span{width:21%;max-width:150px;filter:drop-shadow(0 8px 6px #0005)}
+.hm-title-cast .ck{display:block;width:100%;height:100%}
+.hm-portrait{display:block!important;width:70px!important;height:90px!important;border:0!important;background:transparent!important;border-radius:0!important;margin:0 auto!important}
+.hm-portrait .ck{height:100%;width:100%;display:block}
+.ch04-observer{position:relative;padding:8px 4px!important;min-height:190px;background:linear-gradient(#322c32,#191b2e)!important;touch-action:manipulation}
+.ch04-observer .hm-portrait{width:100px!important;height:135px!important}
+.ch04-watch-stage{padding:24px 10px 12px;background:linear-gradient(#502e2455,#291c1688);border:1px solid var(--line);border-radius:8px;gap:8px!important}
+.ch04-observer.is-moving .ck{animation:hm-gesture .45s ease-in-out infinite alternate}
+.ch04-observer.is-noticed{box-shadow:0 0 0 2px var(--patina),0 0 20px #4a9c8a44}
+.ch04-motion{min-height:48px;display:grid;justify-content:center;align-content:center;gap:4px;color:var(--slip)}
+.ch04-sign-jade{width:32px;height:32px;display:block;border:7px solid #a9d9bf;border-right-color:transparent;border-radius:50%;filter:drop-shadow(0 0 6px #a9d9bf)}
+.hm-returner{position:absolute;left:5%;bottom:2px;width:55px;height:85px;pointer-events:none}.hm-returner>.ck{height:100%;width:100%}
+.hm-anchor .sty-choice__card{max-height:85dvh;overflow:auto}.hm-anchor h2{font-family:var(--f-display);font-size:23px;line-height:1.5}
+.hm-anchor blockquote{margin:16px 0;padding:14px;color:var(--slip-ink);background:var(--slip);border-left:4px solid var(--gilt);font:21px/1.65 var(--f-display)}
+.hm-follow,.hm-feedback{padding:12px;background:#c9a24a18;line-height:1.7;border:1px solid var(--line);border-radius:6px}
+.hm-book details{border-bottom:1px solid var(--line);padding:12px}.hm-book summary{display:flex;align-items:center;gap:12px;cursor:pointer}.hm-book summary small{display:block;color:var(--text-dim)}.hm-book blockquote{color:var(--gilt);line-height:1.7}.hm-book p{line-height:1.8}.hm-book .is-locked{opacity:.6}.hm-thumb{display:block;width:54px;height:74px}.hm-thumb svg{width:100%;height:100%}
+.hm-small-seal{width:44px!important;height:44px!important;font-size:26px!important}.hm-actions{display:flex;gap:10px;flex-wrap:wrap}.hm-import{display:none}.hm-savebar{font-size:13px;color:var(--text-dim)}
+.ar-clock[hidden]{display:none!important}.ch04-game .zh-btn{min-height:44px}.ch04-hold{touch-action:none}.ch04-game .ch04-bank{margin-bottom:12px}
+.sty-game__stage{min-height:440px}.ar-layer{overflow:auto}.ar-card{max-height:calc(100dvh - var(--sty-top,80px) - 90px);overflow:auto}
+.hm-still *{animation:none!important;transition:none!important}
+@keyframes hm-gesture{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-6px) rotate(2deg)}}
+@media(max-width:700px){.hm-title-scene{height:230px}.hm-title-cast{inset:35px 2% 0}.hm-title-cast>span{width:24%}.ch04-person{padding:6px!important}.ch04-person .hm-portrait{width:42px!important;height:60px!important}.ch04-observer .hm-portrait{width:64px!important;height:96px!important}.ch04-observer{min-height:160px;font-size:13px!important}.ch04-watch-stage{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:8px!important}.ch04-motion{font-size:12px}.ch04-watch-stage .ch04-observer:nth-child(4){grid-column:1 / 2}.hm-anchor .sty-choice__card{padding:16px}.hm-anchor h2{font-size:20px}.hm-anchor blockquote{font-size:19px}.sty-game__body{padding:12px}.sty-game__stage{min-height:480px}.ch04-seat-board{min-height:320px}.ar-card{max-height:calc(100dvh - var(--sty-top,100px) - 70px)}.ch04-wait-scene{height:190px}.ch04-wait p,.ch04-watch p,.ch04-seats p{font-size:15px;line-height:1.6}}
+
+.hx-panorama{position:relative;overflow:hidden;aspect-ratio:3.6/1;border:1px solid var(--gilt);border-radius:10px;background:#302d25}.hx-panorama>svg{display:block;width:100%;height:100%}.hx-panorama-cast{position:absolute;inset:8% 15% 0;display:flex;align-items:flex-end;justify-content:center;gap:15%}.hx-panorama-cast>span{display:block;width:24%;height:96%;filter:drop-shadow(0 5px 4px #0004)}.hx-panorama-cast svg{height:100%;width:100%}.hx-task-art .hx-panorama{aspect-ratio:4/1}.hx-task-art p{font-family:var(--f-display);text-align:center;padding:7px 5px;color:var(--gilt);font-size:14px}.hx-title-panorama .hx-panorama{aspect-ratio:3.4/1}.ch07-game{width:min(1080px,100%)}.hx-tactics-layout{display:grid;grid-template-columns:minmax(0,480px) minmax(280px,1fr);gap:18px;align-items:start}.hx-map-panel{padding:12px;border:1px solid #c3a66a;border-radius:12px;background:linear-gradient(150deg,#e9dbb5,#cdbb8b);color:#574731;box-shadow:inset 0 0 0 3px #f6ecd277}.hx-map-label{display:flex;align-items:center;justify-content:space-between;gap:5px;padding-bottom:8px}.hx-map-label b{font-family:var(--f-display);font-size:22px;color:#55432c}.hx-map-label span,.hx-legend{font-size:12px!important;color:#6d5c3d}.hx-legend{margin-top:8px;line-height:1.5}.hx-map-panel .ch07-axis{color:#705f40;max-width:448px;padding:4px 0}.ch07-board{width:100%;max-width:448px;gap:1px;background:#b59e6a;border:1px solid #b29962;border-radius:5px;overflow:hidden}.ch07-cell{position:relative;isolation:isolate;aspect-ratio:1;min-height:44px;background:#dbcea8;border:0;border-radius:0;color:#6c5938}.ch07-cell:nth-child(16n+2),.ch07-cell:nth-child(16n+3){background:#d4c69e}.ch07-cell.ch07-terrain-river{background:#608b8f;color:#f6e5b7}.ch07-cell.ch07-terrain-mountain{background:#b7bea0;border:0}.ch07-cell.ch07-terrain-camp{background:#c4b080;border:0}.hx-cell-art{position:absolute;inset:0;width:100%;height:100%;z-index:-1}.ch07-cell.is-legal{box-shadow:inset 0 0 0 3px #527b62;background:#c0caa2}.ch07-cell.is-selected{outline:3px solid #bb8430;z-index:1;background:#ead2a0}.ch07-cell.is-pending{outline:3px solid #b05e30;background:#eac691;z-index:2}.ch07-unit{width:100%;min-height:0;border:0;background:transparent;position:relative;display:block}.ch07-unit svg{display:block;width:100%;height:auto;max-height:44px}.ch07-unit b{position:absolute;bottom:5px;right:1px;font-family:var(--f-ui);font-size:10px!important;line-height:1.1;color:#fff6db;background:#763e31;border-radius:3px;padding:1px 3px}.ch07-unit-zhao b{background:#35576a}.hx-unit-hp{display:block;position:absolute;bottom:0;left:4px;right:4px;height:3px;background:#66543155;border-radius:2px;overflow:hidden}.hx-unit-hp i{display:block;height:100%;background:#6da47d}.hx-flag-target{display:grid;place-items:center;width:80%;height:80%;font-size:12px!important;border:1px dashed #796545;border-radius:4px;color:#5f5038;background:#ddc791c4}.hx-orders{display:grid;gap:10px}.hx-orders .ch07-controls{position:static}.hx-orders .ch07-command-row{grid-template-columns:repeat(3,minmax(0,1fr))}.hx-orders .ch07-unit-row{grid-template-columns:repeat(3,minmax(0,1fr))}.hx-orders .ch07-actions{display:grid;grid-template-columns:1fr}.hx-orders .ch07-actions .zh-btn{min-width:0}.ch07-unit-row .zh-btn[aria-pressed=true]{border-color:var(--gilt);color:var(--gilt)}.ch07-goals span{font-size:13px!important}.ch07-game p,.ch07-game span,.ch07-game b{font-size:15px}.ch07-game .hx-map-label b{font-size:22px}.ch07-command .hx-panorama{height:160px;aspect-ratio:auto}.ch07-page .sty-choice__card{max-height:92dvh;overflow:auto}.ch07-report-board{width:min(340px,100%);margin:0 auto}.ch07-report-board .ch07-cell{min-height:0;aspect-ratio:1;pointer-events:none}.ch07-report-board .ch07-unit svg{max-height:34px}.ch07-report-board .ch07-unit b{font-size:8px!important}.ch07-page .ep-start__name{line-height:1.4}
+@media(max-width:860px){.hx-tactics-layout{grid-template-columns:1fr;gap:12px}.ch07-battle{padding:5px}.hx-map-panel{padding:7px}.ch07-board{max-width:none}.ch07-cell{min-height:42px}.hx-orders .ch07-command-row{grid-template-columns:repeat(3,minmax(0,1fr))}.hx-orders .ch07-controls{padding:8px}.ch07-goals{gap:4px}.ch07-goals span{font-size:12px!important}.hx-title-panorama .hx-panorama{aspect-ratio:2.2/1}.hx-title-panorama .hx-panorama-cast{inset:5% 8% 0;gap:8%}.hx-task-art .hx-panorama{aspect-ratio:2.4/1}.ch07-command .hx-panorama{height:145px}.ch07-game .hx-map-label b{font-size:20px}}
+
+.hx-row-number{position:absolute;right:2px;top:2px;padding:1px 3px;border-radius:3px;font-size:11px!important;line-height:1.1;background:#365b66cc;color:#fff0c8}
+</style></head><body class="ch07-page"><div id="ep-root"></div>
+<?!= include('Core_js') ?>
+<?!= include('Data_catalog') ?>
+<?!= include('Data_codex') ?>
+<?!= include('Codex_js') ?>
+<?!= include('Anchor_js') ?>
+<?!= include('Eng_Story') ?>
+<script>
+(function () {
+  'use strict';
+  // Chapter helpers use the platform APIs. They do not replace the router,
+  // catalogue, identity, saves, logging, codex or result services.
+  const SID = 'S_ch07_hanxin', E = ZH.esc;
+  const KEY = 'hanxin-platform-v1:' + (ZH.user.email || 'guest') + ':';
+  let run = '', first = {}, progress = {}, latest = null;
+  const clone = v => JSON.parse(JSON.stringify(v));
+  const read = (k, d) => ZH.local.get(KEY + k, d);
+  const write = (k, v) => ZH.local.set(KEY + k, v);
+  const freshId = () => 'hx_' + Date.now().toString(36) + '_' + crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+  const status = text => document.querySelectorAll('[data-hx-save]').forEach(el => { el.textContent = text; });
+  const current = () => window.__ep && window.__ep.state;
+  function meta(state) {
+    state.vars = state.vars || {};
+    state.vars.hxRunId = run;
+    state.vars.hxFirst = clone(first);
+    state.vars.hxProgress = clone(progress);
+  }
+  window.HX = {
+    read, write, runId: () => run,
+    newRun() { run = freshId(); first = {}; progress = {}; latest = null; write('save', null); },
+    useState(state) {
+      const v = state && state.vars || {};
+      run = v.hxRunId || freshId(); first = clone(v.hxFirst || {}); progress = clone(v.hxProgress || {});
+      if (state) {
+        state.progress=state.progress || {};
+        // Preserve old recorded scores on their original scale. Existing runs
+        // carry a legacy marker; do not invent missing first-attempt records.
+        for(const rec of state.anchors || []) if(!first[rec.anchorId])first[rec.anchorId]=Object.assign({},rec,{completed:true,legacy:true});
+        for(const rec of state.games || []) {
+          if(rec.ruleset==='g2'||rec.ruleset==='t3')continue;
+          if(state.progress['arena:'+rec.gameId])continue;
+          const recorded=rec.gameId==='jingxing_board'?state.vars.battle:state.vars.command;
+          const raw=Object.assign({},recorded || {},{score:rec.score,max:rec.maxScore,passed:rec.passed,completed:!!recorded?.completed,legacy:true,sec:rec.sec || 0});
+          if(!raw.completed)continue;
+          const normalized=Math.round(raw.score/Math.max(1,raw.max)*10),attempt={r:clone(raw),mine:{score:normalized,sec:raw.sec},stars:normalized>=9?3:normalized>=7?2:normalized>=4?1:0,first:clone(raw)};
+          state.progress['arena:'+rec.gameId]={tries:1,active:false,best:attempt,last:attempt,first:clone(raw)};rec.legacy=true;
+        }
+        meta(state);
+      }
+    },
+    snapshot(snap,live) { meta(snap); if(Number.isFinite(live?.rng))snap.rng=live.rng; },
+    progress(k) { return progress[k] || {}; },
+    saveProgress(k, value) { progress[k] = clone(value); },
+    cacheProgress(state) { meta(state); latest = {engine:clone(state), updatedAt:Date.now(), chapterVersion:'v1.1.0'}; if(ZH.isGuest()) ZH.save(SID,'history',latest); else write('save',latest); },
+    async saveState(state) {
+      meta(state);
+      const value = { engine: clone(state), updatedAt: Date.now(), chapterVersion: 'v1.1.0' };
+      latest = value; write('save', value);
+      status(ZH.isGuest() ? '訪客進度已暫存於此分頁' : '正在保存進度');
+      try {
+        const r = await ZH.save(SID, 'history', value);
+        status(r && r.ok ? (ZH.isGuest() ? '訪客進度已暫存於此分頁' : '進度已保存') : '已存此裝置・雲端尚未保存，請匯出備份');
+        return r;
+      } catch (e) { status('已存此裝置・雲端暫時未連線，請匯出備份'); return { ok: false }; }
+    },
+    async loadState() {
+      const local = read('save', null);
+      try {
+        const r = await ZH.load(SID, 'history');
+        const cloud = r && r.ok && r.state && r.state.engine ? r.state : null;
+        // Guest progress follows Core_js's per-tab lifetime. School backups
+        // cover failed RPCs and are scoped to the authenticated account.
+        const value = ZH.isGuest() ? cloud : local && (!cloud || Number(local.updatedAt) > Number(cloud.updatedAt || 0)) ? local : cloud;
+        latest = value;
+        if (value) write('save', value);
+        return value;
+      } catch (e) { latest = ZH.isGuest() ? null : local; return latest; }
+    },
+    checkpoint() {
+      const state = current();
+      if (state) meta(state);
+      // Commit the first answer before any modal continuation or page reload.
+      if (window.__ep && window.__ep.save) return window.__ep.save().then(()=>ZH.flushAll ? ZH.flushAll() : null);
+      return Promise.resolve();
+    },
+    download(value, name) {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+    async exportSave() {
+      await HX.checkpoint();
+      HX.download({ format: 'hanxin-full', version: 1, save: latest, run, progress, first }, '韓信北伐_進度.json');
+    },
+    async importSave(data) {
+      if (JSON.stringify(data.save).length > 45000) throw Error('進度檔過大，請使用本話匯出的檔案。');
+      const state = clone(data.save.engine);
+      state.vars = state.vars || {};
+      state.vars.hxRunId = data.run || state.vars.hxRunId || freshId();
+      state.vars.hxFirst = data.first || state.vars.hxFirst || {};
+      state.vars.hxProgress = data.progress || state.vars.hxProgress || {};
+      HX.useState(state); await HX.saveState(state);
+    },
+    teacher() { ZH.go('teacher'); },
+    async finish(payload) {
+      const state=current(),v=state?.vars || {},required=['jingxing_board','wen_hanxin_command'];
+      if(payload.anchors.length!==12 || payload.codex.length!==12 || required.some(id=>!payload.games.some(g=>g.gameId===id&&!g.skipped)) || !v.battle?.completed || Object.values(v.battle.completion?.objectives || {}).filter(Boolean).length!==5 || !v.command?.completed || v.command.answers?.length!==3 || !v.command.answers.every(t=>t.completed) || ['scoutTasks','seating','yanTasks'].some((k,i)=>v[k]?.length!==[2,2,3][i] || !v[k].every(t=>t.completed)) || ['commanding','scoutsPrepared','battleDone','consultPrepared','yanPrepared','commandDone'].some(k=>!state.flags[k]))throw Error('必要體驗尚未完成，請接續本話。');
+      payload.runId=run;payload.chapterVersion='v1.1.0';
+      payload.experience={battle:clone(v.battle),command:clone(v.command),intelligence:v.intelligence,compare:v.compare,consult:clone(v.consult),reflection:clone(v.reflection),scouts:clone(v.scoutTasks),seating:clone(v.seating),yan:clone(v.yanTasks),decisions:clone(progress),firstAnchors:clone(first)};
+      await HX.checkpoint();
+      // Core_js logs the scenario and transfers the complete payload to Result.
+      if(read('finishedRun','')===run){const prior=ZH.session.get('result:'+SID,null);ZH.session.set('result:'+SID,Object.assign({},payload,prior || {}));ZH.go('result',{s:SID});return;}
+      write('finishedRun',run);
+      return ZH.finishScenario(payload);
+    }
+  };
+
+  // Read questions through Anchor_js.load/get so edits made by the teacher in
+  // AnchorBank remain authoritative. This chapter's overlay adds durable
+  // first-answer records while reporting every attempt through Core_js.track.
+  HX.runAnchor = (a,options={}) => new Promise(resolve => {
+    let rec = first[a.id];
+    if (rec && rec.completed) return resolve(clone(rec));
+    let reading = false, finished = false, shownAt = performance.now();
+    const previous = document.activeElement;
+    const order = a.options.slice();
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor((window.__ep ? window.__ep.ctx.rng() : crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const wrap = ZH.html('<div class="sty-choice hm-anchor" role="dialog" aria-modal="true" aria-labelledby="hm-question"><div class="sty-choice__card"><p class="hm-kicker">原文對讀 ' + (options.index || a.seq) + '／12</p><h2 id="hm-question">' + E(a.stem) + '</h2><blockquote>' + E(a.passage) + '</blockquote>' + (a.followUp ? '<p class="hm-follow" data-follow hidden>' + E(a.followUp) + '</p>' : '') + '<div class="zh-choices">' + order.map((o, i) => '<button type="button" class="zh-choice" data-answer="' + E(o.key) + '"><span class="zh-choice__key">' + '甲乙丙丁'[i] + '</span><span class="zh-choice__text">' + E(o.text) + '</span></button>').join('') + '</div><p class="hm-feedback" role="status" hidden></p><button type="button" class="zh-btn zh-btn--primary" data-read-done hidden>讀畢，回到劇情</button><p class="ep-note">首次判斷會保留，答錯後需親自修正。</p></div></div>');
+    document.body.append(wrap);  wrap.querySelector('button').focus();
+    wrap.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const bs = [...wrap.querySelectorAll('button:not([hidden]):not(:disabled)')];
+      if (e.shiftKey && document.activeElement === bs[0]) { e.preventDefault(); bs.at(-1).focus(); }
+      else if (!e.shiftKey && document.activeElement === bs.at(-1)) { e.preventDefault(); bs[0].focus(); }
+    });
+    function complete() {
+      finished = true; rec.completed = true; first[a.id] = rec; HX.checkpoint();
+      wrap.remove();  if (previous?.isConnected) previous.focus({preventScroll:true}); resolve(clone(rec));
+    }
+    function showRead() {
+      reading = true; const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = a.explanation;
+      wrap.querySelectorAll('[data-answer]').forEach(x => { x.disabled = true; });
+      const follow = wrap.querySelector('[data-follow]'); if (follow) follow.hidden = false;
+      const done = wrap.querySelector('[data-read-done]'); done.hidden = false; done.focus();
+    }
+    if (rec?.finalAnswer === a.answer) showRead();
+    wrap.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || b.disabled || finished) return;
+      if (b.hasAttribute('data-read-done') && reading) { complete(); return; }
+      if (!b.dataset.answer || reading) return;
+      const answer = b.dataset.answer, correct = answer === a.answer, seconds = Math.round((performance.now() - shownAt) / 100) / 10;
+      if (!rec) rec = { anchorId: a.id, choice: answer, correct, seconds, attempts: 0, completed: false };
+      rec.attempts++; rec.path = correct ? (rec.attempts === 1 ? 'direct' : 'fork') : rec.attempts === 1 ? 'fork' : 'fail';
+      const op = a.options.find(o => o.key === answer);
+      ZH.track('anchor', { scenarioId: SID, anchorId: a.id, attempt: rec.attempts, choice: answer, correct, firstTry: rec.attempts === 1, path: rec.path, distractorType: correct ? '' : op.type || '', seconds });
+      if (correct) { rec.finalAnswer = answer; showRead(); }
+      else { const fb = wrap.querySelector('.hm-feedback'); fb.hidden = false; fb.textContent = (op.fork || '請重新對讀原文。') + ' 請再判斷一次。'; shownAt = performance.now(); }
+      first[a.id] = rec; HX.checkpoint();
+    });
+  });
+
+  const who = {ch_lizuoche:'lizuoche',ch_chenyu:'chenyu',ch_piaomu:'piaomu'};
+  HX.book = () => {
+    const items = (ZH.CODEX || []).filter(c => c.scenarioId === SID);
+    const unlocked = new Set(ZH.codex.keys());
+    (current()?.codex || []).forEach(k => unlocked.add(k));
+    ZH.modal({ title: '史冊・' + items.filter(c => unlocked.has(c.type + ':' + c.id)).length + '／' + items.length, body: '<div class="hm-book">' + items.map(c => {
+      const ok = unlocked.has(c.type + ':' + c.id);
+      return '<details' + (ok ? '' : ' class="is-locked"') + '><summary>' + (ok && who[c.id] ? '<span class="hm-thumb">' + ART.portrait({id:who[c.id],name:c.name}) + '</span>' : '<span class="ep-seal hm-small-seal">' + E(ok ? c.glyph : '？') + '</span>') + '<span>' + E(ok ? c.name : '尚待解鎖') + '<small>' + E(ok ? c.title : '隨劇情完成原文對讀') + '</small></span></summary>' + (ok ? '<blockquote>' + E(c.quote) + '</blockquote><p>' + E(c.text) + '</p>' : '') + '</details>';
+    }).join('') + '</div>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+  };
+  HX.saveMenu = () => {
+    ZH.modal({ title: '存檔與設定', body: '<p>進度會自動保存。你也可以下載進度備份，或調整文字速度。</p><p class="hm-savebar" data-hx-save>已保留目前進度</p>', actions: [{label:'回到遊戲',value:'close',kind:'quiet'},{label:'遊玩設定',value:'settings',kind:'quiet'},{label:'下載進度',value:'export',kind:'primary'}] }).then(action => { if(action==='export')HX.exportSave(); if(action==='settings')HX.settings(); });
+  };
+  HX.settings = () => {
+    ZH.modal({ title: '遊玩設定', body: '<label>文字速度 <select id="hx-speed"><option value="normal">逐字</option><option value="instant">立即顯示</option></select></label><label><input type="checkbox" id="hx-still" ' + (read('still', false) ? 'checked' : '') + '>減少場景動態</label><p>關閉或移到其他分頁時，戰棋與論將均不限時；每一道命令由你確認後才執行。</p>', actions: [{ label: '回到遊戲', value: true, kind: 'primary' }] });
+    const s = document.querySelector('#hx-speed'); s.value = ZH.settings.textSpeed; s.addEventListener('change', () => ZH.setSetting('textSpeed', s.value));
+    document.querySelector('#hx-still').addEventListener('change', e => { write('still', e.target.checked); document.documentElement.classList.toggle('hm-still', e.target.checked); });
+  };
+})(window);
+
+</script>
+<script>
+
+(function () {
+  'use strict';
+  // ═════════════════════════ 1. 基本設定 ═════════════════════════
+  const SID = 'S_ch07_hanxin';
+  const MODE = 'history';
+  const ROOT = document.getElementById('ep-root');
+  const params = ZH.boot.params || {};
+  const esc = ZH.esc;
+  const ANCHOR_ORDER = ['hx_01', 'hx_02', 'hx_03', 'hx_04', 'hx_05', 'hx_06', 'hx_07', 'hx_08', 'hx_09', 'hx_10', 'hx_11', 'hx_12'];
+  const anchorsReady = ZH.anchor.load(SID).catch(() => null);
+  const META = Object.assign({}, ZH.findScenario(SID) || { id: SID, vol: 'ch', ep: 7, name: '韓信北伐',
+    episode: '背水一戰：退路斷了，所以我們贏了', year: 205, genre: '戰棋', source: '〈淮陰侯列傳〉', guest:false,status:'ready'},{episode:'背水一戰：各路如何相互配合',genre:'井陘戰棋＋論將'});
+  const ROLE = { name: '韓信', glyph: '信', color: 'var(--gilt)', title: '你・漢大將軍',
+    lead: '親自下令，讓旗鼓、背水陣與輕騎相互配合。從井陘的布局走到向敗將請教，再思考統兵與用將的差別。' };
+  const POINTS = [
+    { title: '井陘戰棋', text: '八欄十列，親自舉旗、佯退、固守與換旗；趙軍按公開規則行動。' },
+    { title: '初績與補救', text: '一般提示不扣分；分步推演保留首次成績，仍由你完成全部下令。' },
+    { title: '師事李左車', text: '親自安排禮接、請益與休兵遣使，理解向敗將學習的理由。' },
+    { title: '條件與責任', text: '背水須有情報、地形與奇兵配合；論將區分帶兵與統御將領。' }
+  ];
+  const bounded = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  const endingKey = score => score >= 7 ? 'great' : score <= 3 ? 'bad' : 'good';
+  // ═════════════════════════ 2. 人物 ═════════════════════════
+  const CHARACTERS = [
+    { id: 'hanxin', name: '韓信', glyph: '信', color: 'var(--gilt)', title: '你・漢大將軍' },
+    { id: 'piaomu', name: '漂母', glyph: '母', color: 'var(--patina)', title: '飯信者' },
+    { id: 'zhanger', name: '張耳', glyph: '耳', color: 'var(--gilt)', title: '與韓信下趙' },
+    { id: 'chenyu', name: '陳餘', glyph: '餘', color: 'var(--patina)', title: '成安君' },
+    { id: 'lizuoche', name: '李左車', glyph: '車', color: 'var(--patina)', title: '廣武君' },
+    { id: 'emperor', name: '漢高祖', glyph: '邦', color: 'var(--gilt)', title:'楚漢戰後・皇帝',art:{hat:'mian',robe:'#ad8432',beard:2} },
+    { id: 'clerk', name: '軍吏', glyph: '吏', color: 'var(--patina)', title:'教學情境人物',art:{hat:'guan',robe:'#687565',beard:1,prop:'scroll'} },
+    { id: 'shiguan', name: '史官', glyph: '史', color: 'var(--gilt)', title: '原典與教學演出對讀' }
+  ];
+  // ═════════════════════════ 3. 數值 ═════════════════════════
+  const METERS = [
+    { id: 'morale', label: '兵心', icon: 'sword', max: 100, start: 60, danger: 29, show: s => !!s.flags.commanding },
+    { id: 'conceal', label: '奇兵', icon: 'eye', max: 100, start: 80, danger: 29, show: s => !!s.flags.commanding },
+    { id: 'renown', label: '威名', icon: 'crown', max: 100, start: 20, show: s => !!s.flags.commanding }
+  ];
+  // ═════════════════════════ 4. 說明 ═════════════════════════
+  const HELP = '<p><b>你是韓信。</b>少時回憶後，井陘段標前204年；返楚報恩、降侯論將另標時間。</p>' +
+    '<p><b>戰棋：</b>選部隊、選命令或目標、看預覽、確認下令。每隊每回合一次移動與一次戰術行動；親按結算後趙軍才行動。</p>' +
+    '<p><b>目標：</b>舉旗引趙出營、佯退回水上軍、至少兩隊背水部隊守三回合，兩騎各進旗位親自換旗。河不可通行，山間道只有輕騎能走。</p>' +
+    '<p><b>操作：</b>點選、觸控、Tab與Enter皆可；盤內方向鍵換焦點，空白也可確認。不限時、不用拖曳。格上代號對應中文部隊資訊。</p>' +
+    '<p><b>成績：</b>首次成功按回合、退出隊數與提前暴露評十分；未完成按目標給零至三分。一般提示不扣分；重布陣先固定初績，再親自分步完成。</p>' +
+    '<p><b>史料：</b>隊數、隊勢與回合是教學模型。退路斷了仍需情報、地形與奇兵配合；不把逼自己絕境當讀書方法。</p>' +
+    '<p><b>存檔：</b>預覽命令、部隊位置、行動額度、回合回報、分步進度與首答都會保存，離開後可以接續。所有核心體驗都須親自完成。</p>';
+  // ═════════════════════════ 5. 劇情節點 ═════════════════════════
+  const NODES = {
+    n_01: async ctx => {
+      await ctx.chapter('第一幕　未名之時', '少時回憶');
+      await ctx.scene('river', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '淮陰・城下', time: '回憶・起兵前' });
+      ctx.cast(['hanxin', 'piaomu', 'shiguan']);
+      await ctx.say([{ who: 'shiguan', text: '本話你是韓信。先回到尚未成名時，再親自走進井陘的指揮。' },
+        { text: '韓信貧困，釣於城下。一位漂母見他飢餓，連日給他飯吃。' },
+        { who: 'hanxin', text: '吾必有以重報母。' },
+        { text: '漂母聽後生氣。讀她的回答，分辨這份援助的意思。' }]);
+      return 'n_02';
+    },
+    n_02: async ctx => {
+      await ctx.anchor('hx_01'); ctx.unlock('person:ch_piaomu');
+      await ctx.say([{ who: 'shiguan', text: '漂母憐他飢餓，不以報酬交換援助。王孫是稱呼，不據此認定他出身王族。' }]);
+      return 'n_03';
+    },
+    n_03: async ctx => {
+      await ctx.scene('city', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '淮陰・市中', time: '少時・受侮' });
+      ctx.cast(['hanxin', 'shiguan']);
+      await ctx.say([{ text: '屠中少年在眾人前侮辱韓信，譏他身材高大、帶刀劍，心中卻怯。' },
+        { who: 'shiguan', text: '這裡判讀史書記載，不要求你操作受辱或傷害別人。' }]);
+      await ctx.anchor('hx_02'); ctx.unlock('idiom:kuaxiazhiru');
+      await ctx.say([{ text: '韓信忍下侮辱，市人笑他膽怯。史書其後另寫他對這件事的解釋。' },
+        { who: 'shiguan', text: '理解歷史選擇，不等於今日遇欺凌都得忍受。求助、離開危險也值得討論。' }]);
+      return 'n_04';
+    },
+    n_04: async ctx => {
+      await ctx.scene('road', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '北伐途中', time: '拜將之後・定魏破代' });
+      ctx.cast(['hanxin', 'zhanger', 'shiguan']); ctx.flag('commanding', true);
+      await ctx.say([{ text: '承接第五話，韓信已拜大將、還定三秦。彭城敗後，又收兵與漢王會合。' },
+        { text: '韓信定魏，漢王遣張耳同行；其後破代，進兵下趙。' },
+        { who: 'zhanger', text: '到了井陘，要把敵人的打算與我們的路線一起看。' },
+        { who: 'hanxin', text: '兵多不等於計已定。先聽前方的回報。' }]);
+      return 'n_05';
+    },
+    n_05: async ctx => {
+      await ctx.chapter('第二幕　井陘之局', '前204年・教學推演');
+      await ctx.scene('tent', { tod:'day',banner:'#4f6b78',glyph:'趙',place: '趙營・戰前軍議', time: '井陘口' });
+      ctx.cast(['chenyu', 'lizuoche', 'shiguan']);
+      await ctx.say([{ text: '趙王歇、成安君陳餘聚兵，原典稱號稱二十萬，不能當作已核實的精確數字。' },
+        { who: 'lizuoche', text: '井陘路窄，漢軍糧食在後。請守營不戰，另遣兵斷其輜重。' },
+        { who: 'shiguan', text: '這是李左車的敵方獻計。接著讀陳餘為何不採。' }]);
+      return 'n_06';
+    },
+    n_06: async ctx => {
+      await ctx.anchor('hx_03'); ctx.unlock('person:ch_chenyu');
+      await ctx.say([{ who: 'shiguan', text: '陳餘排斥詐謀，也恃兵多。這是此人的判斷，不代表所有儒者都會如此。' }]);
+      return 'n_07';
+    },
+    n_07: async ctx => {
+      await ctx.scene('camp', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '井陘口外・漢營', time: '偵察回報' }); ctx.cast(['hanxin', 'zhanger', 'clerk']);
+      await ctx.say([{ who: 'clerk', text: '使人偵察所得：李左車的斷糧守壁之計，沒有被採用。' },
+        { who: 'hanxin', text: '若敵人肯守壁斷糧，走法就不同。如今知道其計不用，才可以引兵下去。' }]);
+      const c = await chooseOnce(ctx,'intelligence',{ title: '你如何使用這份情報？', text: '這是教學軍議，先分辨證據與猜測。',
+        options: [{ label: '核對回報，再依敵方未採的計策安排', value: 'check' }, { label: '只看趙軍人多，認定無法籌策', value: 'numbers' }] });
+      ctx.state.vars.intelligence = c;
+      await ctx.say([{ text: c === 'check' ? '你把敵人可能採取的行動納入部署，沒有只比人數。' : '人數尚不足以解釋全局。原典寫韓信確認敵計未用後，才敢進兵。' }]);
+      return 'n_08';
+    },
+    n_08: async ctx => {
+      await ctx.scene('mountain', { tod:'night',banner:'#ae8e36',glyph:'漢',place: '井陘・山間道', time: '夜半' }); ctx.cast(['hanxin', 'clerk']);
+      await ctx.anchor('hx_04');
+      await ctx.say([{ who: 'clerk', text: '兩隊輕騎在盤上合代表二千人。每人持赤幟，從間道依山隱蔽觀察。' }]);
+      return 'n_09';
+    },
+    n_09: async ctx => {
+      ctx.state.vars.scoutTasks = await completeTasks(ctx, SCOUT_TASKS, null, 'scoutTasks'); ctx.flag('scoutsPrepared', true);
+      return 'n_10';
+    },
+    n_10: async ctx => {
+      await ctx.scene('river', { tod:'dawn',banner:'#ae8e36',glyph:'漢',place: '井陘・水上軍', time: '黎明前' }); ctx.cast(['hanxin', 'zhanger', 'shiguan']);
+      await ctx.say([{ text: '韓信使萬人先行，與水相背布陣。原文保留陳字，作陣列解。' }]);
+      await ctx.anchor('hx_05');
+      await ctx.say([{ who: 'shiguan', text: '趙軍笑的是看似沒有退路的布陣，不是已識破山後的輕騎。' }]);
+      return 'n_11';
+    },
+    n_11: async ctx => {
+      ctx.cast(['hanxin', 'zhanger', 'clerk']);
+      await ctx.say([{ who: 'clerk', text: '推演盤八欄十列：左為河，右為趙壁，北側有山間道，兩處旗位在營內。' },
+        { who: 'hanxin', text: '三隊守水上，兩隊藏山後。旗鼓隊由我與張耳共同指揮。' },
+        { text: '選部隊、選命令、看預覽，再確認下令。你結算回合後，趙軍才依公開規則行動。' },
+        { who: 'zhanger', text: '不要只盯一隊。引敵、守住與換旗，要相互接上。' }]);
+      return 'n_12';
+    },
+    n_12: async ctx => {
+      await ctx.say([{ text: '平旦旗鼓出井陘，趙軍出壁接戰。先讀史實下一步，再親自安排推演。' }]);
+      await ctx.anchor('hx_06');
+      return 'n_13';
+    },
+    n_13: async ctx => {
+      const r = await ctx.minigame({ id: 'jingxing_board', title: '井陘之戰・親自下令', skip:false, goal:'親自完成引敵、佯退、固守三回合與兩隊換旗；受阻時保留首績，再親自分步重演。',
+        help: '<p>選隊、選命令、看預覽、確認；每隊一次移動與一次戰術行動。親自舉旗、下佯退令並移回水上軍，引趙出壁，守三回合，兩騎各進旗位親自換旗。一般提示不扣分；分步推演保留初績。所有部隊與回合皆教學示意。</p>' }, battleGame);
+      if (!r.completed || r.skipped || !r.first || !r.completion || !Object.values(r.completion.objectives || {}).every(Boolean) || Object.keys(r.completion.objectives || {}).length !== 5) {
+        await ctx.say([{ text: '推演尚未親自完成，請回盤面完成引敵、固守與兩次換旗。' }]); return 'n_13';
+      }
+      ctx.state.vars.battle=Object.assign({},r.firstResult || r,{completed:true,completion:r.completion,bestScore:r.score});
+      ['morale','conceal','renown'].forEach(k=>ctx.add(k,ctx.state.vars.battle[k]-ctx.meter(k))); ctx.flag('battleDone', true);
+      return 'n_14';
+    },
+    n_14: async ctx => {
+      const r = ctx.state.vars.battle;
+      await ctx.say([{ who: 'clerk', text: '本局首次' + r.score + '／10；' + r.first.turns + '回合，退出' + r.first.losses + '隊，提前暴露' + r.first.exposed + '隊。' },
+        { text: r.assisted ? '分步重演已親自完成，初次分數、部隊狀態與隱蔽紀錄保持原樣。' : '你已親自完成各路配合。這份成績評推演效率，不改史實勝負。' },
+        { who: 'shiguan', text: '接著讀趙軍見到營中赤幟的反應，對照你剛才的操作。' }]);
+      return 'n_15';
+    },
+    n_15: async ctx => {
+      await ctx.scene('camp', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '趙壁', time: '漢赤幟已立' }); ctx.cast(['hanxin', 'zhanger', 'shiguan']);
+      await ctx.anchor('hx_07'); ctx.unlock('idiom:bazhiyizhi'); ctx.unlock('treasure:ch_chizhi');
+      await ctx.say([{ text: '趙軍以為本營已陷，驚亂遁走。赤色本身沒有魔力，作用來自營寨失守的判讀。' }]);
+      return 'n_16';
+    },
+    n_16: async ctx => {
+      await ctx.say([{ text: '漢軍大破趙軍；成安君陳餘死於泜水上，趙王歇被捕。' },
+        { who: 'shiguan', text: '史實結果固定；本局低分也不把原典改成趙勝。隊勢損失只是推演紀錄。' }]);
+      return 'n_17';
+    },
+    n_17: async ctx => {
+      await ctx.scene('tent', { tod:'dusk',banner:'#ae8e36',glyph:'漢',place: '漢營・戰後', time: '慶功與問兵法' }); ctx.cast(['hanxin', 'lizuoche', 'zhanger', 'shiguan']);
+      await ctx.say([{ text: '韓信令軍中不得殺廣武君，得見後解其縛，敬之如師。稍後再由你安排請益。' },
+        { text: '諸將來賀，問為何背水列陣，竟能取勝。' },
+        { who: 'hanxin', text: '此在兵法，顧諸君不察耳。' }]);
+      return 'n_18';
+    },
+    n_18: async ctx => {
+      await ctx.anchor('hx_08'); ctx.unlock('school:bingjia');
+      await ctx.say([{ who: 'shiguan', text: '求生意志只是分析的一環。情報、敵方選擇與營外奇兵，仍不可拿掉。' }]);
+      return 'n_19';
+    },
+    n_19: async ctx => {
+      await ctx.anchor('hx_09'); ctx.unlock('idiom:beishuiyizhan');
+      await ctx.say([{ who: 'shiguan', text: '韓信談的是未經平日長期撫循的士卒。不能只剩一句斷退路就會贏。' }]);
+      return 'n_20';
+    },
+    n_20: async ctx => {
+      const c = await chooseOnce(ctx,'compare',{ title: '對照你剛才的布局', text: '哪些操作配合，才能解釋這場戰役？',
+        options: [{ label: '情報、佯退、背水抵抗與輕騎換旗相配合', value: 'combined' }, { label: '只要背後有河，其他部署皆無關', value: 'river' }] });
+      ctx.state.vars.compare = c;
+      await ctx.say([{ text: c === 'combined' ? '你把各路放回同一場局勢，能解釋引空趙壁與漢軍抵抗如何相連。' : '單靠河無法解釋營中易幟。請回想你親自安排的旗鼓與兩隊輕騎。' }]);
+      return 'n_21';
+    },
+    n_21: async ctx => {
+      ctx.cast(['hanxin', 'lizuoche', 'clerk']);
+      await ctx.say([{ who: 'hanxin', text: '若陳餘用了先生的計，我也可能被擒。如今願委心請教，請勿推辭。' },
+        { text: '接續原典的師事，你先表明請益理由，再親自核對賓主面向。' }]);
+      const c = await chooseOnce(ctx,'consult',{ title: '你如何向李左車請益？', text: '這是教學演出，先留下你的第一次態度。',
+        options: [{ label: '承認若採其計會危及自己，願據理請教', value: 'reason' }, { label: '只行禮，不說為何願聽他的見解', value: 'courtesy' }, { label: '認為敗將必無可用之見，拒絕聽取', value: 'dismiss' }] });
+      ctx.state.vars.consult = { first: c, score: c === 'reason' ? 100 : c === 'courtesy' ? 50 : 0 };
+      await ctx.say([{ text: c === 'reason' ? '你分開人的勝負與計策是否被採，願意討論其見解。' : c === 'courtesy' ? '禮貌可建立對話，原典還有承認對方計策可用的理由。' : '敗者的計策可能未被採用，不能只憑輸贏否定他的能力。原典仍銜接請益。' }]);
+      ctx.state.vars.seating = await completeTasks(ctx, SEATING_TASKS, null, 'seating'); ctx.flag('consultPrepared', true);
+      return 'n_22';
+    },
+    n_22: async ctx => {
+      await ctx.say([{ who: 'lizuoche', text: '我願獻所見，但計策仍須推敲。先看原文的謙辭。' }]);
+      await ctx.anchor('hx_10'); ctx.unlock('idiom:zhizheqianlv');
+      return 'n_23';
+    },
+    n_23: async ctx => {
+      await ctx.scene('tent', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '漢營・攻燕軍議', time: '井陘之後・士卒疲勞' });
+      await ctx.say([{ who: 'hanxin', text: '我想北攻燕、東伐齊，如何才有功？' },
+        { who: 'lizuoche', text: '將軍的長處已聞天下，但眾勞卒罷。若拿疲兵頓於堅城，恐怕久戰難下。' }]);
+      await ctx.anchor('hx_11');
+      return 'n_24';
+    },
+    n_24: async ctx => {
+      ctx.state.vars.yanTasks=await completeTasks(ctx,YAN_TASKS,(i,p)=>{
+        const k=i<2?'morale':'renown';p.reward=p.reward || {key:k,target:bounded(ctx.meter(k)+10)};
+        ctx.add(p.reward.key,p.reward.target-ctx.meter(p.reward.key));
+      },'yanTasks'); ctx.flag('yanPrepared', true);
+      return 'n_25';
+    },
+    n_25: async ctx => {
+      await ctx.scene('road', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '燕路・使者奉書', time: '先聲後實' }); ctx.cast(['hanxin', 'lizuoche', 'shiguan']);
+      await ctx.say([{ text: '韓信從李左車策，遣使赴燕。原典記燕從風而靡。' },
+        { who: 'shiguan', text: '此處是燕聽從，不把齊後來的戰事改成同時無戰而降。軍威中的壓力也值得反思。' }]);
+      ctx.unlock('idiom:xianshenghoushi'); ctx.unlock('person:ch_lizuoche');
+      return 'n_26';
+    },
+    n_26: async ctx => {
+      await ctx.chapter('第三幕　將兵與將將', '時間跳轉・楚漢戰後');
+      await ctx.scene('hall', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '楚國・返鄉報恩', time: '戰後封楚王時' }); ctx.cast(['hanxin', 'piaomu', 'shiguan']);
+      await ctx.say([{ text: '時間跳到戰後。韓信封楚王，召曾給他飯的漂母，賜千金。' },
+        { who: 'shiguan', text: '這是後來的報恩，不是在少時當場拿千金買飯。漂母原先不以報酬施食。' }]);
+      ctx.unlock('idiom:yifanqianjin');
+      return 'n_27';
+    },
+    n_27: async ctx => {
+      await ctx.scene('hall', { tod:'day',banner:'#ae8e36',glyph:'漢',place: '皇帝與淮陰侯論將', time: '楚漢戰後・韓信被拘降侯之後' });
+      ctx.cast(['hanxin', 'emperor', 'shiguan']);
+      await ctx.say([{ text: '再推進時間：韓信已被拘，後降為淮陰侯。原典寫皇帝與他論諸將才能。' },
+        { who: 'emperor', text: '如我能將幾何？' }, { who: 'hanxin', text: '陛下不過能將十萬。' },
+        { text: '韓信自稱多多而益善。皇帝問，為何仍為自己所擒？讀他的回答。' }]);
+      await ctx.anchor('hx_12');
+      return 'n_28';
+    },
+    n_28: async ctx => {
+      const r = await ctx.minigame({ id: 'wen_hanxin_command', title: '論將・韓信的回話', skip:false,goal:'三段回話各自親選與補正，第一次選擇保留；全部完成後才回劇情。',
+        help: '<p>三段四選一，不限時。以已讀史料選韓信的回應；首答固定，錯選須閱讀回饋再親自補正，最後確認三題都完成。原文與教學演出分別標示。</p>' }, commandGame);
+      if (!r.completed || r.skipped || !Array.isArray(r.answers) || r.answers.length !== 3 || !r.answers.every(a => a.completed)) {
+        await ctx.say([{ text: '論將尚未親自完成，請回軍議完成三段回話與補正。' }]); return 'n_28';
+      }
+      ctx.state.vars.command=Object.assign({},r.firstResult || r,{completed:true,bestScore:r.score}); ctx.flag('commandDone', true); ctx.unlock('idiom:duoduoyishan');
+      return 'n_29';
+    },
+    n_29: async ctx => {
+      ctx.cast(['hanxin', 'shiguan']);
+      const c = await chooseOnce(ctx,'reflection',{ title: '你如何評這場布局？', text: '立場可以不同，請連同條件與人的代價一起判斷。',
+        options: [{ label: '承認戰術效果，也查情報、配合與士卒責任', value: 'conditions' },
+          { label: '反對逼入死地，提出訓練補給替代並承認當時情勢', value: 'alternative' },
+          { label: '只論勝敗，認為任何時候都該斷退路', value: 'win' },
+          { label: '由陳餘之敗，認定全部儒家見解都無價值', value: 'generalize' }] });
+      ctx.state.vars.reflection = { first: c, score: c === 'conditions' || c === 'alternative' ? 100 : c === 'win' ? 50 : 0 };
+      await ctx.say([{ text: c === 'conditions' ? '你把成果、必要條件與承擔者一併納入，沒有把士卒當耗材。' : c === 'alternative' ? '你提出反對立場與替代安排，仍承認當時的限制，理由可以再討論。' : c === 'win' ? '勝敗不夠解釋適用條件；故意斷去退路，不是任何情境都值得採取。' : '陳餘的具體判斷不能代表整個學派。回到原文，辨清人的選擇與理由。' },
+        { who: 'shiguan', text: '何為為我禽，已有被拘前情；這裡留下功臣處境的伏筆，並非預言未發生的被捕。' }]);
+      return 'n_30';
+    },
+    n_30: async ctx => {
+      await ctx.say([{ who: 'hanxin', text: '此局下令、請益與論將皆已完成。把取捨與初次成績，都寫入這一卷。' }]);
+      return ctx.end({ type: 'final', key: endingKey(ctx.state.vars.battle.score) });
+    }
+  };
+  const SCOUT_TASKS = [
+    { title: '輕騎一隊・觀察', text: '依已讀原文，先安排山後的任務。', right: 'watch', done: '輕騎一隊留在山間道觀察趙壁，等待信號。', retry: '萆山而望趙軍是隱蔽觀察；請親自重核。', options: [{ label: '依山隱蔽，觀察趙軍動向', value: 'watch' }, { label: '立即公開赤幟，向趙壁宣告位置', value: 'show' }] },
+    { title: '輕騎二隊・時機', text: '營內還有趙軍時，輕騎應如何準備？', right: 'wait', done: '輕騎二隊先等待空壁時機；真正移動與換旗由你稍後下令。', retry: '原典須候趙空壁逐利才馳入；請親自重核等待時機。', options: [{ label: '不問營內守軍，立刻進營換旗', value: 'rush' }, { label: '隱蔽等待，核對營內守軍動向', value: 'wait' }] }
+  ];
+  const SEATING_TASKS = [
+    { title: '廣武君面向', text: '原典「信乃解其縛，東鄉坐，西鄉對，師事之。」鄉作嚮解。請核對賓主面向。', right: 'east', done: '李左車面東坐。東嚮是面向東方，不是另到東營。', retry: '東鄉坐的受禮者是李左車，請親自核對。', options: [{ label: '安賓面向東方坐', value: 'east' }, { label: '安賓面向西方坐', value: 'west' }] },
+    { title: '韓信面向', text: '敬對方如師，韓信如何相對？', right: 'west', done: '韓信面西相對，請益安排已親自確認。', retry: '西鄉對是韓信面西相對，請親自重核。', options: [{ label: '韓信也面東，背向對方', value: 'east' }, { label: '韓信面西，與對方相對', value: 'west' }] }
+  ];
+  const YAN_TASKS = [
+    { title: '攻燕前・休兵', text: '依李左車對兵疲的分析，先安排哪一步？', right: 'rest', done: '已安排休兵；兵心＋10是本話教學刻度，不是原典兵力數字。', retry: '案甲休兵是先讓疲兵休整，請親自重核。', options: [{ label: '立即催疲兵攻堅城', value: 'rush' }, { label: '案甲休兵，整頓士卒', value: 'rest' }] },
+    { title: '趙地・鎮撫', text: '接著如何處理戰後趙地？', right: 'care', done: '已安排鎮趙撫民；兵心＋10，後續不只看再戰速度。', retry: '原典先鎮趙撫其孤，再議燕路。請親自安排鎮撫。', options: [{ label: '鎮趙撫民，安排戰後照顧', value: 'care' }, { label: '完全不問戰後民生，立刻離去', value: 'leave' }] },
+    { title: '燕路・奉書', text: '休整鎮撫後，如何落實先聲後實？', right: 'envoy', done: '辯士奉書，呈現已有軍威，威名＋10；使者不假造新的戰績。', retry: '原典遣辯士奉書，使燕知已有軍威，請親自重核。', options: [{ label: '捏造不存在的勝利，空言欺騙', value: 'fake' }, { label: '遣辯士奉書，以已有軍威說燕', value: 'envoy' }] }
+  ];
+  async function chooseOnce(ctx,key,opts){const p=HX.progress('choice:'+key);const old=ctx.state.vars[key];if(!Object.hasOwn(p,'value') && old!==undefined){p.value=typeof old==='string'?old:old.first;}
+    if(Object.hasOwn(p,'value'))return p.value;p.value=await ctx.choose(opts);HX.saveProgress('choice:'+key,p);await HX.checkpoint();return p.value;}
+  async function completeTasks(ctx,tasks,after,group){const records=[];
+    for(let i=0;i<tasks.length;i++){const t=tasks[i],key=group+':'+i,p=HX.progress(key);const legacy=(ctx.state.vars[group] || [])[i];if(!p.completed && legacy?.completed)Object.assign(p,legacy,{legacy:true});
+      while(!p.completed){const question=ctx.choose({title:(p.attempts?'親自重核・':'')+t.title,text:t.text,options:t.options});const box=[...document.querySelectorAll('.sty-choice__card')].at(-1);if(box)box.insertAdjacentHTML('afterbegin',taskArt(group,i,p));
+        const answer=await question;if(!Object.hasOwn(p,'first')){p.first=answer;p.firstCorrect=answer===t.right;}p.attempts=(p.attempts || 0)+1;p.last=answer;p.completed=answer===t.right;p.task=t.title;HX.saveProgress(key,p);await HX.checkpoint();if(!p.completed)await ctx.say([{who:'clerk',expr:'worried',text:t.retry}]);}
+      if(after)await after(i,p);HX.saveProgress(key,p);await HX.checkpoint();records.push(JSON.parse(JSON.stringify(p)));await ctx.say([{who:'clerk',expr:'happy',text:t.done}]);}
+    return records;}
+  const percent=r=>Number(r.score || 0)/Math.max(1,Number(r.max || 100))*100;
+  function portrait(id,expr='normal') { return ART.portrait(CHARACTERS.find(c=>c.id===id),{expr}); }
+  function panorama(scene,ids,tod='day') {return '<div class="hx-panorama">'+ART.scene(scene,{tod,banner:'#ae8e36',glyph:'漢'})+'<div class="hx-panorama-cast">'+ids.map(id=>'<span>'+portrait(id,id==='hanxin'?'serious':'normal')+'</span>').join('')+'</div></div>';}
+  const HX_ICONS={
+    river:'<path d="M-5 14q12-9 25 0t25 0t25 0M-5 32q12-9 25 0t25 0t25 0M-5 49q12-9 25 0t25 0t25 0" fill="none" stroke="#cce2d7" stroke-width="2" opacity=".5"/>',
+    mountain:'<path d="M-2 54L17 10l18 36L46 19l22 35Z" fill="#899176"/><path d="M3 54l17-30 9 21 18-20 16 29Z" fill="#646e59"/><path d="M12 41l24 10 23-14" fill="none" stroke="#d4bd88" stroke-width="2" stroke-dasharray="4 4"/>',
+    camp:'<path d="M4 51L27 14l24 37Z" fill="#b59c6b" stroke="#7a684c"/><path d="M21 51l7-21 8 21" fill="#776345"/><path d="M8 55V10m0 2h16v11H8" fill="#667d78" stroke="#755f42"/>'
+  };
+  function cellArt(t){return HX_ICONS[t]?'<svg class="hx-cell-art" viewBox="0 0 60 60" aria-hidden="true">'+HX_ICONS[t]+'</svg>':'';}
+  function unitArt(u){const color=u.side==='han'?'#a74c3c':'#4c6573',helmet=u.kind==='cavalry'?'#7d5e41':u.kind==='banner'?'#a38337':'#625d55';return '<svg viewBox="0 0 64 55" aria-hidden="true"><ellipse cx="32" cy="50" rx="21" ry="4" fill="#312b24" opacity=".2"/><path d="M13 49V33q19-11 38 0v16Z" fill="'+color+'" stroke="#584831" stroke-width="2"/><circle cx="32" cy="24" r="18" fill="#f4d8b3" stroke="#5c4a39" stroke-width="2"/><path d="M14 23V19q0-19 18-19t18 19v4l-7-5-11 3-12-3Z" fill="'+helmet+'"/><path d="M31 1v15" stroke="#cfb97e" stroke-width="3"/><circle cx="24" cy="27" r="3" fill="#332820"/><circle cx="40" cy="27" r="3" fill="#332820"/><circle cx="23" cy="25" r="1" fill="#fff"/><circle cx="39" cy="25" r="1" fill="#fff"/><path d="M28 34q4 4 8 0" fill="none" stroke="#6d4935" stroke-width="2"/>'+(u.kind==='cavalry'?'<path d="M53 27l6 8v14H47V36Z" fill="#94764a" stroke="#574936"/><circle cx="54" cy="35" r="1.5" fill="#332820"/>':u.kind==='banner'?'<path d="M9 48V8m0 0h12v14H9" fill="#ad4435" stroke="#705738" stroke-width="2"/>':'')+'</svg>';}
+  function boardLegend(){return '<div class="hx-map-label"><b>井陘軍圖</b><span>上北下南・教學示意</span></div><p class="hx-legend">朱印漢軍・青印趙軍｜A 河道｜山間道僅騎兵可行</p>';}
+  function taskArt(group,i,p){
+    let scene='camp',ids=['hanxin','clerk'],caption='隱蔽觀察 → 等待空壁 → 輕騎換旗';
+    if(group==='seating'){scene='tent';ids=['lizuoche','hanxin'];caption='西 ←　李左車面東 →　← 韓信面西　→ 東';}
+    if(group==='yanTasks'){scene=i===2?'road':'camp';ids=['hanxin','lizuoche'];caption=['一・案甲休兵','二・鎮趙撫民','三・辯士奉書'][i];}
+    if(group==='scoutTasks')scene='mountain';
+    return '<div class="hx-task-art">'+panorama(scene,ids,group==='scoutTasks'?'night':'day')+'<p>'+caption+'</p></div>';
+  }
+  function gameBlocked(){return document.hidden || !!document.querySelector('.zh-modal,.sty-choice,.codex-detail');}
+
+  // ═════════════════════════ 6. 井陘戰棋與論將 ═════════════════════════
+  const BOARD = { cols: 8, rows: 10, flags: [{ x: 7, y: 2, name: '北旗' }, { x: 7, y: 6, name: '南旗' }] };
+  const INITIAL_UNITS = [
+    { id: 'B1', name: '背水一隊', side: 'han', kind: 'infantry', x: 1, y: 3, hp: 6, move: 1 },
+    { id: 'B2', name: '背水二隊', side: 'han', kind: 'infantry', x: 1, y: 5, hp: 6, move: 1 },
+    { id: 'B3', name: '背水三隊', side: 'han', kind: 'infantry', x: 1, y: 7, hp: 6, move: 1 },
+    { id: 'G', name: '韓信、張耳旗鼓隊', side: 'han', kind: 'banner', x: 4, y: 5, hp: 6, move: 2 },
+    { id: 'K1', name: '輕騎一隊', side: 'han', kind: 'cavalry', x: 3, y: 1, hp: 4, move: 2 },
+    { id: 'K2', name: '輕騎二隊', side: 'han', kind: 'cavalry', x: 4, y: 1, hp: 4, move: 2 },
+    { id: 'Z1', name: '趙軍一隊', side: 'zhao', kind: 'zhao', x: 6, y: 2, hp: 4, move: 1 },
+    { id: 'Z2', name: '趙軍二隊', side: 'zhao', kind: 'zhao', x: 6, y: 3, hp: 4, move: 1 },
+    { id: 'Z3', name: '趙軍三隊', side: 'zhao', kind: 'zhao', x: 7, y: 4, hp: 4, move: 1 },
+    { id: 'Z4', name: '趙軍四隊', side: 'zhao', kind: 'zhao', x: 6, y: 5, hp: 4, move: 1 },
+    { id: 'Z5', name: '趙軍五隊', side: 'zhao', kind: 'zhao', x: 6, y: 6, hp: 4, move: 1 },
+    { id: 'Z6', name: '趙軍六隊', side: 'zhao', kind: 'zhao', x: 7, y: 7, hp: 4, move: 1 }
+  ];
+  const coord = (x, y) => String.fromCharCode(65 + x) + (y + 1);
+  const distance = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  const terrain = (x, y) => x === 0 ? 'river' : y <= 1 && x >= 2 && x <= 5 ? 'mountain' : x >= 6 && y >= 2 && y <= 7 ? 'camp' : 'plain';
+  const terrainName = key => ({ river: '河・不可通行', mountain: '山間道・輕騎可通行', camp: '趙壁營區', plain: '平地' })[key];
+  const inWaterArmy = u => u.hp > 0 && u.x === 1 && u.y >= 3 && u.y <= 7;
+  const GUIDE = [
+    [['G', 'move', 3, 4], ['G', 'raise'], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['end']],
+    [['G', 'move', 1, 4], ['G', 'retreat'], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['end']],
+    [['K2', 'move', 6, 1], ['K1', 'move', 5, 1], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']],
+    [['K2', 'move', 6, 3], ['K1', 'move', 7, 1], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']],
+    [['K1', 'move', 7, 2], ['K1', 'flag'], ['K2', 'move', 6, 5], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']],
+    [['K2', 'move', 7, 6], ['K2', 'flag'], ['B1', 'guard'], ['B2', 'guard'], ['B3', 'guard'], ['G', 'guard'], ['end']]
+  ];
+  function createBattleModel(saved={}) {
+    const s = { phase: 'intro', turn: 1, units: [], raised: false, raisedTurn: 0, retreatOrdered: false,
+      enteredWater: false, held: 0, heldDone: false, flags: [null, null], first: null, assisted: false,
+      guideIndex: 0, orders: 0, totalOrders: 0, history: [], report: [], selected: null, mode: null, pending: null, returnPhase: null };
+    const unit = id => s.units.find(u => u.id === id);
+    const at = (x, y) => s.units.find(u => u.hp > 0 && u.x === x && u.y === y);
+    const campEmpty = () => s.units.filter(u => u.side === 'zhao').every(u => u.exited);
+    const guide = () => s.assisted ? (GUIDE[s.turn - 1] || [])[s.guideIndex] || null : null;
+    function reset() {
+      s.units = INITIAL_UNITS.map(u => ({ ...u, max: u.hp, moved: false, acted: false, guard: false, exposed: false, exited: false }));
+      s.turn = 1; s.raised = false; s.raisedTurn = 0; s.retreatOrdered = false; s.enteredWater = false;
+      s.held = 0; s.heldDone = false; s.flags = [null, null]; s.orders = 0; s.guideIndex = 0;
+      s.selected=null;s.mode=null;s.pending=null;s.history=[];s.report=[];s.outcome=null;
+    }
+    reset();if(Array.isArray(saved.units)&&saved.units.length)Object.assign(s,JSON.parse(JSON.stringify(saved)));
+    function pathFor(u, x, y, allowTarget) {
+      if (!u || u.hp <= 0 || x < 0 || x >= 8 || y < 0 || y >= 10) return null;
+      if (terrain(x, y) === 'river' || terrain(x, y) === 'mountain' && u.kind !== 'cavalry') return null;
+      const queue = [{ x: u.x, y: u.y, path: [] }], visited = new Set([u.x + ',' + u.y]);
+      for (let i = 0; i < queue.length; i++) {
+        const current = queue[i]; if (current.x === x && current.y === y) return current.path;
+        for (const [dx, dy] of [[-1, 0], [0, -1], [0, 1], [1, 0]]) {
+          const nx = current.x + dx, ny = current.y + dy, key = nx + ',' + ny;
+          if (nx < 0 || nx >= 8 || ny < 0 || ny >= 10 || visited.has(key)) continue;
+          const t = terrain(nx, ny), occupied = at(nx, ny);
+          if (t === 'river' || t === 'mountain' && u.kind !== 'cavalry' || occupied && occupied.id !== u.id && !(allowTarget && nx === x && ny === y)) continue;
+          visited.add(key); queue.push({ x: nx, y: ny, path: [...current.path, { x: nx, y: ny }] });
+        }
+      }
+      return null;
+    }
+    function objectives() { return { lured: s.raised && campEmpty(), retreat: s.retreatOrdered && s.enteredWater,
+      held: s.heldDone, north: !!s.flags[0], south: !!s.flags[1] }; }
+    const achieved = () => Object.values(objectives()).every(Boolean);
+    function snapshot(success) {
+      const losses = s.units.filter(u => u.side === 'han' && u.hp <= 0).length;
+      const exposed = s.units.filter(u => u.kind === 'cavalry' && u.exposed).length;
+      const goal = objectives(), efficiency = Math.max(0, 10 - Math.max(0, s.turn - 6) - losses * 2 - exposed);
+      return { success, score: success ? efficiency : Math.min(3, Object.values(goal).filter(Boolean).length), turns: s.turn,
+        losses, exposed, infantryCohesion: s.units.filter(u => u.kind === 'infantry').reduce((sum, u) => sum + u.hp, 0),
+        objectives: goal, orders: s.totalOrders, units: s.units.filter(u => u.side === 'han').map(u => ({ id: u.id, hp: u.hp, x: u.x, y: u.y })) };
+    }
+    function guideAllows(id, action, x, y) {
+      if (!s.assisted) return true;
+      const step = guide(); return !!step && step[0] === id && step[1] === action && (action !== 'move' || step[2] === x && step[3] === y);
+    }
+    function legal(id, action, x, y) {
+      const u = unit(id); if (s.phase !== 'plan' || !u || u.side !== 'han' || u.hp <= 0 || !guideAllows(id, action, x, y)) return false;
+      if (action === 'move') { const path = pathFor(u, x, y, false); return !u.moved && !!path && path.length > 0 && path.length <= u.move; }
+      if (u.acted) return false;
+      if (action === 'guard') return true;
+      if (action === 'attack') { const target = at(x, y); return !!target && target.side === 'zhao' && distance(u, target) === 1; }
+      if (action === 'raise') return u.kind === 'banner' && !s.raised;
+      if (action === 'retreat') return u.kind === 'banner' && s.raised && !s.retreatOrdered && s.turn > s.raisedTurn;
+      if (action === 'flag') { const i = BOARD.flags.findIndex(f => f.x === u.x && f.y === u.y); return u.kind === 'cavalry' && i >= 0 && !s.flags[i] && !s.flags.includes(id) && campEmpty(); }
+      return false;
+    }
+    function preview(id, action, x, y) {
+      if (!legal(id, action, x, y)) return null;
+      const u = unit(id), verbs = { guard: '固守，抵消下一敵階段首個損失', raise: '舉旗接戰，讓趙軍出壁追逐', retreat: '下佯退令，還須親自移回水上軍', flag: '拔趙幟、立漢赤幟' };
+      return { id, action, x, y, path: action === 'move' ? pathFor(u, x, y, false) : [], text: u.name + '：' +
+        (action === 'move' ? coord(u.x, u.y) + ' → ' + coord(x, y) : action === 'attack' ? '壓制' + at(x, y).name + '，隊勢－1' : verbs[action]) + '。' };
+    }
+    function exposure() {
+      if (campEmpty()) return;
+      for (const u of s.units.filter(v => v.kind === 'cavalry' && v.hp > 0 && !v.exposed && terrain(v.x, v.y) !== 'mountain')) {
+        if (s.units.some(z => z.side === 'zhao' && z.hp > 0 && distance(u, z) <= 2)) { u.exposed = true; s.report.push(u.name + '提前暴露；首次隱蔽紀錄已留下。'); }
+      }
+    }
+    function commit(p) {
+      if (!p || !legal(p.id, p.action, p.x, p.y)) return false;
+      const u = unit(p.id);
+      if (p.action === 'move') { u.x = p.x; u.y = p.y; u.moved = true; exposure(); }
+      else {
+        u.acted = true;
+        if (p.action === 'guard') u.guard = true;
+        else if (p.action === 'attack') { const target = at(p.x, p.y); target.hp = Math.max(0, target.hp - 1); }
+        else if (p.action === 'raise') { s.raised = true; s.raisedTurn = s.turn; }
+        else if (p.action === 'retreat') s.retreatOrdered = true;
+        else if (p.action === 'flag') { const i = BOARD.flags.findIndex(f => f.x === u.x && f.y === u.y); s.flags[i] = u.id; }
+      }
+      if (s.retreatOrdered && inWaterArmy(unit('G'))) s.enteredWater = true;
+      s.orders++; s.totalOrders++; if (s.assisted) s.guideIndex++;
+      s.history.push({ turn: s.turn, id: p.id, action: p.action, x: u.x, y: u.y }); s.pending = null; s.mode = null;
+      return true;
+    }
+    function enemyPhase() {
+      if (!s.raised) { s.report.push('趙軍仍守趙壁：尚未見大將旗鼓。'); return; }
+      const returning = s.flags.every(Boolean);
+      for (const z of s.units.filter(u => u.side === 'zhao' && u.hp > 0)) {
+        const target = unit('G').hp > 0 ? unit('G') : s.units.find(u => u.kind === 'infantry' && u.hp > 0);
+        const home = INITIAL_UNITS.find(u => u.id === z.id), aim = returning ? home : target;
+        const path = aim ? pathFor(z, aim.x, aim.y, !returning) : null;
+        if (path && path.length && (returning || path.length > 1)) {
+          const next = path[0], old = coord(z.x, z.y); z.x = next.x; z.y = next.y;
+          if (terrain(z.x, z.y) !== 'camp') z.exited = true;
+          s.report.push(z.id + '：' + old + ' → ' + coord(z.x, z.y) + (returning ? '，回望漢旗。' : '，追向旗鼓。'));
+        } else s.report.push(z.id + '：' + coord(z.x, z.y) + '停留，前路受阻。');
+        exposure();
+        if (returning) continue;
+        const adjacent = s.units.filter(u => u.side === 'han' && u.hp > 0 && distance(z, u) === 1 && (u.kind !== 'cavalry' || u.exposed));
+        adjacent.sort((a, b) => ({ banner: 0, infantry: 1, cavalry: 2 })[a.kind] - ({ banner: 0, infantry: 1, cavalry: 2 })[b.kind] || a.id.localeCompare(b.id));
+        const victim = adjacent[0]; if (!victim) continue;
+        let damage = s.assisted ? 0 : 1;
+        if (victim.guard && damage) { damage = 0; victim.guard = false; }
+        victim.hp = Math.max(0, victim.hp - damage);
+        s.report.push(z.id + '壓制' + victim.id + '：隊勢－' + damage + (victim.hp === 0 ? '，該隊退出本次推演。' : '。'));
+      }
+    }
+    const canEnd = () => s.phase === 'plan' && s.orders > 0 && (!s.assisted || guide() && guide()[0] === 'end');
+    function endTurn() {
+      if (!canEnd()) return false;
+      const guarded = s.units.filter(u => u.kind === 'infantry' && u.guard && inWaterArmy(u)).map(u => u.id);
+      s.report = []; enemyPhase();
+      const aliveInfantry = s.units.filter(u => u.kind === 'infantry' && u.hp > 0);
+      if (s.retreatOrdered && inWaterArmy(unit('G')) && aliveInfantry.filter(u => inWaterArmy(u) && guarded.includes(u.id)).length >= 2) { s.held++; if (s.held >= 3) s.heldDone = true; }
+      else if (!s.heldDone) s.held = 0;
+      const failed = unit('G').hp <= 0 || s.units.some(u => u.kind === 'cavalry' && u.hp <= 0) || aliveInfantry.length < 2 || s.turn >= 12;
+      if (achieved()) { if (!s.first) s.first = snapshot(true); s.phase = 'report'; s.outcome = 'success'; }
+      else if (failed && !s.assisted) { if (!s.first) s.first = snapshot(false); s.phase = 'repair'; s.outcome = 'failure'; }
+      else { s.phase = 'report'; s.outcome = null; }
+      s.selected = null; s.mode = null; s.pending = null; return true;
+    }
+    function start() { if (s.phase !== 'intro') return false; s.phase = 'plan'; return true; }
+    function next() {
+      if (s.phase !== 'report') return false;
+      if (s.outcome === 'success') { s.phase = 'finish'; return true; }
+      s.turn++; s.phase = 'plan'; s.orders = 0; s.guideIndex = 0; s.report = [];
+      s.units.forEach(u => { u.moved = false; u.acted = false; u.guard = false; }); return true;
+    }
+    function requestAssist() { if (!['plan', 'report'].includes(s.phase)) return false; s.returnPhase = s.phase; s.phase = 'assist'; return true; }
+    function cancelAssist() { if (s.phase !== 'assist') return false; s.phase = s.returnPhase; return true; }
+    function assist() {
+      if (!['repair', 'assist'].includes(s.phase)) return false;
+      if (!s.first) s.first = snapshot(false);
+      s.assisted = true; reset(); s.phase = 'plan'; return true;
+    }
+    function result() {
+      if (s.phase !== 'finish' || !achieved() || !s.first) return null;
+      return { completed: true, score: s.first.score, max: 10, passed: s.first.success && s.first.score >= 7,
+        assisted: s.assisted, first: s.first, completion: { turns: s.turn, objectives: objectives(), flags: s.flags.slice(),
+          held: s.held, orders: s.history.length }, morale: bounded(60 - 8 * s.first.losses - 2 * (18 - s.first.infantryCohesion)),
+        conceal: bounded(80 - 25 * s.first.exposed), renown: bounded(20 + 6 * s.first.score) };
+    }
+    return { state: s, unit, at, pathFor, campEmpty, objectives, achieved, guide, legal, preview, commit, canEnd, endTurn, start, next, requestAssist, cancelAssist, assist, result };
+  }
+
+  function battleGame(body, g) {
+    if(g.ruleset===2&&ZH.gameplay)return ZH.gameplay.nativeTactics(body,g);
+    return new Promise(resolve => {
+      const old=g.getProgress(),model=createBattleModel(old.model),s=model.state;
+      let alive=true,showHint=!!old.showHint,focusCell=old.focusCell || 1,feedback=old.feedback || '先讀規則，再親自開始推演。';
+      const persist=()=>g.setProgress({model:JSON.parse(JSON.stringify(s)),showHint,focusCell,feedback});
+      const actionNames = { move: '移動', attack: '壓制', guard: '固守', raise: '舉旗', retreat: '佯退', flag: '換旗' };
+      function goalHTML() {
+        const names = { lured: '引空趙壁', retreat: '佯退回水上軍', held: '背水守三回合', north: '北旗', south: '南旗' };
+        return Object.entries(model.objectives()).map(([k, v]) => '<span>' + (v ? '✓ ' : '○ ') + names[k] + '</span>').join('');
+      }
+      function hint() {
+        if (!s.raised) return '先選旗鼓隊G，思考接戰位置，再下舉旗令。D5能兼顧誘敵與回水上軍的路。';
+        if (!s.retreatOrdered) return '舉旗次回合可下佯退令。旗鼓仍須由你移回B4～B8水上軍，B5留有通道。';
+        if (!model.campEmpty()) return '先讓趙軍追出趙壁，輕騎在山間道等待，避免提前暴露。';
+        if (!s.heldDone) return '至少兩隊背水隊留在B4～B8，親自固守與結算，維持三個敵方階段。';
+        return '兩騎分赴H3、H7；沿G、H通道走，注意友軍占格。到旗位後還要親自選換旗並確認。';
+      }
+      function guideText() {
+        const step = model.guide(); if (!step) return '';
+        return step[0] === 'end' ? '本步：親自結算回合，閱讀趙軍回報。' : '本步：選' + step[0] + '，' + actionNames[step[1]] + (step[1] === 'move' ? '到' + coord(step[2], step[3]) : '') + '，看預覽後確認。';
+      }
+      function available(id, action) {
+        if (action === 'move' || action === 'attack') {
+          for (let y = 0; y < 10; y++) for (let x = 1; x < 8; x++) if (model.legal(id, action, x, y)) return true;
+          return false;
+        }
+        return model.legal(id, action);
+      }
+      function boardHTML() {
+        let cells = '';
+        for (let y = 0; y < 10; y++) for (let x = 0; x < 8; x++) {
+          const index = y * 8 + x, t = terrain(x, y), u = model.at(x, y), flag = BOARD.flags.findIndex(f => f.x === x && f.y === y);
+          const possible = !!s.mode && !!s.selected && model.legal(s.selected, s.mode, x, y), pending = s.pending && s.pending.x === x && s.pending.y === y;
+          const label = coord(x, y) + '・' + terrainName(t) + (u ? '・' + (u.side === 'han' ? '漢' : '趙') + '・' + u.name + '・隊勢' + u.hp : '') +
+            (flag >= 0 ? '・' + BOARD.flags[flag].name + (s.flags[flag] ? '漢旗' : '趙旗') : '') + (possible ? '・可選目標' : '');
+          cells += '<button type="button" class="ch07-cell ch07-terrain-' + t + (possible ? ' is-legal' : '') + (pending ? ' is-pending' : '') +
+            (u && u.id === s.selected ? ' is-selected' : '') + '" data-cell="' + index + '" tabindex="' + (index === focusCell ? '0' : '-1') + '" aria-label="' + g.esc(label) + '"' + (x===0 || s.phase!=='plan'?' disabled':'') + '>' +
+            cellArt(t)+(x===0?'<span class="hx-row-number">'+(y+1)+'</span>':'')+(u ? '<span class="ch07-unit ch07-unit-'+u.side+'">'+unitArt(u)+'<b>'+u.id+'</b><span class="hx-unit-hp"><i style="width:'+Math.round(u.hp/u.max*100)+'%"></i></span></span>' : flag>=0?'<span class="hx-flag-target">'+(s.flags[flag]?'漢':'趙')+'<br>'+BOARD.flags[flag].name+'</span>':'') + '</button>';
+        }
+        return '<div class="ch07-board" role="group" aria-label="井陘教學盤・八欄十列">' + cells + '</div>';
+      }
+      function focusVisible(el) {
+        el.focus({ preventScroll: true });
+        if (!el.hasAttribute('data-cell')) return;
+        for (let i = 0; i < 2; i++) {
+          const r = el.getBoundingClientRect(), viewport = body.getBoundingClientRect();
+          const top=viewport.top+3;
+          if (r.top < top) body.scrollTop = Math.max(0, body.scrollTop - (top - r.top));
+          else if (r.bottom > viewport.bottom - 3) body.scrollTop += r.bottom - viewport.bottom + 3;
+        }
+      }
+      function render(focus) {
+        const scroll = body.scrollTop; let content = '';
+        if (s.phase === 'intro') {
+          content=panorama('river',['hanxin','zhanger'],'dawn')+'<p>你指揮韓信、張耳的旗鼓隊G、背水三隊B1～B3、輕騎K1／K2。趙軍Z1～Z6是教學聚合，非相同人數。A欄為河，北側山道可藏輕騎，兩旗在H3、H7。</p>' +
+            '<div class="ch07-panel"><p>必做：親自舉旗、下佯退令並移回水上軍，引趙出壁，至少兩隊背水隊每回合固守，連續三回合，兩騎各進旗位親自換旗。</p><p>每隊每回合一次移動、一次戰術行動；旗鼓與輕騎可移兩格，背水隊一格。移動不能穿過單位。</p></div>' +
+            '<details class="ch07-rules"><summary>查看趙軍規則、隊勢與計分</summary><p>趙軍未見旗鼓守營，舉旗後逐隊移一格追旗鼓；最短路同長依左、上、下、右。前路受阻改道，無路等待。相鄰壓制優先旗鼓、背水、已暴露輕騎。無隔格攻擊。</p><p>早於全部出壁而離開山道，進任一趙隊兩格範圍，該騎隊記提前暴露一次。出壁後正常突入不扣。</p><p>背水與旗鼓隊勢各六、騎與趙各四。壓制使相鄰敵隊勢減一；固守抵消下個敵階段首個損失。隊勢歸零只代表退出推演，不描寫死亡。</p><p>首次成功：十分減超過六回合之回合數、退出隊數×二、提前暴露騎隊數。十二回合未完成或必要隊退出，按已達目標記零至三分。七分過關；補救不洗分。</p></details>' +
+            '<p>點選、觸控、Tab／Enter／空白皆可；盤內方向鍵換焦點。不限時，不拖曳，不自動操作友軍。</p>' +
+            '<button type="button" class="zh-btn zh-btn--primary" data-battle-action="start">親自開始・第一回合</button>';
+        } else if (s.phase === 'plan') {
+          const u = model.unit(s.selected), selected = u ? u.name + ' ' + coord(u.x, u.y) + '｜隊勢' + u.hp + '／' + u.max + '｜移動' + (u.moved ? '已用' : '可用') + '・行動' + (u.acted ? '已用' : '可用') : '請點盤上漢隊，或從選隊列選擇。';
+          content = '<div class="ch07-goals" aria-label="任務進度">' + goalHTML() + '</div>' +
+            (s.assisted ? '<p class="ch07-guide" data-battle-guide>' + g.esc(guideText()) + ' 首次' + s.first.score + '分固定。</p>' : '') +
+            '<div class="hx-tactics-layout"><div class="hx-map-panel">'+boardLegend()+'<p class="ch07-axis" aria-hidden="true">'+'ABCDEFGH'.split('').map(c=>'<span>'+c+'</span>').join('')+'</p>'+boardHTML()+'</div><div class="hx-orders"><div class="ch07-controls"><p data-battle-selection aria-live="polite">' + g.esc(selected) + '</p>' +
+            '<div class="ch07-command-row">' + Object.entries(actionNames).map(([key, name]) => '<button type="button" class="zh-btn zh-btn--quiet" data-order="' + key + '"' + (!u || !available(u.id, key) ? ' disabled' : '') + '>' + name + '</button>').join('') + '</div>' +
+            '<div class="ch07-preview" data-battle-preview aria-live="polite">' + g.esc(s.pending ? s.pending.text : s.mode ? '請選一個有外框的合法目標，再確認。' : '選命令後先看預覽；尚未改動盤面。') + '</div>' +
+            '<div class="ch07-confirm-row"><button type="button" class="zh-btn zh-btn--primary" data-battle-action="confirm"' + (!s.pending ? ' disabled' : '') + '>確認下令</button>' +
+            '<button type="button" class="zh-btn zh-btn--quiet" data-battle-action="cancel"' + (!s.pending && !s.mode ? ' disabled' : '') + '>取消預覽</button></div>' +
+            '</div>' +
+            '<div class="ch07-unit-row" aria-label="選漢隊">' + s.units.filter(v => v.side === 'han').map(v => '<button type="button" class="zh-btn zh-btn--quiet" data-unit="' + v.id + '" aria-label="選'+g.esc(v.name)+'" aria-pressed="'+(v.id===s.selected)+'"' + (v.hp <= 0 ? ' disabled' : '') + '>' + v.id + '</button>').join('') + '</div>' +
+            '<p>列數從上而下1～10；選格後會讀出座標。朱印為漢、深藍印為趙；山間道只供輕騎通行。</p>' +
+            '<div class="ch07-actions"><button type="button" class="zh-btn zh-btn--primary" data-battle-action="end"' + (!model.canEnd() ? ' disabled' : '') + '>親自結算・已下' + s.orders + '令</button>' +
+            '<button type="button" class="zh-btn zh-btn--quiet" data-battle-action="hint">' + (showHint ? '收起提示' : '一般提示・不扣分') + '</button>' +
+            (!s.assisted ? '<button type="button" class="zh-btn zh-btn--quiet" data-battle-action="ask-assist">保留首績・分步推演</button>' : '') + '</div>' +
+            (showHint?'<div class="ch07-panel">'+g.esc(hint())+'</div>':'')+'</div></div>';
+        } else if (s.phase === 'report' || s.phase === 'repair') {
+          content='<div class="ch07-goals">'+goalHTML()+'</div><div class="hx-map-panel ch07-report-board">'+boardHTML()+'</div><div class="ch07-panel"><b>趙軍行動回報</b>' + s.report.map(t => '<p>' + g.esc(t) + '</p>').join('') + '</div>' +
+            '<p>背水連守' + Math.min(3, s.held) + '／3；出壁' + s.units.filter(u => u.side === 'zhao' && u.exited).length + '／6；漢旗' + s.flags.filter(Boolean).length + '／2。</p>' +
+            (s.first ? '<p>首次' + s.first.score + '／10，' + (s.first.success ? '首次完整達成目標。' : '首次未完整達成；後續補救不覆寫。') + '</p>' : '') +
+            (s.phase === 'repair' ? '<p>本次推演受阻。請親自重布陣並分步完成各路，不會直接跳到史實勝利。</p><button type="button" class="zh-btn zh-btn--primary" data-battle-action="assist">保留首績・親自分步重演</button>' :
+              '<button type="button" class="zh-btn zh-btn--primary" data-battle-action="next">' + (s.outcome === 'success' ? '檢視完整成果' : '開始下一回合') + '</button>');
+        } else if (s.phase === 'assist') {
+          content = '<p>重新布陣前，固定本次首次紀錄：' + (s.first ? s.first.score : model.state.first ? model.state.first.score : '尚未完整達成，按已完成目標記零至三') + '分。</p>' +
+            '<p>同一盤面重演，趙軍仍追逐，但不再扣隊勢。依每步提示，親自選隊、移動、確認、結算與換旗。初次部隊狀態與分數保持原樣。</p>' +
+            '<div class="ch07-actions"><button type="button" class="zh-btn zh-btn--primary" data-battle-action="assist">確認保留・開始分步</button><button type="button" class="zh-btn zh-btn--quiet" data-battle-action="cancel-assist">回原推演</button></div>';
+        } else if (s.phase === 'finish') {
+          content = '<div class="ch07-goals">' + goalHTML() + '</div><p>你已親自完成引敵、佯退、守陣與兩隊換旗。首次' + s.first.score + '／10，完成推演用' + s.turn + '回合。</p>' +
+            '<p>' + (s.assisted ? '分步完成另記；首次得分與資源摘要不變。' : '本局按首次完整推演記分。') + '</p>' +
+            '<button type="button" class="zh-btn zh-btn--primary" data-battle-action="finish">確認全部體驗完成・回軍議</button>';
+        }
+        body.innerHTML = '<section class="ch07-game ch07-battle" data-phase="' + s.phase + '"><h2>井陘之戰・第' + s.turn + '回合' + (s.assisted ? '・分步重演' : '') + '</h2>' +
+          '<p class="ch07-live" data-battle-status>水上軍固守' + Math.min(3, s.held) + '／3｜出壁' + s.units.filter(u => u.side === 'zhao' && u.exited).length + '／6｜漢旗' + s.flags.filter(Boolean).length + '／2</p>' + content +
+          '<p class="ch07-feedback" data-battle-feedback aria-live="polite">' + g.esc(feedback) + '</p></section>';
+        body.scrollTop = scroll; g.setStatus('回合' + s.turn + (s.assisted ? '・首分固定' : '・親自下令'));
+        persist();if (focus) { const el = body.querySelector(focus); if (el) focusVisible(el); }
+      }
+      function select(id) {
+        const u = model.unit(id); if (!u || u.side !== 'han' || u.hp <= 0) return;
+        s.selected = id; s.mode = null; s.pending = null; focusCell = u.y * 8 + u.x;
+        feedback = u.name + '已選，請選命令。'; render('[data-cell="' + focusCell + '"]');
+      }
+      function click(e) {
+        const b = e.target.closest('button'); if (!alive || !b || !body.contains(b) || b.disabled || gameBlocked()) return;
+        const action = b.dataset.battleAction;
+        if (action === 'start' && model.start()) { feedback = '由你下第一道令；至少一道合法令才可結算。'; render(); body.scrollTop = 0; }
+        else if (b.dataset.unit && s.phase === 'plan') select(b.dataset.unit);
+        else if (b.hasAttribute('data-cell') && s.phase === 'plan') {
+          const n = Number(b.dataset.cell), x = n % 8, y = Math.floor(n / 8); focusCell = n;
+          if (s.mode && s.selected) {
+            const p = model.preview(s.selected, s.mode, x, y);
+            if (p) { s.pending = p; feedback = '目標已預覽，盤面尚未變動。'; render('[data-battle-action="confirm"]'); }
+            else { feedback = '這個目標不合法，請選外框標示的格子，或取消預覽。'; render('[data-cell="' + n + '"]'); }
+          } else { const u = model.at(x, y); if (u && u.side === 'han') select(u.id); else { feedback = coord(x, y) + '：' + terrainName(terrain(x, y)) + (u ? '・' + u.name + '・隊勢' + u.hp : '') + '。請另選漢隊下令。'; render('[data-cell="' + n + '"]'); } }
+        } else if (b.dataset.order && s.phase === 'plan' && s.selected) {
+          const order = b.dataset.order;
+          if (order === 'move' || order === 'attack') { s.mode = order; s.pending = null; feedback = '請選合法目標格。'; render('[data-cell="' + focusCell + '"]'); }
+          else { const p = model.preview(s.selected, order); if (p) { s.pending = p; s.mode = null; feedback = '命令已預覽，確認才執行。'; render('[data-battle-action="confirm"]'); } }
+        } else if (action === 'confirm' && model.commit(s.pending)) { feedback = '命令已由你確認執行；本隊行動額度已更新。'; render('[data-cell="' + focusCell + '"]'); }
+        else if (action === 'cancel' && s.phase === 'plan') { s.mode = null; s.pending = null; feedback = '預覽已取消，盤面不變。'; render(); }
+        else if (action === 'end' && model.endTurn()) { feedback = '本回合已結算，請閱讀趙軍回報。'; render(); body.scrollTop = 0; }
+        else if (action === 'next' && model.next()) { feedback = s.phase === 'finish' ? '所有目標完成，請親自確認交卷。' : '行動額度已更新，部隊位置與隊勢接續。'; render(); body.scrollTop = 0; }
+        else if (action === 'hint' && s.phase === 'plan') { showHint = !showHint; render('[data-battle-action="hint"]'); }
+        else if (action === 'ask-assist' && model.requestAssist()) { render(); body.scrollTop = 0; }
+        else if (action === 'cancel-assist' && model.cancelAssist()) render();
+        else if (action === 'assist' && model.assist()) { feedback = '初績已固定；請依提示親自選隊、下令與確認。'; render(); body.scrollTop = 0; }
+        else if (action === 'finish') { const r = model.result(); if (r) { alive = false; resolve(r); } }
+      }
+      function key(e) {
+        if (!alive || s.phase !== 'plan' || gameBlocked() || !e.target.hasAttribute('data-cell')) return;
+        const offsets = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -8, ArrowDown: 8 }, offset = offsets[e.key]; if (!offset) return;
+        e.preventDefault(); const from = Number(e.target.dataset.cell); let next = from + offset;
+        while (next >= 0 && next < 80) {
+          if (Math.abs(offset) === 1 && Math.floor(next / 8) !== Math.floor(from / 8)) break;
+          const target = body.querySelector('[data-cell="' + next + '"]');
+          if (target && !target.disabled) { focusCell = next; body.querySelectorAll('[data-cell]').forEach(el => { el.tabIndex = Number(el.dataset.cell) === next ? 0 : -1; }); persist();focusVisible(target);return; }
+          next += offset;
+        }
+      }
+      body.addEventListener('click', click); body.addEventListener('keydown', key);
+      g.onCleanup(() => { alive = false; body.removeEventListener('click', click); body.removeEventListener('keydown', key); }); render();
+    });
+  }
+  const COMMAND_QUESTIONS = [
+    { title: '自己的統兵之才', text: '已讀原文裡，皇帝問「於君何如」，韓信如何回應自己帶兵的能力？', right: 'many',
+      options: [{ value: 'none', label: '自稱從未帶兵，也不曾參與下趙' }, { value: 'many', label: '臣多多而益善耳' }, { value: 'equal', label: '只說自己與陳餘有完全相同的軍令' }, { value: 'emperor', label: '宣稱自己早已是漢朝皇帝' }],
+      explanation: '原文韓信以多多而益善回答自己的統兵能力，流露自負。這是在論其才能，不是一般事情增加數量就必然有益；也不能據此換成他已是皇帝。' },
+    { title: '將兵與將將', text: '以韓信身分解釋兩種才能，下列哪句符合已讀史料？', right: 'leaders',
+      options: [{ value: 'birds', label: '將將是安排鳥類，與將領完全無關' }, { value: 'same', label: '將兵與將將都只是在數有多少士卒' }, { value: 'leaders', label: '帶領士卒與統御將領有別，皇帝善於後者' }, { value: 'none', label: '皇帝與將領都不需要作任何決定' }],
+      explanation: '將兵的將是統率，兵為士卒；善將將的前一將是動詞，後一將是將領。韓信在這裡承認帝王統御將領的能力，區別於自己擅長的帶兵。' },
+    { title: '何為為我禽', text: '皇帝問為何仍為自己所擒，韓信如何承接前面的才能比較？', right: 'authority',
+      options: [{ value: 'victory', label: '回答井陘原來是趙勝，自己從未破趙' }, { value: 'bird', label: '回答自己現在已變成一隻飛鳥' }, { value: 'more', label: '只說兵越多就永遠不會受別人制約' }, { value: 'authority', label: '承認統兵才能仍在帝王統御將領的關係中' }],
+      explanation: '禽在這裡是擒獲、制伏。對話已有韓信被拘降侯的前情；他的回答承接善將將，不能當成鳥類，或誤認軍事勝利能讓功臣永不受制。' }
+  ];
+  function commandGame(body, g) {
+    return new Promise(resolve => {
+      const old=g.getProgress();let alive=true,phase=old.phase || 'ready',index=old.index || 0,feedback=old.feedback || '';const answers=old.answers || [];const persist=()=>g.setProgress({phase,index,feedback,answers});
+      function render() {
+        const q = COMMAND_QUESTIONS[index], a = answers[index]; let content = '';
+        if (phase === 'ready') content = '<p>以已讀原文完成三段回話。不計時；第一次選擇保存，錯選後須親自補正。</p><button type="button" class="zh-btn zh-btn--primary" data-command-action="start">親自開始本段回話</button>';
+        else if (phase === 'question' || phase === 'repair') content = '<p>' + g.esc(q.text) + '</p>' +
+          (phase === 'repair' ? '<div class="ch07-panel"><b>首答已固定，親自補正</b><p>' + g.esc(q.explanation) + '</p></div>' : '') +
+          '<div class="ch07-options">' + q.options.map(o => '<button type="button" class="zh-btn zh-btn--quiet" data-command-answer="' + o.value + '">' + g.esc(o.label) + '</button>').join('') + '</div>';
+        else content = '<div class="ch07-panel"><b>本段已親自完成・首答' + (a.correct ? '答對' : '錯選') + '</b><p>' + g.esc(q.explanation) + '</p></div>' +
+          '<p>首答答對' + answers.filter(r => r.correct).length + '／' + answers.length + '段；補正不改首分。</p>' +
+          '<button type="button" class="zh-btn zh-btn--primary" data-command-action="' + (index === 2 ? 'finish' : 'next') + '">' + (index === 2 ? '確認三段完成・回劇情' : '準備下一段') + '</button>';
+        body.innerHTML = '<section class="ch07-game ch07-command" data-phase="'+phase+'">'+panorama('hall',['hanxin','emperor'])+'<h2>論將・第' + (index + 1) + '段／3・' + g.esc(q.title) + '</h2><p>原文與教學演練對讀，時點為韓信被拘降侯之後。</p>' + content + '<p data-command-feedback aria-live="polite">' + g.esc(feedback) + '</p></section>';
+        g.setStatus('第' + (index + 1) + '段・' + (phase === 'repair' ? '親自補正・首答固定' : '不限時')); body.scrollTop=0;persist();
+      }
+      function click(e) {
+        const b = e.target.closest('button'); if (!alive || !b || !body.contains(b) || b.disabled || gameBlocked()) return;
+        if (b.dataset.commandAction === 'start' && phase === 'ready') { phase = 'question'; render(); }
+        else if (b.dataset.commandAnswer && phase === 'question') {
+          const correct = b.dataset.commandAnswer === COMMAND_QUESTIONS[index].right;
+          answers.push({ question: index + 1, first: b.dataset.commandAnswer, correct, corrected: false, completed: correct });
+          phase = correct ? 'feedback' : 'repair'; feedback = correct ? '回話符合已讀史料。' : '先讀回饋，再親自核對。'; render();
+        } else if (b.dataset.commandAnswer && phase === 'repair') {
+          if (b.dataset.commandAnswer === COMMAND_QUESTIONS[index].right) { answers[index].corrected = true; answers[index].completed = true; phase = 'feedback'; feedback = '補正完成，首答成績保持原樣。'; render(); }
+          else { feedback = '這句仍與原文不合，請再核對。'; body.querySelector('[data-command-feedback]').textContent=feedback;persist(); }
+        } else if (b.dataset.commandAction === 'next' && phase === 'feedback' && index < 2) { index++; phase = 'ready'; feedback = ''; render(); }
+        else if (b.dataset.commandAction === 'finish' && phase === 'feedback' && answers.length === 3 && answers.every(a => a.completed)) {
+          const correctFirst = answers.filter(a => a.correct).length; alive = false;
+          resolve({ completed: true, passed: correctFirst >= 2, score:Math.round(correctFirst/3*10),max:10, assisted: correctFirst < 3, correctFirst, answers });
+        }
+      }
+      body.addEventListener('click', click); g.onCleanup(() => { alive = false; body.removeEventListener('click', click); }); render();
+    });
+  }
+  // ═════════════════════════ 7. 結局與玩家列傳 ═════════════════════════
+  const ENDINGS = {
+    great: { id: 'great', title: '背水一戰', good: true, text: '此局察勢而令，諸路相接，能成井陘之策。' },
+    good: { id: 'good', title: '拔幟易幟', good: true, text: '此局籌度有得失，猶能究其故而成諸路。' },
+    bad: { id: 'bad', title: '險勝井陘', good: false, text: '此局初策未盡，既察其失，親復推演而知其要。' }
+  };
+  function payload(s, ending) {
+    const b = s.vars.battle, command = s.vars.command, reflection = s.vars.reflection;
+    const deeds = [
+      '信少貧，漂母飯之，知其施不望報。', '遭市人之侮，忍而不爭一旦之氣。',
+      '既將漢兵定魏，復與張耳北擊趙代。', '察敵計之不用，乃進井陘而籌其勢。',
+      '分輕騎持赤幟，伏山伺趙，候其空壁。', '設背水之陳，與張耳以旗鼓出而佯退。',
+      b.assisted ? '此局初策有失，存其績而親復推演，遂成諸路。' : b.score >= 7 ? '此局下令有序，護陣與易幟相接而成。' : '此局指揮有得失，逐回合察其變而記之。',
+      '趙壁易幟，軍亂而破；信解左車之縛，師事之。', '從左車策，休兵鎮撫，遣使說燕而燕從之。',
+      percent(command) >= 67 ? '後報漂母之恩，既為淮陰侯；此局論將，能辨將兵與將將。' : '後報漂母之恩，既為淮陰侯；此局論將初答有失，親讀而更之。'
+    ];
+    return { scenarioId: SID, mode: MODE, faction: '漢', role: '韓信', roleKind: 'liezhuan', country: '漢',
+      bioTitle: '淮陰侯列傳', bioOpening: '淮陰侯韓信者，淮陰人也。', ending,
+      scoreStrategy: bounded(b.score * 10 * .8 + percent(command) * .2), scoreVirtue: bounded((s.vars.consult.score + reflection.score) / 2),
+      turns: s.steps || 1, durationSec: Math.min(5400, Math.max(0, Math.round((Date.now() - (s.startedAt || Date.now())) / 1000))),
+      deeds, anchors: s.anchors, games: s.games, codex: s.codex,
+      opener: '遊戲史官評語（自擬）：余觀井陘之策，察其諸路相應，亦思士卒之患與聽人之明。',
+      prompts: ['如何理解韓信的忍辱？今日遇到欺凌，還有哪些保護尊嚴與安全的方法？',
+        '背水戰術有哪些成立條件？請用本話一項操作說明，為何不能直接套成讀書時逼自己走投無路。',
+        '韓信為何向敗將請教？如何避免只用輸贏判斷一個人的見解？'] };
+  }
+  function onEnd(r, ctx) {
+    const s = ctx.state;
+    const ending = ENDINGS[r.key] || ENDINGS.good; ZH.sfx('seal');
+    return ctx.banner(ending.title, '韓信・此局列傳')
+      .then(() => ctx.say([{ text: '井陘首次' + s.vars.battle.score + '／10；論將首答' + s.vars.command.score+'／'+s.vars.command.max+'分。核心操作均已親自完成。' },
+        { who: 'shiguan', text: '以下為遊戲生成列傳。大事依史實，自擬事蹟與史官評語不冒充司馬遷原文。' }]))
+      .then(()=>HX.finish(payload(s,ending)));
+  }
+
+
+  // ═════════════════════════ 8. 開始（沿用官方範例） ═════════════════════════
+  const saveState=HX.saveState;
+
+  function startGame(saved) {
+    if(saved)HX.useState(saved);else HX.newRun();document.documentElement.classList.toggle('hm-still',HX.read('still',false));
+    ROOT.innerHTML='';
+    const game = ZH.story.create(ROOT, {
+      id: SID, mode: MODE, title: META.name, subtitle: META.episode,
+      seed: Number(params.seed) || 0, start: 'n_01',
+      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP,
+      anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      onEnd:onEnd,save:saveState,snapshot:HX.snapshot,anchorRunner:HX.runAnchor,onProgress:HX.cacheProgress,actions:[{label:"史冊",run:HX.book},{label:"存檔",run:HX.saveMenu}]
+    });
+    window.__ep=game;
+    game.start(saved || null);
+  }
+
+  function renderTitle(saved) {
+    const vol = ZH.VOLUMES.find(v => v.key === META.vol) || { no: '', name: '' };
+    const st = saved && saved.engine;
+    const btn = (a, label, primary) => '<button type="button" class="zh-btn ' + (primary ? 'zh-btn--primary' : 'zh-btn--quiet') + ' zh-btn--block" data-a="' + a + '">' + esc(label) + '</button>';
+    ROOT.innerHTML =
+      '<div class="ep-title" style="--ep-color:' + esc(ROLE.color) + '">' +
+      '<div class="ep-title__bar"><a class="zh-mark" href="#" data-a="home"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a>' +
+      '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-a="home">回首頁</button></div>' +
+      '<main class="ep-title__main"><header>' +
+      '<p class="ep-kicker">' + esc([vol.no + ' ' + vol.name, ZH.episodeLabel(META), '前 ' + META.year + ' 年'].join('・')) + '</p>' +
+      '<h1 class="ep-h1">' + esc(META.name) + '</h1>' +
+      '<p class="ep-episode">' + esc(META.episode) + '</p>' +
+      '<div class="ep-chips">' + (META.guest ? '<span class="zh-chip zh-chip--gilt">訪客開放</span>' : '') +
+      '<span class="zh-chip zh-chip--patina">' + esc(META.genre) + '</span>' +
+      '<span class="zh-chip">自動存檔</span></div>' +
+      (ZH.isGuest() ? '<p class="ep-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
+      '</header><section class="hx-title-panorama" aria-label="韓信、張耳與李左車">'+panorama('river',['hanxin','zhanger','lizuoche'],'dawn')+'</section>'+
+      '<section class="ep-start"><span class="ep-seal" aria-hidden="true">' + esc(ROLE.glyph) + '</span>' +
+      '<div><h2 class="ep-start__name">' + esc(ROLE.name) + '・' + esc(ROLE.title) + '</h2><p class="ep-start__lead">' + esc(ROLE.lead) + '</p></div>' +
+      '<div class="ep-start__act">' + (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) + '</div></section>' +
+      '<section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
+      '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個史實錨點。中途離開會自動存檔。</p>' +
+      '</main></div>';
+    ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
+    const cont = ROOT.querySelector('[data-a="continue"]');
+    if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
+    ROOT.querySelector('[data-a="new"]').addEventListener('click', () => {
+      ZH.sfx('click');
+      if (!st) { startGame(null); return; }
+      ZH.modal({
+        title: '重新開始？', body: '<p>目前的進度會清除，從頭開始。</p>',
+        actions: [{ label: '取消', value: false, kind: 'quiet' }, { label: '重新開始', value: true, kind: 'primary' }]
+      }).then(ok => { if (ok) ZH.deleteSave(SID, MODE).catch(() => null).then(() => startGame(null)); });
+    });
+  }
+
+  const loadSave=HX.loadState;
+
+  ZH.ready(()=>{
+    if(!ZH.story?.createJournal || !ZH.arena || !window.ART){ROOT.innerHTML='<main class="ep-title__main"><h1>共用核心待更新</h1><p>請先安裝 Eng_Story v0.2.2、Arena_js 與 Art_kit，再開啟第七話。</p><button class="zh-btn zh-btn--primary" data-home>回首頁</button></main>';ROOT.querySelector('[data-home]').onclick=()=>ZH.go('hub');return;}
+    ZH.loading(true, '展開竹簡');
+    ZH.codex.init();
+    Promise.all([loadSave(), anchorsReady]).then(([saved]) => {
+      ZH.loading(false);
+      // 從首頁「繼續遊戲」帶著模式進來：直接接續
+      if (String(params.mode || '') === MODE && saved) { startGame(saved.engine); return; }
+      renderTitle(saved);
+    });
+  });
+})();
+
+</script>
+<script>ZH.ready(function(){ZH.textplay?.install("S_ch07_hanxin",null);});</script>
+</body></html>

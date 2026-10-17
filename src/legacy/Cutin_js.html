@@ -1,0 +1,139 @@
+<!-- Cutin_js.html v0.9.1（2026-10-15）：專屬 AI 插畫＋鏡頭動畫；集中節點觸發，不載入 3D。 -->
+<style>
+.zh-cutin{--cue-accent:#ddb75d;position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:18px;background:rgba(3,7,17,.94);color:#f6eed9;overscroll-behavior:contain}
+.zh-cutin[data-theme=jade]{--cue-accent:#92c5ab}.zh-cutin[data-theme=red]{--cue-accent:#e1a16e}
+.zh-cutin__card{width:min(1160px,100%);max-height:calc(100dvh - 36px);overflow:auto;border:1px solid var(--cue-accent);background:#101827;box-shadow:0 18px 70px #0009}
+.zh-cutin__head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid #ffffff24}
+.zh-cutin__head h2{margin:0;color:var(--cue-accent);font-family:var(--f-display,serif);font-size:clamp(24px,3vw,38px);line-height:1.3;overflow-wrap:anywhere}
+.zh-cutin__chapter{font-size:14px;color:#d8d8cb;flex:0 0 auto;max-width:45%;text-align:right;overflow-wrap:anywhere}
+.zh-cutin__scene{position:relative;aspect-ratio:16/9;max-height:calc(100dvh - 240px);min-height:120px;overflow:hidden;background:#080e19;isolation:isolate}
+.zh-cutin__image{display:block;width:100%;height:100%;object-fit:contain;transform-origin:center;will-change:transform}
+.zh-cutin__image[hidden]{display:none}.zh-cutin__shade{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 70px #0006}
+.zh-cutin__streak{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 5%,#f8d07820 5.5%,transparent 6.5%,transparent 17%,#f8d07814 18%,transparent 20%,transparent 82%,#f8d07828 84%,transparent 85%);mix-blend-mode:screen}
+.zh-cutin__loading{position:absolute;inset:0;display:grid;place-items:center;margin:0;color:#cec7b5;font-size:18px}
+.zh-cutin__loading[hidden]{display:none}.zh-cutin__caption{padding:15px 22px;margin:0;font-size:clamp(17px,1.7vw,22px);line-height:1.65;overflow-wrap:anywhere}
+.zh-cutin__foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 22px;border-top:1px solid #ffffff24}
+.zh-cutin__skip-all{display:flex;gap:8px;align-items:center;font-size:14px;color:#d6d0c2;cursor:pointer}.zh-cutin__skip-all input{width:18px;height:18px;accent-color:var(--cue-accent)}
+.zh-cutin__skip{border:1px solid var(--cue-accent);border-radius:6px;background:#253046;color:#fff6e5;font:inherit;font-weight:700;min-height:44px;padding:8px 24px;cursor:pointer}.zh-cutin__skip:hover{background:#35435d}.zh-cutin__skip:focus-visible,.zh-cutin__skip-all input:focus-visible{outline:3px solid #fff4bd;outline-offset:3px}
+.zh-cutin__progress{height:3px;background:#ffffff16;overflow:hidden}.zh-cutin__progress i{display:block;height:100%;background:var(--cue-accent);transform:scaleX(var(--cue-progress,1));transform-origin:left}
+.zh-cutin-on .sty-actor *,.zh-cutin-on .sty-bg *{animation-play-state:paused!important}
+@media(max-width:600px){.zh-cutin{padding:10px}.zh-cutin__card{max-height:calc(100dvh - 20px)}.zh-cutin__head{padding:12px;gap:8px;align-items:flex-start}.zh-cutin__chapter{font-size:12px}.zh-cutin__caption{padding:12px}.zh-cutin__foot{padding:10px 12px;gap:8px}.zh-cutin__skip{padding:8px 18px}.zh-cutin__scene{max-height:calc(100dvh - 225px)}.zh-cutin__shade{box-shadow:inset 0 0 35px #0005}}
+@media(max-height:520px){.zh-cutin{padding:8px}.zh-cutin__card{max-height:calc(100dvh - 16px)}.zh-cutin__head{padding:8px 12px}.zh-cutin__head h2{font-size:23px}.zh-cutin__caption{padding:7px 12px;font-size:15px}.zh-cutin__foot{padding:7px 12px}.zh-cutin__scene{max-height:calc(100dvh - 178px)}}
+@media(prefers-reduced-motion:reduce){.zh-cutin__image{will-change:auto}.zh-cutin__streak{display:none}}
+</style>
+<script>
+(function (ZH, manifest) {
+  'use strict';
+  if (!ZH || !manifest || ZH.cutin) return;
+  const index = new Map(), cache = new Map(), failed = new Map();
+  const assets = window.ZH_IMAGE_ASSETS && window.ZH_IMAGE_ASSETS.entries || {};
+  const esc = ZH.esc;
+  let active = null;
+  const cleanPassage = value => String(value||'').normalize('NFKC').replace(/[\s\p{P}\p{S}]/gu,'');
+  const timeout = Math.max(1500, Math.min(12000, Number(manifest.loadTimeoutMs) || 4500));
+  const unique = new Set();
+  (Array.isArray(manifest.entries) ? manifest.entries : []).forEach(e => {
+    const ids=e&&Array.isArray(e.anchorIds)&&e.anchorIds.length>0&&e.anchorIds.length<=4&&e.anchorIds.every(x=>/^[a-z]{2,4}_\d{2}$/.test(x));
+    const phrases=e&&Array.isArray(e.passageAny)&&e.passageAny.length>0&&e.passageAny.length<=4&&e.passageAny.every(x=>typeof x==='string'&&cleanPassage(x).length>=4);
+    const reading=e&&e.when==='afterAnchor'&&(ids||phrases)&&(!Object.prototype.hasOwnProperty.call(e,'anchorIds')||ids);
+    const node=e&&['afterNode','afterSay'].includes(e.when)&&/^n_?[a-z0-9_]+$/.test(e.node||'')&&typeof e.guard==='string'&&e.guard.length>=8;
+    if(!e||e.enabled===false||!/^[a-z0-9_]+$/.test(e.id||'')||unique.has(e.id)||!/^S_(cq|zg|ch)\d{2}_[a-z0-9]+$/.test(e.scenarioId||'')||(!reading&&!node)||!/^cutin:[a-z0-9_]+$/.test(e.asset||'')||!assets[e.asset]||assets[e.asset].kind!=='cutin')return;
+    const list=index.get(e.scenarioId)||[];
+    unique.add(e.id);list.push(e);index.set(e.scenarioId,list);
+  });
+
+  function load(e) {
+    if (cache.has(e.asset)) return cache.get(e.asset);
+    if (failed.has(e.asset) && Date.now() - failed.get(e.asset) < 5000) return Promise.resolve(null);
+    const task = new Promise(resolve => {
+      let done = false, image = null;
+      const end = value => { if (done) return;done = true;clearTimeout(timer);if(image){image.onload=null;image.onerror=null;}if(!value){cache.delete(e.asset);failed.set(e.asset,Date.now());}resolve(value); };
+      const timer = setTimeout(() => end(null), timeout);
+      Promise.resolve().then(() => ZH.assets && ZH.assets.get(e.asset)).then(src => {
+        if (done) return;
+        if (typeof src !== 'string' || !(/^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(src) || /^https:\/\//.test(src))) { end(null);return; }
+        image = new Image();
+        image.onload = () => end(image.naturalWidth > 0 ? {src,width:image.naturalWidth,height:image.naturalHeight} : null);
+        image.onerror = () => end(null);image.src = src;
+      }).catch(() => end(null));
+    });
+    cache.set(e.asset,task);return task;
+  }
+
+  function play(e, state, options) {
+    if (active) return Promise.resolve('busy');
+    return new Promise(resolve => {
+      const before = document.activeElement;
+      const box = ZH.html('<section class="zh-cutin" data-theme="'+esc(['jade','red','gold'].includes(e.theme)?e.theme:'gold')+'" role="dialog" aria-modal="true" aria-labelledby="zh-cutin-title" aria-describedby="zh-cutin-caption"><div class="zh-cutin__card"><header class="zh-cutin__head"><h2 id="zh-cutin-title">'+esc(e.title || '關鍵一幕')+'</h2><span class="zh-cutin__chapter">'+esc(e.chapterName || '')+'</span></header><div class="zh-cutin__scene"><img class="zh-cutin__image" hidden alt="'+esc(e.alt || e.caption || e.title || '')+'"><div class="zh-cutin__shade"></div><div class="zh-cutin__streak"></div><p class="zh-cutin__loading" role="status">這一幕即將展開…</p></div><p id="zh-cutin-caption" class="zh-cutin__caption">'+esc(e.caption || '')+'</p><footer class="zh-cutin__foot"><label class="zh-cutin__skip-all"><input type="checkbox">本局略過演出</label><button class="zh-cutin__skip" type="button">跳過演出</button></footer><div class="zh-cutin__progress" aria-hidden="true"><i></i></div></div></section>');
+      const siblings = [...document.body.children].filter(x=>!['SCRIPT','STYLE','LINK'].includes(x.tagName)).map(x=>[x,x.inert]);
+      const media = matchMedia('(prefers-reduced-motion: reduce)');
+      const animations = [];
+      const skip = box.querySelector('.zh-cutin__skip'), check = box.querySelector('input');
+      const picture = box.querySelector('img'), progress = box.querySelector('.zh-cutin__progress');
+      if(options&&options.replay){check.closest('label').hidden=true;skip.textContent='返回圖鑑';}
+      const duration = Math.max(2000,Math.min(9000,Number(e.durationMs)||5600));
+      let finished=false,raf=0,ready=false,last=null,elapsed=0;
+      const oldOverflow=document.body.style.overflow;
+      function finish(reason) {
+        if(finished)return;finished=true;cancelAnimationFrame(raf);animations.forEach(a=>a.cancel());
+        document.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',leave);media.removeEventListener('change',reduce);
+        siblings.forEach(([x,v])=>{x.inert=v;});document.body.style.overflow=oldOverflow;document.body.classList.remove('zh-cutin-on');box.remove();
+        if(active && active.box===box)active=null;
+        if(before && before.isConnected && typeof before.focus==='function')before.focus({preventScroll:true});
+        document.dispatchEvent(new CustomEvent('zh:cutin-end',{detail:{id:e.id,reason}}));resolve(reason);
+      }
+      function key(event) {
+        if(event.key==='Tab') { const targets=[check,skip],i=targets.indexOf(document.activeElement),next=event.shiftKey?(i+targets.length-1)%targets.length:(i+1)%targets.length;event.preventDefault();event.stopImmediatePropagation();targets[next].focus();return; }
+        if(event.key==='Escape'||(['Enter',' '].includes(event.key)&&event.target!==check)){event.preventDefault();event.stopImmediatePropagation();finish('skipped');}
+      }
+      function visibility(){last=null;animations.forEach(a=>{if(document.hidden)a.pause();else if(!media.matches)a.play();});}
+      function reduce(){if(media.matches){animations.forEach(a=>a.cancel());picture.style.transform='none';}}
+      function leave(){finish('interrupted');}
+      function tick(t){if(finished)return;raf=requestAnimationFrame(tick);if(!ready||document.hidden){last=null;return;}if(last!==null)elapsed+=Math.min(100,t-last);last=t;progress.style.setProperty('--cue-progress',String(Math.max(0,1-elapsed/duration)));if(elapsed>=duration)finish('played');}
+      skip.onclick=()=>finish('skipped');check.onchange=()=>{state._cutinSkip=check.checked;};
+      siblings.forEach(([x])=>{x.inert=true;});document.body.style.overflow='hidden';document.body.appendChild(box);document.body.classList.add('zh-cutin-on');
+      active={id:e.id,box,cancel:()=>finish('interrupted')};
+      document.addEventListener('keydown',key,true);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',leave);media.addEventListener('change',reduce);skip.focus({preventScroll:true});raf=requestAnimationFrame(tick);
+      document.dispatchEvent(new CustomEvent('zh:cutin-start',{detail:{id:e.id}}));
+      load(e).then(value=>{
+        if(finished)return;if(!value){finish('unavailable');return;}
+        picture.src=value.src;picture.hidden=false;box.querySelector('.zh-cutin__loading').hidden=true;ready=true;last=null;box.dataset.ready='true';
+        if(!media.matches&&typeof picture.animate==='function'){
+          animations.push(picture.animate([{transform:'scale(1.015) translateX(-.3%)'},{transform:'scale(1.075) translateX(.3%)'}],{duration,fill:'both',easing:'ease-out'}));
+          animations.push(box.querySelector('h2').animate([{transform:'translateX(-28px)',opacity:0},{transform:'translateX(0)',opacity:1}],{duration:420,fill:'both',easing:'ease-out'}));
+          animations.push(box.querySelector('.zh-cutin__streak').animate([{transform:'translateX(-12%)',opacity:0},{transform:'translateX(0)',opacity:.65,offset:.25},{transform:'translateX(12%)',opacity:0}],{duration:1100,fill:'both'}));
+        }
+        visibility();if(ZH.sfx)ZH.sfx(e.theme==='red'?'seal':'bell');
+      }).catch(()=>finish('unavailable'));
+    });
+  }
+
+  async function at(context) {
+    const c=context||{},state=c.state;
+    if(manifest.enabled===false || !state || state.ended || state._cutinSkip===true || active || c.when==='afterNode' && c.next===c.node)return {handled:false};
+    const list=index.get(c.scenarioId)||[];
+    const seen=Array.isArray(state._cutins)?state._cutins.filter(x=>typeof x==='string').slice(-300):[];
+    let handled=false;
+    for(const e of list){
+      if(e.when!==c.when||seen.includes(e.id))continue;
+      if(e.when==='afterAnchor'){
+        const passage=cleanPassage(c.passage);
+        if(!c.anchorId)continue;
+        if(e.anchorIds){if(!e.anchorIds.includes(c.anchorId))continue;}
+        else if(passage.length>240||!e.passageAny.some(x=>passage.includes(cleanPassage(x))))continue;
+      }else if(e.node!==c.node||typeof c.source!=='string'||!c.source.includes(e.guard))continue;
+      if(e.textIncludes && !(c.text||'').includes(e.textIncludes))continue;
+      if(e.flags && Object.keys(e.flags).some(k=>!state.flags||state.flags[k]!==e.flags[k]))continue;
+      const result=await play(e,state);
+      if(result==='played'||result==='skipped'){seen.push(e.id);state._cutins=Array.from(new Set(seen)).slice(-300);handled=true;}
+      if(state._cutinSkip===true)break;
+    }
+    return {handled};
+  }
+  ZH.cutin={version:'0.9.1',at,replay:cueId=>{
+    const e=[...index.values()].flat().find(x=>x.id===cueId&&x.collectible);
+    if(!e||!ZH.codex||!ZH.codex.has('text','cutin_'+e.id)){if(ZH.toast)ZH.toast('完成篇章並收入收藏後可重播。');return Promise.resolve(false);}
+    return play(e,{_cutinSkip:false},{replay:true});
+  },preload:scenarioId=>manifest.enabled===false?Promise.resolve([]):Promise.all((index.get(scenarioId)||[]).slice(0,2).map(load)),cancel:()=>{if(active)active.cancel();},inspect:()=>({active:!!active,id:active&&active.id,chapters:index.size,entries:[...index.values()].reduce((n,x)=>n+x.length,0),cached:cache.size})};
+})(window.ZH,window.ZH_CUTINS);
+</script>

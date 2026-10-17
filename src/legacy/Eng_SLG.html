@@ -1,0 +1,1778 @@
+<!-- 春秋場景任務整合 v1.0.0；沿用 v0.2.2 的三陣營存檔與錨點演出修正。 -->
+<!--
+============================================================
+ Re:縱橫鼎業
+------------------------------------------------------------
+ 檔名：Eng_SLG.html
+ 版本：v0.2.2（2026-10-15）
+ 依賴：Core_css.html、Core_js.html（ZH.sfx、ZH.toast、ZH.modal、ZH.esc、ZH.settings）
+       選用：Anchor_js.html（史實錨點）、Codex_js.html（史冊圖鑑）、
+             Art_kit.html（Q 版立繪與精細場景；劇本頁要自己 include('Art_kit')）
+ 說明：非對稱多方戰略引擎（SLG 大地圖）。秦晉圍鄭、齊桓稱霸、大澤鄉、
+       天下一統、演義模式共用。引擎只負責畫面與流程，各方的資源、
+       指令、事件、敵方行動、結局都由劇本頁提供。
+   ・帛書地圖：城池、營寨、河流、山脈、道路；可拖曳、縮放（手機雙指縮放）
+   ・回合：每回合有固定的「令」，下完令後結束回合，敵方行動、每回合結算
+   ・非對稱：每一方的資源、可下的指令、勝負條件都不同；
+             敵方的指標（例如戰意）要偵察後才看得到
+   ・情報卡、人物卡、對話、抉擇、史實錨點、圖鑑解鎖、教學導引、存檔
+   ・電腦版：左側勢力、中間地圖、右側下令；手機版：地圖全幅，下令收進底部抽屜
+
+ 用法：
+   const game = ZH.slg.create(根元素, config);
+   game.start(存檔狀態或 null);
+
+ config 主要欄位：
+   id、mode、title、subtitle、turns（回合數）、orders（每回合的令）、
+   turnName(n)、endTurnLabel、player（玩家勢力 id）、seed（亂數種子，測試用）
+   factions   [{ id, name, color, ink, role, desc }]
+   resources  [{ id, label, icon, max, start, danger }]          玩家資源
+   meters     [{ id, label, faction, max, reveal(state) }]       敵方指標（存在 state.vars）
+   map        { width, height, focus, terrain:[{ kind, d, faction, label, at }], nodes:[...], labels:[...] }
+              node：{ id, name, sub, kind: city|camp|far|pass, faction, x, y, meter（資源 id）, note }
+   characters [{ id, name, faction, glyph, title, codex, show(state), known(state), hint }]
+   speakers   { 名稱: { glyph, faction } }                         對話用的非人物角色（史官、斥候）
+   commands   [{ id, label, group, cost（數字或 'all'）, desc, targets:[node id], risk, key,
+                 visible(state), enabled(state, target) → true 或原因,
+                 run(ctx, target)（回傳 { refund: true } 表示取消並退回這道令） }]
+   others     [{ id, name, color }]                                  地圖上沒有參戰的國家（周、許、楚）
+   intel      [{ id, kind, title, text }]，intelGoal { kind, total, label }
+   events     [{ id, phase: start|end|command, once, when(state, info), run(ctx, info) }]
+   ai(ctx)、upkeep(ctx)、check(state) → 結局物件或 null、onEnd(result, ctx)
+   save(state)、tutorial [{ el, title, text }]、help（HTML 字串）、anchorTotal、anchorOrder [錨點代碼]
+ ctx（劇本函式拿到的工具）：
+   state、rng()、res(id)、add(id, delta, { at, silent })、vary(name, delta)、
+   flag(name[, value])、log(text, kind)、say(lines)、choose(options)、anchor(id)、
+   gainIntel(id)、hasIntel(id)、intelCount(kind)、unlock(codexKey)、
+   node(id, patch)、fx.volley/float/pulse/march、banner(title, sub)、coach(steps)、
+   wait(ms)、quiet()（等提示卡片消失）、refresh()、save()、end(result)、
+   subtitle(text)（換標題列的副標）、tab(name)（切換右側分頁）、mapEl()（地圖元素，放自訂浮層）
+   v0.2.2：原文題完成後可播放集中名場面；中場續篇亦可用，演出紀錄隨原存檔保存。
+   v0.2.0 新增（有 Art_kit 才有效果，沒有時什麼都不做）：
+   scene(opts) → Promise   打開「舞台」：精細場景蓋住地圖，人物以 Q 版立繪站在台上，對話照常用 say。
+       opts：{ base（場景代碼：hall、tent、camp、night、city……）, tod, weather, banner, glyph,
+               place（地點牌）, time（地點牌小字）, cast:[人物 id 或講者名稱], expr:{ id: 表情 } }
+       scene(null) 收起舞台。一道令、一個事件結束時，舞台會自動收起；
+       fx.pulse／volley／march 也會先收起舞台再播（地圖動畫才看得到）；舞台開著時 fx.float 不播。
+   cast(ids, expr)   換台上的人物（舞台開著時）
+   layerEl()         舞台開著時回傳舞台元素，否則回傳地圖元素（放「秦伯心意」這類浮層）；
+                     換到不同的場景（base、地點不同）時，舞台上的浮層會自動清掉
+ 台詞（say 的每一行）：{ who, text, expr }。expr：normal happy surprised sad angry serious worried smirk；
+   沒寫時會依台詞猜很明顯的（大怒、竟然……）。
+ 人物外型：characters 與 speakers 都可以加 art（見 Art_kit 的說明）；沒寫時依名字從內建名冊找，
+   找不到就依名字、頭銜猜，衣色用所屬勢力的國別（factions 的 state，沒寫時用 name）。
+ v0.1.1：存檔改成「排隊」：存檔中又要存時，等這一次存完再存最新狀態，
+         不會漏存；新增 fx.march（行軍）、ctx.subtitle、ctx.tab、ctx.mapEl。
+         修正：對話框置中（原本被淡入動畫蓋掉 transform，整個框偏右、右半被切掉）。
+ v0.1.2：config.anchorOrder（錨點代碼的順序），錨點視窗顯示「第幾題」時依這個順序；
+         同一劇本的不同陣營篇章共用題庫、各有自己的題目順序時使用。
+         新增圖示 trust（盟信）；令不夠時說明這道令要用幾道令。
+ v0.1.3：新增圖示 army（軍力）、crown（霸業）。
+ v0.2.1：效能。立繪拿掉 drop-shadow 濾鏡（呼吸、眨眼的每一格都要重算模糊），改成腳下的橢圓陰影；
+         勢力欄的小頭像不眨眼；「結束本夜」按鈕、地圖目標的閃光只閃三下（原本無限循環，畫面一直重畫）。
+ v0.2.0：換新美術（需要 Art_kit）：對話框改成紙箋＋名牌，說話的人是 Q 版半身立繪（說話時嘴巴會動、有表情）；
+         左側勢力欄的人物卡改成頭像；新增「舞台」ctx.scene（精細場景＋台上人物），劇情段落不必再蓋在地圖上。
+         沒有 Art_kit 時一切照舊（印章頭像）。
+============================================================
+-->
+<style>
+  /* ───────── 版面 ───────── */
+  .slg {
+    position: fixed; inset: 0; z-index: 10;
+    display: grid; grid-template-rows: auto minmax(0, 1fr);
+    background: var(--night); color: var(--text);
+  }
+  .slg-top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+    padding: calc(8px + var(--safe-t)) 14px 8px;
+    background: rgba(20, 26, 46, .95); border-bottom: 1px solid var(--line);
+  }
+  .slg-icon {
+    display: grid; place-items: center; width: 38px; height: 38px; flex: none; cursor: pointer;
+    border: 1px solid var(--line-soft); border-radius: 10px; background: none; color: var(--text);
+    font-size: 20px; line-height: 1;
+  }
+  .slg-icon:hover { border-color: var(--gilt); color: var(--gilt); }
+  .slg-title { display: flex; flex-direction: column; min-width: 0; }
+  .slg-title b { font-family: var(--f-display); font-size: 19px; letter-spacing: .1em; line-height: 1.2; white-space: nowrap; }
+  .slg-title span { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; }
+  .slg-turn { display: flex; align-items: center; gap: 12px; }
+  .slg-turn__n { font-family: var(--f-display); font-size: 22px; color: var(--gilt); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .slg-turn__n small { margin-left: 4px; font-size: 13px; color: var(--text-dim); }
+  .slg-pips { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text-dim); white-space: nowrap; }
+  .slg-pip { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--gilt); }
+  .slg-pip.is-full { background: var(--gilt); box-shadow: 0 0 8px var(--gilt-glow); }
+  .slg-res { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
+  .slg-r { display: grid; grid-template-columns: 18px auto 72px 2.2em; align-items: center; gap: 6px; font-size: 13.5px; }
+  .slg-r svg { width: 18px; height: 18px; fill: currentColor; color: var(--gilt); }
+  .slg-r__bar { height: 7px; border-radius: 999px; background: rgba(236, 230, 214, .12); overflow: hidden; }
+  .slg-r__bar i { display: block; height: 100%; width: var(--v, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--patina), var(--gilt)); transition: width .5s ease; }
+  .slg-r__val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .slg-r.is-danger { color: #ff9c90; }
+  .slg-r.is-danger svg { color: var(--cinnabar); }
+  .slg-r.is-danger .slg-r__bar i { background: var(--cinnabar); }
+  .slg-r.is-up .slg-r__val { color: #8fd3c2; }
+  .slg-r.is-down .slg-r__val { color: #ff9c90; }
+  .slg-menu { display: flex; gap: 6px; }
+
+  .slg-body { position: relative; display: grid; grid-template-columns: 250px minmax(0, 1fr) 340px; min-height: 0; }
+  .slg-side { overflow-y: auto; padding: 14px 12px 20px; border-right: 1px solid var(--line-soft); }
+  .slg-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; border-left: 1px solid var(--line-soft); background: rgba(20, 26, 46, .55); }
+
+  /* ───────── 勢力 ───────── */
+  .slg-force { margin-bottom: 16px; border: 1px solid var(--line-soft); border-radius: 12px; overflow: hidden; background: rgba(20, 26, 46, .6); }
+  .slg-force__head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; padding: 10px 12px; border-top: 4px solid var(--fc); background: linear-gradient(180deg, var(--fs), transparent); }
+  .slg-force__seal {
+    display: grid; place-items: center; width: 40px; height: 40px; border-radius: 6px;
+    border: 2px solid var(--fc); color: var(--fc); background: rgba(11, 14, 29, .6);
+    font-family: var(--f-display); font-weight: 700; font-size: 22px;
+  }
+  .slg-force__name { font-family: var(--f-display); font-size: 17px; }
+  .slg-force__name small { margin-left: 6px; font-family: var(--f-body); font-size: 12px; color: var(--fc); }
+  .slg-force__role { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+  .slg-force__body { display: grid; gap: 8px; padding: 4px 12px 12px; }
+  .slg-meter { display: grid; grid-template-columns: auto 1fr 2.2em; gap: 8px; align-items: center; font-size: 13px; }
+  .slg-meter .zh-bar { height: 6px; }
+  .slg-meter .zh-bar > span { background: var(--fc); }
+  .slg-meter b { text-align: right; font-variant-numeric: tabular-nums; }
+  .slg-meter.is-hidden { color: var(--text-dim); }
+  .slg-chars { display: grid; gap: 6px; }
+  .slg-char {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center;
+    width: 100%; padding: 6px 8px; cursor: pointer; text-align: left;
+    border: 1px solid transparent; border-radius: 8px; background: rgba(236, 230, 214, .04); color: var(--text);
+  }
+  .slg-char:hover { border-color: var(--fc); }
+  .slg-char__face {
+    display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--fc); color: var(--fc); background: rgba(11, 14, 29, .7);
+    font-family: var(--f-display); font-weight: 700; font-size: 17px;
+  }
+  .slg-char__name { font-size: 14px; line-height: 1.3; }
+  .slg-char__title { display: block; font-size: 12px; color: var(--text-dim); line-height: 1.35; }
+  .slg-char.is-unknown .slg-char__face { border-style: dashed; color: var(--text-dim); }
+  .slg-char.is-unknown .slg-char__name { color: var(--text-dim); }
+
+  /* ───────── 地圖 ───────── */
+  .slg-map { position: relative; overflow: hidden; min-height: 0; background: #cdb98f; }
+  .slg-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .slg-svg.is-drag { cursor: grabbing; }
+  .slg-svg text { font-family: var(--f-display); pointer-events: none; }
+  .slg-node { cursor: pointer; outline: none; }
+  .slg-node .slg-hit { fill: transparent; }
+  .slg-node:hover .slg-ring-hover, .slg-node:focus-visible .slg-ring-hover { opacity: 1; }
+  .slg-ring-hover { opacity: 0; transition: opacity .15s ease; }
+  .slg-node.is-target .slg-ring-target { opacity: 1; animation: slg-glow 1.2s ease-in-out 3; }
+  .slg-ring-target { opacity: 0; }
+  .slg-float { font-weight: 700; paint-order: stroke; stroke: rgba(30, 22, 12, .85); stroke-width: 5px; animation: slg-rise 1.5s ease-out forwards; transform-box: fill-box; }
+  .slg-pulse { fill: none; stroke-width: 4; animation: slg-pulse 1.1s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+  .slg-night { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 40%, rgba(10, 14, 34, .05), rgba(8, 10, 26, .55)); opacity: .5; transition: opacity 1s ease; }
+  .slg-night.is-deep { opacity: 1; background: radial-gradient(120% 90% at 50% 40%, rgba(10, 14, 34, .45), rgba(4, 6, 18, .85)); }
+  .slg-zoom { position: absolute; right: 10px; top: 10px; display: grid; gap: 6px; z-index: 2; }
+  .slg-zoom button {
+    width: 38px; height: 38px; border-radius: 10px; cursor: pointer; font-size: 20px; line-height: 1;
+    border: 1px solid rgba(59, 47, 34, .5); background: rgba(239, 226, 191, .92); color: #3b2f22;
+  }
+  .slg-pop {
+    position: absolute; z-index: 3; width: min(280px, calc(100% - 20px));
+    padding: 12px 14px; border: 1px solid var(--fc, var(--gilt)); border-radius: 12px;
+    background: rgba(20, 26, 46, .97); box-shadow: var(--shadow); font-size: 14px;
+    animation: zh-rise .2s ease both;
+  }
+  .slg-pop h3 { font-size: 18px; margin-bottom: 2px; }
+  .slg-pop p { color: var(--text-dim); line-height: 1.6; }
+  .slg-pop .zh-row { margin-top: 10px; gap: 8px; }
+  .slg-pop__x { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+
+  /* ───────── 右側面板 ───────── */
+  .slg-tabs { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); }
+  .slg-tab {
+    position: relative; flex: 1; padding: 11px 6px 9px; cursor: pointer;
+    border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-dim);
+    font-family: var(--f-display); font-size: 15.5px; white-space: nowrap;
+  }
+  .slg-tab[aria-selected="true"] { color: var(--gilt); border-bottom-color: var(--gilt); }
+  .slg-tab .slg-dot { position: absolute; top: 8px; right: 10%; width: 8px; height: 8px; border-radius: 50%; background: var(--cinnabar); }
+  .slg-tab--side { display: none; }
+  .slg-handle { display: none; }
+  .slg-panel__body { overflow-y: auto; padding: 12px 14px 16px; }
+  .slg-panel__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px calc(10px + var(--safe-b)); border-top: 1px solid var(--line); }
+  .slg-foot__info { font-size: 13px; color: var(--text-dim); }
+  .slg-end.is-ready { animation: slg-glow-btn 1.6s ease-in-out 3; box-shadow: 0 0 0 3px var(--gilt-glow), 0 6px 22px rgba(224, 180, 76, .45); }
+
+  .slg-group { margin: 6px 0 8px; font-size: 12.5px; letter-spacing: .2em; color: var(--text-dim); }
+  .slg-group + .slg-cmd { margin-top: 0; }
+  .slg-cmd {
+    position: relative; margin-bottom: 8px; padding: 10px 12px 10px 16px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: linear-gradient(90deg, rgba(239, 226, 191, .1), rgba(239, 226, 191, .03));
+  }
+  .slg-cmd::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: var(--cord); opacity: .9; }
+  .slg-cmd.is-risk { border-color: rgba(217, 72, 59, .45); }
+  .slg-cmd.is-key { border-color: var(--gilt); box-shadow: 0 0 0 1px var(--gilt-glow), 0 0 18px var(--gilt-glow); }
+  .slg-cmd__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .slg-cmd__name { font-family: var(--f-display); font-size: 17px; }
+  .slg-cmd__cost { font-size: 12px; color: var(--gilt); white-space: nowrap; }
+  .slg-cmd__desc { margin-top: 2px; font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+  .slg-cmd__acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .slg-cmd__why { margin-top: 6px; font-size: 12.5px; color: #ff9c90; }
+  .slg-cmd.is-off { opacity: .55; }
+
+  .slg-intel-sum { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
+  .slg-intel-sum .zh-bar { flex: 1; }
+  .slg-card {
+    margin-bottom: 10px; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid var(--line-soft); background: var(--slip); color: var(--slip-ink);
+    box-shadow: inset 0 0 0 1px rgba(107, 74, 42, .2);
+  }
+  .slg-card__head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .slg-card__kind { padding: 1px 8px; border-radius: 999px; font-size: 12px; color: #fff4ec; background: #7a2a1c; }
+  .slg-card__kind.is-info { background: #5a6170; }
+  .slg-card__title { font-family: var(--f-display); font-size: 17px; font-weight: 700; }
+  .slg-card__text { font-size: 14px; line-height: 1.75; }
+  .slg-card.is-new { animation: slg-new 1.2s ease both; }
+  .slg-empty { padding: 18px 6px; text-align: center; color: var(--text-dim); font-size: 14px; }
+
+  .slg-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .slg-log li { display: grid; grid-template-columns: 3.6em minmax(0, 1fr); gap: 8px; font-size: 13.5px; line-height: 1.6; }
+  .slg-log li span { color: var(--gilt); font-variant-numeric: tabular-nums; }
+  .slg-log li.is-bad { color: #ffb4aa; }
+  .slg-log li.is-good { color: #a9e2d4; }
+
+  /* ───────── 對話、抉擇、標題、教學 ───────── */
+  .slg-say {
+    position: fixed; left: 0; right: 0; margin: 0 auto; bottom: calc(16px + var(--safe-b)); z-index: 45; /* 不用 transform 置中：zh-rise 動畫會蓋掉 transform */
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start;
+    width: min(840px, calc(100vw - 24px)); padding: 16px 18px 14px;
+    border: 1px solid var(--gilt); border-radius: 14px; cursor: pointer;
+    background: linear-gradient(180deg, rgba(39, 49, 79, .98), rgba(20, 26, 46, .98)); box-shadow: var(--shadow);
+    animation: zh-rise .2s ease both;
+  }
+  .slg-say__face {
+    display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--fc, var(--gilt)); color: var(--fc, var(--gilt)); background: rgba(11, 14, 29, .8);
+    font-family: var(--f-display); font-weight: 700; font-size: 30px;
+  }
+  .slg-say__name { display: inline-block; margin-bottom: 4px; padding: 1px 12px; border-radius: 4px; background: var(--fc, var(--cinnabar)); color: #fff4ec; font-family: var(--f-display); font-weight: 700; }
+  .slg-say__text { min-height: 3.4em; font-family: var(--f-display); font-size: 18px; line-height: 1.8; }
+  .slg-say__more { margin-top: 2px; text-align: right; font-size: 12.5px; color: var(--text-dim); }
+  .slg-say.is-narrator { grid-template-columns: minmax(0, 1fr); border-color: var(--slip-line); background: var(--slip); color: var(--slip-ink); }
+  .slg-say.is-narrator .slg-say__more { color: #6b5a3a; }
+
+  .slg-choice { position: fixed; inset: 0; z-index: 46; display: grid; place-items: center; padding: 16px; background: rgba(8, 10, 22, .72); animation: zh-fade-in .2s ease both; }
+  .slg-choice__card { width: min(560px, 100%); max-height: 100%; overflow: auto; padding: 20px; border: 1px solid var(--gilt); border-radius: 14px; background: linear-gradient(180deg, var(--night-3), var(--night-2)); box-shadow: var(--shadow); }
+  .slg-choice__card h2 { font-size: 22px; margin-bottom: 8px; }
+  .slg-choice__card > p { margin-bottom: 14px; line-height: 1.8; }
+  .slg-choice .zh-choice__text small { display: block; font-family: var(--f-body); font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+  .slg-banner { position: fixed; inset: 0; z-index: 44; display: grid; place-items: center; pointer-events: none; }
+  .slg-banner__in { text-align: center; animation: slg-banner 1.5s ease both; }
+  .slg-banner__title { font-family: var(--f-display); font-size: clamp(42px, 9vw, 84px); letter-spacing: .3em; color: var(--text); text-shadow: 0 4px 30px rgba(0, 0, 0, .8); }
+  .slg-banner__sub { margin-top: 4px; font-family: var(--f-display); font-size: 18px; letter-spacing: .2em; color: var(--gilt); text-shadow: 0 2px 12px rgba(0, 0, 0, .8); }
+
+  .slg-coach { position: fixed; inset: 0; z-index: 48; }
+  .slg-coach__hole { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(6, 8, 20, .72); border: 2px solid var(--gilt); transition: all .25s ease; pointer-events: none; }
+  .slg-coach__tip {
+    position: fixed; width: min(340px, calc(100vw - 24px)); padding: 14px 16px;
+    border: 1px solid var(--gilt); border-radius: 12px; background: var(--night-2); box-shadow: var(--shadow);
+  }
+  .slg-coach__tip h3 { font-size: 18px; margin-bottom: 4px; color: var(--gilt); }
+  .slg-coach__tip p { font-size: 14.5px; line-height: 1.7; }
+  .slg-coach__tip .zh-row { justify-content: space-between; margin-top: 12px; }
+  .slg-coach__step { font-size: 12.5px; color: var(--text-dim); }
+
+  .slg-gain {
+    position: fixed; right: 18px; bottom: 96px; z-index: 47; width: min(300px, calc(100vw - 36px));
+    pointer-events: none; animation: slg-gain 2.4s ease both;
+  }
+
+  @keyframes slg-rise { 0% { opacity: 0; transform: translateY(8px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-52px); } }
+  @keyframes slg-pulse { from { opacity: 1; transform: scale(.4); } to { opacity: 0; transform: scale(1.6); } }
+  @keyframes slg-glow { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+  @keyframes slg-glow-btn { 0%, 100% { box-shadow: 0 6px 18px rgba(224, 180, 76, .25); } 50% { box-shadow: 0 0 0 4px var(--gilt-glow), 0 6px 26px rgba(224, 180, 76, .55); } }
+  @keyframes slg-banner { 0% { opacity: 0; filter: blur(8px); transform: scale(1.06); } 25% { opacity: 1; filter: none; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes slg-new { 0% { box-shadow: 0 0 0 3px var(--gilt); } 100% { box-shadow: inset 0 0 0 1px rgba(107, 74, 42, .2); } }
+  @keyframes slg-gain { 0% { opacity: 0; transform: translateY(20px) rotate(-2deg); } 15% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
+
+  /* ───────── v0.2.0：Q 版立繪、紙箋對話框、舞台 ───────── */
+  .slg-char.has-art { grid-template-columns: 40px minmax(0, 1fr); }
+  .slg-char__face.is-art {
+    display: block; width: 40px; height: 40px; overflow: hidden; padding: 0; font-size: 0;
+    background: radial-gradient(circle at 50% 38%, #fffaf0, #e3d0a4);
+  }
+  .slg-char__face.is-art .ck { display: block; width: 100%; height: 100%; margin: 0; }
+  .slg-char__face .ck-eye, .slg-char__face .ck-breathe, .slg-char__face .ck-dangle { animation: none; }
+  .slg-say.has-art {
+    grid-template-columns: minmax(0, 1fr); padding: 20px 22px 12px; width: min(880px, calc(100vw - 24px));
+    border: 2px solid #c9a24a; color: #3b2620;
+    background: linear-gradient(180deg, rgba(250, 243, 226, .97), rgba(236, 222, 189, .97));
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .45), inset 0 0 0 4px rgba(255, 252, 242, .6);
+  }
+  .slg-say.has-art.has-face { grid-template-columns: 96px minmax(0, 1fr); }
+  .slg-say.has-art .slg-say__face {
+    display: block; width: 96px; height: 124px; margin: -8px 0 -6px; border-radius: 10px; overflow: hidden;
+    border: 2px solid var(--fc, #c9a24a); background: radial-gradient(circle at 50% 40%, #fffaf0, #e8d6ad); font-size: 0;
+  }
+  .slg-say.has-art .slg-say__face .ck { width: 100%; height: 100%; }
+  .slg-say.has-art .slg-say__name {
+    position: absolute; top: -17px; left: 20px; margin: 0; padding: 2px 16px; border-radius: 6px 6px 6px 0;
+    color: var(--fct, #fff4ec); font-size: 17px; letter-spacing: .12em; box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+  }
+  .slg-say.has-art .slg-say__text { font-size: 18.5px; }
+  .slg-say.has-art .slg-say__more { color: #8a7350; }
+  .slg-stage {
+    position: absolute; inset: 0; z-index: 25; overflow: hidden; background: #0b0e1d;
+    opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s;
+  }
+  .slg-stage.is-on { opacity: 1; visibility: visible; transition: opacity .5s ease; }
+  .slg-stage__bg { position: absolute; inset: 0; transition: opacity .5s ease; }
+  .slg-stage__bg svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .slg-stage__bg.is-swap { opacity: 0; }
+  .slg-stage__vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(4, 6, 14, .7)); }
+  .slg-stage__place {
+    position: absolute; top: 14px; left: 16px; z-index: 3; display: grid; gap: 2px;
+    padding: 8px 16px 8px 14px; border-radius: 4px 12px 12px 4px; border-left: 4px solid var(--fc, var(--cinnabar));
+    background: rgba(239, 228, 200, .94); color: var(--slip-ink, #3a2a18); box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    animation: zh-rise .5s ease both;
+  }
+  .slg-stage__place b { font-family: var(--f-display); font-size: 19px; letter-spacing: .12em; }
+  .slg-stage__place span { font-size: 12.5px; color: #6b5a3a; }
+  .slg-cast {
+    position: absolute; left: 0; right: 0; bottom: calc(var(--cast-b, 64px) + var(--safe-b)); z-index: 2;
+    display: flex; justify-content: center; align-items: flex-end; gap: var(--cast-gap, 14px); padding: 0 12px;
+    pointer-events: none;
+  }
+  .slg-actor { position: relative; flex: none; width: var(--aw, 260px); transform-origin: 50% 100%; transition: transform .3s ease, filter .3s ease; }
+  .slg-actor .ck { position: relative; display: block; width: 100%; height: auto; }
+  /* 腳下的陰影：取代 drop-shadow 濾鏡 */
+  .slg-actor::before { content: ''; position: absolute; left: 16%; right: 16%; bottom: -1.5%; height: 7%; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .42), rgba(0, 0, 0, 0)); pointer-events: none; }
+  .slg-actor.is-enter { animation: slg-enter .4s ease both; }
+  .slg-actor__tag {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0 auto; width: max-content; max-width: 110%;
+    padding: 1px 10px 1px 8px; border-radius: 4px; border-left: 3px solid var(--fc, var(--gilt));
+    background: rgba(11, 14, 29, .78); font-family: var(--f-display); font-size: 14px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; transition: opacity .2s ease;
+  }
+  .slg-actor.is-speaking .slg-actor__tag { opacity: 0; }
+  .slg-cast.has-speaker .slg-actor { filter: brightness(.78) saturate(.75); }
+  .slg-cast.has-speaker .slg-actor.is-speaking { filter: none; transform: translateY(-6px) scale(1.04); }
+  .slg-stage .wz-pers { z-index: 3; }
+  @keyframes slg-enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+  /* 圖鑑解鎖卡片移到頂列下方，不遮住資源列 */
+  body.slg-on .zc-pop { top: calc(var(--slg-top, 60px) + 10px); }
+
+  /* ───────── 手機 ───────── */
+  @media (max-width: 860px) {
+    .slg-top { gap: 6px 10px; padding: calc(6px + var(--safe-t)) 10px 6px; }
+    .slg-title b { font-size: 16px; }
+    .slg-title span { display: none; }
+    .slg-turn__n { font-size: 18px; }
+    .slg-turn { gap: 8px; }
+    .slg-pip { width: 12px; height: 12px; }
+    .slg-menu { margin-left: auto; }
+    .slg-menu .zh-btn { padding: 4px 10px; min-height: 34px; }
+    .slg-menu [data-act="sound"] { display: none; } /* 手機版音效開關在首頁 */
+    .slg-res { order: 5; width: 100%; margin-left: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+    .slg-r { grid-template-columns: 16px auto minmax(0, 1fr) 2em; gap: 4px; font-size: 12.5px; }
+    .slg-r svg { width: 16px; height: 16px; }
+    .slg-body { grid-template-columns: minmax(0, 1fr); }
+    .slg-side { display: none; }
+    .slg-map { padding-bottom: 0; }
+    .slg-zoom { top: 8px; right: 8px; }
+    .slg-panel {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      grid-template-rows: auto auto auto; max-height: 72dvh;
+      border: 0; border-top: 1px solid var(--gilt); border-radius: 16px 16px 0 0;
+      background: rgba(20, 26, 46, .98); box-shadow: 0 -10px 30px rgba(0, 0, 0, .45);
+    }
+    .slg-handle { display: block; width: 44px; height: 5px; margin: 8px auto 0; border: 0; border-radius: 999px; background: var(--line); cursor: pointer; padding: 0; }
+    .slg-tab--side { display: block; }
+    .slg-panel__body { display: none; max-height: calc(72dvh - 130px); }
+    .slg-panel.is-open .slg-panel__body { display: block; }
+    .slg-say { bottom: calc(10px + var(--safe-b)); grid-template-columns: auto minmax(0, 1fr); padding: 12px 14px; }
+    .slg-say__face { width: 48px; height: 48px; font-size: 24px; }
+    .slg-say__text { font-size: 16.5px; }
+    .slg-gain { left: 12px; right: 12px; width: auto; bottom: 150px; }
+    .slg.has-stage .slg-panel { display: none; }
+    .slg-say.has-art { bottom: calc(10px + var(--safe-b)); padding: 18px 14px 10px; gap: 10px; }
+    .slg-say.has-art.has-face { grid-template-columns: 64px minmax(0, 1fr); }
+    .slg-say.has-art .slg-say__face { width: 64px; height: 84px; margin: -6px 0 -4px; }
+    .slg-say.has-art .slg-say__name { top: -15px; left: 14px; font-size: 15.5px; padding: 1px 12px; }
+    .slg-say.has-art .slg-say__text { font-size: 16.5px; }
+    .slg-stage__place { top: 10px; left: 10px; padding: 6px 12px 6px 10px; }
+    .slg-stage__place b { font-size: 16px; }
+    .slg-actor__tag { font-size: 12.5px; padding: 0 6px 0 5px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slg-float, .slg-pulse, .slg-banner__in, .slg-gain, .slg-actor.is-enter { animation-duration: .01ms !important; }
+  }
+</style>
+<script>
+(function (ZH) {
+  'use strict';
+
+  const global = window;
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const SPEED = { slow: 42, normal: 22, fast: 9, instant: 0 };
+  const REDUCE = !!(global.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const ICONS = {
+    wall: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 18V8h3V5h3v3h4V5h3v3h3v10zm7-6v6h2v-6z"/></svg>',
+    food: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9.2 19V8.6C6.2 8.4 4.2 6.4 4 3c3.3.2 5.2 2.1 5.2 5.2V8.6h1.6v-.4C10.8 5.1 12.7 3.2 16 3c-.2 3.4-2.2 5.4-5.2 5.6V19z"/><path d="M9.2 14c-2.6-.2-4.4-1.8-4.6-4.4 2.6.2 4.4 1.8 4.6 4.4zm1.6 0c.2-2.6 2-4.2 4.6-4.4-.2 2.6-2 4.2-4.6 4.4z"/></svg>',
+    morale: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7" cy="6" r="3"/><circle cx="14.2" cy="7" r="2.4"/><path d="M1 18c0-4 2.7-6.3 6-6.3s6 2.3 6 6.3zm12.6 0c0-2.5-.6-4.3-1.7-5.4.6-.3 1.4-.5 2.2-.5 2.6 0 4.9 2 4.9 5.9z"/></svg>',
+    order: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 2h8l1 3-2 1v8l3 4H4l3-4V6L5 5z"/></svg>',
+    trust: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 15H6a5 5 0 0 1 0-10h2v2.2H6a2.8 2.8 0 0 0 0 5.6h2zm4-10h2a5 5 0 0 1 0 10h-2v-2.2h2a2.8 2.8 0 0 0 0-5.6h-2zM6.5 8.9h7v2.2h-7z"/></svg>',
+    army: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 2h2.3l8.6 8.6-1.6 1.6L3.2 3.6zM17.5 2h-2.3l-8.6 8.6 1.6 1.6 8.6-8.6zM3 14.5L6.5 18l1.4-1.4-1-1 2-2-1.4-1.4-2 2-1-1zm14 0L13.5 18l-1.4-1.4 1-1-2-2 1.4-1.4 2 2 1-1z"/></svg>',
+    crown: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 6l4 3 4-6 4 6 4-3-1.6 10H3.6zM3.6 17h12.8v1.6H3.6z"/></svg>'
+  };
+
+  // ───────────────────────── 小工具 ─────────────────────────
+
+  const esc = s => ZH.esc(s);
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function svgEl(tag, attrs, parent) {
+    const el = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(k => el.setAttribute(k, attrs[k]));
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  function tween(ms, fn) {
+    if (REDUCE || ms <= 0) { fn(1); return Promise.resolve(); }
+    return new Promise(resolve => {
+      const t0 = performance.now();
+      const step = now => {
+        const k = Math.min(1, (now - t0) / ms);
+        fn(k);
+        if (k < 1) requestAnimationFrame(step); else resolve();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  function hexToRgba(hex, a) {
+    const h = String(hex || '#e0b44c').replace('#', '');
+    const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+
+
+  // ───────────────────────── 引擎 ─────────────────────────
+
+  function create(root, config) {
+    const C = Object.assign({
+      mode: 'history', turns: 12, orders: 3, map: {}, factions: [], resources: [], meters: [],
+      characters: [], speakers: {}, commands: [], intel: [], events: [], tutorial: [],
+      turnName: n => '第 ' + n + ' 回合', endTurnLabel: '結束回合', anchorTotal: 0
+    }, config);
+    const W = C.map.width || 1000;
+    const H = C.map.height || 700;
+    const S = { state: null, busy: 0, tab: 'cmd', open: false, ended: false, view: null, seen: { intel: 0, log: 0 }, prevRes: {} };
+    const el = {};
+
+    const faction = id => C.factions.find(f => f.id === id) || (C.others || []).find(f => f.id === id) || { id: id, name: '', color: '#8a7350', ink: '#3b2f22' };
+    const mapNode = id => (C.map.nodes || []).find(n => n.id === id);
+    const intelOf = id => C.intel.find(i => i.id === id);
+    const isMobile = () => global.innerWidth <= 860;
+
+    // ── 美術（v0.2.0）：有 Art_kit 才用 Q 版立繪 ──
+    const hasArt = () => !!(global.ART && global.ART.portrait);
+    const EXPR_SET = ['normal', 'happy', 'surprised', 'sad', 'angry', 'serious', 'worried', 'smirk'];
+    /** 勢力 → 國別衣色（factions 的 state，沒寫時用 name，例如「鄭」） */
+    function stateOf(fid) {
+      if (!fid) return null;
+      const f = faction(fid);
+      const st = f.state || f.name;
+      return st && global.ART && global.ART.STATE && global.ART.STATE[st] ? st : null;
+    }
+    /** 給 ART.portrait 的人物資料 */
+    function artSpec(sp) {
+      const art = Object.assign({}, sp.faction && stateOf(sp.faction) ? { state: stateOf(sp.faction) } : {}, sp.art || {});
+      return { id: sp.id, name: sp.name, title: typeof sp.title === 'string' ? sp.title : '', art: art };
+    }
+    /** 依台詞猜表情（只猜很明顯的） */
+    function guessExpr(text) {
+      const t = String(text || '');
+      if (/哈哈|大笑|大喜|太好了/.test(t)) return 'happy';
+      if (/大怒|豎子|放肆|大膽|可恨|豈有此理/.test(t)) return 'angry';
+      if (/什麼[？?]|竟然|怎麼會|[！!][？?]|[？?][！!]/.test(t)) return 'surprised';
+      if (/唉|嗚呼|悲夫|可惜|奈何/.test(t)) return 'sad';
+      return '';
+    }
+    /** 名牌上的字要用白字還是深色字 */
+    function inkOn(hex) {
+      const h = String(hex || '').replace('#', '');
+      if (h.length < 6) return '#fff4ec';
+      const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+      return (0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#2a1a12' : '#fff4ec';
+    }
+
+    // ── 亂數（存在 state 裡，重新載入後可接續） ──
+    function rng() {
+      let a = S.state.seed | 0;
+      a = (a + 0x6D2B79F5) | 0;
+      S.state.seed = a;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+
+    function freshState() {
+      const res = {};
+      C.resources.forEach(r => { res[r.id] = r.start; });
+      const base = {
+        v: 1, _textplayV:3, turn: 1, orders: C.orders, seed: (C.seed || (Date.now() % 2147483646)) | 0,
+        res: res, vars: {}, flags: {}, intel: [], nodes: {}, log: [], anchors: [], done: {},
+        cmdCount: {}, orderSeq: [], codex: []
+      };
+      const extra = C.initState ? C.initState() : {};
+      Object.keys(extra).forEach(k => {
+        base[k] = (base[k] && typeof base[k] === 'object' && !Array.isArray(base[k])) ? Object.assign(base[k], extra[k]) : extra[k];
+      });
+      return base;
+    }
+
+
+    // ───────────── 骨架 ─────────────
+
+    function css() {
+      const rules = C.factions.concat(C.others || []).map(f => '.slg-f-' + f.id + '{--fc:' + f.color + ';--fs:' + hexToRgba(f.color, .18) + ';}').join('');
+      const st = document.createElement('style');
+      st.textContent = rules;
+      document.head.appendChild(st);
+    }
+
+    function skeleton() {
+      root.innerHTML =
+        '<div class="slg" data-slg="' + esc(C.id) + '">' +
+        '<header class="slg-top">' +
+        '<button type="button" class="slg-icon" data-act="home" aria-label="離開（會自動存檔）" title="離開">‹</button>' +
+        '<div class="slg-title"><b>' + esc(C.title) + '</b><span>' + esc(C.subtitle || '') + '</span></div>' +
+        '<div class="slg-turn" data-coach="turn"><span class="slg-turn__n" aria-live="polite"></span><span class="slg-pips" aria-label="剩餘的令"></span></div>' +
+        '<div class="slg-res" data-coach="res"></div>' +
+        '<div class="slg-menu"><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="help">說明</button>' +
+        '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-act="sound"></button></div>' +
+        '</header>' +
+        '<div class="slg-body">' +
+        '<aside class="slg-side" data-coach="side" aria-label="各方勢力"><div data-forces></div></aside>' +
+        '<section class="slg-map" data-coach="map" aria-label="地圖">' +
+        '<svg class="slg-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + esc(C.title) + '地圖"></svg>' +
+        '<div class="slg-night" aria-hidden="true"></div>' +
+        '<div class="slg-zoom"><button type="button" data-zoom="in" aria-label="放大">＋</button><button type="button" data-zoom="out" aria-label="縮小">－</button><button type="button" data-zoom="fit" aria-label="看全圖">⟲</button></div>' +
+        '</section>' +
+        '<aside class="slg-panel" aria-label="指令">' +
+        '<div><button type="button" class="slg-handle" aria-label="展開或收起指令"></button>' +
+        '<div class="slg-tabs" role="tablist">' +
+        '<button type="button" class="slg-tab" role="tab" data-tab="cmd" data-coach="cmd-tab">下令</button>' +
+        '<button type="button" class="slg-tab" role="tab" data-tab="intel" data-coach="intel-tab">情報</button>' +
+        '<button type="button" class="slg-tab" role="tab" data-tab="log">戰報</button>' +
+        '<button type="button" class="slg-tab slg-tab--side" role="tab" data-tab="side">勢力</button>' +
+        '</div></div>' +
+        '<div class="slg-panel__body" data-coach="cmd"></div>' +
+        '<div class="slg-panel__foot"><span class="slg-foot__info"></span>' +
+        '<button type="button" class="zh-btn zh-btn--primary slg-end" data-act="end" data-coach="end">' + esc(C.endTurnLabel) + '</button></div>' +
+        '</aside>' +
+        '</div></div>';
+      const q = s => root.querySelector(s);
+      el.app = q('.slg');
+      el.turn = q('.slg-turn__n');
+      el.pips = q('.slg-pips');
+      el.res = q('.slg-res');
+      el.forces = q('[data-forces]');
+      el.map = q('.slg-map');
+      el.svg = q('.slg-svg');
+      el.night = q('.slg-night');
+      el.panel = q('.slg-panel');
+      el.body = q('.slg-panel__body');
+      el.foot = q('.slg-foot__info');
+      el.end = q('.slg-end');
+      el.sound = q('[data-act="sound"]');
+
+      q('[data-act="home"]').addEventListener('click', leave);
+      q('[data-act="help"]').addEventListener('click', help);
+      el.sound.addEventListener('click', () => { ZH.setSetting('sound', !ZH.settings.sound); renderSound(); ZH.sfx('click'); });
+      el.end.addEventListener('click', endTurn);
+      q('.slg-handle').addEventListener('click', () => setOpen(!S.open));
+      root.querySelectorAll('.slg-tab').forEach(t => t.addEventListener('click', () => {
+        if (isMobile() && S.tab === t.dataset.tab) { setOpen(!S.open); return; }
+        S.tab = t.dataset.tab;
+        if (isMobile()) setOpen(true);
+        renderPanel();
+      }));
+      root.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => zoomBy(b.dataset.zoom)));
+      renderSound();
+    }
+
+    function renderSound() {
+      el.sound.textContent = '音效：' + (ZH.settings.sound ? '開' : '關');
+      el.sound.setAttribute('aria-pressed', String(!!ZH.settings.sound));
+    }
+
+    function setOpen(open) {
+      S.open = !!open;
+      el.panel.classList.toggle('is-open', S.open);
+    }
+
+
+    // ───────────── 地圖 ─────────────
+
+    function buildMap() {
+      const svg = el.svg;
+      svg.innerHTML = '';
+      const defs = svgEl('defs', {}, svg);
+      defs.innerHTML =
+        '<pattern id="slgSilk" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 3h6M3 0v6" stroke="#b9a479" stroke-width=".35" opacity=".55"/></pattern>' +
+        '<radialGradient id="slgVignette" cx="50%" cy="45%" r="70%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#5a4426" stop-opacity=".45"/></radialGradient>' +
+        '<filter id="slgInk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>';
+      svgEl('rect', { x: -W, y: -H, width: W * 3, height: H * 3, fill: '#e3d3ab' }, svg);
+      svgEl('rect', { x: -W, y: -H, width: W * 3, height: H * 3, fill: 'url(#slgSilk)' }, svg);
+      svgEl('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#slgVignette)' }, svg);
+      svgEl('rect', { x: 6, y: 6, width: W - 12, height: H - 12, fill: 'none', stroke: '#7a6240', 'stroke-width': 2, opacity: .5 }, svg);
+
+      const terrain = svgEl('g', { class: 'slg-terrain', filter: 'url(#slgInk)' }, svg);
+      (C.map.terrain || []).forEach((t, i) => {
+        if (t.kind === 'region') {
+          const f = faction(t.faction);
+          svgEl('path', { d: t.d, fill: hexToRgba(f.color, .16), stroke: f.color, 'stroke-width': 2.5, 'stroke-dasharray': '10 7', opacity: .9 }, terrain);
+        } else if (t.kind === 'river') {
+          svgEl('path', { d: t.d, fill: 'none', stroke: '#5f8796', 'stroke-width': t.width || 9, 'stroke-linecap': 'round', opacity: .55 }, terrain);
+          svgEl('path', { d: t.d, fill: 'none', stroke: '#9cc0c8', 'stroke-width': (t.width || 9) / 3, 'stroke-linecap': 'round', opacity: .7 }, terrain);
+          if (t.label) {
+            const id = 'slgRiver' + i;
+            svgEl('path', { id: id, d: t.d, fill: 'none', stroke: 'none' }, svg);
+            const tx = svgEl('text', { fill: '#3e6270', 'font-size': 20, 'letter-spacing': 6, dy: -12 }, svg);
+            const tp = svgEl('textPath', { href: '#' + id, startOffset: t.at || '30%' }, tx);
+            tp.textContent = t.label;
+          }
+        } else if (t.kind === 'mountain') {
+          svgEl('path', { d: t.d, fill: 'none', stroke: '#6b5638', 'stroke-width': 2.4, 'stroke-linejoin': 'round', opacity: .75 }, terrain);
+        } else if (t.kind === 'road') {
+          svgEl('path', { d: t.d, fill: 'none', stroke: '#8a6d45', 'stroke-width': 2.4, 'stroke-dasharray': '3 8', 'stroke-linecap': 'round', opacity: .8 }, terrain);
+        }
+      });
+
+      const labels = svgEl('g', { class: 'slg-labels' }, svg);
+      (C.map.labels || []).forEach(l => {
+        const f = l.faction ? faction(l.faction) : null;
+        const t = svgEl('text', {
+          x: l.x, y: l.y, 'text-anchor': 'middle', 'font-size': l.size || 40, 'font-weight': 700,
+          fill: f ? f.color : '#6b5638', opacity: l.opacity || .55, 'letter-spacing': l.spacing || 8
+        }, labels);
+        t.textContent = l.text;
+      });
+
+      el.nodes = svgEl('g', { class: 'slg-nodes' }, svg);
+      el.fx = svgEl('g', { class: 'slg-fx' }, svg);
+      renderNodes();
+      bindPanZoom();
+      fitView(true);
+    }
+
+    function nodeInfo(n) {
+      return Object.assign({}, n, S.state.nodes[n.id] || {});
+    }
+
+    function renderNodes() {
+      const g = el.nodes;
+      g.innerHTML = '';
+      (C.map.nodes || []).forEach(raw => {
+        const n = nodeInfo(raw);
+        if (n.hidden) return;
+        const f = faction(n.faction);
+        const grp = svgEl('g', {
+          class: 'slg-node slg-f-' + n.faction + (S.targets && S.targets.indexOf(n.id) > -1 ? ' is-target' : ''),
+          transform: 'translate(' + n.x + ' ' + n.y + ')', tabindex: n.kind === 'far' ? -1 : 0, role: 'button',
+          'data-node': n.id, 'aria-label': n.name + (n.sub ? '，' + n.sub : '')
+        }, g);
+        svgEl('circle', { class: 'slg-hit', r: 50 }, grp);
+        svgEl('circle', { class: 'slg-ring-hover', r: 44, fill: 'none', stroke: '#fff7df', 'stroke-width': 3, 'stroke-dasharray': '4 5' }, grp);
+        svgEl('circle', { class: 'slg-ring-target', r: 48, fill: 'none', stroke: '#e0b44c', 'stroke-width': 5 }, grp);
+
+        if (n.kind === 'city') {
+          if (n.meter) {
+            const r = C.resources.find(x => x.id === n.meter);
+            const v = clamp((S.state.res[n.meter] || 0) / (r ? r.max : 100), 0, 1);
+            const L = 2 * Math.PI * 38;
+            svgEl('circle', { r: 38, fill: 'rgba(255,248,230,.55)', stroke: 'rgba(59,47,34,.25)', 'stroke-width': 6 }, grp);
+            svgEl('circle', {
+              r: 38, fill: 'none', stroke: v <= .25 ? '#c0392b' : f.color, 'stroke-width': 6, 'stroke-linecap': 'round',
+              'stroke-dasharray': (L * v).toFixed(1) + ' ' + L.toFixed(1), transform: 'rotate(-90)'
+            }, grp);
+          }
+          svgEl('path', { d: 'M-24 18V-8h6v-7h7v7h6v-7h10v7h6v-7h7v7h6v26z', fill: f.color, stroke: '#2b2418', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }, grp);
+          svgEl('path', { d: 'M-5 18v-10a5 5 0 0 1 10 0v10z', fill: '#2b2418' }, grp);
+        } else if (n.kind === 'camp') {
+          svgEl('path', { d: 'M-30 20 L-8 -10 L14 20 Z', fill: hexToRgba(f.color, .85), stroke: '#2b2418', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }, grp);
+          svgEl('path', { d: 'M2 20 L18 -2 L34 20 Z', fill: hexToRgba(f.color, .7), stroke: '#2b2418', 'stroke-width': 2.2, 'stroke-linejoin': 'round' }, grp);
+          svgEl('path', { d: 'M-8 -10 V-38', stroke: '#2b2418', 'stroke-width': 3 }, grp);
+          svgEl('path', { d: 'M-8 -38 h22 l-6 7 l6 7 h-22 z', fill: f.color, stroke: '#2b2418', 'stroke-width': 2 }, grp);
+          const flag = svgEl('text', { x: 3, y: -26, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#fff7df' }, grp);
+          flag.textContent = f.name;
+        } else if (n.kind === 'far') {
+          svgEl('circle', { r: 16, fill: hexToRgba(f.color, .85), stroke: '#2b2418', 'stroke-width': 2 }, grp);
+        } else {
+          svgEl('path', { d: 'M0 -14 L14 0 L0 14 L-14 0 Z', fill: hexToRgba(f.color, .8), stroke: '#2b2418', 'stroke-width': 2 }, grp);
+        }
+        const label = svgEl('text', { y: n.kind === 'far' ? 40 : 52, 'text-anchor': 'middle', 'font-size': n.kind === 'far' ? 19 : 24, 'font-weight': 700, fill: '#2b2418', 'paint-order': 'stroke', stroke: 'rgba(239,226,191,.9)', 'stroke-width': 5 }, grp);
+        label.textContent = n.name;
+        if (n.sub) {
+          const sub = svgEl('text', { y: n.kind === 'far' ? 60 : 74, 'text-anchor': 'middle', 'font-size': 16, fill: '#5b4a33', 'paint-order': 'stroke', stroke: 'rgba(239,226,191,.9)', 'stroke-width': 4 }, grp);
+          sub.textContent = n.sub;
+        }
+        if (n.badge) {
+          const bx = n.kind === 'city' ? 34 : 36;
+          svgEl('circle', { cx: bx, cy: -30, r: 15, fill: n.badgeColor || '#2b2418', stroke: '#efe2bf', 'stroke-width': 2 }, grp);
+          const bt = svgEl('text', { x: bx, y: -24, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700, fill: '#efe2bf' }, grp);
+          bt.textContent = n.badge;
+        }
+        if (n.kind !== 'far') {
+          grp.addEventListener('click', e => { e.stopPropagation(); if (!S.dragMoved) openPop(n.id); });
+          grp.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPop(n.id); } });
+        }
+      });
+    }
+
+    // ── 拖曳與縮放 ──
+    function applyView() {
+      const v = S.view;
+      el.svg.setAttribute('viewBox', v.x.toFixed(1) + ' ' + v.y.toFixed(1) + ' ' + v.w.toFixed(1) + ' ' + v.h.toFixed(1));
+    }
+    function clampView() {
+      const v = S.view;
+      v.w = clamp(v.w, W / 3, W * 1.05);
+      v.h = v.w * H / W;
+      const cx = clamp(v.x + v.w / 2, 0, W);
+      const cy = clamp(v.y + v.h / 2, 0, H);
+      v.x = cx - v.w / 2;
+      v.y = cy - v.h / 2;
+    }
+    function fitView(initial) {
+      const focus = mapNode(C.map.focus);
+      if (initial && isMobile() && focus) {
+        const w = W / 1.7;
+        S.view = { x: focus.x - w / 2, y: focus.y - (w * H / W) * .45, w: w, h: w * H / W };
+      } else {
+        S.view = { x: 0, y: 0, w: W, h: H };
+      }
+      clampView();
+      applyView();
+    }
+    function zoomBy(kind, cx, cy) {
+      if (kind === 'fit') { fitView(false); return; }
+      const v = S.view;
+      const k = kind === 'in' ? 0.75 : 1 / 0.75;
+      const px = cx === undefined ? v.x + v.w / 2 : cx;
+      const py = cy === undefined ? v.y + v.h / 2 : cy;
+      const nw = clamp(v.w * k, W / 3, W * 1.05);
+      const ratio = nw / v.w;
+      v.x = px - (px - v.x) * ratio;
+      v.y = py - (py - v.y) * ratio;
+      v.w = nw;
+      clampView();
+      applyView();
+    }
+    function toMap(clientX, clientY) {
+      const pt = el.svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      const m = el.svg.getScreenCTM();
+      if (!m) return { x: W / 2, y: H / 2 };
+      const p = pt.matrixTransform(m.inverse());
+      return { x: p.x, y: p.y };
+    }
+    function bindPanZoom() {
+      if (el.svg.dataset.bound) return;
+      el.svg.dataset.bound = '1';
+      const pts = new Map();
+      let start = null;
+      let pinch = null;
+      el.svg.addEventListener('pointerdown', e => {
+        pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        S.dragMoved = false;
+        if (pts.size === 1) start = { x: e.clientX, y: e.clientY, view: Object.assign({}, S.view) };
+        if (pts.size === 2) {
+          const a = Array.from(pts.values());
+          pinch = { d: Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y), w: S.view.w };
+        }
+      });
+      el.svg.addEventListener('pointermove', e => {
+        if (!pts.has(e.pointerId)) return;
+        pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pts.size === 2 && pinch) {
+          const a = Array.from(pts.values());
+          const d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+          const mid = toMap((a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2);
+          const target = clamp(pinch.w * pinch.d / Math.max(20, d), W / 3, W * 1.05);
+          const ratio = target / S.view.w;
+          S.view.x = mid.x - (mid.x - S.view.x) * ratio;
+          S.view.y = mid.y - (mid.y - S.view.y) * ratio;
+          S.view.w = target;
+          clampView();
+          applyView();
+          S.dragMoved = true;
+          return;
+        }
+        if (!start) return;
+        const dx = e.clientX - start.x;
+        const dy = e.clientY - start.y;
+        if (!S.dragMoved && Math.hypot(dx, dy) < 6) return;
+        if (!S.dragMoved) { S.dragMoved = true; el.svg.classList.add('is-drag'); try { el.svg.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ } }
+        const rect = el.svg.getBoundingClientRect();
+        const scale = Math.max(start.view.w / rect.width, start.view.h / rect.height);
+        S.view.x = start.view.x - dx * scale;
+        S.view.y = start.view.y - dy * scale;
+        clampView();
+        applyView();
+      });
+      const up = e => {
+        pts.delete(e.pointerId);
+        if (pts.size < 2) pinch = null;
+        if (!pts.size) { start = null; el.svg.classList.remove('is-drag'); setTimeout(() => { S.dragMoved = false; }, 0); }
+      };
+      el.svg.addEventListener('pointerup', up);
+      el.svg.addEventListener('pointercancel', up);
+      el.svg.addEventListener('wheel', e => {
+        e.preventDefault();
+        const p = toMap(e.clientX, e.clientY);
+        zoomBy(e.deltaY < 0 ? 'in' : 'out', p.x, p.y);
+      }, { passive: false });
+      el.svg.addEventListener('click', () => { if (!S.dragMoved) closePop(); });
+    }
+
+    // ── 地圖上的據點說明 ──
+    function closePop() {
+      const p = el.map.querySelector('.slg-pop');
+      if (p) p.remove();
+    }
+    function openPop(id) {
+      closePop();
+      const n = nodeInfo(mapNode(id));
+      const f = faction(n.faction);
+      const cmds = visibleCommands().filter(c => (c.targets || []).indexOf(id) > -1);
+      const pop = ZH.html(
+        '<div class="slg-pop slg-f-' + n.faction + '" role="dialog" aria-label="' + esc(n.name) + '">' +
+        '<button type="button" class="slg-pop__x" aria-label="關閉">×</button>' +
+        '<h3>' + esc(n.name) + '</h3>' +
+        '<span class="zh-chip" style="border-color:' + f.color + '">' + esc(f.name) + (n.sub ? '・' + esc(n.sub) : '') + '</span>' +
+        '<p style="margin-top:8px">' + esc(n.note || '') + '</p>' +
+        (cmds.length ? '<div class="zh-row">' + cmds.map(c => {
+          const ok = commandState(c, id);
+          return '<button type="button" class="zh-btn zh-btn--sm' + (ok === true ? ' zh-btn--primary' : '') + '" data-cmd="' + c.id + '"' + (ok === true ? '' : ' aria-disabled="true" title="' + esc(ok) + '"') + '>' + esc(c.label) + '（' + costText(c) + '）</button>';
+        }).join('') + '</div>' : '') +
+        '</div>'
+      );
+      el.map.appendChild(pop);
+      // 放在據點旁邊
+      const g = el.svg.querySelector('[data-node="' + id + '"]');
+      const mr = el.map.getBoundingClientRect();
+      const nr = g ? g.getBoundingClientRect() : { left: mr.left + mr.width / 2, top: mr.top + mr.height / 2, width: 0, height: 0 };
+      const pw = pop.offsetWidth;
+      const ph = pop.offsetHeight;
+      let left = nr.left - mr.left + nr.width / 2 - pw / 2;
+      let top = nr.top - mr.top + nr.height + 6;
+      if (top + ph > mr.height - 8) top = nr.top - mr.top - ph - 6;
+      pop.style.left = clamp(left, 8, mr.width - pw - 8) + 'px';
+      pop.style.top = clamp(top, 8, Math.max(8, mr.height - ph - 8)) + 'px';
+      pop.querySelector('.slg-pop__x').addEventListener('click', closePop);
+      pop.addEventListener('click', e => e.stopPropagation());
+      pop.querySelectorAll('[data-cmd]').forEach(b => b.addEventListener('click', () => {
+        const c = C.commands.find(x => x.id === b.dataset.cmd);
+        closePop();
+        runCommand(c, id);
+      }));
+      ZH.sfx('click');
+    }
+
+
+    // ───────────── 畫面：頂列、勢力、面板 ─────────────
+
+    function renderTop() {
+      const s = S.state;
+      el.turn.innerHTML = esc(C.turnName(Math.min(s.turn, C.turns))) + '<small>/ ' + C.turns + '</small>';
+      el.pips.innerHTML = '令 ' + Array.from({ length: C.orders }, (x, i) => '<span class="slg-pip' + (i < s.orders ? ' is-full' : '') + '"></span>').join('');
+      el.pips.setAttribute('aria-label', '剩餘的令：' + s.orders + ' / ' + C.orders);
+      el.res.innerHTML = C.resources.map(r => {
+        const v = s.res[r.id];
+        const prev = S.prevRes[r.id];
+        const cls = (v <= (r.danger || 0) ? ' is-danger' : '') + (prev !== undefined && v > prev ? ' is-up' : prev !== undefined && v < prev ? ' is-down' : '');
+        return '<div class="slg-r' + cls + '" title="' + esc(r.label + ' ' + v + ' / ' + r.max) + '">' + (ICONS[r.icon] || '') +
+          '<span>' + esc(r.label) + '</span><span class="slg-r__bar"><i style="--v:' + (100 * clamp(v / r.max, 0, 1)).toFixed(1) + '%"></i></span>' +
+          '<b class="slg-r__val">' + v + '</b></div>';
+      }).join('');
+      S.prevRes = Object.assign({}, s.res);
+      clearTimeout(S.resTimer);
+      S.resTimer = setTimeout(() => root.querySelectorAll('.slg-r').forEach(x => x.classList.remove('is-up', 'is-down')), 900);
+      el.foot.textContent = s.orders > 0 ? '還有 ' + s.orders + ' 道令' : '令已用完';
+      el.end.classList.toggle('is-ready', s.orders === 0 && !S.busy);
+      el.end.disabled = !!S.busy || S.ended;
+    }
+
+    function forcesHtml() {
+      const s = S.state;
+      return C.factions.map(f => {
+        const chars = C.characters.filter(c => c.faction === f.id && (!c.show || c.show(s)));
+        const meters = C.meters.filter(m => m.faction === f.id);
+        return '<section class="slg-force slg-f-' + f.id + '">' +
+          '<div class="slg-force__head"><span class="slg-force__seal">' + esc(f.name) + '</span>' +
+          '<div><div class="slg-force__name">' + esc(f.title || f.name) + (f.id === C.player ? '<small>你</small>' : '') + '</div>' +
+          '<div class="slg-force__role">' + esc(f.role || '') + '</div></div></div>' +
+          '<div class="slg-force__body">' +
+          meters.map(m => {
+            const shown = !m.reveal || m.reveal(s);
+            const v = s.vars[m.id] || 0;
+            return '<div class="slg-meter' + (shown ? '' : ' is-hidden') + '"><span>' + esc(m.label) + '</span>' +
+              (shown ? '<span class="zh-bar"><span style="--v:' + (100 * clamp(v / (m.max || 100), 0, 1)).toFixed(0) + '%"></span></span><b>' + Math.round(v) + '</b>'
+                : '<span class="zh-dim zh-tiny">' + esc(m.hint || '尚未探明') + '</span><b>？</b>') + '</div>';
+          }).join('') +
+          (chars.length ? '<div class="slg-chars">' + chars.map(c => {
+            const known = !c.known || c.known(s);
+            const title = typeof c.title === 'function' ? c.title(s) : c.title;
+            const pic = known && hasArt();
+            return '<button type="button" class="slg-char' + (known ? '' : ' is-unknown') + (pic ? ' has-art' : '') + '" data-char="' + c.id + '">' +
+              (pic ? '<span class="slg-char__face is-art" aria-hidden="true">' + global.ART.portrait(artSpec({ id: c.id, name: c.name, faction: c.faction, title: typeof c.title === 'string' ? c.title : '', art: c.art }), { bust: true }) + '</span>'
+                : '<span class="slg-char__face">' + esc(known ? c.glyph : '？') + '</span>') +
+              '<span><span class="slg-char__name">' + esc(known ? c.name : (c.unknownName || '？？？')) + '</span>' +
+              '<span class="slg-char__title">' + esc(known ? (title || '') : (c.hint || '')) + '</span></span></button>';
+          }).join('') + '</div>' : '') +
+          '</div></section>';
+      }).join('');
+    }
+
+    function bindChars(scope) {
+      scope.querySelectorAll('[data-char]').forEach(b => b.addEventListener('click', () => {
+        const c = C.characters.find(x => x.id === b.dataset.char);
+        const known = !c.known || c.known(S.state);
+        if (known && c.codex && ZH.codexBook && ZH.codexItem && ZH.codexItem(c.codex) && ZH.codexBook.unlockedSet()[c.codex]) {
+          ZH.codexBook.detail(c.codex);
+        } else if (known) {
+          ZH.toast(c.name + '：' + (c.about || (typeof c.title === 'function' ? c.title(S.state) : c.title) || ''));
+        } else {
+          ZH.toast(c.hint || '還不知道這個人。');
+        }
+      }));
+    }
+
+    function renderForces() {
+      el.forces.innerHTML = forcesHtml();
+      bindChars(el.forces);
+    }
+
+    function visibleCommands() {
+      return C.commands.filter(c => !c.visible || c.visible(S.state));
+    }
+    function costText(c) {
+      return c.cost === 'all' ? '用掉剩下的令' : (c.cost || 1) + ' 令';
+    }
+    /** 指令能不能下：true 或原因 */
+    function commandState(c, target) {
+      if (S.ended) return '這一局已經結束。';
+      if (S.busy) return '請先看完目前的事件。';
+      const need = c.cost === 'all' ? 1 : (c.cost || 1);
+      if (S.state.orders < need) return S.state.orders > 0 ? '這道令要用 ' + need + ' 道令，今晚只剩 ' + S.state.orders + ' 道。' : '今晚的令已經用完了。';
+      if (c.enabled) {
+        const r = c.enabled(S.state, target);
+        if (r !== true && r !== undefined) return r || '現在不能下這道令。';
+      }
+      return true;
+    }
+
+    function renderPanel() {
+      const s = S.state;
+      root.querySelectorAll('.slg-tab').forEach(t => {
+        t.setAttribute('aria-selected', String(t.dataset.tab === S.tab));
+        const dot = (t.dataset.tab === 'intel' && s.intel.length > S.seen.intel) || (t.dataset.tab === 'log' && s.log.length > S.seen.log);
+        const old = t.querySelector('.slg-dot');
+        if (dot && !old) t.appendChild(ZH.html('<span class="slg-dot" aria-hidden="true"></span>'));
+        if (!dot && old) old.remove();
+      });
+      const body = el.body;
+      if (S.tab === 'cmd') {
+        const groups = [];
+        visibleCommands().forEach(c => {
+          const g = c.group || '';
+          let grp = groups.find(x => x.name === g);
+          if (!grp) { grp = { name: g, list: [] }; groups.push(grp); }
+          grp.list.push(c);
+        });
+        body.innerHTML = groups.map(g => (g.name ? '<p class="slg-group">' + esc(g.name) + '</p>' : '') + g.list.map(c => {
+          const targets = (c.targets || []).filter(t => { const n = mapNode(t); return n && !nodeInfo(n).hidden; });
+          const general = commandState(c);
+          const desc = typeof c.desc === 'function' ? c.desc(s) : c.desc;
+          let acts;
+          if (targets.length) {
+            acts = targets.map(t => {
+              const ok = commandState(c, t);
+              const n = mapNode(t);
+              return '<button type="button" class="zh-btn zh-btn--sm' + (ok === true ? '' : '') + '" data-cmd="' + c.id + '" data-target="' + t + '"' +
+                (ok === true ? '' : ' aria-disabled="true"') + ' title="' + esc(ok === true ? n.name : ok) + '">' + esc(n.name + (n.sub ? '・' + n.sub : '')) + '</button>';
+            }).join('');
+          } else {
+            acts = '<button type="button" class="zh-btn zh-btn--sm' + (c.key ? ' zh-btn--primary' : '') + '" data-cmd="' + c.id + '"' + (general === true ? '' : ' aria-disabled="true"') + '>' + esc(c.action || '下令') + '</button>';
+          }
+          return '<div class="slg-cmd' + (c.risk ? ' is-risk' : '') + (c.key && general === true ? ' is-key' : '') + (general === true ? '' : ' is-off') + '">' +
+            '<div class="slg-cmd__head"><span class="slg-cmd__name">' + esc(c.label) + '</span><span class="slg-cmd__cost">' + costText(c) + '</span></div>' +
+            (desc ? '<p class="slg-cmd__desc">' + esc(desc) + '</p>' : '') +
+            '<div class="slg-cmd__acts">' + acts + '</div>' +
+            (general !== true && !S.busy && !S.ended ? '<p class="slg-cmd__why">' + esc(general) + '</p>' : '') +
+            '</div>';
+        }).join('')).join('') || '<p class="slg-empty">目前沒有可以下的令。</p>';
+        body.querySelectorAll('[data-cmd]').forEach(b => b.addEventListener('click', () => {
+          const c = C.commands.find(x => x.id === b.dataset.cmd);
+          const t = b.dataset.target || undefined;
+          const ok = commandState(c, t);
+          if (ok !== true) { ZH.toast(ok, 'bad'); return; }
+          runCommand(c, t);
+        }));
+      } else if (S.tab === 'intel') {
+        S.seen.intel = s.intel.length;
+        const goal = C.intelGoal;
+        const n = goal ? s.intel.filter(id => (intelOf(id) || {}).kind === goal.kind).length : 0;
+        body.innerHTML =
+          (goal ? '<div class="slg-intel-sum"><span>' + esc(goal.label) + ' ' + n + ' / ' + goal.total + '</span><span class="zh-bar"><span style="--v:' + (100 * n / goal.total).toFixed(0) + '%"></span></span></div>' +
+            (goal.note ? '<p class="zh-dim zh-small" style="margin:-4px 0 12px">' + esc(goal.note) + '</p>' : '') : '') +
+          (s.intel.length ? s.intel.slice().reverse().map((id, i) => {
+            const it = intelOf(id);
+            if (!it) return '';
+            const isMain = goal && it.kind === goal.kind;
+            return '<article class="slg-card' + (i === 0 && S.freshIntel === id ? ' is-new' : '') + '"><div class="slg-card__head">' +
+              '<span class="slg-card__kind' + (isMain ? '' : ' is-info') + '">' + esc(it.kind) + '</span>' +
+              '<span class="slg-card__title">' + esc(it.title) + '</span></div><p class="slg-card__text">' + esc(it.text) + '</p></article>';
+          }).join('') : '<p class="slg-empty">還沒有蒐集到情報。</p>');
+        S.freshIntel = null;
+      } else if (S.tab === 'log') {
+        S.seen.log = s.log.length;
+        body.innerHTML = s.log.length
+          ? '<ol class="slg-log">' + s.log.slice().reverse().map(l => '<li class="' + (l.kind ? 'is-' + l.kind : '') + '"><span>' + esc(C.turnName(l.turn)) + '</span><div>' + esc(l.text) + '</div></li>').join('') + '</ol>'
+          : '<p class="slg-empty">還沒有戰報。</p>';
+      } else if (S.tab === 'side') {
+        body.innerHTML = forcesHtml();
+        bindChars(body);
+      }
+      // 移除舊的提示點後重算
+      root.querySelectorAll('.slg-tab').forEach(t => {
+        const dot = (t.dataset.tab === 'intel' && s.intel.length > S.seen.intel) || (t.dataset.tab === 'log' && s.log.length > S.seen.log);
+        const old = t.querySelector('.slg-dot');
+        if (!dot && old) old.remove();
+      });
+    }
+
+    function refresh() {
+      renderTop();
+      renderForces();
+      renderPanel();
+      renderNodes();
+    }
+
+
+    // ───────────── 特效 ─────────────
+
+    const fx = {
+      float(nodeId, text, color) {
+        if (ST.on) return;
+        const n = mapNode(nodeId);
+        if (!n) return;
+        const t = svgEl('text', { x: n.x + (Math.random() * 30 - 15), y: n.y - 46, 'text-anchor': 'middle', 'font-size': 28, class: 'slg-float', fill: color || '#fff7df' }, el.fx);
+        t.textContent = text;
+        setTimeout(() => t.remove(), 1600);
+      },
+      pulse(nodeId, color) {
+        if (ST.on) return closeStage().then(() => fx.pulse(nodeId, color));
+        const n = mapNode(nodeId);
+        if (!n) return Promise.resolve();
+        const c = svgEl('circle', { cx: n.x, cy: n.y, r: 46, class: 'slg-pulse', stroke: color || '#e0b44c' }, el.fx);
+        setTimeout(() => c.remove(), 1200);
+        return sleep(REDUCE ? 0 : 500);
+      },
+      volley(fromId, toId, opts) {
+        if (ST.on) return closeStage().then(() => fx.volley(fromId, toId, opts));
+        const o = Object.assign({ count: 6, color: null, faction: null, ms: 760 }, opts || {});
+        const a = mapNode(fromId);
+        const b = mapNode(toId);
+        if (!a || !b) return Promise.resolve();
+        const color = o.color || (o.faction ? faction(o.faction).color : '#2b2418');
+        const jobs = [];
+        for (let i = 0; i < o.count; i++) {
+          const jx = (Math.random() - .5) * 40;
+          const jy = (Math.random() - .5) * 30;
+          const x1 = a.x + jx / 2; const y1 = a.y + jy / 2;
+          const x2 = b.x + jx; const y2 = b.y + jy;
+          const mx = (x1 + x2) / 2; const my = (y1 + y2) / 2 - Math.hypot(x2 - x1, y2 - y1) * .28;
+          const arrow = svgEl('g', {}, el.fx);
+          svgEl('path', { d: 'M-16 0 L8 0 M2 -5 L8 0 L2 5', stroke: color, 'stroke-width': 3.5, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, arrow);
+          const delay = i * 70;
+          jobs.push(sleep(REDUCE ? 0 : delay).then(() => tween(o.ms, k => {
+            const u = 1 - k;
+            const x = u * u * x1 + 2 * u * k * mx + k * k * x2;
+            const y = u * u * y1 + 2 * u * k * my + k * k * y2;
+            const dx = 2 * u * (mx - x1) + 2 * k * (x2 - mx);
+            const dy = 2 * u * (my - y1) + 2 * k * (y2 - my);
+            arrow.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(1) + ')');
+          })).then(() => arrow.remove()));
+        }
+        ZH.sfx('drum');
+        return Promise.all(jobs).then(() => fx.pulse(toId, color));
+      },
+      /** 行軍：一面旗號沿虛線從甲地走到乙地（撤軍、進軍）；curve: [x, y] 讓路線彎過去，避開途中的據點 */
+      march(fromId, toId, opts) {
+        if (ST.on) return closeStage().then(() => fx.march(fromId, toId, opts));
+        const o = Object.assign({ faction: null, glyph: '', color: null, ms: 1800, curve: null }, opts || {});
+        const a = mapNode(fromId);
+        const b = mapNode(toId);
+        if (!a || !b) return Promise.resolve();
+        const f = o.faction ? faction(o.faction) : null;
+        const color = o.color || (f ? f.color : '#2b2418');
+        const trail = svgEl('path', { d: 'M' + a.x + ' ' + a.y, stroke: color, 'stroke-width': 5, 'stroke-dasharray': '10 9', fill: 'none', 'stroke-linecap': 'round', opacity: .85 }, el.fx);
+        const g = svgEl('g', { transform: 'translate(' + a.x + ' ' + a.y + ')' }, el.fx);
+        svgEl('circle', { r: 21, fill: color, stroke: '#f3e7c0', 'stroke-width': 3 }, g);
+        const t = svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 22, 'font-weight': 700, fill: '#f3e7c0' }, g);
+        t.textContent = o.glyph || (f ? f.name : '');
+        ZH.sfx('drum');
+        const c = o.curve || [(a.x + b.x) / 2, (a.y + b.y) / 2];
+        const at = u => [(1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * c[0] + u * u * b.x, (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * c[1] + u * u * b.y];
+        return tween(o.ms, k => {
+          const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          const pts = [];
+          for (let i = 0; i <= 24; i++) pts.push(at(e * i / 24).map(v => v.toFixed(1)).join(' '));
+          trail.setAttribute('d', 'M' + pts.join('L'));
+          const p = at(e);
+          g.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')');
+        }).then(() => sleep(REDUCE ? 0 : 500)).then(() => { g.remove(); trail.remove(); });
+      }
+    };
+
+
+    // ───────────── 對話、抉擇、標題、教學 ─────────────
+
+    function speakerOf(who) {
+      if (!who) return null;
+      const c = C.characters.find(x => x.id === who || x.name === who);
+      if (c) return { id: c.id, name: c.name, glyph: c.glyph, faction: c.faction, title: typeof c.title === 'string' ? c.title : '', art: c.art };
+      const sp = C.speakers[who];
+      if (sp) return { id: who, name: sp.name || who, glyph: sp.glyph || who.slice(0, 1), faction: sp.faction, title: sp.title || '', art: sp.art };
+      return { id: who, name: who, glyph: who.slice(0, 1), faction: null, title: '' };
+    }
+
+
+    // ───────────── 舞台（v0.2.0） ─────────────
+
+    const ST = { on: false, castIds: [], castKey: '', expr: {}, key: '', lastKey: '' };
+
+    function stageEl() {
+      if (el.stage) return el.stage;
+      el.stage = ZH.html('<div class="slg-stage" aria-hidden="true"><div class="slg-stage__bg"></div><div class="slg-stage__vig"></div><div class="slg-cast"></div></div>');
+      root.querySelector('.slg-body').appendChild(el.stage);
+      el.cast = el.stage.querySelector('.slg-cast');
+      return el.stage;
+    }
+
+    function castLayout() {
+      if (!el.stage) return;
+      const n = Math.max(1, ST.castIds.length);
+      const W = el.stage.clientWidth || global.innerWidth;
+      const H = el.stage.clientHeight || global.innerHeight;
+      const mob = isMobile();
+      const gap = n > 3 ? 4 : mob ? 8 : 14;
+      const maxH = mob ? H * 0.52 : H * 0.78;
+      const w = Math.max(64, Math.min(300, maxH / 1.5, (W - 24 - gap * (n - 1)) / n));
+      el.cast.style.setProperty('--aw', Math.floor(w) + 'px');
+      el.cast.style.setProperty('--cast-gap', gap + 'px');
+      // 人物小的時候整排往上，臉才不會被對話框擋住
+      const sayH = mob ? 136 : 150;
+      const chin = w * 1.5 * 0.43;
+      el.cast.style.setProperty('--cast-b', Math.round(Math.max(mob ? 56 : 64, Math.min(sayH + 6, sayH + 12 - chin))) + 'px');
+    }
+
+    function actorHtml(sp, isNew) {
+      const ex = ST.expr[sp.id] || '';
+      const f = sp.faction ? faction(sp.faction) : null;
+      return '<div class="slg-actor' + (isNew ? ' is-enter' : '') + '" data-actor="' + esc(sp.id) + '" data-expr="' + esc(ex) + '"' +
+        (f ? ' style="--fc:' + esc(f.color) + '"' : '') + '>' +
+        global.ART.portrait(artSpec(sp), { expr: ex || undefined }) + '<span class="slg-actor__tag">' + esc(sp.name) + '</span></div>';
+    }
+
+    function renderCast(speaker, speakerExpr) {
+      if (!el.stage) return;
+      const list = ST.castIds.map(speakerOf).filter(Boolean);
+      const key = list.map(x => x.id).join('|');
+      if (ST.castKey !== key) {
+        const before = ST.castKey.split('|');
+        el.cast.innerHTML = list.map(sp => actorHtml(sp, before.indexOf(sp.id) === -1)).join('');
+        ST.castKey = key;
+        castLayout();
+      }
+      el.cast.querySelectorAll('.slg-actor').forEach(a => {
+        const id = a.getAttribute('data-actor');
+        const talking = !!speaker && speaker === id;
+        a.classList.toggle('is-speaking', talking);
+        const want = (talking && speakerExpr) || ST.expr[id] || '';
+        if (a.getAttribute('data-expr') !== want) {
+          const svg = a.querySelector('svg.ck');
+          const sp = speakerOf(id);
+          if (svg && sp) svg.outerHTML = global.ART.portrait(artSpec(sp), { expr: want || undefined });
+          a.setAttribute('data-expr', want);
+        }
+      });
+      el.cast.classList.toggle('has-speaker', !!speaker && list.some(x => x.id === speaker));
+    }
+
+    /** 打開或換掉舞台；opts 為 null 時收起 */
+    function scene(opts) {
+      if (!opts) return closeStage();
+      if (!hasArt() || !global.ART.scene) return Promise.resolve();
+      const o = typeof opts === 'string' ? { base: opts } : opts;
+      const st = stageEl();
+      const base = o.base || o.key || 'hall';
+      const key = [base, o.tod, o.weather, o.banner, o.glyph, o.place].join('|');
+      const bg = st.querySelector('.slg-stage__bg');
+      const paint = () => {
+        bg.innerHTML = global.ART.hasScene && global.ART.hasScene(base)
+          ? global.ART.scene(base, { tod: o.tod, weather: o.weather, banner: o.banner, glyph: o.glyph, time: o.time }) : '';
+        const old = st.querySelector('.slg-stage__place');
+        if (old) old.remove();
+        if (o.place) {
+          const f = o.faction ? faction(o.faction) : null;
+          st.appendChild(ZH.html('<div class="slg-stage__place"' + (f ? ' style="--fc:' + esc(f.color) + '"' : '') + '><b>' + esc(o.place) + '</b>' + (o.time ? '<span>' + esc(o.time) + '</span>' : '') + '</div>'));
+        }
+      };
+      // 換到不同的場景時，清掉上一個場景放在舞台上的浮層（layerEl 放的）
+      const clearLayers = () => {
+        Array.from(st.children).forEach(c => {
+          if (!c.matches('.slg-stage__bg, .slg-stage__vig, .slg-cast, .slg-stage__place')) c.remove();
+        });
+      };
+      const wasOn = ST.on;
+      const moved = ST.lastKey !== key;
+      ST.lastKey = key;
+      ST.castIds = (o.cast || []).slice();
+      ST.expr = Object.assign({}, o.expr || {});
+      if (isMobile()) setOpen(false);
+      let p = Promise.resolve();
+      if (!wasOn) {
+        if (moved) clearLayers();
+        paint();
+        ST.key = key;
+        renderCast(null, '');
+        ST.on = true;
+        void st.offsetWidth;
+        st.classList.add('is-on');
+        el.app.classList.add('has-stage');
+        castLayout();
+        p = sleep(REDUCE ? 0 : 450);
+      } else if (ST.key !== key) {
+        ST.key = key;
+        bg.classList.add('is-swap');
+        p = sleep(REDUCE ? 0 : 300).then(() => { clearLayers(); paint(); bg.classList.remove('is-swap'); renderCast(null, ''); });
+      } else {
+        renderCast(null, '');
+      }
+      return p;
+    }
+
+    function closeStage() {
+      if (!ST.on) return Promise.resolve();
+      ST.on = false;
+      ST.key = '';
+      el.stage.classList.remove('is-on');
+      el.app.classList.remove('has-stage');
+      return sleep(REDUCE ? 0 : 420);
+    }
+
+    function setCast(ids, expr) {
+      if (!ST.on) return;
+      ST.castIds = (ids || []).slice();
+      if (expr) Object.assign(ST.expr, expr);
+      renderCast(null, '');
+    }
+
+    function sayOne(line) {
+      const l = typeof line === 'string' ? { text: line } : line;
+      const sp = speakerOf(l.who);
+      const art = !!sp && hasArt();
+      const onStage = art && ST.on && ST.castIds.some(id => { const x = speakerOf(id); return x && x.id === sp.id; });
+      const ex = sp ? (EXPR_SET.indexOf(l.expr) > -1 ? l.expr : guessExpr(l.text)) : '';
+      if (ST.on) renderCast(onStage ? sp.id : null, ex);
+      const fcol = sp && sp.faction ? faction(sp.faction).color : '';
+      let face = '';
+      if (sp && !onStage) {
+        face = art ? '<span class="slg-say__face" aria-hidden="true">' + global.ART.portrait(artSpec(sp), { expr: ex || undefined, bust: true }) + '</span>'
+          : '<span class="slg-say__face" aria-hidden="true">' + esc(sp.glyph) + '</span>';
+      }
+      return new Promise(resolve => {
+        const box = ZH.html(
+          '<div class="slg-say' + (sp ? (sp.faction ? ' slg-f-' + sp.faction : '') + (art ? ' has-art' + (face ? ' has-face' : '') : '') : ' is-narrator') + '" role="dialog" aria-live="polite" tabindex="-1"' +
+          (art && fcol ? ' style="--fct:' + inkOn(fcol) + '"' : '') + '>' +
+          (art ? (sp ? '<span class="slg-say__name">' + esc(sp.name) + '</span>' : '') + face + '<div>'
+            : face + '<div>' + (sp ? '<span class="slg-say__name">' + esc(sp.name) + '</span>' : '')) +
+          '<p class="slg-say__text"></p><p class="slg-say__more">點一下繼續 ▾</p></div></div>'
+        );
+        if (art && !onStage && !sp.faction) box.style.setProperty('--fc', '#8a6d45');
+        document.body.appendChild(box);
+        const textEl = box.querySelector('.slg-say__text');
+        const actor = onStage && el.cast ? el.cast.querySelector('[data-actor="' + (global.CSS && CSS.escape ? CSS.escape(sp.id) : sp.id) + '"]') : null;
+        const talk = on => { if (actor) actor.classList.toggle('is-talk', on); const f = box.querySelector('.slg-say__face'); if (f && art) f.classList.toggle('is-talk', on); };
+        const speed = Object.prototype.hasOwnProperty.call(SPEED, ZH.settings.textSpeed) ? SPEED[ZH.settings.textSpeed] : SPEED.normal;
+        const text = String(l.text || '');
+        let i = 0;
+        let typing = !!speed && !REDUCE;
+        let timer = null;
+        if (typing) {
+          talk(true);
+          timer = setInterval(() => {
+            i += 1;
+            textEl.textContent = text.slice(0, i);
+            if (i >= text.length) { clearInterval(timer); typing = false; talk(false); }
+          }, speed);
+        } else {
+          textEl.textContent = text;
+        }
+        const advance = () => {
+          if (typing) { clearInterval(timer); typing = false; talk(false); textEl.textContent = text; return; }
+          talk(false);
+          document.removeEventListener('keydown', onKey, true);
+          box.remove();
+          resolve();
+        };
+        const onKey = e => {
+          if (document.querySelector('.za, .zc, .zc-detail, .zh-modal')) return;
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); advance(); }
+        };
+        box.addEventListener('click', advance);
+        document.addEventListener('keydown', onKey, true);
+        box.focus({ preventScroll: true });
+        ZH.sfx('click');
+      });
+    }
+
+    function say(lines) {
+      const list = Array.isArray(lines) ? lines : [lines];
+      if (isMobile()) setOpen(false);
+      return list.reduce((p, l) => p.then(() => sayOne(l)), Promise.resolve());
+    }
+
+    /** 抉擇：options [{ label, desc, value }]；回傳選到的 value */
+    function choose(o) {
+      return new Promise(resolve => {
+        const previous = document.activeElement;
+        const wrap = ZH.html(
+          '<div class="slg-choice" role="dialog" aria-modal="true" aria-labelledby="slg-choice-t"><div class="slg-choice__card">' +
+          '<h2 id="slg-choice-t">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') +
+          '<div class="zh-choices">' + (o.options || []).map((op, i) =>
+            '<button type="button" class="zh-choice" data-i="' + i + '"><span class="zh-choice__key">' + '甲乙丙丁戊己'[i] + '</span>' +
+            '<span class="zh-choice__text">' + esc(op.label) + (op.desc ? '<small>' + esc(op.desc) + '</small>' : '') + '</span></button>').join('') +
+          '</div></div></div>'
+        );
+        document.body.appendChild(wrap);
+        wrap.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => {
+          ZH.sfx('click');
+          wrap.remove();
+          if (previous && previous.focus) previous.focus({ preventScroll: true });
+          resolve(o.options[Number(b.dataset.i)].value);
+        }));
+        const first = wrap.querySelector('[data-i]');
+        if (first) first.focus({ preventScroll: true });
+      });
+    }
+
+    function banner(title, sub) {
+      const b = ZH.html('<div class="slg-banner" aria-live="polite"><div class="slg-banner__in"><div class="slg-banner__title">' + esc(title) + '</div>' + (sub ? '<div class="slg-banner__sub">' + esc(sub) + '</div>' : '') + '</div></div>');
+      document.body.appendChild(b);
+      ZH.sfx('bell');
+      return sleep(REDUCE ? 300 : 1500).then(() => b.remove());
+    }
+
+    /** 等畫面上的圖鑑卡片、情報卡片都消失（最多等 15 秒），避免和教學導引疊在一起 */
+    function quiet() {
+      const t0 = Date.now();
+      const busy = () => document.querySelector('.zc-pop, .slg-gain');
+      return new Promise(resolve => {
+        const tick = () => (!busy() || Date.now() - t0 > 15000 ? resolve() : setTimeout(tick, 200));
+        tick();
+      });
+    }
+
+    /** 教學導引：steps [{ el: data-coach 名稱, title, text }] */
+    function coach(steps) {
+      const list = (steps || []).filter(Boolean);
+      if (!list.length) return Promise.resolve();
+      return quiet().then(() => new Promise(resolve => {
+        let i = 0;
+        const wrap = ZH.html('<div class="slg-coach" role="dialog" aria-modal="true" aria-label="操作說明"><div class="slg-coach__hole"></div><div class="slg-coach__tip"></div></div>');
+        document.body.appendChild(wrap);
+        const hole = wrap.querySelector('.slg-coach__hole');
+        const tip = wrap.querySelector('.slg-coach__tip');
+        const show = () => {
+          const st = list[i];
+          if (isMobile()) {
+            const inPanel = ['cmd', 'cmd-tab', 'intel-tab', 'end'].indexOf(st.el) > -1;
+            if (st.tab) { S.tab = st.tab; renderPanel(); }
+            setOpen(inPanel && st.el === 'cmd');
+          }
+          let target = root.querySelector('[data-coach="' + st.el + '"]');
+          if (st.el === 'side' && isMobile()) target = root.querySelector('.slg-tab--side');
+          const r = target && target.offsetParent !== null ? target.getBoundingClientRect() : null;
+          if (r && r.width) {
+            Object.assign(hole.style, { display: 'block', left: (r.left - 6) + 'px', top: (r.top - 6) + 'px', width: (r.width + 12) + 'px', height: (r.height + 12) + 'px' });
+          } else {
+            hole.style.display = 'none';
+          }
+          tip.innerHTML = '<h3>' + esc(st.title) + '</h3><p>' + esc(st.text) + '</p>' +
+            '<div class="zh-row"><span class="slg-coach__step">' + (i + 1) + ' / ' + list.length + '</span><span class="zh-row" style="gap:8px;margin:0">' +
+            (i < list.length - 1 ? '<button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" data-c="skip">略過</button>' : '') +
+            '<button type="button" class="zh-btn zh-btn--primary zh-btn--sm" data-c="next">' + (i < list.length - 1 ? '下一步' : '開始') + '</button></span></div>';
+          const tw = tip.offsetWidth;
+          const th = tip.offsetHeight;
+          let left;
+          let top;
+          if (r && r.width) {
+            left = clamp(r.left + r.width / 2 - tw / 2, 12, global.innerWidth - tw - 12);
+            top = r.bottom + 14 + th < global.innerHeight ? r.bottom + 14 : r.top - th - 14;
+            if (top < 12) top = clamp(global.innerHeight / 2 - th / 2, 12, global.innerHeight - th - 12);
+          } else {
+            left = global.innerWidth / 2 - tw / 2;
+            top = global.innerHeight / 2 - th / 2;
+          }
+          tip.style.left = left + 'px';
+          tip.style.top = top + 'px';
+          tip.querySelector('[data-c="next"]').focus({ preventScroll: true });
+          tip.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
+            ZH.sfx('click');
+            if (b.dataset.c === 'skip' || i === list.length - 1) { done(); return; }
+            i += 1;
+            show();
+          }));
+        };
+        const onResize = () => show();
+        const done = () => {
+          global.removeEventListener('resize', onResize);
+          wrap.remove();
+          if (isMobile()) setOpen(false);
+          S.tab = 'cmd';
+          renderPanel();
+          resolve();
+        };
+        global.addEventListener('resize', onResize);
+        show();
+      }));
+    }
+
+    function help() {
+      ZH.modal({
+        title: '怎麼玩',
+        body: C.help || '',
+        actions: [{ label: '重看教學', value: 'tour', kind: 'quiet' }, { label: '知道了', value: true, kind: 'primary' }]
+      }).then(v => { if (v === 'tour') coach(C.tutorial); });
+    }
+
+    function leave() {
+      ZH.modal({
+        title: '離開這一局？',
+        body: '<p>' + (ZH.isGuest() ? '訪客的進度只保存在這個分頁；關閉分頁就會消失。' : '目前的進度會自動存檔，下次可以從這一' + esc(C.turnName(S.state.turn).replace(/^第\s*\d+\s*/, '')) + '繼續。') + '</p>',
+        actions: [{ label: '繼續玩', value: false, kind: 'quiet' }, { label: '存檔並離開', value: true, kind: 'primary' }]
+      }).then(go => {
+        if (!go) return;
+        Promise.race([save(), sleep(4000)]).then(() => ZH.go('hub'));
+      });
+    }
+
+
+    // ───────────── 狀態操作 ─────────────
+
+    function log(text, kind) {
+      S.state.log.push({ turn: S.state.turn, text: String(text), kind: kind || '' });
+      if (S.state.log.length > 200) S.state.log.splice(0, S.state.log.length - 200);
+      renderPanel();
+    }
+
+    function add(id, delta, opts) {
+      const o = opts || {};
+      const r = C.resources.find(x => x.id === id);
+      if (!r || !delta) return 0;
+      const before = S.state.res[id];
+      S.state.res[id] = clamp(Math.round(before + delta), 0, r.max);
+      const real = S.state.res[id] - before;
+      if (real && o.at) fx.float(o.at, r.label + (real > 0 ? ' +' : ' ') + real, real > 0 ? '#bdf2dd' : '#ffb4aa');
+      renderTop();
+      if (o.at || C.map.nodes.some(n => n.meter === id)) renderNodes();
+      return real;
+    }
+
+    function vary(name, delta, min, max) {
+      const v = (S.state.vars[name] || 0) + delta;
+      S.state.vars[name] = clamp(v, min === undefined ? 0 : min, max === undefined ? 100 : max);
+      return S.state.vars[name];
+    }
+
+    function gainIntel(id) {
+      if (S.state.intel.indexOf(id) > -1) return Promise.resolve(false);
+      const it = intelOf(id);
+      if (!it) return Promise.resolve(false);
+      S.state.intel.push(id);
+      S.freshIntel = id;
+      const goal = C.intelGoal;
+      const isMain = goal && it.kind === goal.kind;
+      const card = ZH.html('<div class="slg-gain"><article class="slg-card"><div class="slg-card__head"><span class="slg-card__kind' + (isMain ? '' : ' is-info') + '">' + esc(it.kind) + '</span>' +
+        '<span class="slg-card__title">獲得情報：' + esc(it.title) + '</span></div><p class="slg-card__text">' + esc(it.text) + '</p></article></div>');
+      document.body.appendChild(card);
+      setTimeout(() => card.remove(), 2500);
+      ZH.sfx('chime');
+      log('獲得情報：' + it.title, 'good');
+      refresh();
+      return sleep(REDUCE ? 100 : 900).then(() => true);
+    }
+
+    function unlock(key) {
+      if (!ZH.codex) return false;
+      const i = String(key).indexOf(':');
+      const ok = ZH.codex.unlock(key.slice(0, i), key.slice(i + 1), C.id);
+      if (ok && S.state.codex.indexOf(key) === -1) S.state.codex.push(key);
+      return ok;
+    }
+
+    async function anchor(id) {
+      const done = S.state.anchors.find(a => a.anchorId === id);
+      if (done) return Promise.resolve(done);
+      const item = ZH.anchor && ZH.anchor.get(C.id, id);
+      if (!item) {
+        log('（史實錨點 ' + id + ' 暫時讀不到，先略過）');
+        return Promise.resolve(null);
+      }
+      if (ZH.spring && !ZH.textplay?.eligible(S.state)) await ZH.spring.before(C.id);
+      if (isMobile()) setOpen(false);
+      const order = Array.isArray(C.anchorOrder) ? C.anchorOrder.indexOf(id) + 1 : 0;
+      return ZH.anchor.run(item, { scenarioId: C.id, mode: C.mode, index: order || item.seq, total: C.anchorTotal || 0 }).then(async r => {
+        S.state.anchors.push(r);
+        save();
+        if (ZH.cutin) {
+          // SLG 的 ended 也用來銜接第二幕；演出使用獨立呈現狀態，不更動該幕標記與數值。
+          const state = S.state;
+          const presentation = { _cutins: state._cutins, _cutinSkip: state._cutinSkip, flags: state.flags, ended: null };
+          try {
+            const result = await ZH.cutin.at({ scenarioId: C.id, when: 'afterAnchor', anchorId: id, passage: String(item.passage || ''), state: presentation });
+            if (result && result.handled || presentation._cutinSkip !== state._cutinSkip) {
+              if (Array.isArray(presentation._cutins)) state._cutins = presentation._cutins;
+              state._cutinSkip = presentation._cutinSkip === true;
+              await save();
+            }
+          } catch (err) { if (global.console) console.warn('關鍵演出暫時略過', err); }
+        }
+        return r;
+      });
+    }
+
+    /** 存檔：同一時間只送一份；存檔中又要存，就等這次存完再存一次最新的狀態 */
+    function save() {
+      if (!C.save) return Promise.resolve();
+      if (S.saving) { S.saveAgain = true; return S.saving; }
+      S.saving = Promise.resolve(C.save(JSON.parse(JSON.stringify(S.state))))
+        .catch(() => null)
+        .then(r => {
+          S.saving = null;
+          if (S.saveAgain) { S.saveAgain = false; return save(); }
+          return r;
+        });
+      return S.saving;
+    }
+
+    const ctx = {
+      get state() { return S.state; },
+      rng: rng,
+      res: id => S.state.res[id],
+      add: add,
+      vary: vary,
+      flag(name, value) {
+        if (value === undefined) return S.state.flags[name];
+        S.state.flags[name] = value;
+        return value;
+      },
+      log: log,
+      say: say,
+      choose: choose,
+      anchor: anchor,
+      gainIntel: gainIntel,
+      hasIntel: id => S.state.intel.indexOf(id) > -1,
+      intelCount: kind => S.state.intel.filter(id => !kind || (intelOf(id) || {}).kind === kind).length,
+      unlock: unlock,
+      node(id, patch) {
+        S.state.nodes[id] = Object.assign({}, S.state.nodes[id] || {}, patch || {});
+        renderNodes();
+      },
+      fx: fx,
+      banner: banner,
+      coach: coach,
+      wait: ms => sleep(REDUCE ? 0 : ms),
+      quiet: quiet,
+      refresh: refresh,
+      save: save,
+      end: result => finish(result),
+      night(deep) { el.night.classList.toggle('is-deep', !!deep); },
+      subtitle(text) { const sp = root.querySelector('.slg-title span'); if (sp) sp.textContent = String(text || ''); },
+      tab(name) { S.tab = name; renderPanel(); },
+      mapEl: () => el.map,
+      scene: scene,
+      cast: setCast,
+      layerEl: () => (ST.on && el.stage ? el.stage : el.map)
+    };
+
+
+    // ───────────── 流程 ─────────────
+
+    function setBusy(on) {
+      S.busy = Math.max(0, S.busy + (on ? 1 : -1));
+      renderTop();
+      renderPanel();
+    }
+
+    function check() {
+      return C.check ? C.check(S.state) : null;
+    }
+
+    function runEvents(phase, info) {
+      const list = C.events.filter(e => (e.phase || 'start') === phase);
+      return list.reduce((p, ev) => p.then(() => {
+        if (S.ended) return;
+        if (ev.once !== false && S.state.done[ev.id]) return;
+        if (ev.when && !ev.when(S.state, info)) return;
+        S.state.done[ev.id] = true;
+        return Promise.resolve(ev.run(ctx, info)).then(() => (S.ended ? null : closeStage())).then(() => {
+          refresh();
+          const r = check();
+          if (r) finish(r);
+        });
+      }), Promise.resolve());
+    }
+
+    function runCommand(c, target) {
+      const ok = commandState(c, target);
+      if (ok !== true) { ZH.toast(ok, 'bad'); return; }
+      const cost = c.cost === 'all' ? S.state.orders : (c.cost || 1);
+      S.state.orders -= cost;
+      S.state.cmdCount[c.id] = (S.state.cmdCount[c.id] || 0) + 1;
+      S.state.orderSeq.push([S.state.turn, c.id, target || '']);
+      closePop();
+      if (isMobile()) setOpen(false);
+      ZH.sfx('click');
+      setBusy(true);
+      Promise.resolve()
+        .then(() => c.run(ctx, target))
+        .then(r => (S.ended ? r : closeStage().then(() => r)))
+        .then(r => {
+          // run 回傳 { refund: true } 表示取消，退回這道令
+          if (r && r.refund) {
+            S.state.orders += cost;
+            S.state.cmdCount[c.id] -= 1;
+            S.state.orderSeq.pop();
+            return;
+          }
+          return runEvents('command', { cmd: c.id, target: target });
+        })
+        .catch(err => { if (global.console) console.error(err); ZH.toast('發生錯誤：' + err.message, 'bad'); })
+        .then(() => {
+          if (S.ended) return;
+          const r = check();
+          if (r) { finish(r); return; }
+          setBusy(false);
+          refresh();
+          save();
+        });
+    }
+
+    function endTurn() {
+      if (S.busy || S.ended) return;
+      const go = () => {
+        setBusy(true);
+        closePop();
+        if (isMobile()) setOpen(false);
+        ctx.night(true);
+        Promise.resolve()
+          .then(() => sleep(REDUCE ? 0 : 500))
+          .then(() => C.ai && C.ai(ctx))
+          .then(() => C.upkeep && C.upkeep(ctx))
+          .then(() => {
+            refresh();
+            const r = check();
+            if (r) { finish(r); return; }
+            return runEvents('end').then(() => {
+              if (S.ended) return;
+              S.state.turn += 1;
+              S.state.orders = C.orders;
+              const r2 = check();
+              if (r2) { finish(r2); return; }
+              ctx.night(false);
+              return startTurn();
+            });
+          })
+          .catch(err => { if (global.console) console.error(err); ZH.toast('發生錯誤：' + err.message, 'bad'); setBusy(false); });
+      };
+      if (S.state.orders > 0) {
+        ZH.modal({
+          title: '還有令沒有用',
+          body: '<p>今晚還有 ' + S.state.orders + ' 道令。確定要' + esc(C.endTurnLabel) + '嗎？</p>',
+          actions: [{ label: '再想想', value: false, kind: 'quiet' }, { label: C.endTurnLabel, value: true, kind: 'primary' }]
+        }).then(v => { if (v) go(); });
+      } else {
+        go();
+      }
+    }
+
+    function startTurn() {
+      return banner(C.turnName(S.state.turn), C.turnSub ? C.turnSub(S.state) : '')
+        .then(() => runEvents('start'))
+        .then(() => {
+          if (S.ended) return;
+          setBusy(false);
+          refresh();
+          save();
+        });
+    }
+
+    function finish(result) {
+      if (S.ended) return;
+      S.ended = true;
+      S.state.ended = result;
+      S.busy = 1;
+      renderTop();
+      renderPanel();
+      save().then(() => { if (C.onEnd) C.onEnd(result, ctx); });
+    }
+
+    function start(saved) {
+      // 舊章節由首頁直續時可能傳入 { faction, engine }，一般續玩按鈕則傳 engine。
+      if (saved && saved.engine && saved.engine.v) saved = saved.engine;
+      S.state = saved && saved.v ? saved : freshState();
+      if(C._textOriginalHelp===undefined)C._textOriginalHelp=C.help;
+      C.help=ZH.textplay?.eligible(S.state)?ZH.textplay.helpHTML(C.id,{player:C.player}):C._textOriginalHelp;
+      if (ZH.spring) ZH.spring.bind(C.id,S.state,save,root,{player:C.player});
+      css();
+      skeleton();
+      ZH.textplay?.install(C.id,S.state,{player:C.player});
+      buildMap();
+      S.seen.intel = S.state.intel.length;
+      S.seen.log = S.state.log.length;
+      S.busy = 1;
+      refresh();
+      document.body.classList.add('slg-on');
+      const topH = () => { const tb = root.querySelector('.slg-top'); if (tb) document.documentElement.style.setProperty('--slg-top', tb.offsetHeight + 'px'); };
+      topH();
+      let t = null;
+      global.addEventListener('resize', () => {
+        clearTimeout(t);
+        t = setTimeout(() => { closePop(); topH(); if (!isMobile()) setOpen(false); if (ST.on) castLayout(); }, 150);
+      });
+      if (S.state.ended) { S.ended = true; if (C.onEnd) C.onEnd(S.state.ended, ctx); return; }
+      if (!saved) {
+        return startTurn();
+      }
+      // 從存檔接續：回到這一回合（開頭的事件已做過的不會重做）
+      return runEvents('start').then(() => {
+        if (S.ended) return;
+        setBusy(false);
+        refresh();
+      });
+    }
+
+    return { start: start, ctx: ctx, refresh: refresh, get state() { return S.state; } };
+  }
+
+  ZH.slg = { version: 'v0.2.3', create: create, icons: ICONS };
+})(window.ZH);
+</script>

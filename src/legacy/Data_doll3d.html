@@ -1,0 +1,618 @@
+<!-- 紙娃娃外觀、環境、動作、材質與套裝集中設定 v0.7.0（2026-10-15）。 -->
+<script>
+window.ZH_DOLL3D = /* DOLL_MANIFEST_START */
+{
+  "version": "0.7.0",
+  "look": {
+    "body": [
+      [
+        "male",
+        "男生"
+      ],
+      [
+        "female",
+        "女生"
+      ]
+    ],
+    "skin": [
+      [
+        "porcelain",
+        "白瓷",
+        "#f4d8c0"
+      ],
+      [
+        "warm",
+        "暖杏",
+        "#e8bd98"
+      ],
+      [
+        "honey",
+        "蜜棕",
+        "#c99168"
+      ],
+      [
+        "deep",
+        "深褐",
+        "#956443"
+      ]
+    ],
+    "hair": [
+      [
+        "bun",
+        "束髮"
+      ],
+      [
+        "short",
+        "短髮"
+      ],
+      [
+        "long",
+        "長髮"
+      ],
+      [
+        "braid",
+        "編髮"
+      ],
+      [
+        "ponytail",
+        "馬尾"
+      ],
+      [
+        "twintail",
+        "雙髮髻"
+      ],
+      [
+        "bob",
+        "圓短髮"
+      ],
+      [
+        "curly",
+        "蓬鬆捲髮"
+      ]
+    ],
+    "hairColor": [
+      [
+        "ink",
+        "墨黑",
+        "#292833"
+      ],
+      [
+        "chestnut",
+        "栗棕",
+        "#644330"
+      ],
+      [
+        "silver",
+        "霜白",
+        "#c4cbd3"
+      ],
+      [
+        "rose",
+        "玫瑰棕",
+        "#aa6f7b"
+      ],
+      [
+        "honey",
+        "蜂蜜金",
+        "#b38c50"
+      ],
+      [
+        "violet",
+        "丁香紫",
+        "#827393"
+      ]
+    ],
+    "headwear": [
+      [
+        "none",
+        "不戴"
+      ],
+      [
+        "crown",
+        "策士冠"
+      ],
+      [
+        "pin",
+        "玉簪"
+      ],
+      [
+        "ribbon",
+        "髮帶"
+      ],
+      [
+        "flower",
+        "桃花簪"
+      ],
+      [
+        "leaf",
+        "嫩葉冠"
+      ],
+      [
+        "rabbit",
+        "兔耳帽"
+      ],
+      [
+        "star",
+        "星星髮夾"
+      ]
+    ],
+    "outfit": [
+      [
+        "robe",
+        "交領袍"
+      ],
+      [
+        "traveler",
+        "行旅服"
+      ],
+      [
+        "armor",
+        "輕甲"
+      ],
+      [
+        "scholar",
+        "書院服"
+      ],
+      [
+        "hanfu",
+        "飄逸襦裙"
+      ],
+      [
+        "festival",
+        "花朝禮服"
+      ]
+    ],
+    "color": [
+      [
+        "ink",
+        "墨藍",
+        "#47627a"
+      ],
+      [
+        "jade",
+        "青玉",
+        "#46745f"
+      ],
+      [
+        "amber",
+        "琥珀",
+        "#967342"
+      ],
+      [
+        "crane",
+        "白鶴",
+        "#84959f"
+      ],
+      [
+        "plum",
+        "梅紅",
+        "#986579"
+      ],
+      [
+        "moon",
+        "月紫",
+        "#77749d"
+      ],
+      [
+        "peach",
+        "桃粉",
+        "#c68e91"
+      ],
+      [
+        "sky",
+        "晴空",
+        "#73a2ad"
+      ]
+    ],
+    "accessory": [
+      [
+        "none",
+        "空手"
+      ],
+      [
+        "scroll",
+        "竹簡"
+      ],
+      [
+        "fan",
+        "羽扇"
+      ],
+      [
+        "qin",
+        "小琴"
+      ],
+      [
+        "lantern",
+        "小燈籠"
+      ],
+      [
+        "brush",
+        "毛筆"
+      ],
+      [
+        "parasol",
+        "花紙傘"
+      ],
+      [
+        "rattle",
+        "撥浪鼓"
+      ]
+    ],
+    "backdrop": [
+      [
+        "night",
+        "星夜"
+      ],
+      [
+        "peach",
+        "桃庭"
+      ],
+      [
+        "bamboo",
+        "竹林"
+      ],
+      [
+        "cloud",
+        "雲間"
+      ],
+      [
+        "lake",
+        "荷塘"
+      ],
+      [
+        "lantern",
+        "燈花庭"
+      ]
+    ],
+    "expression": [
+      [
+        "smile",
+        "微笑"
+      ],
+      [
+        "bright",
+        "閃亮眼"
+      ],
+      [
+        "cool",
+        "認真"
+      ],
+      [
+        "wink",
+        "眨眼笑"
+      ]
+    ],
+    "faceAccessory": [
+      [
+        "none",
+        "不戴"
+      ],
+      [
+        "glasses",
+        "圓框眼鏡"
+      ],
+      [
+        "monocle",
+        "單片鏡"
+      ],
+      [
+        "freckles",
+        "小雀斑"
+      ]
+    ],
+    "ornament": [
+      [
+        "none",
+        "簡單搭配"
+      ],
+      [
+        "cape",
+        "短披風"
+      ],
+      [
+        "bow",
+        "背後蝴蝶結"
+      ],
+      [
+        "satchel",
+        "小書袋"
+      ]
+    ],
+    "shoes": [
+      [
+        "cloth",
+        "布鞋"
+      ],
+      [
+        "boots",
+        "短靴"
+      ],
+      [
+        "cloud",
+        "雲紋鞋"
+      ],
+      [
+        "lotus",
+        "花花鞋"
+      ]
+    ],
+    "eyeColor": [
+      [
+        "dark",
+        "墨瞳",
+        "#35343d"
+      ],
+      [
+        "amber",
+        "琥珀瞳",
+        "#976c37"
+      ],
+      [
+        "jade",
+        "青玉瞳",
+        "#507f74"
+      ],
+      [
+        "violet",
+        "丁香瞳",
+        "#82739e"
+      ]
+    ],
+    "pattern": [
+      [
+        "plain",
+        "素色"
+      ],
+      [
+        "cloud",
+        "流雲織紋"
+      ],
+      [
+        "plum",
+        "梅花織紋"
+      ]
+    ],
+    "earrings": [
+      [
+        "none",
+        "不戴"
+      ],
+      [
+        "jade",
+        "玉珠耳飾"
+      ],
+      [
+        "pearl",
+        "珍珠耳飾"
+      ]
+    ],
+    "environment": [
+      [
+        "room",
+        "小小書齋"
+      ],
+      [
+        "garden",
+        "花木庭園"
+      ],
+      [
+        "museum",
+        "史冊收藏館"
+      ]
+    ]
+  },
+  "labels": {
+    "body": "角色造型",
+    "skin": "膚色",
+    "hair": "髮型",
+    "hairColor": "髮色",
+    "headwear": "頭飾",
+    "outfit": "服裝",
+    "color": "衣服配色",
+    "accessory": "手持配件",
+    "backdrop": "氛圍",
+    "expression": "表情",
+    "faceAccessory": "臉部裝飾",
+    "ornament": "隨身裝飾",
+    "shoes": "鞋子",
+    "eyeColor": "眼睛顏色",
+    "pattern": "衣料花紋",
+    "earrings": "耳飾",
+    "environment": "3D環境"
+  },
+  "groups": {
+    "body": "look",
+    "skin": "look",
+    "hair": "look",
+    "hairColor": "look",
+    "expression": "look",
+    "faceAccessory": "look",
+    "outfit": "dress",
+    "color": "dress",
+    "shoes": "dress",
+    "headwear": "decor",
+    "accessory": "decor",
+    "ornament": "decor",
+    "backdrop": "scene",
+    "eyeColor": "look",
+    "pattern": "dress",
+    "earrings": "decor",
+    "environment": "scene"
+  },
+  "defaults": {
+    "eyeColor": "dark",
+    "pattern": "plain",
+    "earrings": "none",
+    "environment": "room"
+  },
+  "motions": [
+    [
+      "wave",
+      "揮手",
+      1.8
+    ],
+    [
+      "spin",
+      "轉一圈",
+      2
+    ],
+    [
+      "jump",
+      "跳躍",
+      1.7
+    ],
+    [
+      "bow",
+      "鞠躬",
+      2.1
+    ],
+    [
+      "dance",
+      "跳舞",
+      3
+    ],
+    [
+      "cheer",
+      "歡呼",
+      2.2
+    ],
+    [
+      "think",
+      "思考",
+      2.8
+    ],
+    [
+      "salute",
+      "敬禮",
+      2
+    ],
+    [
+      "greet",
+      "拱手",
+      2.4
+    ],
+    [
+      "look",
+      "左看右看",
+      2.5
+    ],
+    [
+      "walk",
+      "踏步",
+      2.8
+    ]
+  ],
+  "environments": {
+    "room": {
+      "label": "小小書齋",
+      "sky": "#f1e6d9",
+      "floor": "#dfc6a0",
+      "wall": "#f2e6d0",
+      "floorAsset": "texture:wood",
+      "pictureAsset": "scene:room"
+    },
+    "garden": {
+      "label": "花木庭園",
+      "sky": "#e4eee0",
+      "floor": "#e0d8c0",
+      "wall": "#d5cab3",
+      "floorAsset": "texture:stone",
+      "pictureAsset": "scene:garden"
+    },
+    "museum": {
+      "label": "史冊收藏館",
+      "sky": "#eee7e4",
+      "floor": "#e4dcc9",
+      "wall": "#e4d4bd",
+      "floorAsset": "texture:stone",
+      "pictureAsset": "scene:hall"
+    }
+  },
+  "patterns": {
+    "plain": {
+      "asset": null
+    },
+    "cloud": {
+      "asset": "texture:cloth_cloud"
+    },
+    "plum": {
+      "asset": "texture:cloth_plum"
+    }
+  },
+  "quality": {
+    "low": {
+      "pixelRatio": 1,
+      "shadows": false,
+      "fps": 24
+    },
+    "high": {
+      "pixelRatio": 1.5,
+      "shadows": true,
+      "fps": 30
+    }
+  },
+  "presets": [
+    {
+      "id": "jade_scholar",
+      "label": "青玉小書生",
+      "look": {
+        "body": "male",
+        "outfit": "scholar",
+        "hair": "bun",
+        "headwear": "crown",
+        "color": "jade",
+        "pattern": "cloud",
+        "accessory": "scroll",
+        "environment": "room"
+      }
+    },
+    {
+      "id": "peach_garden",
+      "label": "桃庭小花仙",
+      "look": {
+        "body": "female",
+        "outfit": "festival",
+        "hair": "twintail",
+        "headwear": "flower",
+        "color": "peach",
+        "pattern": "plum",
+        "earrings": "pearl",
+        "accessory": "parasol",
+        "environment": "garden"
+      }
+    },
+    {
+      "id": "cloud_traveler",
+      "label": "雲間小旅人",
+      "look": {
+        "body": "male",
+        "outfit": "traveler",
+        "hair": "ponytail",
+        "headwear": "leaf",
+        "color": "sky",
+        "pattern": "cloud",
+        "ornament": "satchel",
+        "accessory": "fan",
+        "environment": "garden"
+      }
+    },
+    {
+      "id": "moon_curator",
+      "label": "月色收藏家",
+      "look": {
+        "body": "female",
+        "outfit": "hanfu",
+        "hair": "braid",
+        "headwear": "star",
+        "color": "moon",
+        "pattern": "plum",
+        "eyeColor": "violet",
+        "earrings": "jade",
+        "accessory": "lantern",
+        "environment": "museum"
+      }
+    }
+  ]
+}
+/* DOLL_MANIFEST_END */;
+</script>

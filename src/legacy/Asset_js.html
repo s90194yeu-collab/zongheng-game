@@ -1,0 +1,154 @@
+<!-- Asset_js v0.3.0：可見素材優先、字型延後、有限佇列與 IndexedDB 逾時退回。 -->
+<style>
+.ai-sc .ai-sc__image{opacity:0;transition:opacity .25s ease}.ai-sc.is-ready .ai-sc__image{opacity:1}.ai-sc.is-ready>.ai-sc__fallback{visibility:hidden}
+.ai-sc.is-ready>.ai-sc__fallback *{animation:none!important}
+.ai-sc__extras{visibility:hidden;pointer-events:none}.ai-sc.is-ready>.ai-sc__extras{visibility:visible}.ai-sc__rain{animation:ai-rain 1.2s linear infinite}.ai-sc__snow{animation:ai-snow 5s linear infinite}@keyframes ai-rain{to{transform:translate(18px,84px)}}@keyframes ai-snow{to{transform:translate(12px,55px)}}
+.ai-item{position:relative;display:block;width:100%;height:100%}.ai-item__fallback{position:absolute;inset:0;display:grid;place-items:center}.ai-item__image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}.ai-item.is-ready>.ai-item__image{opacity:1}.ai-item.is-ready>.ai-item__fallback{visibility:hidden}
+@media(prefers-reduced-motion:reduce){.ai-sc .ai-sc__image{transition:none}.ai-sc__rain,.ai-sc__snow{animation:none}}
+.ai-sc{background:#152b36}.ai-sc__waiting{visibility:visible}.ai-sc.is-ready>.ai-sc__waiting{visibility:hidden}.ai-sc__previous{filter:blur(10px);opacity:.55}.ai-sc__status{font:20px var(--f-body,sans-serif);fill:#dfd4bc;paint-order:stroke;stroke:#152b36;stroke-width:5px}.ai-sc__error{display:none}.ai-sc.is-error .ai-sc__loading{display:none}.ai-sc.is-error .ai-sc__error{display:block}.ai-map__overlay text{paint-order:stroke;stroke:#f2e8c9;stroke-width:4px;stroke-linejoin:round;fill:#342c22}.ai-map__overlay .m-city,.ai-map__overlay .hy-map__city{font-size:22px;font-weight:700}.ai-map__overlay .m-big,.ai-map__overlay .hy-map__big{font-size:38px}.ai-map__overlay .m-sub,.ai-map__overlay .m-small,.ai-map__overlay .hy-map__sub{font-size:17px}.ai-map__overlay .m-note,.ai-map__overlay .hy-map__note{font-size:22px;font-weight:700}.ai-map__overlay .m-river,.ai-map__overlay .hy-map__river{font-size:18px;fill:#325a76}.ai-map__overlay .m-gift{font-size:17px}.ai-map .ai-sc__status{font-size:14px}
+.ai-map-open{position:absolute;right:14px;top:76px;z-index:4;background:#142735e8!important;color:#eadcb5!important}.ai-map-viewer{width:min(1100px,calc(100vw - 24px));max-width:1100px;max-height:calc(100dvh - 28px);padding:16px;border:1px solid #bd9c50;border-radius:14px;background:#142735;color:#eadcb5}.ai-map-viewer::backdrop{background:#050c18d9}.ai-map-viewer header{display:flex;justify-content:space-between;align-items:center;gap:14px}.ai-map-viewer p{font-size:14px;margin:10px 0}.ai-map-viewer__scroll{overflow:auto;max-height:calc(100dvh - 160px);border-radius:8px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.ai-map-viewer__scroll>.ai-map{min-width:1000px}.ai-map-viewer .ai-sc__previous{filter:blur(10px)}@media(max-width:600px){.ai-map-open{top:68px;font-size:13px}}
+</style>
+<script>
+(function(ZH,manifest){
+'use strict';if(!ZH||!manifest||ZH.assets)return;
+const esc=ZH.esc,memory=new Map(),pending=new Map(),failed=new Map(),queue=[],bound=new WeakSet(),states=new WeakMap();
+const stats={networkCalls:0,memoryHits:0,diskHits:0,timeouts:0,diskTimeouts:0};
+const INFO_KEY='ZHImageInfo_v2',TTL=300000,MAX_ACTIVE=2,BATCH=2;
+let config=null,infoFlight=null,database=null,active=0,pumpTimer=0,fontStarted=false,staleRecovered=false;
+try{const c=JSON.parse(localStorage.getItem(INFO_KEY)||'null');if(c&&c.configured&&typeof c.revision==='string'&&Date.now()-c.at<TTL)config=c;}catch(e){}
+const validImage=s=>typeof s==='string'&&s.length<13000000&&(/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(s)||/^https:\/\//.test(s));
+const valid=(id,s)=>id==='font:dialogue'?typeof s==='string'&&/^data:font\/woff2;base64,[A-Za-z0-9+/=]+$/.test(s):validImage(s);
+function limit(p,ms,onTimeout){return new Promise(resolve=>{let done=false;const timer=setTimeout(()=>{if(done)return;done=true;if(onTimeout)onTimeout();resolve(null);},ms);Promise.resolve(p).then(v=>{if(!done){done=true;clearTimeout(timer);resolve(v);}},()=>{if(!done){done=true;clearTimeout(timer);resolve(null);}});});}
+function remember(c){config={configured:!!c.configured,revision:String(c.revision||''),at:Date.now()};try{if(config.configured)localStorage.setItem(INFO_KEY,JSON.stringify(config));else localStorage.removeItem(INFO_KEY);}catch(e){}return config;}
+function info(){if(config&&Date.now()-config.at<TTL)return Promise.resolve(config);if(infoFlight)return infoFlight;infoFlight=limit(Promise.resolve().then(()=>ZH.call('api_getImageAssetInfo')),4500,()=>stats.timeouts++).then(r=>remember(r&&r.ok?r:{configured:false,revision:''})).finally(()=>{infoFlight=null;});return infoFlight;}
+function db(){if(database)return database;database=new Promise(resolve=>{if(!window.indexedDB){resolve(null);return;}let settled=false;const timer=setTimeout(()=>{if(settled)return;settled=true;stats.diskTimeouts++;resolve(null);},800);try{const req=indexedDB.open('ZHImageAssets_v1',1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('assets'))req.result.createObjectStore('assets');};req.onsuccess=()=>{if(settled){req.result.close();return;}settled=true;clearTimeout(timer);req.result.onversionchange=()=>req.result.close();resolve(req.result);};req.onerror=req.onblocked=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve(null);};}catch(e){clearTimeout(timer);settled=true;resolve(null);}});return database;}
+async function disk(action,key,value){const connection=await db();if(!connection)return null;return limit(new Promise(resolve=>{try{const tx=connection.transaction('assets',action==='get'?'readonly':'readwrite'),store=tx.objectStore('assets'),r=action==='get'?store.get(key):store.put(value,key);r.onsuccess=()=>resolve(action==='get'?r.result||null:true);r.onerror=tx.onabort=()=>resolve(null);}catch(e){resolve(null);}}),650,()=>stats.diskTimeouts++);}
+function done(record,src){if(pending.get(record.id)!==record)return;if(record.timer)clearTimeout(record.timer);pending.delete(record.id);if(src){memory.delete(record.id);memory.set(record.id,src);let total=0;for(const s of memory.values())total+=s.length;while(total>24000000&&memory.size>1){const k=memory.keys().next().value;total-=memory.get(k).length;memory.delete(k);}}else failed.set(record.id,Date.now());record.resolve(src||null);}
+function schedule(){if(!pumpTimer)pumpTimer=setTimeout(()=>{pumpTimer=0;pump();},20);}
+function enqueue(record){record.queued=true;queue.push(record);record.timer=setTimeout(()=>{stats.timeouts++;done(record,null);schedule();},20000);schedule();}
+function pump(){while(active<MAX_ACTIVE){for(let i=queue.length-1;i>=0;i--)if(pending.get(queue[i].id)!==queue[i])queue.splice(i,1);if(!queue.length)return;queue.sort((a,b)=>a.priority-b.priority||a.at-b.at);const first=queue.shift(),batch=[first];if(first.type==='image'&&first.id!=='font:dialogue'){for(let i=0;i<queue.length&&batch.length<BATCH;){const r=queue[i];if(r.type==='image'&&r.id!=='font:dialogue'&&r.revision===first.revision)batch.push(queue.splice(i,1)[0]);else i++;}}
+ active++;stats.networkCalls++;batch.forEach(r=>{clearTimeout(r.timer);r.timer=setTimeout(()=>{stats.timeouts++;done(r,null);},r.id==='font:dialogue'?14000:10000);});
+ const raw=Promise.resolve().then(()=>first.type==='hub'?ZH.call('api_getHubArtwork',first.hub):ZH.call('api_getImageAssets',batch.map(r=>r.id),first.revision));
+ raw.then(response=>{if(response?.stale&&!staleRecovered){staleRecovered=true;setTimeout(()=>ZH.assets.refresh(),0);}for(const r of batch){if(pending.get(r.id)!==r)continue;const src=r.type==='hub'?response?.ok&&response.src:response?.ok&&response.assets?.[r.id]?.src;const accepted=valid(r.id,src);if(accepted)disk('put',r.key,src);done(r,accepted?src:null);}},()=>batch.forEach(r=>done(r,null))).finally(()=>{active--;schedule();});
+ // Timed-out RPCs still occupy their slot until the underlying call settles.
+ }}
+function request(id,type,priority,hub){if(memory.has(id)){stats.memoryHits++;return Promise.resolve(memory.get(id));}if(failed.has(id)&&Date.now()-failed.get(id)<15000)return Promise.resolve(null);if(pending.has(id)){pending.get(id).priority=Math.min(pending.get(id).priority,priority);return pending.get(id).promise;}let resolve;const promise=new Promise(r=>resolve=r),record={id,type,priority,hub,promise,resolve,at:Date.now()};pending.set(id,record);(async()=>{try{const c=type==='hub'?null:await info();if(pending.get(id)!==record)return;if(type!=='hub'&&!c?.configured){done(record,null);return;}record.revision=c?.revision||'';record.key=type==='hub'?'hub-art-v2:'+String(window.ZH_BOOT?.version||ZH.VERSION||'2.0.2')+':'+hub:manifest.version+':'+record.revision+':'+id;const cached=await disk('get',record.key);if(pending.get(id)!==record)return;if(valid(id,cached)){stats.diskHits++;done(record,cached);return;}enqueue(record);}catch(e){done(record,null);}})();return promise;}
+function get(id,options){if(typeof id!=='string'||!/^(scene|item|font|texture|cutin):[a-z0-9_]+$/.test(id)||!Object.prototype.hasOwnProperty.call(manifest.entries,id))return Promise.resolve(null);if(validImage(manifest.entries[id].src))return Promise.resolve(manifest.entries[id].src);return request(id,'image',options?.priority??(id==='font:dialogue'?5:id.startsWith('item:')?2:0));}
+function getHubArt(key,priority=1){if(!['cq','zg','ch','foreground'].includes(key))return Promise.resolve(null);return request('hub:'+key,'hub',priority,key);}
+  function selectScene(key, opt) {
+    const base = manifest.aliases[key] || key, o = opt || {};
+    const sid = o.scenarioId || window.ZH_BOOT && window.ZH_BOOT.page;
+    const chapter = manifest.overrides[sid];
+    return chapter && (chapter[o.node || 'title'] || chapter['*']) || manifest.places[o.place] || manifest.scenes[base] || null;
+  }
+  function align(entry) {
+    const x = Number(entry.focusX), y = Number(entry.focusY);
+    return (x < .34 ? 'xMin' : x > .66 ? 'xMax' : 'xMid') + (y < .34 ? 'YMin' : y > .66 ? 'YMax' : 'YMid') + ' slice';
+  }
+  function sceneExtras(options) {
+    const o = options || {}, tod = o.tod || (/夜/.test(o.time || '') ? 'night' : ''), weather = o.weather || '';
+    let result = tod === 'night' ? '<rect width="1600" height="1000" fill="#081530" opacity=".42"/>' : tod === 'dusk' ? '<rect width="1600" height="1000" fill="#bb6533" opacity=".12"/>' : '';
+    if (weather === 'rain' || weather === 'snow') {
+      let particles = '';
+      for (let i = 0; i < 36; i++) {
+        const x = (i * 337) % 1630 - 20, y = (i * 173) % 1080 - 60;
+        particles += weather === 'rain' ? '<path d="M' + x + ' ' + y + 'l-12 44" stroke="#d9e8ef" stroke-width="2" opacity=".38"/>' : '<circle cx="' + x + '" cy="' + y + '" r="3" fill="#f4f6ed" opacity=".6"/>';
+      }
+      result += '<g class="ai-sc__' + weather + '">' + particles + '</g>';
+    }
+    if (weather === 'mist') result += '<rect y="640" width="1600" height="360" fill="#dce8dd" opacity=".18"/>';
+    if (o.glyph) result += '<g transform="translate(1435 60)"><path d="M0 0h90v130l-45-20L0 130z" fill="' + esc(o.banner || '#a5412e') + '"/><text x="45" y="70" text-anchor="middle" font-size="42" fill="#f7ead1" font-family="var(--f-country)">' + esc(String(o.glyph).slice(0, 2)) + '</text></g>';
+    return '<g class="ai-sc__extras">' + result + '</g>';
+  }
+// AI scene backgrounds share one waiting/error state. Teaching overlays remain separate.
+let lastSceneSrc='';
+function sceneSVG(id,options,settings={}){
+ const entry=manifest.entries[id];if(!entry||entry.kind!=='scene')return '';
+ const w=settings.width||1600,h=settings.height||1000,ar=settings.overlay?'xMidYMid meet':align(entry),prior=lastSceneSrc?'<image class="ai-sc__previous" href="'+esc(lastSceneSrc)+'" width="'+w+'" height="'+h+'" preserveAspectRatio="'+ar+'"/>':'';
+ return '<svg class="sc ai-sc'+(settings.overlay?' ai-map':'')+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="'+ar+'" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">'+
+ '<g class="ai-sc__waiting"><rect width="'+w+'" height="'+h+'" fill="#152b36"/>'+prior+'<rect width="'+w+'" height="'+h+'" fill="#142735" opacity=".35"/>'+ 
+ '<text class="ai-sc__status ai-sc__loading" x="'+w/2+'" y="'+h*.93+'" text-anchor="middle">場景圖片載入中…</text><text class="ai-sc__status ai-sc__error" x="'+w/2+'" y="'+h*.93+'" text-anchor="middle">場景圖片暫時無法讀取，可繼續遊戲</text></g>'+
+ '<image class="ai-sc__image" data-ai-asset="'+esc(id)+'" width="'+w+'" height="'+h+'" preserveAspectRatio="'+ar+'"/>'+
+ (settings.overlay?'<g class="ai-map__overlay">'+settings.overlay+'</g>':sceneExtras(options))+'</svg>';
+}
+function mapOverlay(art,kind){
+ if(typeof art!=='string'||!art)return '';
+ try{
+ const xml=new DOMParser().parseFromString(art,'image/svg+xml'),svg=xml.documentElement;if(svg.localName!=='svg'||xml.querySelector('parsererror'))return '';
+ const result=[];let deployed=false;
+ for(const node of Array.from(svg.children)){
+  const tag=node.localName,fill=node.getAttribute('fill'),stroke=node.getAttribute('stroke');let keep=false;
+  if(kind==='gates'){
+   if(tag==='path'&&['#d29e35','#ae4638'].includes(stroke))deployed=true;
+   keep=tag==='defs'||tag==='text'||deployed;
+  }else{
+   keep=tag==='defs'||tag==='text'||tag==='circle'||tag==='rect'&&Number(node.getAttribute('width'))<200&&Number(node.getAttribute('height'))<100||tag==='path'&&!node.hasAttribute('opacity')||tag==='g'&&!node.hasAttribute('opacity');
+  }
+  if(stroke==='#6a8bb0')keep=false;
+  if(keep)result.push(node.cloneNode(true));
+ }
+ const group=xml.createElementNS('http://www.w3.org/2000/svg','g');result.forEach(n=>group.appendChild(n));
+ // Flatten character SVG viewports so global stage SVG sizing cannot enlarge map pieces.
+ for(const nested of Array.from(group.querySelectorAll('svg')).reverse()){
+  const vb=(nested.getAttribute('viewBox')||'0 0 250 320').trim().split(/[ ,]+/).map(Number),width=parseFloat(nested.getAttribute('width'))||vb[2],height=parseFloat(nested.getAttribute('height'))||vb[3];
+  const g=xml.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('transform','translate('+(parseFloat(nested.getAttribute('x'))||0)+' '+(parseFloat(nested.getAttribute('y'))||0)+') scale('+(width/vb[2])+' '+(height/vb[3])+') translate('+(-vb[0])+' '+(-vb[1])+')');
+  for(const name of ['class','style','aria-label'])if(nested.hasAttribute(name))g.setAttribute(name,nested.getAttribute(name));
+  while(nested.firstChild)g.appendChild(nested.firstChild);nested.replaceWith(g);
+ }
+ return new XMLSerializer().serializeToString(group);
+ }catch(e){return '';}
+}
+function customScene(key,options,definition,scenarioId){
+ const conf=manifest.customScenes?.[scenarioId]?.[key];if(!conf)return '';
+ const overlay=conf.overlay?mapOverlay(options?.art||definition?.art,conf.overlay):'';
+ return sceneSVG(conf.asset,options,{width:conf.width,height:conf.height,overlay:overlay||undefined});
+}
+function installArt(art){
+ if(!art||art.aiAssetsInstalled)return;
+ const original=art.scene;
+ art.scene=function(key,options){const id=selectScene(key,options),entry=manifest.entries[id];return entry&&entry.kind==='scene'?sceneSVG(id,options):original.call(art,key,options);};
+ art.aiAssetsInstalled=true;
+}
+function readyImage(node){
+ const holder=node.closest('.ai-sc,.ai-item');if(!holder||!node.isConnected)return;holder.classList.add('is-ready');holder.classList.remove('is-error');
+ mapViews.get(holder)?.();
+ if(holder.matches('.ai-sc')&&visible(node))lastSceneSrc=node.getAttribute('href')||node.src||lastSceneSrc;
+}
+function imageFailed(node){const holder=node.closest('.ai-sc,.ai-item');if(holder){holder.classList.remove('is-ready');holder.classList.add('is-error');mapViews.get(holder)?.();}}
+
+const mapViews=new WeakMap();
+function mapControl(holder){
+ if(!holder.matches('.ai-map')||!holder.closest('.sty-bg')||holder.parentElement.querySelector('.ai-map-open'))return;
+ const button=document.createElement('button');button.type='button';button.className='ai-map-open zh-btn zh-btn--quiet zh-btn--sm';button.textContent='放大地圖';button.setAttribute('aria-label','放大檢視地名與路線');
+ button.addEventListener('click',event=>{
+  event.stopPropagation();const dialog=document.createElement('dialog');dialog.className='ai-map-viewer';dialog.setAttribute('aria-label','放大地圖');dialog.innerHTML='<header><b>地圖與行動路線</b><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm">關閉地圖</button></header><p>可左右滑動查看地名與路線。</p><div class="ai-map-viewer__scroll"></div>';
+  const area=dialog.querySelector('.ai-map-viewer__scroll');const refresh=()=>{const left=area.scrollLeft,top=area.scrollTop,copy=holder.cloneNode(true);copy.querySelectorAll('[data-ai-asset]').forEach(n=>n.removeAttribute('data-ai-asset'));copy.style.cssText='position:static;display:block;width:1000px;max-width:none;height:auto;';area.replaceChildren(copy);area.scrollLeft=left;area.scrollTop=top;};
+  mapViews.set(holder,refresh);refresh();dialog.querySelector('button').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{mapViews.delete(holder);dialog.remove();button.focus();},{once:true});document.body.appendChild(dialog);dialog.showModal();
+ });holder.parentElement.appendChild(button);
+}
+
+  const originalItemArt = ZH.itemArt;
+  ZH.itemArt = function (item) {
+    const id = manifest.items[item && item.id], entry = manifest.entries[id];
+    const fallback = originalItemArt ? originalItemArt(item) : esc(item && (item.glyph || item.name) || '物');
+    if (!entry || entry.kind !== 'item') return fallback;
+    return '<span class="ai-item" aria-hidden="true"><span class="ai-item__fallback">' + fallback + '</span><img class="ai-item__image" data-ai-asset="' + esc(id) + '" alt="" decoding="async"></span>';
+  };
+let intersection=null;
+function visible(node){const holder=node.closest('.ai-sc,.ai-item')||node;if(!node.isConnected||holder.closest('[hidden]'))return false;const bg=holder.closest('.sty-bg');if(bg&&!bg.classList.contains('is-on'))return false;const rect=holder.getBoundingClientRect(),style=getComputedStyle(holder);return rect.width>0&&rect.height>0&&rect.bottom>=-200&&rect.top<=innerHeight+200&&rect.right>=-200&&rect.left<=innerWidth+200&&style.display!=='none'&&style.visibility!=='hidden';}
+function loadNode(node){if(!visible(node))return;const state=states.get(node);if(!state||state.started)return;state.started=true;node.dataset.aiMounted='1';const holder=node.closest('.ai-sc,.ai-item')||node;if(intersection)intersection.unobserve(holder);get(node.dataset.aiAsset).then(src=>{if(!node.isConnected)return;if(!src){imageFailed(node);return;}if(node.tagName.toLowerCase()==='image')node.setAttribute('href',src);else node.src=src;if(node.tagName.toLowerCase()==='img'&&node.complete&&node.naturalWidth)readyImage(node);});}
+try{if(window.IntersectionObserver)intersection=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){if(e.target.matches('[data-ai-asset]'))loadNode(e.target);e.target.querySelectorAll('[data-ai-asset]').forEach(loadNode);}}, {rootMargin:'200px'});}catch(e){}
+function mount(root){const nodes=[];if(root.matches?.('[data-ai-asset]'))nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('[data-ai-asset]'));for(const node of nodes){if(states.has(node))continue;states.set(node,{started:false});if(!bound.has(node)){bound.add(node);node.addEventListener('load',()=>readyImage(node));node.addEventListener('error',()=>imageFailed(node));}const holder=node.closest('.ai-sc,.ai-item')||node;mapControl(holder);if(intersection)intersection.observe(holder);if(visible(node))loadNode(node);}scheduleFont();}
+let scanTimer=0;
+function scan(){if(scanTimer)return;scanTimer=setTimeout(()=>{scanTimer=0;document.querySelectorAll('[data-ai-asset]').forEach(n=>{const s=states.get(n);if(s&&!s.started)loadNode(n);});scheduleFont();},100);}
+function scheduleFont(){if(fontStarted||!manifest.entries['font:dialogue']||!window.FontFace||document.documentElement.classList.contains('zh-dialogue-font-ready')||!document.querySelector('.sty-say,.slg-say,.stl-say,.zh-anchor'))return;fontStarted=true;setTimeout(()=>{const run=()=>get('font:dialogue',{priority:5}).then(src=>{if(!src)return;const font=new FontFace('ZH WenKai Dialogue','url('+src+')',{weight:'400'});font.load().then(f=>{document.fonts.add(f);document.documentElement.classList.add('zh-dialogue-font-ready');}).catch(()=>{});});if(window.requestIdleCallback)requestIdleCallback(run,{timeout:1500});else run();},1200);}
+const observer=new MutationObserver(changes=>{for(const m of changes){if(m.type==='attributes'){scan();continue;}for(const n of m.addedNodes)if(n.nodeType===1)mount(n);for(const n of m.removedNodes)if(n.nodeType===1&&intersection){if(n.matches?.('.ai-sc,.ai-item'))intersection.unobserve(n);n.querySelectorAll?.('.ai-sc,.ai-item').forEach(x=>intersection.unobserve(x));}}});
+observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class']});
+ZH.assets={version:'0.3.0',get,getHubArt,installArt,selectScene,customScene,manifest,
+ inspect:()=>({...stats,active,queued:queue.filter(r=>pending.get(r.id)===r).length,pending:pending.size,fontStarted,revision:config?.revision||''}),
+ refresh:()=>{config=null;infoFlight=null;try{localStorage.removeItem(INFO_KEY);}catch(e){}failed.clear();memory.clear();for(const r of Array.from(pending.values()))done(r,null);failed.clear();fontStarted=false;document.querySelectorAll('[data-ai-asset]').forEach(n=>{states.delete(n);delete n.dataset.aiMounted;});mount(document.documentElement);}};
+if(window.ART)installArt(window.ART);
+mount(document.documentElement);document.addEventListener('DOMContentLoaded',()=>mount(document.documentElement),{once:true});
+window.addEventListener('scroll',scan,{passive:true});window.addEventListener('resize',scan,{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden)scan();});window.addEventListener('online',()=>ZH.assets.refresh());
+})(window.ZH,window.ZH_IMAGE_ASSETS);
+</script>
