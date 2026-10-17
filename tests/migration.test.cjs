@@ -51,3 +51,9 @@ test('圖片與配樂改為直接檔案；原始API呼叫介面保留',()=>{
  assert(codes.some(c=>c.includes('google.script.run')));assert(codes.some(c=>c.includes('ZH_STATIC_MEDIA')));assert(codes.some(c=>c.includes('music/')&&c.includes('fetch(')));
  assert(!codes.some(c=>c.includes('api_musicTrack')));
 });
+test('燭之武中央題庫可登記學習歷程，明確資料檔仍優先',()=>{
+ const q=bridge();q.e.ANCHOR_DRAFTS={S_cq08_weizheng:[{id:'wz_01'}]};
+ assert.equal(q.e.scenarioRegistry_().S_cq08_weizheng.anchors[0].id,'wz_01');
+ q.e.SCENARIO_DATA={S_cq08_weizheng:{status:'planned',anchors:[]}};
+ assert.equal(q.e.scenarioRegistry_().S_cq08_weizheng.status,'planned');
+});

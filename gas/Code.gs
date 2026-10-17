@@ -280,6 +280,10 @@ function scenarioRegistry_() {
   Object.keys(reg).forEach(id => {
     if (SCENARIO_PAGE_PATTERN.test(id) && reg[id] && typeof reg[id] === 'object') out[id] = reg[id];
   });
+  // 燭之武使用中央題庫，沒有獨立 _data.gs；學習歷程仍須辨識這一話。
+  if (!out.S_cq08_weizheng && typeof ANCHOR_DRAFTS !== 'undefined' && Array.isArray(ANCHOR_DRAFTS.S_cq08_weizheng)) {
+    out.S_cq08_weizheng = { version: APP_VERSION, status: 'ready', anchors: ANCHOR_DRAFTS.S_cq08_weizheng, codex: [] };
+  }
   return out;
 }
 
