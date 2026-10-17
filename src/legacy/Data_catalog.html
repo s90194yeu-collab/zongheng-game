@@ -279,14 +279,349 @@
   ZH.LEARNING_TEXTS=ZH.LEARNING_TEXTS||{};ZH.CATALOG.filter(s=>s.vol==="zz").forEach(s=>{ZH.LEARNING_TEXTS[s.id]={titles:s.source.split("、")};});
   /* ZHUZI_CATALOG_END */
 
+  /* CLASSICS_CATALOG_START */
+  ZH.VOLUMES.push({key:"gw",no:"課綱專區",name:"古文十五篇",span:"先秦至臺灣・十五篇齊備",tagline:"循十五篇課文，走進文字中的世界"});
+  ZH.CATALOG.push(...[
+  {
+    "id": "S_gw05_chushi",
+    "vol": "gw",
+    "ep": 5,
+    "name": "出師表",
+    "episode": "出征之前，先讓忠言到達",
+    "year": 0,
+    "period": "三國",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈出師表〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:camp",
+    "study": true,
+    "author": "諸葛亮"
+  },
+  {
+    "id": "S_gw06_taoyuan",
+    "vol": "gw",
+    "ep": 6,
+    "name": "桃花源記",
+    "episode": "找到入口之後，為何再也回不去",
+    "year": 0,
+    "period": "東晉",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈桃花源記〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_peach",
+    "study": true,
+    "author": "陶淵明"
+  },
+  {
+    "id": "S_gw07_shishuo",
+    "vol": "gw",
+    "ep": 7,
+    "name": "師說",
+    "episode": "越過身分的門檻，找到能解惑的人",
+    "year": 0,
+    "period": "唐代",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈師說〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_study",
+    "study": true,
+    "author": "韓愈"
+  },
+  {
+    "id": "S_gw08_qiuran",
+    "vol": "gw",
+    "ep": 8,
+    "name": "虯髯客傳",
+    "episode": "風塵同行，辨英雄的去與留",
+    "year": 0,
+    "period": "唐傳奇",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈虯髯客傳〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:night",
+    "study": true,
+    "author": "杜光庭（傳）"
+  },
+  {
+    "id": "S_gw09_chibi",
+    "vol": "gw",
+    "ep": 9,
+    "name": "赤壁賦",
+    "episode": "一江風月，從悲聲走向共適",
+    "year": 0,
+    "period": "宋代",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈赤壁賦〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_moon",
+    "study": true,
+    "author": "蘇軾"
+  },
+  {
+    "id": "S_gw10_xiangji",
+    "vol": "gw",
+    "ep": 10,
+    "name": "項脊軒志",
+    "episode": "在一間小屋裡，找回流逝的年月",
+    "year": 0,
+    "period": "明代",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈項脊軒志〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_study",
+    "study": true,
+    "author": "歸有光"
+  },
+  {
+    "id": "S_gw11_liuqiao",
+    "vol": "gw",
+    "ep": 11,
+    "name": "晚遊六橋待月記",
+    "episode": "離開午間人潮，等一輪自己的月亮",
+    "year": 0,
+    "period": "明代",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈晚遊六橋待月記〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_moon",
+    "study": true,
+    "author": "袁宏道"
+  },
+  {
+    "id": "S_gw12_laoshan",
+    "vol": "gw",
+    "ep": 12,
+    "name": "勞山道士",
+    "episode": "穿牆之前，先問自己學到了什麼",
+    "year": 0,
+    "period": "清代",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈勞山道士〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:mountain",
+    "study": true,
+    "author": "蒲松齡"
+  },
+  {
+    "id": "S_gw13_quanhe",
+    "vol": "gw",
+    "ep": 13,
+    "name": "勸和論",
+    "episode": "走過分類的界線，把物資送到每一戶",
+    "year": 0,
+    "period": "清代臺灣",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈勸和論〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_port",
+    "study": true,
+    "author": "鄭用錫"
+  },
+  {
+    "id": "S_gw14_lugang",
+    "vol": "gw",
+    "ep": 14,
+    "name": "鹿港乘桴記",
+    "episode": "一葉竹筏，追問港口為何沉寂",
+    "year": 0,
+    "period": "日治時期臺灣",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈鹿港乘桴記〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_port",
+    "study": true,
+    "author": "洪繻"
+  },
+  {
+    "id": "S_gw15_huaju",
+    "vol": "gw",
+    "ep": 15,
+    "name": "畫菊自序",
+    "episode": "在生活的空隙，畫出自己的志趣",
+    "year": 0,
+    "period": "1950年臺灣",
+    "genre": "角色操作＋文本閱讀",
+    "source": "〈畫菊自序〉",
+    "guest": false,
+    "status": "ready",
+    "scene": "scene:classic_chrysanthemum",
+    "study": true,
+    "author": "張李德和"
+  }
+]);
+  ZH.CLASSICS_MENU=[
+  {
+    "id": "S_cq08_weizheng",
+    "no": 1,
+    "title": "燭之武退秦師",
+    "author": "《左傳》（傳為左丘明）",
+    "period": "先秦",
+    "scene": "scene:cq08_world",
+    "reuse": true,
+    "focus": "從秦國利害理解說服層次，辨析晉文公退兵理由。"
+  },
+  {
+    "id": "S_cq16_datong",
+    "no": 2,
+    "title": "大同與小康",
+    "author": "《禮記・禮運》",
+    "period": "先秦",
+    "scene": "scene:cq16_world",
+    "reuse": true,
+    "focus": "比較天下為公、天下為家與禮的作用。"
+  },
+  {
+    "id": "S_zg11_zhuke",
+    "no": 3,
+    "title": "諫逐客書",
+    "author": "李斯",
+    "period": "先秦",
+    "scene": "scene:zg11_world",
+    "reuse": true,
+    "focus": "辨識四君用客、重物輕人與逐客資敵的論證。"
+  },
+  {
+    "id": "S_ch04_hongmen",
+    "no": 4,
+    "title": "鴻門宴",
+    "author": "司馬遷",
+    "period": "漢代",
+    "scene": "scene:ch04_world",
+    "reuse": true,
+    "focus": "以人物言行、座次與動作追蹤宴前、宴中、宴後的危機。"
+  },
+  {
+    "id": "S_gw05_chushi",
+    "no": 5,
+    "title": "出師表",
+    "author": "諸葛亮",
+    "period": "三國",
+    "scene": "scene:camp",
+    "reuse": false,
+    "focus": "分辨勸諫、薦賢、追敘身世與自我承擔。"
+  },
+  {
+    "id": "S_gw06_taoyuan",
+    "no": 6,
+    "title": "桃花源記",
+    "author": "陶淵明",
+    "period": "東晉",
+    "scene": "scene:classic_peach",
+    "reuse": false,
+    "focus": "追蹤空間轉換、古今異義與結尾的虛實效果。"
+  },
+  {
+    "id": "S_gw07_shishuo",
+    "no": 7,
+    "title": "師說",
+    "author": "韓愈",
+    "period": "唐代",
+    "scene": "scene:classic_study",
+    "reuse": false,
+    "focus": "掌握從師標準、對比論證與古今異義。"
+  },
+  {
+    "id": "S_gw08_qiuran",
+    "no": 8,
+    "title": "虯髯客傳",
+    "author": "杜光庭（傳）",
+    "period": "唐傳奇",
+    "scene": "scene:night",
+    "reuse": false,
+    "focus": "從言行識人，區分敘事塑造、傳奇與篇末議論。"
+  },
+  {
+    "id": "S_gw09_chibi",
+    "no": 9,
+    "title": "赤壁賦",
+    "author": "蘇軾",
+    "period": "宋代",
+    "scene": "scene:classic_moon",
+    "reuse": false,
+    "focus": "追蹤樂、悲、轉化的情緒，理解水月的變與不變。"
+  },
+  {
+    "id": "S_gw10_xiangji",
+    "no": 10,
+    "title": "項脊軒志",
+    "author": "歸有光",
+    "period": "明代",
+    "scene": "scene:classic_study",
+    "reuse": false,
+    "focus": "從空間變動、生活細節與補記讀親情。"
+  },
+  {
+    "id": "S_gw11_liuqiao",
+    "no": 11,
+    "title": "晚遊六橋待月記",
+    "author": "袁宏道",
+    "period": "明代",
+    "scene": "scene:classic_moon",
+    "reuse": false,
+    "focus": "辨識時間層次、繁華與幽賞的對比及性靈趣味。"
+  },
+  {
+    "id": "S_gw12_laoshan",
+    "no": 12,
+    "title": "勞山道士",
+    "author": "蒲松齡",
+    "period": "清代",
+    "scene": "scene:mountain",
+    "reuse": false,
+    "focus": "讀行為伏筆、前後照應與異史氏的諷喻。"
+  },
+  {
+    "id": "S_gw13_quanhe",
+    "no": 13,
+    "title": "勸和論",
+    "author": "鄭用錫",
+    "period": "清代臺灣",
+    "scene": "scene:classic_port",
+    "reuse": false,
+    "focus": "分清正邪與籍貫分類，以譬喻與因果讀勸和。"
+  },
+  {
+    "id": "S_gw14_lugang",
+    "no": 14,
+    "title": "鹿港乘桴記",
+    "author": "洪繻",
+    "period": "日治時期臺灣",
+    "scene": "scene:classic_port",
+    "reuse": false,
+    "focus": "以今昔對比與多重因果讀港市變遷，區分見聞與議論。"
+  },
+  {
+    "id": "S_gw15_huaju",
+    "no": 15,
+    "title": "畫菊自序",
+    "author": "張李德和",
+    "period": "1950年臺灣",
+    "scene": "scene:classic_chrysanthemum",
+    "reuse": false,
+    "focus": "辨志趣多元、典故映襯、謙辭與自我期許。"
+  }
+];
+  ZH.CLASSICS_MENU.forEach(e=>{const s=ZH.CATALOG.find(s=>s.id===e.id);if(s&&s.vol==="gw")ZH.LEARNING_TEXTS[e.id]={titles:["〈"+e.title+"〉"]};});
+  /* CLASSICS_CATALOG_END */
+
   /** 依代碼找劇本 */
   ZH.findScenario = id => ZH.CATALOG.find(s => s.id === id) || null;
 
   /** 某一卷的劇本 */
-  ZH.scenariosOf = vol => ZH.CATALOG.filter(s => s.vol === vol);
+  ZH.scenariosOf = vol => vol === "gw" ? ZH.CLASSICS_MENU.map(e=>({...ZH.findScenario(e.id),classicNo:e.no,name:e.title,episode:e.focus,period:e.period,author:e.author,scene:e.scene,classicReuse:e.reuse,classicTitle:e.title})) : ZH.CATALOG.filter(s => s.vol === vol);
 
   /** 話數的顯示文字 */
-  ZH.episodeLabel = s => s.vol === 'zz' ? (s.level === 'bio' ? '初階・人物' : '進階・思想') : (s.ep === 0 ? '序章' : s.ep === -1 ? '尾聲' : '第 ' + s.ep + ' 話');
+  ZH.episodeLabel = s => (s.classicNo || s.vol === 'gw') ? ('第 '+(s.classicNo||s.ep)+' 篇') : s.vol === 'zz' ? (s.level === 'bio' ? '初階・人物' : '進階・思想') : (s.ep === 0 ? '序章' : s.ep === -1 ? '尾聲' : '第 ' + s.ep + ' 話');
 
 })(window.ZH);
 </script>
