@@ -14,12 +14,12 @@
 
 ## 第一次發布
 
-本專案的接線檔已同步至原 GAS，原網址也已更新部署。本次不必重貼檔案或再次部署；完成 GitHub Pages 設定後，在原 GAS 左側開啟 `GitHubBridge`，選擇並執行 `installGitHubFrontend_` 即可。下方完整安裝說明可留作備份與重新安裝時使用。
+本專案的接線檔已同步至原 GAS，原網址也已更新部署。本次不必重貼檔案或再次部署；完成 GitHub Pages 設定後，在原 GAS 左側開啟 `GitHubBridge`，選擇並執行 `installGitHubFrontend` 即可。下方完整安裝說明可留作備份與重新安裝時使用。
 
 1. GitHub 儲存庫 → **Settings（設定）** → **Pages（網站發布）**。
 2. **Build and deployment（建置與部署）** → **Source（來源）** 選 **GitHub Actions（自動發布工作流程）**。
 3. 在 **Actions（工作流程）** 等候「發布縱橫鼎業」完成。
-4. GitHub 發布成功後，在原 GAS 執行一次 `installGitHubFrontend_`。完整操作見 [中文說明](docs/安裝與更新.md)。
+4. GitHub 發布成功後，在原 GAS 執行一次 `installGitHubFrontend`。完整操作見 [中文說明](docs/安裝與更新.md)。
 
 正式入口：[進入縱橫鼎業](https://s90194yeu-collab.github.io/zongheng-game/)。須先完成上述發布與 GAS 安裝。
 
@@ -40,8 +40,8 @@ npm run preview
 
 ## 更新
 
-更新遊戲來源後推送到 GitHub，等待工作流程完成，再於 GAS 編輯器執行一次 `installGitHubFrontend_` 切換至新版本。不必逐話複製 HTML。伺服器題庫、權限或資料欄位有變動時，仍須同步對應的 GAS 後端檔案。
+更新遊戲來源後推送到 GitHub，等待工作流程完成，再於 GAS 編輯器執行一次 `installGitHubFrontend` 切換至新版本。不必逐話複製 HTML。伺服器題庫、權限或資料欄位有變動時，仍須同步對應的 GAS 後端檔案。
 
-需要回原版畫面時，在 GAS 編輯器執行 `disableGitHubFrontend_`。學生紀錄仍在原試算表。
+需要回原版畫面時，在 GAS 編輯器執行 `disableGitHubFrontend`。學生紀錄仍在原試算表。
 
 程式、美術與教學內容由專案原作者提供；本儲存庫未另授權他人轉授權或散布。第三方 Three.js 使用 MIT 授權，授權文字見 `THIRD_PARTY_NOTICES.md`。

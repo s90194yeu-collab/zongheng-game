@@ -1,10 +1,38 @@
 /**
  * 縱橫鼎業 v4：GitHub 供應畫面、圖片與配樂；Google 繼續登入並保存所有學生紀錄。
  * 不改試算表分享，不搬移資料，不接受用戶端提供遠端網址。
- * 安裝：GitHub Pages 發布成功後，在編輯器執行 installGitHubFrontend_，再更新網頁部署。
+ * 安裝：GitHub Pages 發布成功後，在編輯器執行 installGitHubFrontend。
+ * 現有網頁已部署橋接核心時，啟用設定立即生效，不需要再次部署。
  */
 const GH_SITE_DEFAULT_ = 'https://s90194yeu-collab.github.io/zongheng-game/';
 const GH_RELEASE_DEFAULT_ = 'v4-d06977533301bd';
+
+/** 手動執行入口：只允許目前的部署教師操作，不能由訪客或學生切換全站設定。 */
+function githubRequireSetupUser_() {
+  const user = getCurrentUser_();
+  const effectiveEmail = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
+  if (!user.isTeacher || !user.email || user.email !== effectiveEmail) {
+    throw new Error('請使用原部署教師帳號，在 Apps Script 編輯器執行此函式。');
+  }
+}
+
+/** 【上方函式選單】啟用 GitHub 畫面與素材。 */
+function installGitHubFrontend() {
+  githubRequireSetupUser_();
+  return installGitHubFrontend_();
+}
+
+/** 【上方函式選單】檢查 GitHub 接線狀態。 */
+function checkGitHubFrontend() {
+  githubRequireSetupUser_();
+  return checkGitHubFrontend_();
+}
+
+/** 【上方函式選單】回復原本 GAS 畫面，學生紀錄保留。 */
+function disableGitHubFrontend() {
+  githubRequireSetupUser_();
+  return disableGitHubFrontend_();
+}
 
 function githubSettings_() {
   const p = PropertiesService.getScriptProperties();

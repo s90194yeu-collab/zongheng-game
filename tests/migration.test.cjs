@@ -46,6 +46,21 @@ test('GitHub失效與內容損壞可回原版，未啟用未完整的更新',()=
  q.props.set('GITHUB_FRONTEND_ENABLED','TRUE');assert.equal(q.e.doGet({parameter:{page:'hub'}}).getContent(),'LEGACY-FALLBACK');
  const r=bridge();const fetch=r.e.UrlFetchApp.fetch;r.e.UrlFetchApp.fetch=url=>{const result=fetch(url);return url.endsWith('Hub.html')?{...result,getContentText:()=> 'tampered'}:result;};assert.throws(()=>r.e.installGitHubFrontend_(),/驗證失敗/);
 });
+test('選單提供可直接執行的入口，學生與非部署教師無法切換全站設定',()=>{
+ const q=bridge();
+ q.e.Session={getEffectiveUser:()=>({getEmail:()=> 'teacher@gm.nssh.ntpc.edu.tw'})};
+ for(const name of ['installGitHubFrontend','checkGitHubFrontend','disableGitHubFrontend']){
+  assert.equal(typeof q.e[name],'function');
+  assert.throws(()=>q.e[name](),/原部署教師帳號/);
+ }
+ assert.equal(q.requests.length,0);assert.equal(q.props.size,0);
+ q.e.getCurrentUser_=()=>({email:'other@gm.nssh.ntpc.edu.tw',isTeacher:true});
+ assert.throws(()=>q.e.installGitHubFrontend(),/原部署教師帳號/);
+ q.e.getCurrentUser_=()=>({email:'teacher@gm.nssh.ntpc.edu.tw',isTeacher:true});
+ assert.equal(q.e.installGitHubFrontend().enabled,true);
+ assert.equal(q.e.checkGitHubFrontend().pages,46);
+ q.e.disableGitHubFrontend();assert.equal(q.props.get('GITHUB_FRONTEND_ENABLED'),'FALSE');
+});
 test('圖片與配樂改為直接檔案；原始API呼叫介面保留',()=>{
  const codes=fs.readdirSync(path.join(dist,'assets')).filter(f=>f.endsWith('.js')).map(f=>fs.readFileSync(path.join(dist,'assets',f),'utf8'));
  assert(codes.some(c=>c.includes('google.script.run')));assert(codes.some(c=>c.includes('ZH_STATIC_MEDIA')));assert(codes.some(c=>c.includes('music/')&&c.includes('fetch(')));
