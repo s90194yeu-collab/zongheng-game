@@ -5,10 +5,12 @@ const root=path.resolve(__dirname,'..');
 const raw=name=>fs.readFileSync(path.join(root,'src/legacy',name+'.html'),'utf8');
 
 test('發布的同一張地圖包含三卷資料，各卷仍保留自己的分期與代碼',()=>{
- const {release}=JSON.parse(fs.readFileSync(path.join(root,'dist/release.json')));
- const manifest=JSON.parse(fs.readFileSync(path.join(root,'dist/releases',release,'manifest.json')));
- const html=fs.readFileSync(path.join(root,'dist/releases',release,manifest.pages.Map.file),'utf8');
- const code=[...html.matchAll(/<script src="[^\"]+\/(assets\/[^\"]+\.js)"/g)].map(m=>fs.readFileSync(path.join(root,'dist',m[1]),'utf8')).join('\n');
+ // CI 先測試再建置；驗證已納入版本控管的發布檔，不依賴本機 dist。
+ const bridge=fs.readFileSync(path.join(root,'gas/GitHubBridge.gs'),'utf8');
+ const release=bridge.match(/GH_RELEASE_DEFAULT_\s*=\s*'(v4-[a-f0-9]+)'/)[1];
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'public/releases',release,'manifest.json')));
+ const html=fs.readFileSync(path.join(root,'public/releases',release,manifest.pages.Map.file),'utf8');
+ const code=[...html.matchAll(/<script src="[^\"]+\/(assets\/[^\"]+\.js)"/g)].map(m=>fs.readFileSync(path.join(root,'public',m[1]),'utf8')).join('\n');
  const context={window:{ZH:{}}};vm.createContext(context);
  for(const id of ['ch','cq','zg']){
   assert(code.includes('.WORLDS.'+id+'='),'發布地圖缺少 '+id);
