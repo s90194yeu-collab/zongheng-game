@@ -5,6 +5,7 @@
   calls.push({name,args});
   if(name==='api_getUser')return {ok:true,email:'',isSchool:false,isGuest:true,isTeacher:false,profile:null,loginUrl:''};
   if(name==='api_getAnchors'||name==='api_getStoryAnchors')return {ok:true,anchors:window.ZH_PREVIEW_ANCHORS[args[0]]||[],missing:[],source:'local-preview'};
+  if(name==='api_getLearningReview')return {ok:true,anchors:window.ZH_PREVIEW_ANCHORS[args[0]]||[]};
   if(name==='api_listSaves')return {ok:true,saves:[]};
   if(name==='api_loadGame')return {ok:true,state:null};
   if(name==='api_getCodex')return {ok:true,items:[]};

@@ -15,8 +15,8 @@ function bridge(){
  e.getAppUrl_=()=> 'https://script.google.com/macros/s/test/exec';e.getLoginUrl_=()=>'/login';e.getCurrentUser_=()=>({email:who,isSchool:!!who,isGuest:!who,isTeacher:false});e.getConfig_=()=>({allow_guest:'TRUE'});
  return {e,cache,props,requests,user:value=>who=value};
 }
-test('完整40話與六個平台頁面、每份內容完整可驗證',()=>{
- assert.equal(manifest.chapterCount,40);assert.equal(Object.keys(manifest.pages).length,46);assert.equal(manifest.mediaCount,202);assert.equal(manifest.musicCount,7);
+test('歷史40話與諸子12關與六個平台頁面、每份內容完整可驗證',()=>{
+ assert.equal(manifest.chapterCount,52);assert.equal(Object.keys(manifest.pages).length,58);assert.equal(manifest.mediaCount,208);assert.equal(manifest.musicCount,7);
  for(const [name,entry]of Object.entries(manifest.pages)){
   const html=fs.readFileSync(path.join(dist,'releases',release,entry.file),'utf8');
   assert.equal(crypto.createHash('sha256').update(html).digest('hex'),entry.sha256,name);
@@ -24,10 +24,10 @@ test('完整40話與六個平台頁面、每份內容完整可驗證',()=>{
   for(const match of html.matchAll(/(?:src|href)="https:\/\/s90194yeu-collab\.github\.io\/zongheng-game\/(assets\/[^"?]+)"/g))assert(fs.existsSync(path.join(dist,match[1])),name+' missing '+match[1]);
  }
 });
-test('GitHub啟用前仍走原GAS，啟用後讀46頁共用畫面，沒有搬學生資料',()=>{
+test('GitHub啟用前仍走原GAS，啟用後讀58頁共用畫面，沒有搬學生資料',()=>{
  const q=bridge();assert.equal(q.e.doGet({parameter:{page:'hub'}}).getContent(),'LEGACY-FALLBACK');
- const result=q.e.installGitHubFrontend_();assert.equal(result.chapters,40);assert.equal(result.pages,46);assert.equal(q.props.get('GITHUB_FRONTEND_ENABLED'),'TRUE');
- assert.equal(q.requests.length,48);assert(q.requests.every(url=>url.startsWith('https://s90194yeu-collab.github.io/zongheng-game/')));
+ const result=q.e.installGitHubFrontend_();assert.equal(result.chapters,52);assert.equal(result.pages,58);assert.equal(q.props.get('GITHUB_FRONTEND_ENABLED'),'TRUE');
+ assert.equal(q.requests.length,60);assert(q.requests.every(url=>url.startsWith('https://s90194yeu-collab.github.io/zongheng-game/')));
  const html=q.e.doGet({parameter:{page:'hub'}}).getContent();assert(html.includes('student1@gm.nssh.ntpc.edu.tw'));
 });
 test('共用快取不含身分，第二位學生只取得自己的資料',()=>{
@@ -58,7 +58,7 @@ test('選單提供可直接執行的入口，學生與非部署教師無法切�
  assert.throws(()=>q.e.installGitHubFrontend(),/原部署教師帳號/);
  q.e.getCurrentUser_=()=>({email:'teacher@gm.nssh.ntpc.edu.tw',isTeacher:true});
  assert.equal(q.e.installGitHubFrontend().enabled,true);
- assert.equal(q.e.checkGitHubFrontend().pages,46);
+ assert.equal(q.e.checkGitHubFrontend().pages,58);
  q.e.disableGitHubFrontend();assert.equal(q.props.get('GITHUB_FRONTEND_ENABLED'),'FALSE');
 });
 test('圖片與配樂改為直接檔案；原始API呼叫介面保留',()=>{

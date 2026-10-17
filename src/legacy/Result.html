@@ -421,6 +421,7 @@
   function buildBio() {
     const p = S.payload;
     const s = S.scen;
+    if(s.vol==='zz'){const a=anchorStats(p.anchors||[]);return {title:(p.role||s.name)+'研讀紀錄',body:(p.deeds||[]).map(sentence).join(''),taishi:'讀諸子者，當察其時、辨其言、問其所由。原文首答'+a.first+'／'+a.n+'；訂正與操作各存其跡。遊戲為教學推演，不能以動作成績判定人物學說或學生品德。'};}
     const ending = p.ending || {};
     const good = ending.good === true ? true : ending.good === false ? false : undefined;
     const role = String(p.role || '').trim();
@@ -549,7 +550,7 @@
   function renderHero() {
     const s = S.scen;
     const p = S.payload;
-    const head = '<div><p class="r-kicker">' + esc(volLabel(s)) + '・前 ' + s.year + ' 年・' + esc(s.source) + '</p>' +
+    const head = '<div><p class="r-kicker">' + esc(volLabel(s)) + '・' + esc(s.period||('前 '+s.year+' 年')) + '・' + esc(s.source) + '</p>' +
       '<h1>' + esc(s.name) + '</h1><p class="r-episode">' + esc(s.episode) + '</p>';
 
     if (!p) {
@@ -567,7 +568,7 @@
     const chars = len >= 4 ? Math.ceil(len / 2) : len;
     const plays = S.server && S.server.scenario && !S.fallback ? S.server.scenario.plays : 0;
     const chips = [
-      '<span class="zh-chip zh-chip--gilt">' + esc(MODE_LABELS[p.mode] || p.mode) + '模式</span>',
+      '<span class="zh-chip zh-chip--gilt">' + esc(S.scen.vol==='zz'?'研讀':MODE_LABELS[p.mode] || p.mode) + '模式</span>',
       p.faction ? '<span class="zh-chip">陣營：' + esc(p.faction) + '</span>' : '',
       p.role ? '<span class="zh-chip">扮演：' + esc(p.role) + '</span>' : '',
       plays > 1 ? '<span class="zh-chip zh-chip--patina">第 ' + plays + ' 次遊玩</span>' : '',
@@ -588,9 +589,9 @@
     const secs = num(p.durationSec);
     const stat = (label, value, unit) => '<div class="r-stat"><dt>' + label + '</dt><dd>' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</dd></div>';
     el.innerHTML =
-      stat('謀略', fmt(num(p.scoreStrategy)), '/ 100') +
-      stat('德望', fmt(num(p.scoreVirtue)), '/ 100') +
-      (a.n ? stat('史實錨點首答', a.first, '/ ' + a.n + ' 題') : '') +
+      stat(S.scen.vol==='zz'?'首輪操作':'謀略', fmt(num(p.scoreStrategy)), '/ 100') +
+      (S.scen.vol==='zz'?'':stat('德望', fmt(num(p.scoreVirtue)), '/ 100')) +
+      (a.n ? stat(S.scen.vol==='zz'?'閱讀首答':'史實錨點首答', a.first, '/ ' + a.n + ' 題') : '') +
       (c.total ? stat('本話圖鑑', c.got, '/ ' + c.total) : '') +
       (secs !== null ? stat('用時', secs < 60 ? '不到 1' : Math.round(secs / 60), '分鐘') : '');
     el.hidden = false;
@@ -682,6 +683,7 @@
 
   function renderDims() {
     if (!S.payload) return;
+    if(S.scen.vol==='zz'){$('r-dims').innerHTML='<h2 id="r-dims-h">研讀與操作分開呈現</h2><p>閱讀以原文首答、訂正與反思回顧；操作以首輪與最佳成績比較。練習模式不列競技榜，動作快慢不作個人品德評量。</p>';return;}
     const run = runDims();
     const cum = S.server && S.server.dims && !S.server.guest ? S.server.dims : null;
     const rows = DIMS.map(([k, l]) => '<span>' + l + '</span><span class="n">' + fmt(run[k] === null ? null : run[k], 1) + '</span>' +
@@ -740,8 +742,8 @@
     const a = anchorStats(p.anchors);
     const plays = S.server && S.server.scenario && !S.fallback ? S.server.scenario.plays : 0;
     el.innerHTML =
-      '<div class="r-block__head"><h2 id="r-anchors-h">史實錨點</h2>' +
-      '<span class="r-note">首答正確 ' + a.first + ' / ' + a.n + '・歧路回歸 ' + a.recovered + '・仍答錯 ' + a.fail + '</span></div>' +
+      '<div class="r-block__head"><h2 id="r-anchors-h">'+(S.scen.vol==='zz'?'閱讀與訂正':'史實錨點')+'</h2>' +
+      '<span class="r-note">首答正確 ' + a.first + ' / ' + a.n + (S.scen.vol==='zz'?'・訂正完成 ':'・歧路回歸 ') + a.recovered + '・仍答錯 ' + a.fail + '</span></div>' +
       (plays > 1 ? '<p class="r-note" style="margin:-4px 0 12px">這是你第 ' + plays + ' 次玩這一話。五維只採第一次的作答；這次的表現會記為練習，也會更新最佳紀錄。</p>' : '') +
       (S.fallback ? '<p class="r-note" style="margin:-4px 0 12px">以下是第一次遊玩時的作答。</p>' : '') +
       '<ol class="r-anchors">' + p.anchors.map((r, i) => {
@@ -751,11 +753,11 @@
         const stem = meta ? (meta.role ? '【' + meta.role + '】' : '') + meta.stem : r.anchorId;
         return '<li class="r-anc is-' + path + '"><details><summary>' +
           '<span class="r-anc__no">' + (i + 1) + '</span>' +
-          '<span class="r-anc__badge">' + PATH_LABELS[path] + '</span>' +
+          '<span class="r-anc__badge">' + (S.scen.vol==='zz'?({direct:'首答正確',fork:'訂正完成',fail:'待回顧'}[path]):PATH_LABELS[path]) + '</span>' +
           '<span class="r-anc__stem">' + esc(stem) + '</span></summary>' +
           '<div class="r-anc__body">' +
           (meta ? (meta.passage ? '<p class="r-anc__passage">' + esc(meta.passage) + '</p>' : '') +
-            (answer ? '<p><b>史實</b>' + esc(answer.text) + '</p>' : '') +
+            (answer ? '<p><b>'+(S.scen.vol==='zz'?'原文理解':'史實')+'</b>' + esc(answer.text) + '</p>' : '') +
             (meta.followUp ? '<p><b>原文</b>' + esc(meta.followUp) + '</p>' : '') +
             (meta.explanation ? '<p><b>解析</b>' + esc(meta.explanation) + '</p>' : '')
             : '<p class="r-note">題目內容讀取中，或這一題已被老師停用。</p>') +
@@ -895,9 +897,9 @@
     const lines = [
       'Re:縱橫鼎業　結算紀錄',
       '劇本：' + volLabel(s) + ' ' + s.name + '（' + s.source + '）',
-      '模式：' + (MODE_LABELS[p.mode] || p.mode) + '　結局：' + ((p.ending && p.ending.title) || '—'),
-      '謀略 ' + fmt(num(p.scoreStrategy)) + '　德望 ' + fmt(num(p.scoreVirtue)) +
-        (a.n ? '　史實錨點首答 ' + a.first + '/' + a.n : '') + (c.total ? '　圖鑑 ' + c.got + '/' + c.total : ''),
+      '模式：' + (S.scen.vol==='zz'?'研讀':MODE_LABELS[p.mode] || p.mode) + '　結局：' + ((p.ending && p.ending.title) || '—'),
+      (S.scen.vol==='zz'?'首輪操作 '+fmt(num(p.scoreStrategy)):'謀略 ' + fmt(num(p.scoreStrategy)) + '　德望 ' + fmt(num(p.scoreVirtue))) +
+        (a.n ? (S.scen.vol==='zz'?'　閱讀首答 ':'　史實錨點首答 ') + a.first + '/' + a.n : '') + (c.total ? '　圖鑑 ' + c.got + '/' + c.total : ''),
       '撰者：' + writerName() + (writerSeat() ? '（' + writerSeat() + '）' : ''),
       '',
       bioText(),
@@ -1051,8 +1053,14 @@
   // ───────────────────────── 啟動 ─────────────────────────
 
   // 故事山以本局的幕名與作答順序分組，內容全部連回本話原文。
+  function renderZhuziReview(el,p){
+    const parts=(p.learning||[]),ordered=(p.anchors||[]).map(r=>S.anchorsMeta[r.anchorId]).filter(Boolean);
+    const groups=Array.from({length:3},(_,i)=>({part:parts[i],items:ordered.filter((a,j)=>parts[i]&&parts[i].anchors?parts[i].anchors.includes(a.id):Math.min(2,Math.floor(j*3/Math.max(1,ordered.length)))===i)}));
+    el.innerHTML='<div class="r-block__head"><h2>諸子研讀・回到原文</h2></div><p class="pl-texts">'+esc(S.scen.source)+' · 先讀文字，再核對判斷的理由。</p>'+groups.map((g,i)=>'<details open><summary>'+(i+1)+' · '+esc(g.part?.title||'文本對讀')+'</summary>'+(g.part?.notes?.length?'<p>'+esc(g.part.notes[0])+'</p>':'')+g.items.map(a=>{const options=Array.isArray(a.options)?a.options:Object.entries(a.options||{}).map(([key,v])=>({key,text:Array.isArray(v)?v[0]:v})),correct=options.find(o=>o.key===a.answer);return '<div class="r-mountain__reading"><h3>'+esc(a.stem)+'</h3><blockquote>'+esc(a.passage)+'</blockquote><p><b>原文理解：</b>'+esc(correct?.text||'')+'</p><p>'+esc(a.explanation||'')+'</p></div>';}).join('')+'</details>').join('');el.hidden=false;
+  }
   function renderMountain(){
     const el=$('r-mountain'),p=S.payload;if(!p){el.hidden=true;return;}
+    if(S.scen.vol==='zz'){renderZhuziReview(el,p);return;}
     const phases=['故事發端','情勢推展','關鍵轉折','抉擇與收束','結局與回望'],stages=Array.isArray(p.learning)?p.learning:[],ordered=(p.anchors||[]).map(r=>S.anchorsMeta[r.anchorId]).filter(Boolean),groups=phases.map(()=>({stages:[],anchors:[]}));
     ordered.forEach((a,i)=>groups[Math.min(4,Math.floor(i*5/ordered.length))].anchors.push(a));
     stages.forEach((part,i)=>{const matches=groups.filter(g=>g.anchors.some(a=>(part.anchors||[]).includes(a.id)));if(matches.length)matches.forEach(g=>g.stages.push(part));else groups[Math.min(4,Math.floor(i*5/stages.length))].stages.push(part);});
@@ -1066,7 +1074,7 @@
        (g.anchors.length?g.anchors.map(reading).join(''):'<p class="r-note">'+(Object.keys(S.anchorsMeta).length?'此段沒有原文題；回想人物目標與局勢變化，並對照上方列傳。':'正在讀取本話原文……')+'</p>')+'</article>').join('')+'</div><p class="r-note">山形是整理情節的閱讀工具；各幕依本局順序排列。展開題目核對原句、字義與人物動機，再回想人物為何這樣做。</p>';
     el.querySelectorAll('[data-phase]').forEach(b=>b.onclick=()=>{const index=Number(b.dataset.phase);S.mountainPhase=index;el.querySelectorAll('[data-phase]').forEach(x=>x.setAttribute('aria-pressed',String(Number(x.dataset.phase)===index)));el.querySelectorAll('.r-mountain__panels>article').forEach((x,i)=>x.hidden=i!==index);el.querySelectorAll('[data-peak]').forEach((x,i)=>{x.setAttribute('fill',i===index?'#74c5af':'#d5b15b');x.setAttribute('r',i===index?'13':'9');});});el.hidden=false;
   }
-  function runMetrics(p){const a=p?.anchors||[],g=(p?.games||[]).filter(x=>!x.skipped);const pct=(x,max)=>max>0?Math.round(100*x/max):null;return [a.length?a.filter(x=>x.correct).length+'/'+a.length:'—',g.length?Math.round(g.reduce((s,x)=>s+(pct(x.firstScore??x.score,x.firstMax??x.maxScore)??0),0)/g.length)+'%':'—',g.length?Math.round(g.reduce((s,x)=>s+(pct(x.bestScore??x.score,x.bestMax??x.maxScore)??0),0)/g.length)+'%':'—',p?.scoreStrategy??'—',p?.scoreVirtue??'—',p?.durationSec!=null?Math.round(p.durationSec)+'秒':'—'];}
+  function runMetrics(p){const a=p?.anchors||[],g=(p?.games||[]).filter(x=>!x.skipped);const pct=(x,max)=>max>0?Math.round(100*x/max):null;return [a.length?a.filter(x=>x.correct).length+'/'+a.length:'—',g.length?Math.round(g.reduce((s,x)=>s+(pct(x.firstScore??x.score,x.firstMax??x.maxScore)??0),0)/g.length)+'%':'—',g.length?Math.round(g.reduce((s,x)=>s+(pct(x.bestScore??x.score,x.bestMax??x.maxScore)??0),0)/g.length)+'%':'—',p?.scoreStrategy??'—',p?.scenarioId?.startsWith('S_zz')?'不作評量':p?.scoreVirtue??'—',p?.durationSec!=null?Math.round(p.durationSec)+'秒':'—'];}
   function showRun(run){const p=normalize(run.payload);if(!p)return;S.payload=p;S.fallback=!!p.legacy;ZH.session.set('result:'+S.id,p);renderAll();}
   function renderRuns(){
     const el=$('r-runs');if(!S.payload&&!S.runs?.length){el.hidden=true;return;}el.hidden=false;
@@ -1074,7 +1082,7 @@
     const runs=S.runs,active=runs.filter(x=>x.status!=='replaced'),selected=runs.find(x=>x.runId===S.payload?.runId)||active[active.length-1],prior=active.find(x=>x.status==='kept'&&x.runId!==selected?.runId),pending=active.filter(x=>x.status==='pending');
     el.innerHTML='<div class="r-block__head"><h2>通關紀錄・重玩比較</h2><span class="r-note">保留 '+runs.filter(x=>x.status==='kept').length+' 局'+(pending.length?'・'+pending.length+'局待選':'')+'</span></div>'+
       (active.length?'<label>查看這一局 <select class="zh-input" id="r-run-select">'+active.map((r,i)=>'<option value="'+esc(r.runId)+'"'+(r.runId===selected?.runId?' selected':'')+'>'+esc((i+1)+'・'+(r.payload?.ending?.title||'通關')+'・'+String(r.finishedAt).slice(0,19).replace('T',' ')+(r.legacy?'（舊紀錄重建）':'')+(r.status==='pending'?'（待選）':''))+'</option>').join('')+'</select></label>':'<p class="r-note">此話是升級前的結算；再挑戰完成後可比較與保存。</p>')+
-      (selected?'<div class="r-runs__table"><table><thead><tr><th>表現</th>'+(prior?'<th>已保留一局</th>':'')+'<th>目前查看</th></tr></thead><tbody>'+['原文首答','必要體驗・首次平均','必要體驗・最佳平均','謀略','德行','用時'].map((label,i)=>'<tr><th>'+label+'</th>'+(prior?'<td>'+esc(runMetrics(prior.payload)[i])+'</td>':'')+'<td>'+esc(runMetrics(selected.payload)[i])+'</td></tr>').join('')+'</tbody></table></div>':'')+
+      (selected?'<div class="r-runs__table"><table><thead><tr><th>表現</th>'+(prior?'<th>已保留一局</th>':'')+'<th>目前查看</th></tr></thead><tbody>'+['原文首答','必要體驗・首次平均','必要體驗・最佳平均',S.scen.vol==='zz'?'首輪操作':'謀略',S.scen.vol==='zz'?'品德（不評量）':'德行','用時'].map((label,i)=>'<tr><th>'+label+'</th>'+(prior?'<td>'+esc(runMetrics(prior.payload)[i])+'</td>':'')+'<td>'+esc(runMetrics(selected.payload)[i])+'</td></tr>').join('')+'</tbody></table></div>':'')+
       pending.map(r=>'<div class="r-runs__decision"><p><b>'+esc(r.payload?.ending?.title||'本次挑戰')+'</b>：選擇保存方式。</p><div class="zh-row"><button type="button" class="zh-btn zh-btn--quiet" data-run-choice="replace" data-run-id="'+esc(r.runId)+'">取代已保留的紀錄</button><button type="button" class="zh-btn zh-btn--primary" data-run-choice="both" data-run-id="'+esc(r.runId)+'">兩者都保留</button></div></div>').join('')+
       '<p class="r-note">取代會改變自己的通關展示，舊局留作歷程備查；教師評量仍採原本的首次作答規則。尚未選擇的完整紀錄也會保存，日後可回來決定。</p>'+
       (runs.some(x=>x.status==='replaced')?'<details><summary>已取代的歷程（'+runs.filter(x=>x.status==='replaced').length+'局）</summary>'+runs.filter(x=>x.status==='replaced').map(x=>'<p class="r-note">'+esc(String(x.finishedAt).slice(0,19)+'・'+(x.payload?.ending?.title||'通關'))+'</p>').join('')+'</details>':'');

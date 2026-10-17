@@ -5,7 +5,7 @@
  * 現有網頁已部署橋接核心時，啟用設定立即生效，不需要再次部署。
  */
 const GH_SITE_DEFAULT_ = 'https://s90194yeu-collab.github.io/zongheng-game/';
-const GH_RELEASE_DEFAULT_ = 'v4-71e2602699d5d9';
+const GH_RELEASE_DEFAULT_ = 'v4-59e9c915641cbd';
 
 /** 手動執行入口：只允許目前的部署教師操作，不能由訪客或學生切換全站設定。 */
 function githubRequireSetupUser_() {
@@ -57,12 +57,14 @@ function githubManifest_(settings) {
   const cache = CacheService.getScriptCache(), key = 'gh4:manifest:' + settings.release;
   const saved = cache.get(key);
   const manifest = JSON.parse(saved || githubFetchText_(settings.site + 'releases/' + settings.release + '/manifest.json', 90000));
-  if (manifest.release !== settings.release || manifest.chapterCount !== 40 || !manifest.pages || !manifest.pages.Hub) throw new Error('GitHub 遊戲清單不完整。');
+  if (manifest.release !== settings.release || ![40,52].includes(manifest.chapterCount) || !manifest.pages || !manifest.pages.Hub) throw new Error('GitHub 遊戲清單不完整。');
+  const names = Object.keys(manifest.pages);
+  if (names.length !== manifest.chapterCount + 6 || names.filter(n => /^S_(cq|zg|ch)\d{2}_[a-z0-9]+$/.test(n)).length !== 40 || names.filter(n => /^S_zz\d{2}_[a-z0-9]+$/.test(n)).length !== manifest.chapterCount - 40 || ['Hub','Map','Result','Teacher','Profile','Gallery'].some(n => !manifest.pages[n])) throw new Error('GitHub 章節頁面數量不完整。');
   if (!saved) { try { cache.put(key, JSON.stringify(manifest), 21600); } catch (e) {} }
   return manifest;
 }
 function githubPageSource_(fileName, settings) {
-  if (!/^(Hub|Map|Result|Teacher|Profile|Gallery|S_(cq|zg|ch)\d{2}_[a-z0-9]+)$/.test(fileName)) throw new Error('不支援的遊戲頁面。');
+  if (!/^(Hub|Map|Result|Teacher|Profile|Gallery|S_(cq|zg|ch|zz)\d{2}_[a-z0-9]+)$/.test(fileName)) throw new Error('不支援的遊戲頁面。');
   const manifest = githubManifest_(settings), entry = manifest.pages[fileName];
   if (!entry || entry.file !== 'pages/' + fileName + '.html' || !/^[a-f0-9]{64}$/.test(entry.sha256)) throw new Error('找不到遊戲畫面。');
   const cache = CacheService.getScriptCache(), key = 'gh4:page:' + settings.release + ':' + fileName;

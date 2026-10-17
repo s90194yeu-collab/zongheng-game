@@ -1,0 +1,86 @@
+<script>
+(function(ZH){
+ 'use strict';
+ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ function create(type,assist){
+  return {v:1,type,assist:!!assist,time:0,limit:assist?240:150,x:130,y:440,hp:8,done:[],carry:-1,delivered:[],hits:0,misses:0,cooldown:0,dash:0,inv:0,pulse:0,spawn:0,enemies:[],status:'playing',notice:'',noticeUntil:0};
+ }
+ function targets(w){return w.type==='practice'?[{x:290,y:250},{x:540,y:430},{x:810,y:240}]:[{x:280,y:420},{x:535,y:235},{x:800,y:420}];}
+ function barriers(w){
+  if(w.type==='seam')return [{x:355,y:120,w:46,h:200},{x:355,y:470,w:46,h:55},{x:645,y:120,w:46,h:20},{x:645,y:290,w:46,h:235}];
+  if(['journey','rescue'].includes(w.type))return [{x:385,y:300,w:90,h:75},{x:665,y:310,w:100,h:65}];
+  return [];
+ }
+ function hazards(w){
+  if(w.type==='flow')return [0,1,2].map(i=>({x:350+i*180,y:315+Math.sin(w.time*(w.assist?.65:.9)+i*1.7)*135,r:w.assist?19:25}));
+  if(w.type==='argue')return [0,1].map(i=>({x:390+i*230+Math.cos(w.time*.8+i)*65,y:310+Math.sin(w.time*(w.assist?.6:.95)+i*2.5)*145,r:w.assist?20:27}));
+  return [];
+ }
+ function blocked(w,x,y){return barriers(w).some(b=>x+18>b.x&&x-18<b.x+b.w&&y+16>b.y&&y-16<b.y+b.h);}
+ function say(w,text){w.notice=text;w.noticeUntil=w.time+2.4;}
+ function hurt(w){if(w.inv>0)return;w.hp--;w.inv=1.5;say(w,'碰到障礙，觀察空隙再前進');}
+ function step(w,input,dt){
+  if(w.status!=='playing')return w;
+  dt=clamp(Number(dt)||0,0,.05);w.time+=dt;
+  for(const k of ['cooldown','dash','inv','pulse'])w[k]=Math.max(0,w[k]-dt);
+  let mx=(input.right?1:0)-(input.left?1:0),my=(input.down?1:0)-(input.up?1:0);const norm=Math.hypot(mx,my)||1;mx/=norm;my/=norm;
+  if(input.dash&&w.cooldown===0){w.dash=.22;w.cooldown=1.4;}
+  const speed=(w.assist?265:235)*(w.dash>0?1.9:1),nx=clamp(w.x+mx*speed*dt,50,950),ny=clamp(w.y+my*speed*dt,145,505);
+  if(!blocked(w,nx,w.y))w.x=nx;
+  if(!blocked(w,w.x,ny))w.y=ny;
+  if(hazards(w).some(h=>dist(w,h)<h.r+17)&&w.pulse<=0)hurt(w);
+  const ts=targets(w),npc={x:885,y:170};
+  if(['flow','seam'].includes(w.type)){
+   ts.forEach((t,i)=>{if(!w.done.includes(i)&&dist(w,t)<43){w.done.push(i);say(w,'取得第 '+(i+1)+' 枚概念簡');}});
+   if(w.done.length===3)w.status='won';
+  }
+  if(w.type==='defend'){
+   w.spawn-=dt;
+   if(w.spawn<=0){w.enemies.push({x:930,y:[205,345,475][w.hits+w.misses+w.enemies.length?Math.floor(w.time/.95)%3:0]});w.spawn=w.assist?1.8:1.5;}
+   w.enemies.forEach(e=>e.x-=(w.assist?95:120)*dt);
+   w.enemies=w.enemies.filter(e=>{if(e.x<65){w.misses++;w.hp--;return false;}return true;});
+  }
+  if(w.hp<=0||w.time>=w.limit)w.status='lost';
+  return w;
+ }
+ function interact(w){
+  if(w.status!=='playing')return;
+  const ts=targets(w),near=ts.findIndex((t,i)=>!w.done.includes(i)&&dist(w,t)<80),npc={x:885,y:170};
+  if(w.type==='practice'){
+   const next=w.done.length,p=clamp((Math.sin(w.time*(w.assist?1.6:2.4))+1)/2,0,1);
+   if(dist(w,ts[next]||npc)>82){say(w,'走到發光工位，觀察節奏後按互動');return;}
+   if(p>=(w.assist?.15:.28)&&p<=(w.assist?.85:.72)){w.done.push(next);say(w,'練習累積 '+w.done.length+' / 3');if(w.done.length===3)w.status='won';}
+   else{w.misses++;say(w,'再觀察一次，把握亮色區間');}
+  }else if(w.type==='defend'){
+   if(w.pulse>0)return;w.pulse=.42;const before=w.enemies.length;
+   w.enemies=w.enemies.filter(e=>dist(w,e)>(w.assist?150:115));w.hits+=before-w.enemies.length;
+   if(before>w.enemies.length)say(w,'成功守備 '+Math.min(6,w.hits)+' / 6');
+   if(w.hits>=6)w.status='won';
+  }else if(w.type==='rescue'){
+   if(w.carry<0&&dist(w,{x:135,y:440})<85){w.carry=0;say(w,'帶著補給走到尚未完成的求助點');}
+   else if(w.carry>=0&&near>=0){w.done.push(near);w.carry=-1;say(w,'援助完成 '+w.done.length+' / 3');if(w.done.length===3)w.status='won';}
+   else say(w,w.carry<0?'先回補給站領取，再送至發光求助點':'靠近尚未完成的求助點再互動');
+  }else if(['journey','argue'].includes(w.type)){
+   if(w.carry<0&&near>=0){w.carry=near;w.done.push(near);say(w,'取得書簡，送到右上方記錄臺');}
+   else if(w.carry>=0&&dist(w,npc)<85){w.delivered.push(w.carry);w.carry=-1;say(w,'已交付 '+w.delivered.length+' / 3');if(w.delivered.length===3)w.status='won';}
+   else{w.pulse=.42;say(w,w.carry>=0?'帶著書簡走到右上記錄臺':'靠近發光書簡後按互動');}
+  }else{w.pulse=.42;say(w,'觀察空隙，使用方向移動與衝刺');}
+ }
+ function score(w){return w.status==='won'?clamp(Math.round(10-Math.max(0,w.time-25)/24-(8-w.hp)*.45-w.misses*.15),1,10):0;}
+ function fresh(id){return {schema:'zhuzi-v1',chapterId:id,stage:0,phase:'intro',questionIndex:0,answers:{},attempts:{},recovered:{},games:[],gameAttempt:0,world:null,assist:false,elapsed:0};}
+ function answer(s,q,choice){
+  const attempt=(s.attempts[q.id]||0)+1,correct=choice===q.answer;s.attempts[q.id]=attempt;
+  if(!s.answers[q.id])s.answers[q.id]={anchorId:q.id,firstTry:true,correct,choice,attempt:1,path:'direct'};
+  if(correct)s.recovered[q.id]=true;
+  return {attempt,correct,firstTry:attempt===1,path:attempt===1?'direct':'fork'};
+ }
+ function recordGame(s,w,gameId){
+  const result={gameId,score:score(w),maxScore:10,durationSec:Math.round(w.time),practice:!!w.assist};
+  let entry=s.games.find(g=>g.gameId===gameId);
+  if(!entry){entry={gameId,firstScore:result.score,bestScore:result.score,attempts:0,practice:result.practice};s.games.push(entry);}
+  entry.attempts++;entry.bestScore=Math.max(entry.bestScore,result.score);
+  return result;
+ }
+ ZH.zhuziModel={create,targets,barriers,hazards,blocked,step,interact,score,fresh,answer,recordGame,dist};
+})(window.ZH);
+</script>
