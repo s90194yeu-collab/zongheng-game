@@ -1,0 +1,61 @@
+<script>
+(function(ZH){
+'use strict';const original=ZH.literaryCanvas.draw,keys=['lookout','soundtrail','snowcloak','incognito','watchrelay','fallingText','reins','doorflee','grapple','frost'];
+ZH.literaryCanvas.draw=function(ctx,w,t,images={}){
+ if(!keys.includes(w.mode))return original(ctx,w,t,images);
+ const gold='#e7c989',blue='#8ac4d2',green='#9ec7a3',red='#e5a29a',ink='#142c3c',colors=['#cbb486','#96bfc5','#b5c39a','#c09dbb'];
+ const box=(x,y,a,b,fill,stroke=null,r=8)=>{ctx.beginPath();ctx.roundRect(x,y,a,b,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.lineWidth=2;ctx.strokeStyle=stroke;ctx.stroke();}};
+ const text=(s,x,y,size=22,color=gold,align='center')=>{ctx.fillStyle=color;ctx.font='600 '+size+'px "Noto Serif TC","PingFang TC",serif';ctx.textAlign=align;ctx.fillText(String(s),x,y,950);};
+ const line=(a,b,color=gold,width=3)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();};
+ const circle=(x,y,r,fill,stroke=null)=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}};
+ const polygon=(ps,fill,stroke=null)=>{ctx.beginPath();ps.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}};
+ const actor=(x,y,name,img=images.player,scale=1)=>{if(img)ctx.drawImage(img,x-30*scale,y-85*scale,60*scale,88*scale);else{circle(x,y-55*scale,15*scale,'#e3c7a1');box(x-18*scale,y-39*scale,36*scale,44*scale,'#788c91');}text(name,x,y+25,17);};
+ const meter=(x,y,v,color=green,width=120)=>{box(x,y,width,9,'#0b2331aa');box(x,y,width*Math.max(0,Math.min(1,v)),9,color);};
+ ctx.save();ctx.clearRect(0,0,1000,560);if(images.scene)ctx.drawImage(images.scene,0,0,1000,560);else box(0,0,1000,560,ink);box(0,0,1000,560,'#102a3d55');
+ box(25,15,950,65,'#173241de',gold);text(t.mission.title,500,44,25);text(t.mission.genre+'・'+t.mission.place,500,69,17,green);
+ if(w.mode==='lookout'){
+  box(45,105,910,355,'#34647880',blue);box(500,112,300,333,'#cfdbb927',gold);text('浮標示航區',650,140,18);for(let r=0;r<3;r++)for(let i=0;i<12;i++)line({x:60+i*80+Math.sin(w.time+r)*12,y:185+r*105},{x:95+i*80,y:180+r*105},'#bbdce660',2);
+  polygon([{x:w.aim,y:525},{x:w.aim-48,y:120},{x:w.aim+48,y:120}],'#f1d79035');line({x:w.aim,y:510},{x:w.aim,y:120},'#f9e4aa99',5);circle(w.aim,510,18,gold);text('燈旗',w.aim,549,17);
+  for(const b of w.boats){if(b.x<30||b.x>970)continue;polygon([{x:b.x-39,y:b.y},{x:b.x+39,y:b.y},{x:b.x+25,y:b.y+20},{x:b.x-25,y:b.y+20}],b.done?'#79ae8b':'#ad8b67',gold);line({x:b.x,y:b.y},{x:b.x,y:b.y-42},gold,3);polygon([{x:b.x,y:b.y-44},{x:b.x+26,y:b.y-14},{x:b.x,y:b.y-14}],colors[b.route]);text(b.done?'已入安全道':['淺','中','深'][b.route],b.x,b.y-57,20,b.done?green:gold);meter(b.x-34,b.y+29,b.signal/1.2,gold,68);}
+  for(let i=0;i<3;i++){box(95+i*320,470,170,34,w.selected===i?'#738c82':'#1b3745',w.selected===i?gold:blue);text(['淺水道','中水道','深水道'][i],180+i*320,494,20);}
+  if(w.index===1){for(let i=0;i<35;i++){const x=(i*83+w.time*65)%1000,y=95+(i*43+w.time*120)%350;line({x,y},{x:x-13,y:y+22},'#cbdde282',2);}}else if(w.index===2)box(45,105,910,355,'#10263865');
+ }else if(w.mode==='soundtrail'){
+  box(55,100,890,415,'#315145b0',green);for(const q of w.walls){box(q.x,q.y,q.r-q.x,q.b-q.y,'#1a3c32',green,16);text('林壁',(q.x+q.r)/2,(q.y+q.b)/2+7,21,green);}
+  w.spots.forEach((p,i)=>{const done=i<w.next,now=i===w.next;circle(p.x,p.y,38+(now?Math.sin(w.time*3)*7:0),done?'#96c6a660':'#a7c5b52b',now?gold:green);circle(p.x,p.y,17,done?green:'#b1c7b455');text(done?p.name:now?'凝聽此處':'林後聲景',p.x,p.y-58,18,now?gold:green);if(now)meter(p.x-35,p.y+44,w.listen/.65,gold,70);});
+  if(w.index===2)actor(w.party.x,w.party.y,'同行者',null,.65);actor(w.x,w.y,'行者');text(w.heard?'聲音已辨，Q回應':'走近光圈，E凝聽',500,544,21);
+ }else if(w.mode==='snowcloak'){
+  box(205,150,590,350,'#857a65c9',gold);for(let i=0;i<3;i++){box(345+i*80,265,64,126,'#ebe0c0',gold);for(let n=0;n<5;n++)line({x:356+i*80,y:281+n*17},{x:397+i*80,y:281+n*17},'#726952',2);}
+  actor(500,408,'伏案青年',images.player,.9);const c=w.corners;polygon([c[0],c[1],c[3],c[2]],'#a1c8d367',blue);
+  w.anchors.forEach((p,i)=>{circle(p.x,p.y,21,'#e4ce8a30',gold);text('案角'+(i+1),p.x,p.y+(i<2?-33:38),17);});w.corners.forEach((p,i)=>{circle(p.x,p.y,w.selected===i?16:11,p.pinned?green:blue,w.selected===i?gold:ink);text(p.pinned?'已壓':'衣角'+(i+1),p.x,p.y-23,16);});
+  for(let i=0;i<6;i++){const x=70+i*160+Math.sin(w.time*2.1)*20;line({x,y:115},{x:x+65,y:120+Math.sin(w.time+i)*8},blue,3);}text('穿堂風牽動尚未固定的衣角',500,540,21);
+ }else if(w.mode==='incognito'){
+  box(60,260,880,235,'#304151bd',gold);box(430,260,160,235,w.phase===1?'#60896d88':'#7a545a99',w.phase===1?green:red);for(let i=0;i<5;i++){const x=130+i*170;box(x-71,118,142,118,w.gear[i]?'#5f8d83e6':'#203b4be6',w.selected===i?gold:blue);text(['敝衣','草屨','背筐','長鑱','佩飾'][i],x,165,23);text(w.gear[i]?'已帶上':'未帶',x,202,18);}
+  actor(510,343,w.phase===1?'門卒背向':'門卒巡查',null,.75);actor(850,430,'左公',images.npc);actor(w.x,430,w.sweeping?'清掃行進':'史可法');text('更衣處',170,486,21);text(w.visited?'帶著託付返回左端':'至右端見師，再返回',750,486,21);text('整套身分＋正在清掃＋通行時窗',500,540,21);
+ }else if(w.mode==='watchrelay'){
+  box(50,110,900,390,'#183b4cce',gold);for(let pair=0;pair<5;pair++){const x=150+pair*175;box(x-70,150,140,300,w.active===pair?'#55796ca8':'#294655',w.selected===pair?gold:blue);text('第'+(pair+1)+'班',x,190,23);for(let j=0;j<2;j++){actor(x,280+j*105,'健卒'+(pair*2+j+1),null,.65);meter(x-49,308+j*105,w.crew[pair*2+j]/100,w.crew[pair*2+j]>=60?green:red,98);}text(w.active===pair?'在哨':w.used.includes(pair)?'輪休':'未輪到',x,478,19);}
+  text(w.active<0?'漏鼓已移，下一班接哨':'漏鼓 '+w.watch.toFixed(1)+'／4秒',500,535,24);
+ }else if(w.mode==='fallingText'){
+  const cell=40,ox=340,oy=120;box(ox-5,oy-5,330,410,'#172b3ce6',gold);for(let y=0;y<10;y++)for(let x=0;x<8;x++){const n=w.board[y*8+x];box(ox+x*cell+1,oy+y*cell+1,38,38,n>=0?colors[n]:colors[Math.floor(x/2)]+'22','#abc3bb33',3);if(n>=0)text(['雅','理','實','麗'][n],ox+x*cell+20,oy+y*cell+27,20,ink);}
+  const p=w.piece,coords=p.vertical?[[0,0],[0,1]]:[[0,0],[1,0]];for(const [dx,dy]of coords){box(ox+(p.x+dx)*cell,oy+(p.y+dy)*cell,40,40,colors[p.kind],gold,3);text(['雅','理','實','麗'][p.kind],ox+(p.x+dx)*cell+20,oy+(p.y+dy)*cell+27,22,ink);}
+  for(let i=0;i<4;i++){box(70,135+i*92,220,70,colors[i]+'bb',gold);text(['奏議宜雅','書論宜理','銘誄尚實','詩賦欲麗'][i],180,163+i*92,23,ink);text(w.counts[i]+'／'+w.need,180,193+i*92,21,ink);}text('此份所需形制',800,230,23);box(755,260,w.target.vertical?40:80,w.target.vertical?80:40,colors[w.piece.kind],gold);text('第'+(w.target.x+1)+'欄'+(w.target.vertical?'・直置':'・橫置'),800,380,21);text('←→移簡',800,440,22,green);text('Q轉向・E落簡',800,480,22,green);
+ }else if(w.mode==='reins'){
+  const xOf=d=>d-w.distance+230,center=d=>{let j=0;while(j<w.road.length-2&&d>w.road[j+1].d)j++;const a=w.road[j],b=w.road[j+1];return a.y+(b.y-a.y)*Math.max(0,Math.min(1,(d-a.d)/(b.d-a.d)));};
+  box(30,100,940,420,'#5e7452aa');const top=[],bottom=[];for(let d=Math.max(0,w.distance-230);d<w.distance+800;d+=20){top.push({x:xOf(d),y:center(d)-70});bottom.unshift({x:xOf(d),y:center(d)+70});}polygon([...top,...bottom],'#d0bd8cdd',gold);
+  for(let i=1;i<w.road.length;i++){const p=w.road[i],x=xOf(p.d);if(x<20||x>980)continue;line({x,y:p.y-58},{x,y:p.y+58},i<=w.checked?green:gold,5);text('第'+i+'思',x,p.y-83,18);}
+  circle(210,w.y+27,21,'#45515b',gold);circle(255,w.y+27,21,'#45515b',gold);box(195,w.y-20,77,48,'#8b7357',gold);actor(230,w.y-16,'駕者',images.player,.62);line({x:270,y:w.y-7},{x:322,y:w.y-11},w.tension>1.1?red:gold,4);box(320,w.y-13,51,27,'#9c8a78',gold);text('朽索',302,w.y-33,16);text('及早控向，勿待臨彎硬催',500,543,23);
+ }else if(w.mode==='doorflee'){
+  box(40,100,920,195,'#233c57bc',blue);box(40,315,920,195,'#3d4552cf',gold);line({x:50,y:268},{x:950,y:268},'#b5b2a0',5);for(const wall of w.walls){box(wall.x,270-wall.h,35,wall.h,'#a28e72',gold,2);text('牆',wall.x+17,287-wall.h,15,ink);}actor(w.x,w.y,'老翁',images.player,.8);
+  actor(120,450,'夜宿的詩人',images.npc,.9);actor(700,450,'老婦',null,.9);box(798,340,96,150,'#755f48',gold);actor(920,450,'吏',null,.82);polygon(w.voice>0?[{x:930,y:360},{x:650,y:395},{x:650,y:470}]:[{x:930,y:360},{x:550,y:120},{x:850,y:120}],'#eed58e36');text('門前應答',700,335,20);text(w.actor?'正在操作老婦':'正在操作老翁',500,535,23);meter(820,475,w.suspicion/100,red,100);
+ }else if(w.mode==='grapple'){
+  box(80,345,840,150,'#725549ac',gold);box(265,155,220,288,'#703b3caa',gold);for(let i=0;i<6;i++)line({x:275+i*40,y:155},{x:275+i*40,y:345},'#bd8d68aa',12);box(290,375,170,45,'#987653',gold);text('銷金帳',375,140,24);
+  if(!w.safe)actor(120,440,'先離危處',null,.75);actor(w.x,420,'魯智深',images.npc,1.1);actor(w.enemy.x,420,'來人',null,1.1);if(w.phase==='duel'){text(w.enemyState,w.enemy.x,290,30,w.enemyState==='伸手'?gold:red);if(w.enemyState==='伸手'||w.grip)line({x:w.enemy.x-28,y:370},{x:w.x+25,y:370},w.grip?green:gold,8);}if(w.phase==='yield')text('已退讓，退開收勢',660,230,29,green);text('先問情願，護人而出手，退讓後收勢',500,540,23);
+ }else if(w.mode==='frost'){
+  const cam=Math.max(0,w.x-240),xOf=x=>x-cam,yOf=x=>330+Math.sin(x/260+w.index*.5)*55;box(25,100,950,420,'#b7c9d06b');const top=[],bottom=[];for(let x=cam;x<cam+1000;x+=30){top.push({x:xOf(x),y:yOf(x)-100});bottom.unshift({x:xOf(x),y:yOf(x)+100});}polygon([...top,...bottom],'#dce8eaaa','#94aab7');
+  w.shelters.forEach((s,i)=>{const x=xOf(s.x);if(x<0||x>1000)return;box(x-55,s.y-55,110,80,w.rested.includes(i)?'#668e86cc':'#756e5ccc',gold);polygon([{x:x-65,y:s.y-55},{x,y:s.y-95},{x:x+65,y:s.y-55}],'#516c7b',gold);text('背風處',x,s.y+56,19);});
+  if(cam+1000>2000&&w.index===2){const x=xOf(2140);box(x,110,1000-x,410,'#315c75c9');line({x:x-30,y:110},{x:x-30,y:490},gold,6);circle(x-30,180,16,w.signal===1?gold:'#7d98a3',gold);text('候訊登舟',x-30,140,21);polygon([{x:x+20,y:340},{x:x+140,y:340},{x:x+113,y:372},{x:x+43,y:372}],'#7b6853',gold);}
+  actor(xOf(w.x),w.y,'林沖',images.npc);for(let i=0;i<45;i++)circle((i*79+w.time*35)%1000,95+(i*47+w.time*48)%420,2,'#ecf5f8');text('冰面會滑，停步後再整衣護信',500,540,22);
+ }
+ ctx.restore();
+};
+})(window.ZH);
+</script>

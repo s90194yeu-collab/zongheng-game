@@ -1,13 +1,13 @@
 const{test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..'),raw=n=>fs.readFileSync(path.join(root,'src/legacy',n+'.html'),'utf8'),strip=s=>s.replace(/<\/?script>/g,'');
 const env={window:{ZH:{LEARNING_TEXTS:{}}}};env.ZH=env.window.ZH;vm.createContext(env);for(const n of ['Data_zhuzi','Data_classics','Data_a_selections','Zhuzi_models','Adventure_models'])vm.runInContext(strip(raw(n)),env);const A=env.ZH.adventureModel,M=env.ZH.zhuziModel;
-const chapters=Object.values(env.ZH.ZHUZI.chapters).concat(Object.values(env.ZH.CLASSICS.chapters),Object.values(env.ZH.A_SELECTIONS.chapters));
+const chapters=Object.values(env.ZH.ZHUZI.chapters).concat(Object.values(env.ZH.CLASSICS.chapters),Object.values(env.ZH.A_SELECTIONS.chapters)).filter(c=>c.adventureVersion===2);
 test('35關97幕皆有獨立敘事、改編對話、對手與動態挑戰，原典不混作改編台詞',()=>{
  assert.equal(chapters.length,35);let count=0;const intros=new Set(),types=new Set();for(const c of chapters){assert.equal(c.adventureVersion,2);for(const t of c.stages){count++;const a=t.adventure;types.add(a.type);assert.equal(a.frames.length,3);assert.equal(a.frames[0].kind,'narration');assert.equal(a.frames[1].kind,'adapted');assert(a.frames[0].text.length>25);assert(!intros.has(a.frames[0].text));intros.add(a.frames[0].text);assert(a.place);assert(a.rival);assert(a.scene.startsWith('scene:'));assert(t.passage);assert(t.source);}}
  assert.equal(count,97);assert.deepEqual([...types].sort(),['clash','race','siege','tempo']);
 });
 test('176題原典、題幹、選項、答案與解析逐字保留，不因遊戲改造更動',()=>{
- const baseline=require('./fixtures/study-anchor-baseline.json');for(const [f,expected]of Object.entries(baseline)){const e={};vm.createContext(e);vm.runInContext(fs.readFileSync(path.join(root,'src/legacy',f),'utf8'),e);const rows=Object.entries(e.SCENARIO_DATA).sort().map(([id,d])=>[id,d.anchors]);assert.equal(rows.reduce((n,[,a])=>n+a.length,0),expected.count);assert.equal(crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex'),expected.sha256);}
+ const baseline=require('./fixtures/study-anchor-baseline.json');for(const [f,expected]of Object.entries(baseline)){const e={};vm.createContext(e);vm.runInContext(fs.readFileSync(path.join(root,'src/legacy',f),'utf8'),e);const rows=Object.entries(e.SCENARIO_DATA).filter(([id])=>f!=='ASelections_data.gs'||/^S_al(0[1-9]|1[0-2])_/.test(id)).sort().map(([id,d])=>[id,d.anchors]);assert.equal(rows.reduce((n,[,a])=>n+a.length,0),expected.count);assert.equal(crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex'),expected.sha256);}
 });
 function simulate(type,{assist=false,tactic='read',seed=582,variant=1,passive=false,guard=false}={}){
  const w=A.create({type,variant},assist,tactic,seed);let cooldown=0;for(let i=0;i<18000&&w.status==='playing';i++){

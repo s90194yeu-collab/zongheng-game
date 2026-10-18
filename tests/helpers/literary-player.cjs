@@ -54,7 +54,7 @@ function play(L,w,{maxFrames=24000}={}){
  case 'errands':walk(w.tasks[0]);hold('action',2.2);secondary();walk(w.tasks[1]);walk({x:580,y:175},()=>w,{action:true});walk(w.tasks[2]);primary();walk(w.tasks[3]);secondary();primary();walk(w.tasks[4]);hold('guard',2.2);walk(w.tasks[5]);hold('action',3.2);break;
  case 'evidence':primary();secondary();primary();{const moves=[['up',4],['up',0],['right',1],['down',5],['down',9],['right',10],['right',11],['up',7],['up',3]];for(const [key,n]of moves){const g=w.gates.indexOf(n);if(g>=0)wait(()=>w.phase===g&&w.nav<=0,1000);else wait(()=>w.nav<=0,100);const current=w.cell;while(w.status==='playing'&&w.cell===current)tick({[key]:true});tick({},.28);}}break;
  case 'steelyard':if(!w.calibrated){secondary();tick({},1.5);}while(w.slider<w.mass)cmd('more');while(w.slider>w.mass)cmd('less');wait(()=>w.stable>=.8,2500);primary();break;
- default:throw Error('No player '+w.mode);
+ default:require('./classic-player.cjs').play(L,w,{tick,cmd,sel,primary,secondary,skill,walk,wait});
  }
  return {status:w.status,time:w.time,hp:w.hp,view:L.progress(w),frames};
 }

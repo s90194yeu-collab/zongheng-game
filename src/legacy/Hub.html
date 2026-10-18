@@ -225,7 +225,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
   function schedule(){if(active()&&fine.matches&&!raf)raf=requestAnimationFrame(flush);}
   function update(){const animate=active();scene.classList.toggle('is-static',!animate);button.disabled=media.matches;button.setAttribute('aria-pressed',String(animate));button.textContent=media.matches?'靜態場景':'景深動態：'+(enabled?'開':'關');button.title=media.matches?'依照裝置的減少動畫設定，使用靜態場景。':'切換場景的雲霧與景深動態';if(!animate){if(raf)cancelAnimationFrame(raf);raf=0;scene.style.removeProperty('--hub-x');scene.style.removeProperty('--hub-y');scene.style.removeProperty('--hub-scroll');}else schedule();}
   function move(e){if(e.pointerType==='touch')return;x=e.clientX/Math.max(innerWidth,1)*2-1;y=e.clientY/Math.max(innerHeight,1)*2-1;schedule();}
-  function setVolume(key){volume=['cq','zg','ch','zz','gw','al'].includes(key)?key:'cq';document.body.style.setProperty('--hub-art-active','var(--hub-art-'+volume+')');scene.dataset.volume=volume;title.textContent={cq:'春秋・爭盟之境',zg:'戰國・縱橫之境',ch:'楚漢・逐鹿之境',zz:'先秦・諸子之境',gw:'古文・十五篇之境',al:'課文・A類選文之境'}[volume];}
+  function setVolume(key){volume=['cq','zg','ch','zz','gw','al'].includes(key)?key:'cq';document.body.style.setProperty('--hub-art-active','var(--hub-art-'+volume+')');scene.dataset.volume=volume;title.textContent={cq:'春秋・爭盟之境',zg:'戰國・縱橫之境',ch:'楚漢・逐鹿之境',zz:'先秦・諸子之境',gw:'古文・十五篇之境',al:'經典・著作之境'}[volume];}
   function setEnabled(value){enabled=!!value;ZH.local.set('hubSceneMotion',enabled);update();}
   const change=()=>update(),hide=e=>{suspended=true;update();if(!e.persisted){disposed=true;window.removeEventListener('pointermove',move);window.removeEventListener('scroll',schedule);document.removeEventListener('visibilitychange',change);media.removeEventListener('change',change);fine.removeEventListener('change',change);}},show=()=>{if(!disposed){suspended=false;update();}};
   button.onclick=()=>setEnabled(!enabled);window.addEventListener('pointermove',move,{passive:true});window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('visibilitychange',change);media.addEventListener('change',change);fine.addEventListener('change',change);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);
@@ -396,9 +396,8 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
     const w = WORLDS[vol.key];
     wbox.innerHTML = '';
     if(vol.key==='gw'){wbox.innerHTML='<p class="gw-guide">依教育部課綱十五篇整理。四篇沿用既有關卡與進度，十一篇新增角色任務。可先開啟原文，再進入情境挑戰。</p>';}
-    if(vol.key==='al'){wbox.innerHTML='<p class="gw-guide">依龍騰108／109入學適用表：A為4～5家出版社選用，非難度分級。詩詞曲賦暫緩，依指定保留〈漁父〉，共26篇；14篇沿用原關卡與進度，12篇新增單篇任務。〈髻〉、〈散戲〉提供自編導讀，全文配合課本閱讀。</p>';}
     if(vol.key==='zz'){
-      wbox.innerHTML='<div class="zz-hub-levels"><p>六位諸子，各有獨立的初階傳記與進階選讀。可依課程直接選關。</p><div class="zh-row">'+['bio','read'].map(k=>'<button type="button" class="zh-btn '+(state.level===k?'zh-btn--primary':'zh-btn--quiet')+'" data-level="'+k+'" aria-pressed="'+(state.level===k)+'">'+(k==='bio'?'初階・人物傳記':'進階・思想閱讀')+'</button>').join('')+'</div></div>';
+      wbox.innerHTML='<div class="zz-hub-levels"><p>六位諸子，從初階傳記走向進階選讀；孟子另收〈王道之始〉。可依課程直接選關。</p><div class="zh-row">'+['bio','read'].map(k=>'<button type="button" class="zh-btn '+(state.level===k?'zh-btn--primary':'zh-btn--quiet')+'" data-level="'+k+'" aria-pressed="'+(state.level===k)+'">'+(k==='bio'?'初階・人物傳記':'進階・思想閱讀')+'</button>').join('')+'</div></div>';
       wbox.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{state.level=b.dataset.level;renderEpisodes();});
     }
     if (w) {

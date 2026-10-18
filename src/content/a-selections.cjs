@@ -102,8 +102,11 @@ S('時間與理解','【自編導讀】父親去世後，母親與姨娘步入�
 Q('導讀指出父逝後母親與姨娘的晚年變化，提醒讀者注意什麼？','家庭關係會隨時間和處境改變，須對照前後描寫',['兩人的所有關係永遠停在年輕時','外貌可以直接決定一生所有情感','小說人物和散文敘事者完全沒有差別'],'晚年與往昔對讀，能超越單一時點的高下比較，理解人物境遇。'),
 Q('要說明髻如何成為貫串全文的線索，最需要什麼？','比較相關細節在不同段落的出現與變化',['只說篇名字數很少','背出三個與髮式無關的成語','以遊戲操作秒數推算人物年齡'],'貫串線索需要跨段追蹤，單一物件的出現不等於已完成解讀。')])]}
 ];
+additional.push(...require('./classic-expansion.cjs').additional);
 additional.forEach((e,i)=>{e.no=i+1;e.id='S_al'+String(e.no).padStart(2,'0')+'_'+e.key;e.color=e.color||'#869d9b';e.note=e.note||e.focus;e.readerKind=e.readerKind||'selected';e.fullText=e.fullText||e.stages.map(s=>s.passage);});
-const order=['燭之武退秦師','諫逐客書','大同與小康','鴻門宴','桃花源記','出師表','虯髯客傳','師說','晚遊六橋待月記','勞山道士','項脊軒志','鹿港乘桴記','畫菊自序','勸和論','漁父','劉姥姥','庖丁解牛','王道之始（五十步笑百步）','吾十有五而志於學','弟子入則孝（入孝出弟）','學而不思則罔','顏淵問仁（克己復禮為仁）','孔乙己','一桿「稱仔」','散戲','髻'];
-additional.forEach(e=>{e.menuNo=order.indexOf(e.title)+1;});
-const entries=order.map((title,i)=>{const e=additional.find(e=>e.title===title);if(e)return {...e,menuNo:i+1};const old=classics.find(e=>e.title===title);if(!old)throw Error('Unknown A text '+title);return {...old,menuNo:i+1,reuse:true,readerKind:'full'};});
-module.exports={version:'1.0.0',entries,additional,scope:{publisher:'龍騰',applicable:'108、109入學適用',meaning:'A：4～5家出版社選用；不代表難度',pdf:'ABC選文表-108、109適用.pdf',excluded:['赤壁賦','蒹葭','浪淘沙（李煜）','破陣子（辛棄疾）','再別康橋'],exception:'依使用者指定保留〈漁父〉'}};
+const order=['馮諼客孟嘗君','漁父','庖丁解牛','典論論文','石壕吏','諫太宗十思疏','岳陽樓記','醉翁亭記','左忠毅公逸事','花和尚大鬧桃花村','林沖夜奔','劉姥姥','孔乙己','一桿「稱仔」','散戲','髻'];
+const retiredKeys=['zhixue','ruxiao','xuesi','wenren'];
+additional.forEach(e=>{e.menuNo=order.indexOf(e.title)+1;e.legacyOnly=retiredKeys.includes(e.key);e.integratedWith=e.key==='wangdao'?'mengzi_read':null;});
+const feng={id:'S_zg09_mengchang',key:'feng',title:'馮諼客孟嘗君',author:'《戰國策》',period:'戰國',scene:'scene:zg09_world',reuse:true,readerKind:'full',focus:'彈鋏、焚券市義與三窟，連同門客與政治處境對讀。',url:'https://zh.wikisource.org/zh-hant/馮諼客孟嘗君',fullText:require('./classic-texts.json').feng.paragraphs};
+const entries=order.map((title,i)=>{const e=title===feng.title?feng:additional.find(e=>e.title===title);if(!e)throw Error('Unknown classic '+title);return {...e,menuNo:i+1};});
+module.exports={version:'4.6.0',entries,additional,retiredKeys,scope:{name:'經典著作',excludedCollections:['論語','古文十五篇'],integratedMengzi:'S_al04_wangdao',linchong:'水滸傳小說選段'}};

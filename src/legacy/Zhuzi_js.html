@@ -256,7 +256,7 @@
  }
  async function start(options){
   bootOptions=options;root=document.getElementById('zhuzi-root');disposed=false;paused=false;busy=false;
-  root.innerHTML='<div class="zz-loading"><h1>'+esc(options.collection==='aSelections'?'A 類選文':options.collection==='classics'?'古文十五篇':'先秦諸子')+'</h1><p role="status">讀取文本與本章進度……</p></div>';
+  root.innerHTML='<div class="zz-loading"><h1>'+esc(options.loadingTitle||(options.collection==='aSelections'?'經典著作':options.collection==='classics'?'古文十五篇':'先秦諸子'))+'</h1><p role="status">讀取文本與本章進度……</p></div>';
   try{
    c=(options.collection==='aSelections'?ZH.A_SELECTIONS:options.collection==='classics'?ZH.CLASSICS:ZH.ZHUZI)?.chapters[options.id];if(!c)throw Error('找不到本章內容');if(!await ZH.requireStudentProfile())return;
    const [saved,questions]=await Promise.all([ZH.load(c.id,'history'),ZH.call('api_getStoryAnchors',c.id,options.anchorOrder)]);
