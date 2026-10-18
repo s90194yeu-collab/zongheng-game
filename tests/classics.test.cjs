@@ -7,7 +7,7 @@ const cenv=env();vm.runInContext(strip(read('src/legacy/Data_catalog.html')),cen
 const d={};vm.createContext(d);vm.runInContext(read('src/legacy/Classics_data.gs'),d);const drafts=d.SCENARIO_DATA;
 test('課綱十五篇順序完整，四篇直接沿用原ID，不重複登記或另建存檔',()=>{
  assert.deepEqual(entries.map(e=>e.title),['燭之武退秦師','大同與小康','諫逐客書','鴻門宴','出師表','桃花源記','師說','虯髯客傳','赤壁賦','項脊軒志','晚遊六橋待月記','勞山道士','勸和論','鹿港乘桴記','畫菊自序']);
- const ZH=cenv.ZH,menu=ZH.scenariosOf('gw');assert.equal(menu.length,15);assert.equal(ZH.CATALOG.length,63);assert.equal(new Set(ZH.CATALOG.map(s=>s.id)).size,63);
+ const ZH=cenv.ZH,menu=ZH.scenariosOf('gw');assert.equal(menu.length,15);assert.equal(ZH.CATALOG.length,75);assert.equal(new Set(ZH.CATALOG.map(s=>s.id)).size,75);
  assert.deepEqual(entries.filter(e=>e.reuse).map(e=>e.id),['S_cq08_weizheng','S_cq16_datong','S_zg11_zhuke','S_ch04_hongmen']);
  for(const e of entries){assert.equal(menu.find(s=>s.id===e.id).name,e.title);if(!e.reuse)assert.equal(menu.find(s=>s.id===e.id).status,'ready');assert.equal(ZH.CATALOG.filter(s=>s.id===e.id).length,1);if(e.reuse)assert(!drafts[e.id]);}
 });

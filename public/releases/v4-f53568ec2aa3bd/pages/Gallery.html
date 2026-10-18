@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant"><head><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta charset="utf-8"><base target="_top"><title>小小史冊收藏館｜Re:縱橫鼎業</title>
+<!--ZH_SERVER_BOOT-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=Cinzel:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/942c653fb11a713afd6964bd.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/d790c83aab980972bef3071b.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/08b2679af061c92c161a36da.css">
+
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/33699a056fccd0b0788cb299.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/1137ccfa4cb0a1a421e18a9a.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/58c3441a51b09b17267c57a5.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/91fab6a6d46621eef14e8127.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/43a4c732c9a0958f89c7c677.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/9545154126d9f059eb9f4545.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/964e5a8e22471a79667c73b5.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/60fc49dd71a3179ca8167083.css">
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/17530ea2c57706f8c627026c.css"></head><body><div class="zh-app">
+<header class="zh-topbar"><a class="zh-mark" id="gallery-mark" href="#"><span class="zh-mark__re">Re:</span><span class="zh-mark__name">縱橫鼎業</span></a><div class="zh-row gallery-nav"><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="gallery-profile">我的策士</button><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="gallery-home">回關卡</button></div></header>
+<main class="zh-main gallery-main">
+<section class="gallery-hero"><div><h1>小小史冊收藏館</h1><p>把走過的篇章，收藏成一座可愛的小天地。</p></div><div class="gallery-progress" id="gallery-progress"></div></section>
+<p class="gallery-status" id="gallery-status" role="status" aria-live="polite">正在打開收藏館……</p>
+<div class="gallery-layout"><section class="gallery-view" aria-label="3D收藏展示"><div class="gallery-scene" id="gallery-scene"></div><span class="gallery-view-label">Q版策士與史冊小展台</span><div class="gallery-controls"><button type="button" class="zh-btn zh-btn--quiet" data-camera="left" aria-label="向左旋轉">向左轉</button><button type="button" class="zh-btn zh-btn--quiet" data-camera="right" aria-label="向右旋轉">向右轉</button><button type="button" class="zh-btn zh-btn--quiet" data-camera="in">拉近</button><button type="button" class="zh-btn zh-btn--quiet" data-camera="out">拉遠</button><button type="button" class="zh-btn zh-btn--quiet" data-camera="reset">回到正面</button><button type="button" class="zh-btn zh-btn--quiet" id="gallery-spin" aria-pressed="false">慢慢轉</button><button type="button" class="zh-btn zh-btn--quiet" id="gallery-photo">拍張紀念照</button></div><div class="gallery-environment-controls"><label>環境 <select id="gallery-environment" aria-label="收藏館環境"></select></label><label>3D畫質 <select id="gallery-quality"><option value="auto">依裝置調整</option><option value="low">流暢</option><option value="high">精緻</option></select></label></div><details class="gallery-play"><summary>與策士玩一下</summary><div id="gallery-motions" class="st3-camera"></div><div class="st3-walk"><button type="button" data-walk="0,-1">↑ 往後</button><button type="button" data-walk="-1,0">← 左走</button><button type="button" data-walk="1,0">右走 →</button><button type="button" data-walk="0,1">↓ 往前</button><button type="button" id="gallery-position-reset">回到中央</button><button type="button" id="gallery-stop">停止動作</button></div><p id="gallery-motion-status" role="status" aria-live="polite">挑一個動作，或讓策士走一小步。</p></details><p class="gallery-hint">拖曳旋轉・雙指或滾輪縮放・點展品看簡介。也可以用下方清單選擇。</p></section><aside class="zh-panel gallery-description" id="gallery-detail" aria-live="polite"></aside></div>
+<section class="gallery-collection" aria-label="收藏清單"><div class="gallery-filters"><input class="zh-input" id="gallery-search" type="search" placeholder="搜尋人物、寶物或篇章" aria-label="搜尋收藏"><label><input type="checkbox" id="gallery-owned">只看已收藏</label><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="gallery-book">平面圖鑑</button><button type="button" class="zh-btn zh-btn--quiet zh-btn--sm" id="gallery-refresh">重新讀取</button></div><nav class="gallery-tabs" id="gallery-types" aria-label="收藏類別"></nav><div class="gallery-grid" id="gallery-items"></div><div class="gallery-pagination"><button type="button" class="zh-btn zh-btn--quiet" id="gallery-prev">上一組</button><span id="gallery-page" class="zh-small"></span><button type="button" class="zh-btn zh-btn--quiet" id="gallery-next">下一組</button></div><p class="gallery-note" id="gallery-mode"></p></section>
+</main></div>
+
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/ce13c9b7b23f14f749f33eb7.js"></script>
+
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/4c901ca06b32085d9b0651b4.css">
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/6f43ea55444c1df5da0912aa.js"></script>
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/ed318b2410d389fcdcf18ea3.css">
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/ae8df3e138d63c0dc9fa3dec.js"></script>
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/39ff212aa7e4a7596b9fa0f5.css">
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/7fbaff435374b0f066cc1fbe.js"></script>
+
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/c7a14f8b4e97ed9ee031b359.css">
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/37c7caf6bb3c7809a429a5f9.js"></script>
+
+
+
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/24c5b392a1c958d263e46703.css">
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/5c05c5f149bbb24cd6d247c6.js"></script>
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/bab0231c09aee97805b3486e.css">
+
+
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/08a025a0e77577a534c382cb.css">
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/056ace6a634b2c4254128d0d.js"></script>
+<link rel="stylesheet" href="https://s90194yeu-collab.github.io/zongheng-game/assets/0a14f8d7f4e11f5ad722d45f.css">
+
+<script src="https://s90194yeu-collab.github.io/zongheng-game/assets/ed955707a0b82aebe1e1519c.js"></script></body></html>
+

@@ -3,6 +3,7 @@ const root=path.resolve(__dirname,'..'),source=path.join(root,'src/legacy'),dist
 const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
 require('./generate-zhuzi.cjs');
 require('./generate-classics.cjs');
+require('./generate-a-selections.cjs');
 const raw=name=>fs.readFileSync(path.join(source,name+'.html'),'utf8');
 const manifest=JSON.parse(raw('Data_assets').split('/* ASSET_MANIFEST_START */')[1].split('/* ASSET_MANIFEST_END */')[0]);
 const fingerprints=fs.readdirSync(source).sort().filter(n=>/\.html$|_data\.gs$|^code\.gs$/.test(n)).map(n=>hash(fs.readFileSync(path.join(source,n))));
@@ -78,7 +79,7 @@ function externalize(html){
 }
 const e=environment(),catalogModel={window:{ZH:{}}};vm.createContext(catalogModel);
 for(const m of e.include('Data_catalog').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))vm.runInContext(m[1],catalogModel);
-const chapters=catalogModel.window.ZH.CATALOG.filter(s=>s.status==='ready');if(chapters.length!==63)throw Error('正式劇本應為63關，實際'+chapters.length);
+const chapters=catalogModel.window.ZH.CATALOG.filter(s=>s.status==='ready');if(chapters.length!==75)throw Error('正式劇本應為75關，實際'+chapters.length);
 const central=JSON.parse(fs.readFileSync(path.join(root,'src/central-anchors.json'),'utf8')),registry=e.scenarioRegistry_();
 const localAnchors={};
 for(const s of chapters)localAnchors[s.id]=(registry[s.id]?.anchors||central[s.id]||[]).map(a=>({...a,scenarioId:s.id,options:Object.entries(a.options||{}).map(([key,v])=>({key,text:v[0],type:v[1]||'',fork:v[2]||''}))}));
@@ -98,7 +99,7 @@ fs.writeFileSync(path.join(dist,'.nojekyll'),'');
 fs.cpSync(path.join(dist,'assets'),path.join(root,'public/assets'),{recursive:true});
 fs.cpSync(releaseDir,path.join(root,'public/releases',release),{recursive:true});
 // 公開入口只提供進入學校遊戲的連結；不接觸學生資料或私密設定。
-fs.writeFileSync(path.join(dist,'index.html'),`<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Re:縱橫鼎業</title><style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:linear-gradient(#111b30aa,#111b30ee),url('home/cq.webp') center/cover;color:#f5e8c6;font:18px/1.8 "PingFang TC",sans-serif}main{max-width:780px;padding:36px}h1{font-size:clamp(32px,6vw,58px)}a{display:inline-block;background:#e4bd5e;color:#202a32;border-radius:10px;padding:12px 28px;text-decoration:none;font-weight:700}p{max-width:640px}.sub{color:#ebce8d}</style><main><h1>Re:縱橫鼎業</h1><p class="sub">〜轉生成 Lv.1 亂世策士的我，只能靠《古文觀止》問鼎天下〜</p><p>春秋、戰國、楚漢四十話，加上先秦諸子十二關初進階冒險，以及古文十五篇專區（沿用四篇、新增十一篇）。</p><a href="${config.gasUrl}" target="_self">進入遊戲</a><p>使用學校 Google 帳號保存進度；訪客可遊玩四篇課綱選文。學生資料由原本的 Google 試算表保存。</p></main></html>`);
+fs.writeFileSync(path.join(dist,'index.html'),`<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Re:縱橫鼎業</title><style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:linear-gradient(#111b30aa,#111b30ee),url('home/cq.webp') center/cover;color:#f5e8c6;font:18px/1.8 "PingFang TC",sans-serif}main{max-width:780px;padding:36px}h1{font-size:clamp(32px,6vw,58px)}a{display:inline-block;background:#e4bd5e;color:#202a32;border-radius:10px;padding:12px 28px;text-decoration:none;font-weight:700}p{max-width:640px}.sub{color:#ebce8d}</style><main><h1>Re:縱橫鼎業</h1><p class="sub">〜轉生成 Lv.1 亂世策士的我，只能靠《古文觀止》問鼎天下〜</p><p>春秋、戰國、楚漢四十話，加上先秦諸子十二關初進階冒險，古文十五篇，以及依108／109教材表整理的 A 類選文26篇（沿用14篇、新增12篇，詩詞曲賦暫緩、保留漁父）。</p><a href="${config.gasUrl}" target="_self">進入遊戲</a><p>使用學校 Google 帳號保存進度；訪客可遊玩四篇課綱選文。學生資料由原本的 Google 試算表保存。</p></main></html>`);
 const bridge=path.join(root,'gas/GitHubBridge.gs');let bridgeSource=fs.readFileSync(bridge,'utf8');bridgeSource=bridgeSource.replace(/const GH_RELEASE_DEFAULT_ = '[^']*';/,`const GH_RELEASE_DEFAULT_ = '${release}';`);fs.writeFileSync(bridge,bridgeSource);
 fs.writeFileSync(path.join(root,'qa/build.json'),JSON.stringify({...result,assets:fs.readdirSync(path.join(dist,'assets')).length,generatedAt:new Date().toISOString()},null,2));
 console.log(`已完成 ${chapters.length} 話、${Object.keys(pages).length} 頁、${Object.keys(media).length} 件素材、4 張首頁圖、7 首配樂。版本 ${release}`);

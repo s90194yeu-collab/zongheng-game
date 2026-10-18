@@ -63,7 +63,7 @@ const PAGE_ROUTES = {
 };
 
 /** 劇本頁檔名格式：S_cq08_weizheng（時期 cq／zg／ch ＋ 兩位數序號 ＋ 小寫拼音） */
-const SCENARIO_PAGE_PATTERN = /^S_(cq|zg|ch|zz|gw)\d{2}_[a-z0-9]+$/;
+const SCENARIO_PAGE_PATTERN = /^S_(cq|zg|ch|zz|gw|al)\d{2}_[a-z0-9]+$/;
 
 /**
  * 訪客可完整遊玩的課綱選文四關（未登入也能玩，但不寫入紀錄）：

@@ -81,6 +81,7 @@
   entry.attempts++;entry.bestScore=Math.max(entry.bestScore,result.score);
   return result;
  }
- ZH.zhuziModel={create,targets,barriers,hazards,blocked,step,interact,score,fresh,answer,recordGame,dist};
+ function strategy(games,stageCount){return Math.round(games.reduce((n,g)=>n+g.firstScore,0)/Math.max(1,stageCount)*10);}
+ ZH.zhuziModel={strategy,create,targets,barriers,hazards,blocked,step,interact,score,fresh,answer,recordGame,dist};
 })(window.ZH);
 </script>

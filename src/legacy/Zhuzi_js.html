@@ -19,19 +19,19 @@
   catch(e){note('存檔失敗：'+e.message+'。請按「儲存」重試。',true);throw e;}
  }
  function shell(){
-  root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+(c.fullText?button('全篇原文','text'):'')+button('儲存','save')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div><div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
+  root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+(c.fullText?button(c.readerLabel||'全篇原文','text'):'')+button('儲存','save')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div><div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
   view=root.querySelector('#zz-view');
   if(saveError)note(saveError,true);
   root.scrollIntoView({block:'start'});
   root.querySelector('[data-action=save]').onclick=()=>guard(async()=>{await checkpoint();ZH.toast('進度已儲存。','ok');});
   root.querySelector('[data-action=pause]').onclick=()=>pause();
-  const reader=root.querySelector('[data-action=text]');if(reader)reader.onclick=()=>{if(s.phase==='game'&&!paused)pause();ZH.modal({title:c.name+'・原文閱讀',body:'<p>'+esc(c.school)+' · '+esc(c.period)+'</p>'+c.fullText.map(p=>'<p class="zz-fulltext">'+esc(p)+'</p>').join('')+'<p><a target="_blank" rel="noopener noreferrer" href="'+esc(c.url)+'">核對學科中心原文版本</a></p>',actions:[{label:'返回本章',value:true,kind:'primary'}]});};
+  const reader=root.querySelector('[data-action=text]');if(reader)reader.onclick=()=>{if(s.phase==='game'&&!paused)pause();ZH.modal({title:c.name+'・'+(c.readerLabel||'原文閱讀'),body:'<p>'+esc(c.school)+' · '+esc(c.period)+'</p>'+c.fullText.map(p=>'<p class="zz-fulltext">'+esc(p)+'</p>').join('')+(c.readerKind==='guide'?'<p>本頁為自編導讀，全文請配合課本閱讀。</p>':'')+(c.editionNote?'<p>'+esc(c.editionNote)+'</p>':'')+'<p><a target="_blank" rel="noopener noreferrer" href="'+esc(c.url)+'">核對文本或教學來源</a></p>',actions:[{label:'返回本章',value:true,kind:'primary'}]});};
  }
  function bind(action,fn){const el=view.querySelector('[data-action="'+action+'"]');if(el)el.onclick=()=>guard(fn);}
  async function guard(fn){if(busy)return;busy=true;try{await fn();}catch(e){ZH.toast(e.message||'操作未完成，請重試。','bad');}finally{busy=false;}}
- function source(t){return '<p class="zz-source">選讀：'+esc(t.source)+' · <a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">核對原典</a>（節錄；標點與字形依教學統一）</p>';}
+ function source(t){if(c.readerKind==='guide')return '<p class="zz-source">自編導讀・全文請配合課本。<a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">教學參考來源</a></p>';return '<p class="zz-source">選讀：'+esc(t.source)+' · <a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">核對原典</a>（節錄；標點與字形依教學統一）</p>';}
  function portrait(person){
-  try{return window.ART.portrait({id:c.philosopher,name:person,glyph:c.glyph,color:c.color,art:{hat:c.vol==='gw'?'jin':'guan',old:c.vol!=='gw',beard:c.vol==='gw'?1:3,robe:c.color,prop:'scroll',...(['紅拂女','張李德和'].includes(person)?{female:true,hat:'none',beard:0}: {})}},{bust:false});}catch(e){return '<span>'+esc(person)+'</span>';}
+  try{return window.ART.portrait({id:c.philosopher,name:person,glyph:c.glyph,color:c.color,art:{hat:c.vol==='gw'?'jin':'guan',old:c.vol!=='gw',beard:c.vol==='gw'?1:3,robe:c.color,prop:'scroll',...c.art,...(['紅拂女','張李德和'].includes(person)?{female:true,hat:'none',beard:0}: {})}},{bust:false});}catch(e){return '<span>'+esc(person)+'</span>';}
  }
  function render(){
   stop();shell();if(paused){renderPause();return;}
@@ -43,7 +43,7 @@
  }
  function renderIntro(){
   const t=stage();s.phase='intro';
-  view.innerHTML='<div class="zz-panel zz-reader"><div><p class="zz-kicker">'+esc(level())+' ／ 第 '+(s.stage+1)+' 段</p><h2>'+esc(t.title)+'</h2><div class="zz-passage">'+esc(t.passage)+'</div>'+source(t)+'<details><summary>語譯提示</summary><p class="zz-gloss">'+esc(t.gloss)+'</p></details><p class="zz-intro">'+esc(t.story)+'</p><div class="zz-mission"><strong>'+esc(t.game.title)+'</strong><p>'+esc(t.game.goal)+'</p><p>目標概念：'+t.game.targets.map(esc).join('、')+'。操作完成後回讀原文並作答。</p><label><input type="checkbox" id="zz-assist" '+(s.assist?'checked':'')+'> 練習模式（速度較緩、時間較寬；不上競技榜）</label><div class="zz-inline">'+button('進入場景','begin',true)+'</div></div></div><aside><div class="zz-art">'+portrait(c.person)+'</div><p class="zz-note">'+esc(c.note)+'</p><p class="zz-note">桌面：方向鍵／WASD 移動，E 互動，空白鍵衝刺。手機：使用畫面下方方向盤與互動鍵。三段各有獨立挑戰，可暫停、儲存及續玩。</p></aside></div>';
+  view.innerHTML='<div class="zz-panel zz-reader"><div><p class="zz-kicker">'+esc(level())+' ／ 第 '+(s.stage+1)+' 段</p><h2>'+esc(t.title)+'</h2><div class="zz-passage">'+esc(t.passage)+'</div>'+source(t)+'<details><summary>閱讀提示</summary><p class="zz-gloss">'+esc(t.gloss)+'</p></details><p class="zz-intro">'+esc(t.story)+'</p><div class="zz-mission"><strong>'+esc(t.game.title)+'</strong><p>'+esc(t.game.goal)+'</p><p>目標概念：'+t.game.targets.map(esc).join('、')+'。操作完成後回讀文本並作答。</p><label><input type="checkbox" id="zz-assist" '+(s.assist?'checked':'')+'> 練習模式（速度較緩、時間較寬；不上競技榜）</label><div class="zz-inline">'+button('進入場景','begin',true)+'</div></div></div><aside><div class="zz-art">'+portrait(c.person)+'</div><p class="zz-note">'+esc(c.note)+'</p><p class="zz-note">桌面：方向鍵／WASD 移動，E 互動，空白鍵衝刺。手機：使用畫面下方方向盤與互動鍵。'+c.stages.length+' 段各有獨立挑戰，可暫停、儲存及續玩。</p></aside></div>';
   view.querySelector('#zz-assist').onchange=e=>{s.assist=e.target.checked;};
   bind('begin',async()=>{s.world=M.create(t.game.type,s.assist);s.phase='game';s.gameAttempt++;s.questionIndex=0;delete s.questionFeedback;await checkpoint();render();});
  }
@@ -125,7 +125,7 @@
  }
  function renderGameResult(){
   const w=s.world,entry=s.games.find(x=>x.gameId===stage().gameId),won=w&&w.status==='won';
-  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(stage().game.title)+' ／ '+(w.assist?'練習模式':'競技模式')+'</p><h2>'+(won?'操作完成，回到文本':'再觀察一次，重新挑戰')+'</h2><p class="zz-intro">'+(won?'你已完成這段場景任務。接著以原文證據檢查理解；操作分數不代替閱讀作答。':'時間或體力已用完。可重試或改用練習模式，已完成的閱讀與首輪成績會保留。')+'</p><div class="zz-resultstat"><div><strong>'+M.score(w)+' / 10</strong>本輪操作</div><div><strong>'+entry.firstScore+' ／ '+entry.bestScore+'</strong>首輪 ／ 最佳操作（含練習）</div></div><p class="zz-note">練習模式不上競技榜。首輪紀錄保留，重試不覆寫首輪；閱讀首答另計。</p><div class="zz-inline">'+(won?button('回讀與作答','questions',true):button('重試這段','retry',true))+button('用練習模式重試','assist')+button('查看競技成績','board')+'</div><div class="zz-board" data-board role="status"></div></div>';
+  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(stage().game.title)+' ／ '+(w.assist?'練習模式':'競技模式')+'</p><h2>'+(won?'操作完成，回到文本':'再觀察一次，重新挑戰')+'</h2><p class="zz-intro">'+(won?'你已完成這段場景任務。接著以文本證據檢查理解；操作分數不代替閱讀作答。':'時間或體力已用完。可重試或改用練習模式，已完成的閱讀與首輪成績會保留。')+'</p><div class="zz-resultstat"><div><strong>'+M.score(w)+' / 10</strong>本輪操作</div><div><strong>'+entry.firstScore+' ／ '+entry.bestScore+'</strong>首輪 ／ 最佳操作（含練習）</div></div><p class="zz-note">練習模式不上競技榜。首輪紀錄保留，重試不覆寫首輪；閱讀首答另計。</p><div class="zz-inline">'+(won?button('回讀與作答','questions',true):button('重試這段','retry',true))+button('用練習模式重試','assist')+button('查看競技成績','board')+'</div><div class="zz-board" data-board role="status"></div></div>';
   bind('retry',async()=>retry(false));bind('assist',async()=>retry(true));
   bind('questions',async()=>{s.phase='question';s.questionIndex=0;delete s.questionFeedback;await checkpoint();render();});
   bind('board',async()=>{
@@ -140,7 +140,7 @@
   const t=stage(),q=currentQuestion();if(!q){view.innerHTML='<p role="alert">題目未就緒，請儲存後重新讀取。</p>';return;}
   const f=s.questionFeedback&&s.questionFeedback.id===q.id?s.questionFeedback:null;
   const opts=Array.isArray(q.options)?q.options:Object.entries(q.options).map(([key,v])=>({key,text:v[0],type:v[1]||''}));
-  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(level())+' ／ 本段第 '+(s.questionIndex+1)+' / '+t.questionIds.length+' 題</p><h2>'+esc(q.stem)+'</h2><div class="zz-passage">'+esc(q.passage||t.passage)+'</div>'+source({...t,source:q.sourceRef||q.source||t.source})+'<details><summary>語譯提示</summary><p class="zz-gloss">'+esc(t.gloss)+'</p></details><div class="zz-options">'+opts.map(o=>'<button type="button" class="zz-option'+(f&&f.choice===o.key?(f.correct?' correct':' wrong'):'')+'" data-choice="'+esc(o.key)+'" '+(f?'disabled':'')+'><b>'+esc(o.key)+'</b><span>'+esc(o.text)+'</span></button>').join('')+'</div>'+(f?'<div class="zz-feedback" role="status"><strong>'+(f.correct?'理解正確':'請回到文本再想一次')+'</strong><p>'+esc(q.explanation||'請核對這段原文中的對象、字義與論證關係。')+'</p><p class="zz-note">首答已保留'+(s.answers[q.id].correct?'為正確':'為待釐清')+'；訂正不覆寫首答。</p></div>'+button(f.correct?(s.questionIndex+1<t.questionIds.length?'下一題':'繼續下一段'):'再答一次',f.correct?'next':'again',true):'')+'</div>';
+  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(level())+' ／ 本段第 '+(s.questionIndex+1)+' / '+t.questionIds.length+' 題</p><h2>'+esc(q.stem)+'</h2><div class="zz-passage">'+esc(q.passage||t.passage)+'</div>'+source({...t,source:q.sourceRef||q.source||t.source})+'<details><summary>閱讀提示</summary><p class="zz-gloss">'+esc(t.gloss)+'</p></details><div class="zz-options">'+opts.map(o=>'<button type="button" class="zz-option'+(f&&f.choice===o.key?(f.correct?' correct':' wrong'):'')+'" data-choice="'+esc(o.key)+'" '+(f?'disabled':'')+'><b>'+esc(o.key)+'</b><span>'+esc(o.text)+'</span></button>').join('')+'</div>'+(f?'<div class="zz-feedback" role="status"><strong>'+(f.correct?'理解正確':'請回到文本再想一次')+'</strong><p>'+esc(q.explanation||'請核對這段原文中的對象、字義與論證關係。')+'</p><p class="zz-note">首答已保留'+(s.answers[q.id].correct?'為正確':'為待釐清')+'；訂正不覆寫首答。</p></div>'+button(f.correct?(s.questionIndex+1<t.questionIds.length?'下一題':'繼續下一段'):'再答一次',f.correct?'next':'again',true):'')+'</div>';
   view.querySelectorAll('[data-choice]').forEach(el=>el.onclick=()=>guard(async()=>{
    view.querySelectorAll('[data-choice]').forEach(b=>b.disabled=true);const choice=el.dataset.choice,event=M.answer(s,q,choice);
    s.questionFeedback={id:q.id,choice,correct:event.correct};
@@ -156,12 +156,12 @@
  }
  function renderComplete(){
   const answers=Object.values(s.answers),correct=answers.filter(a=>a.correct).length;
-  view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ 三段完成</p><h2>'+esc(c.episode)+' · 研讀完成</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+s.games.map(g=>g.bestScore).join(' · ')+'</strong>三段最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p><p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+'</div>';
+  view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ '+c.stages.length+' 段完成</p><h2>'+esc(c.episode)+' · 研讀完成</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+s.games.map(g=>g.bestScore).join(' · ')+'</strong>'+c.stages.length+' 段最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p><p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+'</div>';
   bind('finish',async()=>{
    await checkpoint();const anchors=answers.map(a=>({...a,path:a.correct?'direct':s.recovered[a.anchorId]?'fork':'fail',attempts:s.attempts[a.anchorId],recovered:!!s.recovered[a.anchorId]}));
    const events=c.stages.map((t,i)=>({kind:'reading',id:'zz_read_'+i,title:t.title,text:t.passage,source:t.source,reading:t.gloss,decision:t.game.title,anchors:t.questionIds,notes:[t.gloss],at:new Date().toISOString()}));ZH.session.set('learning:'+c.id,events);
    await ZH.codex.init();(ZH.CODEX||[]).filter(it=>it.scenarioId===c.id).forEach(it=>ZH.codex.unlock(it.type,it.id,c.id,'',{quiet:true}));
-   tickClock();await ZH.finishScenario({scenarioId:c.id,mode:'history',role:c.person,roleKind:'liezhuan',faction:collection(),country:c.school,ending:{id:'zz_read_complete',title:level()+'・'+c.episode,text:'循文本之跡，據原文之證，辨其言而思其理。',good:true},anchors,games:s.games.map(g=>({gameId:g.gameId,score:g.firstScore,maxScore:10,bestScore:g.bestScore,practice:g.practice})),scoreStrategy:Math.round(s.games.reduce((n,g)=>n+g.firstScore,0)/3*10),turns:3,durationSec:Math.round(s.elapsed),deeds:['讀'+c.name+'，核對出處與上下文。','歷三段場景，以操作體察文本中的問題。','首答'+answers.length+'題，答中'+correct+'題；訂正另存，不移首答。'],opener:'讀經典者，當察其時、辨其言、問其所由。',prompts:['選一處原文，說明你的判斷依據。','遊戲操作呈現了文本的哪一面？它又省略了什麼？']});
+   tickClock();await ZH.finishScenario({scenarioId:c.id,mode:'history',role:c.person,roleKind:'liezhuan',faction:collection(),country:c.school,ending:{id:'zz_read_complete',title:level()+'・'+c.episode,text:'循文本之跡，據原文之證，辨其言而思其理。',good:true},anchors,games:s.games.map(g=>({gameId:g.gameId,score:g.firstScore,maxScore:10,bestScore:g.bestScore,practice:g.practice})),scoreStrategy:M.strategy(s.games,c.stages.length),turns:c.stages.length,durationSec:Math.round(s.elapsed),deeds:['讀'+c.name+'，核對出處與上下文。','歷'+c.stages.length+'段場景，以操作體察文本中的問題。','首答'+answers.length+'題，答中'+correct+'題；訂正另存，不移首答。'],opener:'讀經典者，當察其時、辨其言、問其所由。',prompts:['選一處原文，說明你的判斷依據。','遊戲操作呈現了文本的哪一面？它又省略了什麼？']});
   });
  }
  function pause(){if(!s||paused||disposed)return;tickClock();paused=true;stop();checkpoint().catch(()=>{});render();}
@@ -182,15 +182,15 @@
  }
  async function start(options){
   bootOptions=options;root=document.getElementById('zhuzi-root');disposed=false;paused=false;busy=false;
-  root.innerHTML='<div class="zz-loading"><h1>'+esc(options.collection==='classics'?'古文十五篇':'先秦諸子')+'</h1><p role="status">讀取文本與本章進度……</p></div>';
+  root.innerHTML='<div class="zz-loading"><h1>'+esc(options.collection==='aSelections'?'A 類選文':options.collection==='classics'?'古文十五篇':'先秦諸子')+'</h1><p role="status">讀取文本與本章進度……</p></div>';
   try{
-   c=(options.collection==='classics'?ZH.CLASSICS:ZH.ZHUZI)?.chapters[options.id];if(!c)throw Error('找不到本章內容');if(!await ZH.requireStudentProfile())return;
+   c=(options.collection==='aSelections'?ZH.A_SELECTIONS:options.collection==='classics'?ZH.CLASSICS:ZH.ZHUZI)?.chapters[options.id];if(!c)throw Error('找不到本章內容');if(!await ZH.requireStudentProfile())return;
    const [saved,questions]=await Promise.all([ZH.load(c.id,'history'),ZH.call('api_getStoryAnchors',c.id,options.anchorOrder)]);
    if(!saved||!saved.ok)throw Error(saved&&saved.msg||'讀取存檔失敗');if(!questions||!questions.ok)throw Error(questions&&questions.msg||'題庫未就緒');
    bank={};for(const q of questions.anchors||[])bank[q.id]=q;
    if(options.anchorOrder.some(id=>!bank[id]||!['A','B','C','D'].includes(bank[id].answer)))throw Error('必要題目缺漏，請重新讀取題庫');
    const old=saved.state;
-   if(old&&old.schema==='zhuzi-v1'&&old.chapterId===c.id){s=Object.assign(M.fresh(c.id),old);if(!Number.isInteger(s.stage)||s.stage<0||s.stage>3||!['intro','game','gameResult','question','complete'].includes(s.phase))throw Error('本章存檔格式無法辨認，請從首頁管理自己的紀錄');}
+   if(old&&old.schema==='zhuzi-v1'&&old.chapterId===c.id){s=Object.assign(M.fresh(c.id),old);if(!Number.isInteger(s.stage)||s.stage<0||s.stage>c.stages.length||!['intro','game','gameResult','question','complete'].includes(s.phase))throw Error('本章存檔格式無法辨認，請從首頁管理自己的紀錄');}
    else if(old)throw Error('本章存檔版本不相符，請從首頁管理自己的紀錄');else s=M.fresh(c.id);
    ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
   }catch(e){root.innerHTML='<div class="zz-loading"><h1>本章暫時無法開啟</h1><p role="alert">'+esc(e.message)+'</p>'+button('重新讀取文本與進度','reload',true)+button('回首頁','home')+'</div>';root.querySelector('[data-action=reload]').onclick=()=>start(bootOptions);root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');}

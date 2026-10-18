@@ -167,7 +167,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
 @media(max-width:560px){.hub-home .zh-main{padding-top:12px}.hub-lobby-head{margin-bottom:10px;gap:8px}.hub-lobby-head h2{font-size:18px}.hub-lobby-head p{font-size:9px;letter-spacing:.1em}.hub-lobby-head button{font-size:10px;padding:5px 8px;min-height:36px}.hub-home .hub-section-heading{font-size:21px}.hub-home .hub-tabs{gap:7px;grid-template-columns:repeat(2,minmax(0,1fr))}.hub-home .hub-tab{min-height:112px;padding:10px 9px;font-size:15px;border-radius:10px}.hub-home .hub-tab[aria-selected=true]{padding:9px 8px}.hub-tab__no{font-size:11px;left:9px;top:10px;letter-spacing:.04em}.hub-home .hub-tab small{font-size:11px;letter-spacing:0;white-space:normal;line-height:1.4}.hub-home .hub-vol-head{gap:6px;font-size:12px;padding-top:10px}.hub-home .hub-vol-head p{font-size:13px}.hub-home .hub-vol-head>span{font-size:11px}.hub-home .hub-world{grid-template-columns:40px minmax(0,1fr);padding:14px 12px;gap:6px 10px;min-height:162px;background-position:60% center}.hub-home .hub-world svg{width:40px;height:40px}.hub-home .hub-world strong{font-size:18px;letter-spacing:.03em}.hub-home .hub-world small{font-size:11px;margin-top:4px;line-height:1.7}.hub-home .hub-world .hub-ep__state{padding:5px 8px;font-size:11px}.hub-home .hub-ep{grid-template-columns:62px minmax(0,1fr);gap:7px 10px;padding:12px;min-height:157px}.hub-ep__art{min-height:108px;grid-row:1/3}.hub-home .hub-ep__state{grid-column:2;justify-self:start}.hub-home .hub-ep__title{font-size:15px}.hub-home .hub-ep__meta .zh-chip{font-size:10px}.hub-home .pl-texts{font-size:11px}.hub-home .hub-ep__no{font-size:12px}.hub-home .hub-summary{backdrop-filter:none}.hub-scene__far{background-position:60% center}.hub-scene__front{opacity:.35}.hub-scene__mist{opacity:.35}}
 @media(prefers-reduced-motion:reduce){.hub-scene *{animation:none!important;transform:none!important;will-change:auto!important}.hub-home .hub-tab,.hub-home .hub-ep,.hub-home .hub-tab__image{transition:none!important}}
 
-.hub-home .hub-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}.gw-guide{background:#132a39e8;border:1px solid #ad99666b;border-radius:12px;padding:14px 18px;line-height:1.8;margin-bottom:14px}.gw-reader{margin-top:6px;width:100%;min-height:42px;background:#172d3b}.gw-fulltext{line-height:2.1;font-size:17px;margin:18px 0;overflow-wrap:anywhere}@media(max-width:850px){.hub-home .hub-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:560px){.hub-home .hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hub-home .hub-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}.gw-guide{background:#132a39e8;border:1px solid #ad99666b;border-radius:12px;padding:14px 18px;line-height:1.8;margin-bottom:14px}.gw-reader{margin-top:6px;width:100%;min-height:42px;background:#172d3b}.gw-fulltext{line-height:2.1;font-size:17px;margin:18px 0;overflow-wrap:anywhere}@media(max-width:850px){.hub-home .hub-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:560px){.hub-home .hub-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body class="hub-home">
@@ -211,6 +211,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
 <?!= include('Core_js') ?>
 <?!= include('Data_catalog') ?>
 <?!= include('Data_classics') ?>
+<?!= include('Data_a_selections') ?>
 <?!= include('Data_codex') ?>
 <?!= include('Codex_js') ?>
 <script>
@@ -224,7 +225,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
   function schedule(){if(active()&&fine.matches&&!raf)raf=requestAnimationFrame(flush);}
   function update(){const animate=active();scene.classList.toggle('is-static',!animate);button.disabled=media.matches;button.setAttribute('aria-pressed',String(animate));button.textContent=media.matches?'靜態場景':'景深動態：'+(enabled?'開':'關');button.title=media.matches?'依照裝置的減少動畫設定，使用靜態場景。':'切換場景的雲霧與景深動態';if(!animate){if(raf)cancelAnimationFrame(raf);raf=0;scene.style.removeProperty('--hub-x');scene.style.removeProperty('--hub-y');scene.style.removeProperty('--hub-scroll');}else schedule();}
   function move(e){if(e.pointerType==='touch')return;x=e.clientX/Math.max(innerWidth,1)*2-1;y=e.clientY/Math.max(innerHeight,1)*2-1;schedule();}
-  function setVolume(key){volume=['cq','zg','ch','zz','gw'].includes(key)?key:'cq';document.body.style.setProperty('--hub-art-active','var(--hub-art-'+volume+')');scene.dataset.volume=volume;title.textContent={cq:'春秋・爭盟之境',zg:'戰國・縱橫之境',ch:'楚漢・逐鹿之境',zz:'先秦・諸子之境',gw:'古文・十五篇之境'}[volume];}
+  function setVolume(key){volume=['cq','zg','ch','zz','gw','al'].includes(key)?key:'cq';document.body.style.setProperty('--hub-art-active','var(--hub-art-'+volume+')');scene.dataset.volume=volume;title.textContent={cq:'春秋・爭盟之境',zg:'戰國・縱橫之境',ch:'楚漢・逐鹿之境',zz:'先秦・諸子之境',gw:'古文・十五篇之境',al:'課文・A類選文之境'}[volume];}
   function setEnabled(value){enabled=!!value;ZH.local.set('hubSceneMotion',enabled);update();}
   const change=()=>update(),hide=e=>{suspended=true;update();if(!e.persisted){disposed=true;window.removeEventListener('pointermove',move);window.removeEventListener('scroll',schedule);document.removeEventListener('visibilitychange',change);media.removeEventListener('change',change);fine.removeEventListener('change',change);}},show=()=>{if(!disposed){suspended=false;update();}};
   button.onclick=()=>setEnabled(!enabled);window.addEventListener('pointermove',move,{passive:true});window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('visibilitychange',change);media.addEventListener('change',change);fine.addEventListener('change',change);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);
@@ -359,13 +360,14 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
   // ───────── 三卷目錄 ─────────
   function renderTabs() {
     if(window.ZH_STATIC_MEDIA&&ZH_STATIC_MEDIA['scene:zhuzi_laozi'])document.body.style.setProperty('--hub-art-zz','url("'+ZH_STATIC_URL(ZH_STATIC_MEDIA['scene:zhuzi_laozi'])+'")');
+    if(window.ZH_STATIC_MEDIA&&ZH_STATIC_MEDIA['scene:a_street'])document.body.style.setProperty('--hub-art-al','url("'+ZH_STATIC_URL(ZH_STATIC_MEDIA['scene:a_street'])+'")');
     if(window.ZH_STATIC_MEDIA&&ZH_STATIC_MEDIA['scene:classic_study'])document.body.style.setProperty('--hub-art-gw','url("'+ZH_STATIC_URL(ZH_STATIC_MEDIA['scene:classic_study'])+'")');
     const tabs = document.getElementById('hub-tabs');
     tabs.innerHTML = '';
     ZH.VOLUMES.forEach(vol => {
       const tab = ZH.html(
         '<button type="button" class="hub-tab" role="tab" id="hub-tab-' + vol.key + '" aria-selected="' + (vol.key === state.vol) + '">' +
-        '<span class="hub-tab__image" aria-hidden="true" style="--hub-card-art:var(--hub-art-'+(['cq','zg','ch','zz','gw'].includes(vol.key)?vol.key:'cq')+')"></span><span class="hub-tab__no">'+ZH.esc(vol.no)+'</span><span>'+ZH.esc(vol.name)+'</span><small>'+ZH.esc(vol.span)+'</small></button>'
+        '<span class="hub-tab__image" aria-hidden="true" style="--hub-card-art:var(--hub-art-'+(['cq','zg','ch','zz','gw','al'].includes(vol.key)?vol.key:'cq')+')"></span><span class="hub-tab__no">'+ZH.esc(vol.no)+'</span><span>'+ZH.esc(vol.name)+'</span><small>'+ZH.esc(vol.span)+'</small></button>'
       );
       tab.addEventListener('click', () => {
         if (state.vol === vol.key) return;
@@ -388,12 +390,13 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
 
     document.getElementById('hub-vol-head').innerHTML =
       '<p>〜' + ZH.esc(vol.tagline) + '〜</p>' +
-      '<span class="zh-dim zh-small">' + scenarios.length + (vol.key==='gw'?' 篇，已開放 ':' 話，已開放 ') + readyCount + (vol.key==='gw'?' 篇':' 話') + '</span>';
+      '<span class="zh-dim zh-small">' + scenarios.length + (['gw','al'].includes(vol.key)?' 篇，已開放 ':' 話，已開放 ') + readyCount + (['gw','al'].includes(vol.key)?' 篇':' 話') + '</span>';
 
     const wbox = document.getElementById('hub-world');
     const w = WORLDS[vol.key];
     wbox.innerHTML = '';
     if(vol.key==='gw'){wbox.innerHTML='<p class="gw-guide">依教育部課綱十五篇整理。四篇沿用既有關卡與進度，十一篇新增角色任務。可先開啟原文，再進入情境挑戰。</p>';}
+    if(vol.key==='al'){wbox.innerHTML='<p class="gw-guide">依龍騰108／109入學適用表：A為4～5家出版社選用，非難度分級。詩詞曲賦暫緩，依指定保留〈漁父〉，共26篇；14篇沿用原關卡與進度，12篇新增單篇任務。〈髻〉、〈散戲〉提供自編導讀，全文配合課本閱讀。</p>';}
     if(vol.key==='zz'){
       wbox.innerHTML='<div class="zz-hub-levels"><p>六位諸子，各有獨立的初階傳記與進階選讀。可依課程直接選關。</p><div class="zh-row">'+['bio','read'].map(k=>'<button type="button" class="zh-btn '+(state.level===k?'zh-btn--primary':'zh-btn--quiet')+'" data-level="'+k+'" aria-pressed="'+(state.level===k)+'">'+(k==='bio'?'初階・人物傳記':'進階・思想閱讀')+'</button>').join('')+'</div></div>';
       wbox.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{state.level=b.dataset.level;renderEpisodes();});
@@ -418,13 +421,13 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
         '<button type="button" class="hub-ep' + (locked ? ' is-locked' : '') + '">' +
         '<span class="hub-ep__art" aria-hidden="true" style="--hub-card-art:'+ZH.esc(cardArt)+';--hub-crop:'+([20,50,80][index%3])+'%"><span class="hub-ep__emblem">'+ZH.esc(String(s.name||'史').slice(0,1))+'</span><span class="hub-ep__no">' + ZH.esc(ZH.episodeLabel(s)) + '</span></span>' +
         '<span>' +
-        '<span class="hub-ep__title">' + ZH.esc(s.episode) + '</span>' +
+        '<span class="hub-ep__title">' + ZH.esc(vol.key==='al'?s.name:s.episode) + '</span>' +
         '<span class="hub-ep__meta">' +
         '<span class="zh-chip">' + ZH.esc(s.name) + '</span>' +
         '<span class="zh-chip">' + ZH.esc(s.period||('前 '+s.year+' 年')) + '</span>' +
         '<span class="zh-chip zh-chip--patina">' + ZH.esc(s.genre) + '</span>' +
         (s.guest ? '<span class="zh-chip zh-chip--gilt">課綱選文・訪客可玩</span>' : '') +
-        (vol.key==='gw'?'<span class="zh-chip">'+ZH.esc(s.author)+'</span><span class="zh-chip zh-chip--patina">'+(s.classicReuse?'沿用原關卡':'新增課文任務')+'</span>':'') +
+        (['gw','al'].includes(vol.key)?'<span class="zh-chip">'+ZH.esc(s.author)+'</span><span class="zh-chip zh-chip--patina">'+(s.classicReuse?'沿用原關卡':'新增課文任務')+'</span>':'') +
         (done?'<span class="zh-chip zh-chip--patina">通關 '+(done.count||1)+' 局'+(done.pending?'・待選紀錄':'')+'</span>':'')+
         '</span><span class="pl-texts">文本：'+ZH.learningTexts(s.id).map(ZH.esc).join('、')+'</span><span>'+ 
         '</span></span>' +
@@ -434,7 +437,11 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
       btn.setAttribute('aria-label', ZH.episodeLabel(s) + ' ' + s.name + '：' + s.episode + '（' + stateText + '）');
       btn.addEventListener('click', () => openScenario(s));
       li.appendChild(btn);
-      if(vol.key==='gw'){const read=ZH.html('<button type="button" class="zh-btn gw-reader">閱讀〈'+ZH.esc(s.classicTitle||s.name)+'〉原文</button>');read.onclick=()=>{const t=ZH.CLASSICS.library[s.id];ZH.modal({title:t.title+'・原文閱讀',body:'<p>'+ZH.esc(t.author)+' · '+ZH.esc(t.period)+'</p><p>'+ZH.esc(t.focus)+'</p>'+t.fullText.map(p=>'<p class="gw-fulltext">'+ZH.esc(p)+'</p>').join('')+'<p>原文依國語文學科中心所收版本，標點與字形可能和課本略異。<a target="_blank" rel="noopener noreferrer" href="'+ZH.esc(t.url)+'">核對來源</a></p>',actions:[{label:'收起原文',value:false,kind:'quiet'},{label:'進入本篇關卡',value:true,kind:'primary'}]}).then(go=>{if(go)openScenario(s);});};li.appendChild(read);}
+      if(['gw','al'].includes(vol.key)){
+        const t=(vol.key==='al'?ZH.A_SELECTIONS:ZH.CLASSICS).library[s.id],label=t.readerLabel||'原文';
+        const read=ZH.html('<button type="button" class="zh-btn gw-reader">閱讀〈'+ZH.esc(t.title)+'〉'+ZH.esc(label)+'</button>');
+        read.onclick=()=>ZH.modal({title:t.title+'・'+label,body:'<p>'+ZH.esc(t.author)+' · '+ZH.esc(t.period)+'</p><p>'+ZH.esc(t.focus)+'</p>'+(t.readerKind==='guide'?'<p><b>本頁為自編導讀，非作者原文；全文請配合課本閱讀。</b></p>':'')+(t.editionNote?'<p>'+ZH.esc(t.editionNote)+'</p>':'')+t.fullText.map(p=>'<p class="gw-fulltext">'+ZH.esc(p)+'</p>').join('')+'<p>'+(t.readerKind==='guide'?'導讀為自編，請以課本原文核對情節。':'選段起訖、標點與字形可能和課本略異。')+'<a target="_blank" rel="noopener noreferrer" href="'+ZH.esc(t.url)+'">核對文本或教學來源</a></p>',actions:[{label:'返回選文',value:false,kind:'quiet'},{label:'進入本篇關卡',value:true,kind:'primary'}]}).then(go=>{if(go)openScenario(s);});li.appendChild(read);
+      }
       list.appendChild(li);
     });
   }

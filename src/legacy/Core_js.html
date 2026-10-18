@@ -520,7 +520,7 @@
   function localSummary() {
     const saves = [], seen = new Set();
     function add(key) {
-      const m = /^zh:save:(S_(?:cq|zg|ch|zz|gw)\d{2}_[a-z0-9]+|campaign):(.+)$/.exec(key);
+      const m = /^zh:save:(S_(?:cq|zg|ch|zz|gw|al)\d{2}_[a-z0-9]+|campaign):(.+)$/.exec(key);
       if (!m || seen.has(key)) return; seen.add(key);
       const value = ZH.session.get(key.slice(3), {});
       saves.push({ scenarioId: m[1], mode: m[2], savedAt: value.savedAt || '' });
