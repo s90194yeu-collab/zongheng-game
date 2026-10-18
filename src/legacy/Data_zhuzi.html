@@ -9,7 +9,7 @@
       "episode": "守藏與出關",
       "year": 500,
       "period": "史傳與人物",
-      "genre": "角色冒險＋傳記閱讀",
+      "genre": "人物劇情RPG＋競技",
       "source": "《史記・老子韓非列傳》",
       "guest": false,
       "status": "ready",
@@ -47,7 +47,33 @@
           "questionIds": [
             "lb_01"
           ],
-          "gameId": "zz_laozi_bio_1"
+          "gameId": "zz_laozi_bio_1",
+          "adventure": {
+            "scene": "scene:zhuzi_laozi",
+            "type": "race",
+            "variant": 1,
+            "title": "周室守藏・雙人競速",
+            "rival": "失序之影",
+            "place": "周室藏書之所",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "簡冊散在長廊，遠處的腳步已逼近。你奉命護住典籍，必須在搶先者之前穿過層層書架。",
+                "kind": "narration"
+              },
+              {
+                "who": "老子",
+                "text": "書在眼前，路卻不只一條。先看清哪裡可行。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "問禮與自省",
@@ -73,7 +99,33 @@
           "questionIds": [
             "lb_02"
           ],
-          "gameId": "zz_laozi_bio_2"
+          "gameId": "zz_laozi_bio_2",
+          "adventure": {
+            "scene": "scene:academy",
+            "type": "clash",
+            "variant": 2,
+            "title": "問禮與自省・攻防對決",
+            "rival": "問禮辯手",
+            "place": "周室藏書之所",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "來訪者帶來一連串問題。答得快未必看得透；這一場問對，要在對方露出破綻時才出手。",
+                "kind": "narration"
+              },
+              {
+                "who": "老子",
+                "text": "只顧壓過別人的聲音，聽得到自己的問題嗎？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "出關留書",
@@ -99,9 +151,37 @@
           "questionIds": [
             "lb_03"
           ],
-          "gameId": "zz_laozi_bio_3"
+          "gameId": "zz_laozi_bio_3",
+          "adventure": {
+            "scene": "scene:road",
+            "type": "tempo",
+            "variant": 0,
+            "title": "出關留書・節奏競演",
+            "rival": "關前應試者",
+            "place": "周室藏書之所",
+            "objective": "上下走位對準落點，音符進入金圈時按互動，累積連段並超過對手聲勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "關門將閉，守關者請你把言語留下。落筆、停頓、再落筆，文字也有自己的節奏。",
+                "kind": "narration"
+              },
+              {
+                "who": "老子",
+                "text": "不必把所有話一口氣說盡。留下能反覆思量的幾句。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是節奏競演。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "周室藏書之所"
     },
     "S_zz02_laoread": {
       "id": "S_zz02_laoread",
@@ -111,7 +191,7 @@
       "episode": "有無與不爭",
       "year": 500,
       "period": "原典與論證",
-      "genre": "動作挑戰＋思想閱讀",
+      "genre": "思想劇情RPG＋競技",
       "source": "《老子》第八章、《老子》第十一章、《老子》第六十四章",
       "guest": false,
       "status": "ready",
@@ -150,7 +230,33 @@
             "lr_01",
             "lr_02"
           ],
-          "gameId": "zz_laozi_read_1"
+          "gameId": "zz_laozi_read_1",
+          "adventure": {
+            "scene": "scene:river",
+            "type": "race",
+            "variant": 2,
+            "title": "水的處下與利物・雙人競速",
+            "rival": "逆流行者",
+            "place": "水岸與空室",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "水道分岔，同行者只顧往高處爭先。你看見低處的窄路，卻也看見水勢正在改變。",
+                "kind": "narration"
+              },
+              {
+                "who": "老子",
+                "text": "水往下走，並非沒有力量。你要選哪一段水路？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "有與無相成",
@@ -177,7 +283,33 @@
             "lr_03",
             "lr_04"
           ],
-          "gameId": "zz_laozi_read_2"
+          "gameId": "zz_laozi_read_2",
+          "adventure": {
+            "scene": "scene:room",
+            "type": "siege",
+            "variant": 0,
+            "title": "有與無相成・多線守備",
+            "rival": "閉塞之勢",
+            "place": "水岸與空室",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "門窗若被堵住，房屋再堅實也難以使用。守住通路，別讓每一面牆都成為阻隔。",
+                "kind": "narration"
+              },
+              {
+                "who": "老子",
+                "text": "器物的用途，只有看得見的部分嗎？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "無為與及早處理",
@@ -204,9 +336,37 @@
             "lr_05",
             "lr_06"
           ],
-          "gameId": "zz_laozi_read_3"
+          "gameId": "zz_laozi_read_3",
+          "adventure": {
+            "scene": "scene:zhuzi_laozi",
+            "type": "clash",
+            "variant": 1,
+            "title": "無為與及早處理・攻防對決",
+            "rival": "躁進之影",
+            "place": "水岸與空室",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "細小的變化已在邊緣出現。對手還未形成大勢，現在的走位將決定後面的餘地。",
+                "kind": "narration"
+              },
+              {
+                "who": "老子",
+                "text": "等困局全成了，才想挽回，還來得及嗎？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "水岸與空室"
     },
     "S_zz03_zhuangbio": {
       "id": "S_zz03_zhuangbio",
@@ -216,7 +376,7 @@
       "episode": "漆園與江湖",
       "year": 330,
       "period": "史傳與人物",
-      "genre": "角色冒險＋傳記閱讀",
+      "genre": "人物劇情RPG＋競技",
       "source": "《史記・老子韓非列傳》",
       "guest": false,
       "status": "ready",
@@ -254,7 +414,33 @@
           "questionIds": [
             "zb_01"
           ],
-          "gameId": "zz_zhuangzi_bio_1"
+          "gameId": "zz_zhuangzi_bio_1",
+          "adventure": {
+            "scene": "scene:zhuzi_zhuangzi",
+            "type": "race",
+            "variant": 0,
+            "title": "漆園小吏・雙人競速",
+            "rival": "逐利之影",
+            "place": "漆園與濮水",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "漆園外的道路一邊通往官署，一邊通往水岸。你得先穿過來往的人群，才有空間作自己的選擇。",
+                "kind": "narration"
+              },
+              {
+                "who": "莊子",
+                "text": "別人的去處，便一定是你的去處嗎？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "重聘與自處",
@@ -280,7 +466,33 @@
           "questionIds": [
             "zb_02"
           ],
-          "gameId": "zz_zhuangzi_bio_2"
+          "gameId": "zz_zhuangzi_bio_2",
+          "adventure": {
+            "scene": "scene:river",
+            "type": "clash",
+            "variant": 1,
+            "title": "重聘與自處・攻防對決",
+            "rival": "重聘說客",
+            "place": "漆園與濮水",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "使者將厚禮擺在面前，話語一波接著一波。你站定位置，準備回應這場勸進。",
+                "kind": "narration"
+              },
+              {
+                "who": "莊子",
+                "text": "厚禮在前，也要問自己願意換去什麼。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "以寓言著述",
@@ -306,9 +518,37 @@
           "questionIds": [
             "zb_03"
           ],
-          "gameId": "zz_zhuangzi_bio_3"
+          "gameId": "zz_zhuangzi_bio_3",
+          "adventure": {
+            "scene": "scene:room",
+            "type": "tempo",
+            "variant": 2,
+            "title": "以寓言著述・節奏競演",
+            "rival": "拘限之聲",
+            "place": "漆園與濮水",
+            "objective": "上下走位對準落點，音符進入金圈時按互動，累積連段並超過對手聲勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "竹簡上的故事接連展開，眼前不再只有一種尺度。聽清節拍，讓寓言的轉折落在該落的位置。",
+                "kind": "narration"
+              },
+              {
+                "who": "莊子",
+                "text": "故事可以轉一個方向，問題也可以換一種問法。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是節奏競演。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "漆園與濮水"
     },
     "S_zz04_zhuangread": {
       "id": "S_zz04_zhuangread",
@@ -318,7 +558,7 @@
       "episode": "循隙與觀點",
       "year": 330,
       "period": "原典與論證",
-      "genre": "動作挑戰＋思想閱讀",
+      "genre": "思想劇情RPG＋競技",
       "source": "《莊子・養生主》、《莊子・秋水》、《莊子・逍遙遊》",
       "guest": false,
       "status": "ready",
@@ -357,7 +597,33 @@
             "zr_01",
             "zr_02"
           ],
-          "gameId": "zz_zhuangzi_read_1"
+          "gameId": "zz_zhuangzi_read_1",
+          "adventure": {
+            "scene": "scene:academy",
+            "type": "clash",
+            "variant": 1,
+            "title": "庖丁的循隙・攻防對決",
+            "rival": "蠻力之影",
+            "place": "器架、濠梁與大瓠工坊",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "器架間只有很窄的空檔。硬碰的對手已經舉勢，你要等他露出破綻，再循隙進退。",
+                "kind": "narration"
+              },
+              {
+                "who": "莊子",
+                "text": "熟練之外，仍須知難而戒。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "濠梁的問與答",
@@ -384,7 +650,33 @@
             "zr_03",
             "zr_04"
           ],
-          "gameId": "zz_zhuangzi_read_2"
+          "gameId": "zz_zhuangzi_read_2",
+          "adventure": {
+            "scene": "scene:river",
+            "type": "tempo",
+            "variant": 2,
+            "title": "濠梁的問與答・節奏競演",
+            "rival": "濠梁辯手",
+            "place": "器架、濠梁與大瓠工坊",
+            "objective": "上下走位對準落點，音符進入金圈時按互動，累積連段並超過對手聲勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "橋上兩個聲音來回交鋒。同一句問話在不同位置響起，節奏稍一錯置，意思便跟著偏移。",
+                "kind": "narration"
+              },
+              {
+                "who": "莊子",
+                "text": "你問的是知道的根據，還是知道的所在？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是節奏競演。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "大瓠與用途",
@@ -411,9 +703,37 @@
             "zr_05",
             "zr_06"
           ],
-          "gameId": "zz_zhuangzi_read_3"
+          "gameId": "zz_zhuangzi_read_3",
+          "adventure": {
+            "scene": "scene:zhuzi_zhuangzi",
+            "type": "race",
+            "variant": 0,
+            "title": "大瓠與用途・雙人競速",
+            "rival": "用途競逐者",
+            "place": "器架、濠梁與大瓠工坊",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "大瓠被推到角落，人人都急著套用原先的用途。你決定換一條路，和固守尺度的對手競逐出口。",
+                "kind": "narration"
+              },
+              {
+                "who": "莊子",
+                "text": "若容器裝不下，何不先問用途能不能改？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "器架、濠梁與大瓠工坊"
     },
     "S_zz05_xunbio": {
       "id": "S_zz05_xunbio",
@@ -423,7 +743,7 @@
       "episode": "稷下至蘭陵",
       "year": 270,
       "period": "史傳與人物",
-      "genre": "角色冒險＋傳記閱讀",
+      "genre": "人物劇情RPG＋競技",
       "source": "《史記・孟子荀卿列傳》",
       "guest": false,
       "status": "ready",
@@ -461,7 +781,33 @@
           "questionIds": [
             "xb_01"
           ],
-          "gameId": "zz_xunzi_bio_1"
+          "gameId": "zz_xunzi_bio_1",
+          "adventure": {
+            "scene": "scene:road",
+            "type": "race",
+            "variant": 2,
+            "title": "趙人遊齊・雙人競速",
+            "rival": "求學同行者",
+            "place": "稷下學宮",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "學宮的鐘聲已響，求學者從不同路口趕來。你要在同行者之前穿過長廊，也不能只顧衝刺。",
+                "kind": "narration"
+              },
+              {
+                "who": "荀子",
+                "text": "求學不是只抵達一處，還要走得下去。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "學宮祭酒",
@@ -487,7 +833,33 @@
           "questionIds": [
             "xb_02"
           ],
-          "gameId": "zz_xunzi_bio_2"
+          "gameId": "zz_xunzi_bio_2",
+          "adventure": {
+            "scene": "scene:zhuzi_xunzi",
+            "type": "clash",
+            "variant": 0,
+            "title": "學宮祭酒・攻防對決",
+            "rival": "學宮辯手",
+            "place": "稷下學宮",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "席間有人提出不同主張。對手的攻勢愈來愈急，觀察、守備與反擊要有自己的次序。",
+                "kind": "narration"
+              },
+              {
+                "who": "荀子",
+                "text": "有不同的見解，就把理由拿到席上辨明。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "蘭陵著述",
@@ -513,9 +885,37 @@
           "questionIds": [
             "xb_03"
           ],
-          "gameId": "zz_xunzi_bio_3"
+          "gameId": "zz_xunzi_bio_3",
+          "adventure": {
+            "scene": "scene:room",
+            "type": "siege",
+            "variant": 1,
+            "title": "蘭陵著述・多線守備",
+            "rival": "散亂之勢",
+            "place": "稷下學宮",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "講席散後，著述與教學仍在繼續。多處工作同時告急，你必須守住其中的連結。",
+                "kind": "narration"
+              },
+              {
+                "who": "荀子",
+                "text": "把散落的工夫接起來，學問才不會停在一時。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "稷下學宮"
     },
     "S_zz06_xunread": {
       "id": "S_zz06_xunread",
@@ -525,7 +925,7 @@
       "episode": "積學與化性",
       "year": 270,
       "period": "原典與論證",
-      "genre": "動作挑戰＋思想閱讀",
+      "genre": "思想劇情RPG＋競技",
       "source": "《荀子・勸學》、《荀子・性惡》",
       "guest": false,
       "status": "ready",
@@ -564,7 +964,33 @@
             "xr_01",
             "xr_02"
           ],
-          "gameId": "zz_xunzi_read_1"
+          "gameId": "zz_xunzi_read_1",
+          "adventure": {
+            "scene": "scene:zhuzi_xunzi",
+            "type": "tempo",
+            "variant": 0,
+            "title": "學能改變・節奏競演",
+            "rival": "熟習競演者",
+            "place": "青染與工藝學舍",
+            "objective": "上下走位對準落點，音符進入金圈時按互動，累積連段並超過對手聲勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "染缸、磨石與彎木依次擺開。轉變不是一聲號令，你必須在連續的節拍中保持準確。",
+                "kind": "narration"
+              },
+              {
+                "who": "荀子",
+                "text": "青出於藍，也有取、染、變的過程。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是節奏競演。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "積累與善假於物",
@@ -591,7 +1017,33 @@
             "xr_03",
             "xr_04"
           ],
-          "gameId": "zz_xunzi_read_2"
+          "gameId": "zz_xunzi_read_2",
+          "adventure": {
+            "scene": "scene:academy",
+            "type": "race",
+            "variant": 1,
+            "title": "積累與善假於物・雙人競速",
+            "rival": "善假行者",
+            "place": "青染與工藝學舍",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "路長而曲折，對手已先一步出發。眼前的工具與路線都能借力，關鍵是何時使用。",
+                "kind": "narration"
+              },
+              {
+                "who": "荀子",
+                "text": "善用外物，並不等於只憑外物替自己行動。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "化性起偽",
@@ -618,9 +1070,37 @@
             "xr_05",
             "xr_06"
           ],
-          "gameId": "zz_xunzi_read_3"
+          "gameId": "zz_xunzi_read_3",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "siege",
+            "variant": 2,
+            "title": "化性起偽・多線守備",
+            "rival": "放逸之勢",
+            "place": "青染與工藝學舍",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "一時用力還不足以站穩，三處防線輪番受壓。把練習留下的力量用在持續守備。",
+                "kind": "narration"
+              },
+              {
+                "who": "荀子",
+                "text": "累積不是喊過一次便算數，下一波仍要親自接住。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "青染與工藝學舍"
     },
     "S_zz07_hanbio": {
       "id": "S_zz07_hanbio",
@@ -630,7 +1110,7 @@
       "episode": "書成與入秦",
       "year": 240,
       "period": "史傳與人物",
-      "genre": "角色冒險＋傳記閱讀",
+      "genre": "人物劇情RPG＋競技",
       "source": "《史記・老子韓非列傳》",
       "guest": false,
       "status": "ready",
@@ -668,7 +1148,33 @@
           "questionIds": [
             "hb_01"
           ],
-          "gameId": "zz_hanfei_bio_1"
+          "gameId": "zz_hanfei_bio_1",
+          "adventure": {
+            "scene": "scene:zhuzi_hanfei",
+            "type": "race",
+            "variant": 1,
+            "title": "韓國公子與求學・雙人競速",
+            "rival": "入秦行者",
+            "place": "韓國書室與秦廷",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "書稿帶著對時局的思索離開案頭。道路上已有競逐者，你要護送自己的論述穿過關隘。",
+                "kind": "narration"
+              },
+              {
+                "who": "韓非",
+                "text": "論述寫成之後，還要面對讀它的人。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "著書言治",
@@ -694,7 +1200,33 @@
           "questionIds": [
             "hb_02"
           ],
-          "gameId": "zz_hanfei_bio_2"
+          "gameId": "zz_hanfei_bio_2",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "clash",
+            "variant": 2,
+            "title": "著書言治・攻防對決",
+            "rival": "宮廷辯手",
+            "place": "韓國書室與秦廷",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "言辭進入權力中心，能否被聽見取決於更多條件。對手的攻勢逼近，空有力量並不足夠。",
+                "kind": "narration"
+              },
+              {
+                "who": "韓非",
+                "text": "看見對方的關切，才知道話從何處進入。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "入秦的困境",
@@ -720,9 +1252,37 @@
           "questionIds": [
             "hb_03"
           ],
-          "gameId": "zz_hanfei_bio_3"
+          "gameId": "zz_hanfei_bio_3",
+          "adventure": {
+            "scene": "scene:cell",
+            "type": "siege",
+            "variant": 0,
+            "title": "入秦的困境・多線守備",
+            "rival": "疑懼之勢",
+            "place": "韓國書室與秦廷",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "眼前的困局不能只靠一句主張解開。各處風險同時出現，先辨清局勢再守住餘地。",
+                "kind": "narration"
+              },
+              {
+                "who": "韓非",
+                "text": "人物遭際與學術主張，不能只憑結果混為一談。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "韓國書室與秦廷"
     },
     "S_zz08_hanread": {
       "id": "S_zz08_hanread",
@@ -732,7 +1292,7 @@
       "episode": "說難與名實",
       "year": 240,
       "period": "原典與論證",
-      "genre": "動作挑戰＋思想閱讀",
+      "genre": "思想劇情RPG＋競技",
       "source": "《韓非子・說難》、《韓非子・二柄》、《韓非子・定法》",
       "guest": false,
       "status": "ready",
@@ -771,7 +1331,33 @@
             "hr_01",
             "hr_02"
           ],
-          "gameId": "zz_hanfei_read_1"
+          "gameId": "zz_hanfei_read_1",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "clash",
+            "variant": 2,
+            "title": "知所說之心・攻防對決",
+            "rival": "說難辯手",
+            "place": "說難之廷",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "對手不斷改變攻勢，直衝只會落入預設的節奏。讀出他的起手，再決定何時靠近。",
+                "kind": "narration"
+              },
+              {
+                "who": "韓非",
+                "text": "難處不只是能說，還在於知道所說之心。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "刑德二柄",
@@ -798,7 +1384,33 @@
             "hr_03",
             "hr_04"
           ],
-          "gameId": "zz_hanfei_read_2"
+          "gameId": "zz_hanfei_read_2",
+          "adventure": {
+            "scene": "scene:zhuzi_hanfei",
+            "type": "siege",
+            "variant": 0,
+            "title": "刑德二柄・多線守備",
+            "rival": "失衡之勢",
+            "place": "說難之廷",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "賞與罰若各自失控，防線就會從內部鬆動。幾路壓力同時進場，你要維持可運作的秩序。",
+                "kind": "narration"
+              },
+              {
+                "who": "韓非",
+                "text": "掌握工具之前，先看誰能支配它。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "法術與名實",
@@ -825,9 +1437,37 @@
             "hr_05",
             "hr_06"
           ],
-          "gameId": "zz_hanfei_read_3"
+          "gameId": "zz_hanfei_read_3",
+          "adventure": {
+            "scene": "scene:room",
+            "type": "tempo",
+            "variant": 1,
+            "title": "法術與名實・節奏競演",
+            "rival": "名實競演者",
+            "place": "說難之廷",
+            "objective": "上下走位對準落點，音符進入金圈時按互動，累積連段並超過對手聲勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "名與實的標記依次到達，稍慢便會錯開。先看清眼前這一項，再對準該落下的位置。",
+                "kind": "narration"
+              },
+              {
+                "who": "韓非",
+                "text": "說的是一回事，做的是否也是一回事？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是節奏競演。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "說難之廷"
     },
     "S_zz09_mobio": {
       "id": "S_zz09_mobio",
@@ -837,7 +1477,7 @@
       "episode": "赴楚止攻",
       "year": 400,
       "period": "史傳與人物",
-      "genre": "角色冒險＋傳記閱讀",
+      "genre": "人物劇情RPG＋競技",
       "source": "《史記・孟子荀卿列傳》、《墨子・公輸》",
       "guest": false,
       "status": "ready",
@@ -875,7 +1515,33 @@
           "questionIds": [
             "mb_01"
           ],
-          "gameId": "zz_mozi_bio_1"
+          "gameId": "zz_mozi_bio_1",
+          "adventure": {
+            "scene": "scene:road",
+            "type": "race",
+            "variant": 0,
+            "title": "善守禦的墨翟・雙人競速",
+            "rival": "急行使者",
+            "place": "赴楚之路與宋城",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "路途遙遠，城中的消息卻不等人。你和另一位急行者同時出發，必須保留衝刺的氣力。",
+                "kind": "narration"
+              },
+              {
+                "who": "墨子",
+                "text": "要阻止眼前的危急，就得先走到危急之前。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "十日十夜赴楚",
@@ -901,7 +1567,33 @@
           "questionIds": [
             "mb_02"
           ],
-          "gameId": "zz_mozi_bio_2"
+          "gameId": "zz_mozi_bio_2",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "clash",
+            "variant": 1,
+            "title": "十日十夜赴楚・攻防對決",
+            "rival": "公輸攻手",
+            "place": "赴楚之路與宋城",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "桌上的攻守已換成一場實地推演。對方接連試探，你要在防守之後找到回應的空檔。",
+                "kind": "narration"
+              },
+              {
+                "who": "墨子",
+                "text": "有守備的能力，勸說才不只是一句願望。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "守備與集體準備",
@@ -927,9 +1619,37 @@
           "questionIds": [
             "mb_03"
           ],
-          "gameId": "zz_mozi_bio_3"
+          "gameId": "zz_mozi_bio_3",
+          "adventure": {
+            "scene": "scene:city",
+            "type": "siege",
+            "variant": 2,
+            "title": "守備與集體準備・多線守備",
+            "rival": "攻城前隊",
+            "place": "赴楚之路與宋城",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "城牆外響起新的動靜。單靠眼前一人不足以長守，三路來襲考驗你的配置與接應。",
+                "kind": "narration"
+              },
+              {
+                "who": "墨子",
+                "text": "守城不能只看一處，還要讓準備接得上。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "赴楚之路與宋城"
     },
     "S_zz10_moread": {
       "id": "S_zz10_moread",
@@ -939,7 +1659,7 @@
       "episode": "兼愛與非攻",
       "year": 400,
       "period": "原典與論證",
-      "genre": "動作挑戰＋思想閱讀",
+      "genre": "思想劇情RPG＋競技",
       "source": "《墨子・兼愛中》、《墨子・非攻上》、《墨子・公輸》",
       "guest": false,
       "status": "ready",
@@ -978,7 +1698,33 @@
             "mr_01",
             "mr_02"
           ],
-          "gameId": "zz_mozi_read_1"
+          "gameId": "zz_mozi_read_1",
+          "adventure": {
+            "scene": "scene:zhuzi_mozi",
+            "type": "siege",
+            "variant": 1,
+            "title": "兼相愛交相利・多線守備",
+            "rival": "相侵之勢",
+            "place": "非攻議場",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "鄰里各守一角，缺口卻接連出現。你必須奔走接應，讓彼此的力量真正相連。",
+                "kind": "narration"
+              },
+              {
+                "who": "墨子",
+                "text": "相互關懷，要能落在彼此的需要上。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "非攻的一致尺度",
@@ -1005,7 +1751,33 @@
             "mr_03",
             "mr_04"
           ],
-          "gameId": "zz_mozi_read_2"
+          "gameId": "zz_mozi_read_2",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "clash",
+            "variant": 2,
+            "title": "非攻的一致尺度・攻防對決",
+            "rival": "非攻辯手",
+            "place": "非攻議場",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "小的掠奪被斥責，大的攻伐卻有人稱許。對手將不同尺度輪番擲來，你要守住一致的判準。",
+                "kind": "narration"
+              },
+              {
+                "who": "墨子",
+                "text": "換了規模，判斷的道理就跟著換了嗎？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "公輸的三層說理",
@@ -1032,9 +1804,37 @@
             "mr_05",
             "mr_06"
           ],
-          "gameId": "zz_mozi_read_3"
+          "gameId": "zz_mozi_read_3",
+          "adventure": {
+            "scene": "scene:city",
+            "type": "siege",
+            "variant": 0,
+            "title": "公輸的三層說理・多線守備",
+            "rival": "攻宋前隊",
+            "place": "非攻議場",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "說理已到最後一層，城外的準備也得跟上。守住幾路攻勢，才能讓話語與實際條件相互支撐。",
+                "kind": "narration"
+              },
+              {
+                "who": "墨子",
+                "text": "先辨仁義，再論智與力；準備也不能缺席。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "非攻議場"
     },
     "S_zz11_mengbio": {
       "id": "S_zz11_mengbio",
@@ -1044,7 +1844,7 @@
       "episode": "遊說與著書",
       "year": 320,
       "period": "史傳與人物",
-      "genre": "角色冒險＋傳記閱讀",
+      "genre": "人物劇情RPG＋競技",
       "source": "《史記・孟子荀卿列傳》",
       "guest": false,
       "status": "ready",
@@ -1082,7 +1882,33 @@
           "questionIds": [
             "nb_01"
           ],
-          "gameId": "zz_mengzi_bio_1"
+          "gameId": "zz_mengzi_bio_1",
+          "adventure": {
+            "scene": "scene:road",
+            "type": "race",
+            "variant": 2,
+            "title": "鄒人孟軻・雙人競速",
+            "rival": "遊說同行者",
+            "place": "遊說道路與講學之所",
+            "objective": "和可見的對手爭先，依次穿越十二個路標，搶先完成兩圈。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "道路分向不同城邑，求見者都想搶先到達。你得穿過長路，保留下一場問對的氣力。",
+                "kind": "narration"
+              },
+              {
+                "who": "孟子",
+                "text": "走到哪裡是一步，說明為什麼又是一步。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是雙人競速。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "遊說不合",
@@ -1108,7 +1934,33 @@
           "questionIds": [
             "nb_02"
           ],
-          "gameId": "zz_mengzi_bio_2"
+          "gameId": "zz_mengzi_bio_2",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "clash",
+            "variant": 0,
+            "title": "遊說不合・攻防對決",
+            "rival": "諸侯辯手",
+            "place": "遊說道路與講學之所",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "君主的問題直指眼前的利益。對手步步進逼，你要在不同攻勢間維持自己的判準。",
+                "kind": "narration"
+              },
+              {
+                "who": "孟子",
+                "text": "若人人只爭自己的那一份，局勢會走到哪裡？",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "退而著述",
@@ -1134,9 +1986,37 @@
           "questionIds": [
             "nb_03"
           ],
-          "gameId": "zz_mengzi_bio_3"
+          "gameId": "zz_mengzi_bio_3",
+          "adventure": {
+            "scene": "scene:zhuzi_mengzi",
+            "type": "tempo",
+            "variant": 1,
+            "title": "退而著述・節奏競演",
+            "rival": "講席競演者",
+            "place": "遊說道路與講學之所",
+            "objective": "上下走位對準落點，音符進入金圈時按互動，累積連段並超過對手聲勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "行程暫歇，思索轉入案頭。把問與答的層次接好，讓後來的人還能循著理由往下讀。",
+                "kind": "narration"
+              },
+              {
+                "who": "孟子",
+                "text": "退而著述，不是把問題留在門外。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是節奏競演。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "遊說道路與講學之所"
     },
     "S_zz12_mengread": {
       "id": "S_zz12_mengread",
@@ -1146,7 +2026,7 @@
       "episode": "義利與推恩",
       "year": 320,
       "period": "原典與論證",
-      "genre": "動作挑戰＋思想閱讀",
+      "genre": "思想劇情RPG＋競技",
       "source": "《孟子・梁惠王上》、《孟子・公孫丑上》",
       "guest": false,
       "status": "ready",
@@ -1185,7 +2065,33 @@
             "nr_01",
             "nr_02"
           ],
-          "gameId": "zz_mengzi_read_1"
+          "gameId": "zz_mengzi_read_1",
+          "adventure": {
+            "scene": "scene:hall",
+            "type": "clash",
+            "variant": 0,
+            "title": "何必曰利・攻防對決",
+            "rival": "逐利辯手",
+            "place": "仁政問對",
+            "objective": "讀出對手的蓄力提示，閃過攻勢後靠近反擊，擊破對方氣勢。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "利字剛出口，席間的立場便逐漸收窄。你要看清對手的節奏，找回討論共同準則的餘地。",
+                "kind": "narration"
+              },
+              {
+                "who": "孟子",
+                "text": "先問以什麼為準，再談各自想得到什麼。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是攻防對決。先選擇自己的步調，再走進場中。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "惻隱之端",
@@ -1212,7 +2118,33 @@
             "nr_03",
             "nr_04"
           ],
-          "gameId": "zz_mengzi_read_2"
+          "gameId": "zz_mengzi_read_2",
+          "adventure": {
+            "scene": "scene:village",
+            "type": "siege",
+            "variant": 1,
+            "title": "惻隱之端・多線守備",
+            "rival": "漠視之勢",
+            "place": "仁政問對",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "求助訊號從不同方位響起。看見危急只是一瞬，能否及時走到需要之處，才是眼前的考驗。",
+                "kind": "narration"
+              },
+              {
+                "who": "孟子",
+                "text": "惻隱是開端，接下來還要有所行。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         },
         {
           "title": "推恩及人",
@@ -1239,9 +2171,37 @@
             "nr_05",
             "nr_06"
           ],
-          "gameId": "zz_mengzi_read_3"
+          "gameId": "zz_mengzi_read_3",
+          "adventure": {
+            "scene": "scene:zhuzi_mengzi",
+            "type": "siege",
+            "variant": 2,
+            "title": "推恩及人・多線守備",
+            "rival": "偏私之勢",
+            "place": "仁政問對",
+            "objective": "奔走三路，擊退來襲者並回防修復；最後仍須保住防線。",
+            "frames": [
+              {
+                "who": "旁白",
+                "text": "近處已有接應，遠處卻仍然薄弱。你不能永遠站在最熟悉的一角，必須把防守向外推開。",
+                "kind": "narration"
+              },
+              {
+                "who": "孟子",
+                "text": "由近及遠的關懷，也需要看見具體處境。",
+                "kind": "adapted"
+              },
+              {
+                "who": "同行策士",
+                "text": "眼前這一局是多線守備。上一段的行動已留下紀錄，現在輪到新的局勢。",
+                "kind": "adapted"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "adventureVersion": 2,
+      "adventurePlace": "仁政問對"
     }
   }
 };

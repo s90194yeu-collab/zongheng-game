@@ -19,20 +19,21 @@ for(const [pi,p]of people.entries())for(const [li,level]of ['bio','read'].entrie
   const {questions,...publicStage}=s;return {...publicStage,questionIds,gameId:'zz_'+p.key+'_'+level+'_'+(si+1)};
  });
  const name=p.name+'・'+(level==='bio'?'初階人物':'進階思想'),title=level==='bio'?p.bioTitle:p.readTitle;
- const meta={id,vol:'zz',ep,name,episode:title,year:p.year,period:level==='bio'?'史傳與人物':'原典與論證',genre:level==='bio'?'角色冒險＋傳記閱讀':'動作挑戰＋思想閱讀',source:[...new Set(stages.map(s=>s.source))].join('、'),guest:false,status:'ready',philosopher:p.key,level,scene:'scene:zhuzi_'+p.key};
+ const meta={id,vol:'zz',ep,name,episode:title,year:p.year,period:level==='bio'?'史傳與人物':'原典與論證',genre:level==='bio'?'人物劇情RPG＋競技':'思想劇情RPG＋競技',source:[...new Set(stages.map(s=>s.source))].join('、'),guest:false,status:'ready',philosopher:p.key,level,scene:'scene:zhuzi_'+p.key};
  catalog.push(meta);
  chapters[id]={...meta,person:p.name,glyph:p.glyph,school:p.school,color:p.color,intro:p.intro,note:p.note,stages};
  drafts[id]={version,status:'ready',meta,anchors,codex:[
   {type:level==='bio'?'person':'text',id:'zz_'+p.key+'_'+level,name:level==='bio'?p.name+'的生平傳述':p.name+'思想選讀',glyph:p.glyph,title,text:p.note,quote:stages[0].passage,source:meta.source},
   {type:'treasure',id:'zz_'+p.key+'_'+level+'_notes',name:title+'・研讀札記',glyph:'簡',title:'三段文本與操作回讀',quote:'',text:p.intro+'動作紀錄與首次作答分開呈現。',source:meta.source}
  ]};
- const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_zhuzi','Zhuzi_models','Zhuzi_js'].map(x=>"<?!= include('"+x+"') ?>").join('\n');
+ const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_zhuzi','Zhuzi_models','Adventure_models','Adventure_canvas','Zhuzi_js'].map(x=>"<?!= include('"+x+"') ?>").join('\n');
  write(path.join(dir,id+'.html'),`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top"><title>${name}｜Re:縱橫鼎業</title>
 <script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script>
 <?!= include('Core_css') ?><?!= include('Zhuzi_css') ?></head><body class="zhuzi-page"><main id="zhuzi-root"></main>
 ${includes}
 <script>ZH.ready(()=>ZH.zhuzi.start({id:${JSON.stringify(id)},anchorOrder:${JSON.stringify(anchors.map(a=>a.id))}}));</script></body></html>\n`);
 }
+Object.values(chapters).forEach(require('../src/content/adventure.cjs').enrich);
 write(path.join(dir,'Data_zhuzi.html'),'<script>window.ZH.ZHUZI='+json({version,chapters})+';\nObject.values(ZH.ZHUZI.chapters).forEach(c=>{ZH.LEARNING_TEXTS[c.id]={titles:[...new Set(c.stages.map(s=>s.source))]};});</script>\n');
 write(path.join(dir,'Zhuzi_data.gs'),'/** 先秦諸子 '+version+'; generated from src/content/zhuzi.cjs. No sheet import required. */\nvar SCENARIO_DATA=SCENARIO_DATA||{};\nObject.assign(SCENARIO_DATA,'+json(drafts)+');\n');
 const catFile=path.join(dir,'Data_catalog.html');let cat=fs.readFileSync(catFile,'utf8');

@@ -1,0 +1,96 @@
+<script>
+(function(ZH){
+ 'use strict';
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),copy=o=>JSON.parse(JSON.stringify(o));
+ function random(w){let x=w.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;w.seed=x>>>0;return w.seed/4294967296;}
+ const styles={guard:{label:'穩守反擊',hp:2,speed:.9,power:1,cost:24},rush:{label:'搶先壓制',hp:-1,speed:1.08,power:2,cost:38},read:{label:'觀勢巧行',hp:0,speed:1,power:1,cost:27}};
+ function create(config,assist=false,tactic='read',seed=1){
+  if(!styles[tactic])tactic='read';const style=styles[tactic];
+  const w={engine:2,type:config.type,variant:config.variant||0,seed:(seed>>>0)||1,initialSeed:(seed>>>0)||1,tactic,assist:!!assist,time:0,limit:assist?115:78,status:'playing',x:130,y:400,hp:(assist?10:6)+style.hp,maxHp:(assist?10:6)+style.hp,stamina:tactic==='read'?120:100,maxStamina:tactic==='read'?120:100,attack:0,guard:0,dash:0,inv:0,stun:0,cooldown:0,flash:0,hits:0,misses:0,cues:0,combo:0,bestCombo:0,notice:'',noticeUntil:0,fx:[],facing:{x:1,y:0},power:style.power,speed:235*style.speed,charges:3};
+  if(w.type==='clash'){w.boss={x:800,y:280,hp:assist?18:30,maxHp:assist?18:30,inv:0,state:'wait',clock:1.6,aim:{x:130,y:400},pattern:Math.floor(random(w)*3),phase:1};w.bolts=[];w.x=220;w.y=350;w.limit=assist?125:90;}
+  else if(w.type==='race'){w.route=route(w.variant);w.rival={x:130,y:400,next:0,slow:0};w.next=0;w.laps=2;w.walls=walls(w.variant);w.limit=assist?110:75;w.x=130;w.y=400;w.hazards=[{x:390,y:395,r:22,phase:random(w)*6},{x:605,y:235,r:22,phase:random(w)*6}];}
+  else if(w.type==='siege'){w.x=290;w.y=320;w.baseHp=assist?14:9;w.baseMax=w.baseHp;w.wave=0;w.spawn=1.6;w.enemies=[];w.scraps=[];w.repairs=3;w.total=assist?10:14;w.kills=0;w.limit=assist?120:90;}
+  else if(w.type==='tempo'){w.x=170;w.y=310;w.limit=assist?62:48;w.notes=[];w.spawn=1.4;w.sent=0;w.resolved=0;w.total=24;w.fans=0;w.rivalFans=0;w.lane=1;}
+  else throw Error('未知挑戰機制 '+w.type);
+  return w;
+ }
+ function route(v){if(v%3===2)return route(0).map(p=>({x:p.x,y:650-p.y}));return v%2?[{x:280,y:415},{x:530,y:400},{x:540,y:210},{x:815,y:210},{x:850,y:430},{x:160,y:440}]:[{x:280,y:420},{x:530,y:400},{x:530,y:205},{x:820,y:205},{x:840,y:435},{x:155,y:445}];}
+ function walls(v){const a=[{x:345,y:140,w:45,h:165},{x:645,y:300,w:45,h:105}];return v%3===2?a.map(b=>({...b,y:650-b.y-b.h})):a;}
+ function blocked(w,x,y){return (w.walls||[]).some(b=>x+17>b.x&&x-17<b.x+b.w&&y+15>b.y&&y-15<b.y+b.h);}
+ function say(w,s){w.notice=s;w.noticeUntil=w.time+2.2;}
+ function hit(w,damage=1){if(w.inv>0||w.dash>0)return false;if(w.guard>0&&w.stamina>=12){w.stamina-=12;w.fx.push({x:w.x,y:w.y,ttl:.35,text:'格擋'});say(w,'擋住攻勢，找準空檔反擊');return false;}w.hp-=damage;say(w,'被擊中！離開攻勢範圍，再找反擊機會');w.inv=1;w.stun=.2;w.combo=0;w.flash=.18;w.fx.push({x:w.x,y:w.y,ttl:.4,text:'－'+damage});return true;}
+ function move(w,target,amount){const d=dist(w,target)||1,step=Math.min(d,amount);let nx=w.x+(target.x-w.x)/d*step,ny=w.y+(target.y-w.y)/d*step;if(!blocked(w,nx,w.y))w.x=nx;if(!blocked(w,w.x,ny))w.y=ny;}
+ function action(w){
+  if(w.status!=='playing'||w.attack>0||w.stun>0)return false;
+  if(w.type==='tempo'){
+   w.attack=.2;const lane=clamp(Math.round((w.y-190)/120),0,2),valid=w.notes.filter(n=>!n.done&&n.lane===lane).sort((a,b)=>Math.abs(a.x-180)-Math.abs(b.x-180))[0];
+   const window=w.assist?83:w.tactic==='read'?55:w.tactic==='guard'?48:39;
+   if(valid&&Math.abs(valid.x-180)<=window){valid.done=true;w.resolved++;w.hits++;w.combo++;w.bestCombo=Math.max(w.bestCombo,w.combo);const perfect=Math.abs(valid.x-180)<window*.45;w.fans+=perfect?(w.tactic==='rush'?4:3):2;w.fx.push({x:180,y:190+lane*120,ttl:.6,text:perfect?'準拍！':'合拍'});say(w,'連段 '+w.combo+' · 搶下舞臺主導');}
+   else{w.combo=w.tactic==='guard'?Math.max(0,w.combo-2):0;w.misses++;w.fans=Math.max(0,w.fans-(w.tactic==='rush'?2:1));say(w,'空拍！等音符進入金圈再按');}return true;
+  }
+  if(w.stamina<10){say(w,'氣力不足，先走位恢復');return false;}w.stamina-=10;w.attack=.3;
+  if(w.type==='clash'){
+   const b=w.boss;if(dist(w,b)<133&&b.state==='recover'&&b.inv<=0){b.inv=.42;const d=w.power+(b.state==='recover'?1:0);b.hp=Math.max(0,b.hp-d);w.hits++;w.combo++;w.bestCombo=Math.max(w.bestCombo,w.combo);w.fx.push({x:b.x,y:b.y,ttl:.6,text:'－'+d});if(b.state==='wait')b.clock=Math.min(b.clock,.5);say(w,b.state==='recover'?'抓住破綻，追擊成功':'擊中對手！留意下一波反擊');if(b.hp===0)w.status='won';}else{w.misses++;w.combo=0;say(w,dist(w,b)<133?'對手擋開了！等攻勢結束、出現破綻再出手':'距離不足，先走位觀察');}
+  }else if(w.type==='race'){
+   w.guard=.45;if(dist(w,w.rival)<165){w.rival.slow=1.2;say(w,'近身牽制，對手短暫減速');}else say(w,'護身步：短暫抵擋路障');
+  }else if(w.type==='siege'){
+   const targets=w.enemies.filter(e=>dist(w,e)<125);if(targets.length){for(const e of targets){e.hp-=w.power;e.stagger=.25;e.x=Math.min(950,e.x+24);w.fx.push({x:e.x,y:e.y,ttl:.4,text:'擊退'});}w.hits++;w.combo++;w.bestCombo=Math.max(w.bestCombo,w.combo);}else{w.misses++;say(w,'走近來襲者再出手，別空耗氣力');}
+  }
+  return true;
+ }
+ function step(w,input,dt){
+  if(w.status!=='playing')return w;dt=clamp(Number(dt)||0,0,.05);w.time+=dt;
+  for(const k of ['attack','guard','dash','inv','stun','cooldown','flash'])w[k]=Math.max(0,w[k]-dt);
+  w.fx=w.fx.filter(f=>(f.ttl-=dt)>0);w.stamina=clamp(w.stamina+dt*(input.guard?2:19),0,w.maxStamina);
+  if(input.guard&&w.stamina>2){w.guard=.1;w.stamina=Math.max(0,w.stamina-dt*9);}
+  if(input.dash&&w.cooldown<=0&&w.stamina>=styles[w.tactic].cost){w.stamina-=styles[w.tactic].cost;w.dash=.22;w.cooldown=.65;}
+  let mx=Number(!!input.right)-Number(!!input.left),my=Number(!!input.down)-Number(!!input.up);if(w.type==='tempo')mx=0;const n=Math.hypot(mx,my)||1;
+  if(mx||my)w.facing={x:mx/n,y:my/n};
+  const speed=w.speed*(w.dash>0?2.15:input.guard?.55:1)*(w.stun>0?.25:1),nx=clamp(w.x+mx/n*speed*dt,55,945),ny=clamp(w.y+my/n*speed*dt,155,490);
+  if(!blocked(w,nx,w.y))w.x=nx;if(!blocked(w,w.x,ny))w.y=ny;
+  if(w.type==='clash')clashStep(w,dt);else if(w.type==='race')raceStep(w,dt);else if(w.type==='siege')siegeStep(w,dt,input);else if(w.type==='tempo')tempoStep(w,dt);
+  if(w.status==='playing'&&(w.hp<=0||w.time>=w.limit)){w.status='lost';say(w,w.hp<=0?'氣力耗盡，調整路線再戰':'時限已到，重新配置戰術');}
+  return w;
+ }
+ function clashStep(w,dt){
+  const b=w.boss;b.inv=Math.max(0,b.inv-dt);b.phase=b.hp<=b.maxHp*.34?3:b.hp<=b.maxHp*.67?2:1;b.clock-=dt;
+  if(b.state==='wait'){
+   const target={x:clamp(720+Math.sin(w.time*.8)*120,200,900),y:clamp(300+Math.cos(w.time*.7)*130,180,455)};move(b,target,75*dt);
+   if(b.clock<=0){b.aim={x:w.x,y:w.y};b.pattern=(b.pattern+1)%3;b.state='tell';b.clock=(w.assist?1.3:.95)-(b.phase-1)*.1;say(w,b.pattern===0?'紅色範圍即將衝鋒，橫向閃避':b.pattern===1?'蓄力震波！拉開距離或守備':'連續飛矢！觀察間隙移動');}
+  }else if(b.state==='tell'&&b.clock<=0){
+   if(b.pattern===0){b.state='rush';b.clock=.48;b.start={x:b.x,y:b.y};b.end={x:clamp(b.aim.x,80,920),y:clamp(b.aim.y,170,480)};}
+   else if(b.pattern===1){if(dist(w,b)<(w.assist?140:180))hit(w);b.state='recover';b.clock=w.assist?1.6:1.05;}
+   else{const angle=Math.atan2(b.aim.y-b.y,b.aim.x-b.x);for(let i=-b.phase;i<=b.phase;i++){const a=angle+i*.24;w.bolts.push({x:b.x,y:b.y,vx:Math.cos(a)*240,vy:Math.sin(a)*240,ttl:4});}b.state='recover';b.clock=w.assist?1.8:1.2;}
+  }else if(b.state==='rush'){
+   const t=clamp(1-b.clock/.48,0,1);b.x=b.start.x+(b.end.x-b.start.x)*t;b.y=b.start.y+(b.end.y-b.start.y)*t;if(dist(w,b)<65)hit(w);if(b.clock<=0){b.state='recover';b.clock=w.assist?1.8:1.25;}
+  }else if(b.state==='recover'&&b.clock<=0){b.state='wait';b.clock=Math.max(.45,1.4-b.phase*.22);}
+  for(const p of w.bolts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.ttl-=dt;if(dist(w,p)<31){hit(w);p.ttl=0;}}w.bolts=w.bolts.filter(p=>p.ttl>0&&p.x>-20&&p.x<1020&&p.y>100&&p.y<580);
+ }
+ function raceStep(w,dt){
+  const count=w.route.length*w.laps,r=w.rival;r.slow=Math.max(0,r.slow-dt);const rt=w.route[r.next%w.route.length];move(r,rt,dt*(w.assist?125:246)*(r.slow>0?.35:1)*(r.next+1<w.next?1.08:1));if(dist(r,rt)<17)r.next++;
+  const point=w.route[w.next%w.route.length];if(dist(w,point)<43){w.next++;w.hits++;w.stamina=Math.min(w.maxStamina,w.stamina+16);say(w,'通過第 '+w.next+' / '+count+' 處，下一處亮起');if(w.next===count){w.status='won';return;}}
+  w.hazards.forEach((h,i)=>{h.x=390+i*230;h.y=310+Math.sin(w.time*(w.assist?.75:1.1)+(h.phase||0)+i*2)*125;if(dist(w,h)<h.r+20)hit(w);});
+  if(r.next>=count){w.status='lost';say(w,'對手先抵達！保留首輪紀錄，可調整戰術再挑戰');}
+ }
+ function siegeStep(w,dt,input){
+  w.spawn-=dt;if(w.wave<w.total&&w.spawn<=0){const lane=w.variant===1?w.wave%3:Math.floor(random(w)*3),fast=w.variant===2?w.wave%3===2:w.wave%4===3;w.enemies.push({id:w.wave,x:930,y:[195,320,455][lane],lane,hp:fast?1:2+(w.wave>8?1:0),maxHp:fast?1:2+(w.wave>8?1:0),speed:(fast?100:63)+(w.assist?-20:0),stagger:0});w.wave++;w.spawn=w.assist?2.1:w.variant===2?(w.wave%3===0?2.5:.6):1.5-Math.min(.3,w.wave*.02);}
+  for(const e of w.enemies){e.stagger=Math.max(0,e.stagger-dt);if(e.stagger<=0)e.x-=e.speed*dt;if(e.x<110&&e.hp>0){w.baseHp--;e.hp=0;e.leaked=true;w.combo=0;say(w,'防線失守，堡壘受損');}}
+  for(const e of w.enemies.filter(e=>e.hp<=0)){if(!e.leaked){w.kills++;w.scraps.push({x:e.x,y:e.y,ttl:8});}}w.enemies=w.enemies.filter(e=>e.hp>0);
+  w.scraps=w.scraps.filter(p=>{p.ttl-=dt;if(dist(w,p)<45){w.stamina=clamp(w.stamina+25,0,w.maxStamina);if(w.repairs<3)w.repairs++;return false;}return p.ttl>0;});
+  if(input.guard&&w.x<235&&w.repairs>0&&w.baseHp<w.baseMax&&w.cooldown<=0){w.baseHp++;w.repairs--;w.cooldown=1.2;say(w,'消耗一份物資，修復防線');}
+  if(w.enemies.some(e=>dist(w,e)<34))hit(w);
+  if(w.baseHp<=0){w.status='lost';say(w,'堡壘失守，重新選擇先守哪一線');}
+  else if(w.wave===w.total&&!w.enemies.length){w.status=w.baseHp>=Math.ceil(w.baseMax*.34)?'won':'lost';say(w,w.status==='won'?'守住最後一波！':'雖然撐到最後，防線損失過大');}
+ }
+ function tempoStep(w,dt){
+  w.spawn-=dt;if(w.sent<w.total&&w.spawn<=0){const lane=w.variant===2?w.sent%2===0?0:2:Math.floor(random(w)*3);w.notes.push({id:w.sent,lane,x:930,y:190+lane*120,speed:(w.assist?205:290)+Math.floor(w.sent/8)*22+w.variant*8,done:false});w.sent++;w.spawn=w.assist?1.9:1.35;}
+  for(const n of w.notes){if(n.done)continue;n.x-=n.speed*dt;if(n.x<230&&!n.cued){n.cued=true;w.cues++;}if(n.x<100){n.done=true;w.resolved++;w.misses++;w.combo=0;w.rivalFans+=2;}}
+  // The rival earns a visible, fixed phrase score, independent of the player's input.
+  const rivalBase=Math.floor(Math.min(w.sent,w.time/(w.assist?1.9:1.35))*.95);w.rivalFans=Math.max(w.rivalFans,rivalBase);
+  if(w.resolved>=w.total){w.status=w.hits>=Math.ceil(w.total*(w.assist?.5:.67))&&w.fans>w.rivalFans?'won':'lost';say(w,w.status==='won'?'掌握節奏，贏下競演':'對手領先，先觀察落點再出手');}
+ }
+ function score(w){if(w.engine!==2)return 0;if(w.status!=='won')return 0;const accuracy=w.type==='tempo'?w.hits/w.total:w.type==='siege'?(w.baseHp/w.baseMax*.6+w.hp/w.maxHp*.4):w.hp/w.maxHp;return clamp(Math.round(3+accuracy*4+clamp(1-w.time/w.limit,0,1)*2+Math.min(1,w.bestCombo/8)),1,10);}
+ function progress(w){if(w.type==='clash')return {me:1-w.boss.hp/w.boss.maxHp,rival:1-w.hp/w.maxHp,text:'對手氣勢 '+w.boss.hp+' / '+w.boss.maxHp};if(w.type==='race')return {me:w.next/(w.route.length*w.laps),rival:w.rival.next/(w.route.length*w.laps),text:'我方 '+w.next+' · 對手 '+w.rival.next+' / '+(w.route.length*w.laps)};if(w.type==='siege')return {me:w.kills/w.total,rival:1-w.baseHp/w.baseMax,text:'防線 '+w.baseHp+' / '+w.baseMax+' · 來襲 '+w.wave+' / '+w.total};return {me:w.fans/60,rival:w.rivalFans/60,text:'我方聲勢 '+w.fans+' · 對手 '+w.rivalFans+' · 連段 '+w.combo};}
+ ZH.adventureModel={create,step,action,score,progress,blocked,dist,styles,route,copy};
+})(window.ZH);
+</script>

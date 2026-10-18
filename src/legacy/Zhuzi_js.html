@@ -1,13 +1,19 @@
 <script>
 (function(ZH){
  'use strict';
- const M=ZH.zhuziModel,esc=ZH.esc;
+ const M=ZH.zhuziModel,A=ZH.adventureModel,esc=ZH.esc;
  let c,s,bank,root,view,canvas,ctx,raf=0,lastFrame=0,lastCheckpoint=0,lastClock=Date.now(),saving=Promise.resolve(),busy=false,paused=false,disposed=false,bootOptions,saveError='';
- const input={},images={},keys={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'dash'};
+ const input={},images={},keys={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'dash',KeyQ:'guard'};
  const button=(text,action,primary)=>'<button type="button" class="zz-btn'+(primary?' primary':'')+'" data-action="'+action+'">'+esc(text)+'</button>';
  const collection=()=>c.collection||'先秦諸子';
  const level=()=>c.studyLabel||(c.level==='bio'?'初階・人物傳記':'進階・思想選讀');
  const stage=()=>c.stages[s.stage];
+ const PLANS={
+  clash:[['guard','穩守反擊','多承受2次攻勢，移動較慢，出手較輕。'],['rush','搶先壓制','出手更重、移動更快；少1格體力，衝刺耗氣較多。'],['read','觀勢巧行','多留20點氣力，讓走位、守備與反擊接得上。']],
+  race:[['guard','穩步護行','更耐碰撞，但腳步較慢；須善用牽制追近對手。'],['rush','疾走搶位','移動較快、容錯較低；別把氣力一次用盡。'],['read','留氣看路','氣力上限較高，為轉彎與下一次衝刺保留餘地。']],
+  siege:[['guard','固守要口','多2格體力，移動較慢；守住近處再尋機接應。'],['rush','前出攔截','擊退力較強、跑得較快，卻更不耐受擊。'],['read','預留接應','氣力較充足，能在三路之間多作一次移動。']],
+  tempo:[['guard','穩住基本拍','判定稍寬，空拍只減少連段；上下移動較慢。'],['rush','搶下重拍','精準拍聲勢更高，但判定較窄，空拍損失較多。'],['read','聽拍再行','判定範圍較寬，保留標準走位速度。']]
+ };
  function clearInput(){Object.keys(input).forEach(k=>delete input[k]);document.querySelectorAll('.zz-touch .active').forEach(el=>el.classList.remove('active'));}
  function stop(){cancelAnimationFrame(raf);raf=0;clearInput();lastFrame=0;}
  function note(text,error){saveError=error?text:'';const el=root.querySelector('[data-save]');if(el){el.textContent=text;el.classList.toggle('error',!!error);}}
@@ -19,13 +25,13 @@
   catch(e){note('存檔失敗：'+e.message+'。請按「儲存」重試。',true);throw e;}
  }
  function shell(){
-  root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+(c.fullText?button(c.readerLabel||'全篇原文','text'):'')+button('儲存','save')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div><div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
+  root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+button(c.readerLabel||'原典札記','text')+button('儲存','save')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div><div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
   view=root.querySelector('#zz-view');
   if(saveError)note(saveError,true);
   root.scrollIntoView({block:'start'});
   root.querySelector('[data-action=save]').onclick=()=>guard(async()=>{await checkpoint();ZH.toast('進度已儲存。','ok');});
   root.querySelector('[data-action=pause]').onclick=()=>pause();
-  const reader=root.querySelector('[data-action=text]');if(reader)reader.onclick=()=>{if(s.phase==='game'&&!paused)pause();ZH.modal({title:c.name+'・'+(c.readerLabel||'原文閱讀'),body:'<p>'+esc(c.school)+' · '+esc(c.period)+'</p>'+c.fullText.map(p=>'<p class="zz-fulltext">'+esc(p)+'</p>').join('')+(c.readerKind==='guide'?'<p>本頁為自編導讀，全文請配合課本閱讀。</p>':'')+(c.editionNote?'<p>'+esc(c.editionNote)+'</p>':'')+'<p><a target="_blank" rel="noopener noreferrer" href="'+esc(c.url)+'">核對文本或教學來源</a></p>',actions:[{label:'返回本章',value:true,kind:'primary'}]});};
+  const reader=root.querySelector('[data-action=text]');if(reader)reader.onclick=()=>{if(s.phase==='game'&&!paused)pause();ZH.modal({title:c.name+'・'+(c.readerLabel||'原文閱讀'),body:'<p>'+esc(c.school)+' · '+esc(c.period)+'</p>'+(c.fullText||c.stages.map(t=>t.passage)).map(p=>'<p class="zz-fulltext">'+esc(p)+'</p>').join('')+(c.readerKind==='guide'?'<p>本頁為自編導讀，全文請配合課本閱讀。</p>':'')+(c.editionNote?'<p>'+esc(c.editionNote)+'</p>':'')+'<p><a target="_blank" rel="noopener noreferrer" href="'+esc(c.url||stage()?.url||c.stages[0].url)+'">核對文本或教學來源</a></p>',actions:[{label:'返回本章',value:true,kind:'primary'}]});};
  }
  function bind(action,fn){const el=view.querySelector('[data-action="'+action+'"]');if(el)el.onclick=()=>guard(fn);}
  async function guard(fn){if(busy)return;busy=true;try{await fn();}catch(e){ZH.toast(e.message||'操作未完成，請重試。','bad');}finally{busy=false;}}
@@ -34,24 +40,45 @@
   try{return window.ART.portrait({id:c.philosopher,name:person,glyph:c.glyph,color:c.color,art:{hat:c.vol==='gw'?'jin':'guan',old:c.vol!=='gw',beard:c.vol==='gw'?1:3,robe:c.color,prop:'scroll',...c.art,...(['紅拂女','張李德和'].includes(person)?{female:true,hat:'none',beard:0}: {})}},{bust:false});}catch(e){return '<span>'+esc(person)+'</span>';}
  }
  function render(){
-  stop();shell();if(paused){renderPause();return;}
+  stop();document.body.classList.toggle('zz-inbattle',s.phase==='game'&&!paused);syncStageArt();shell();if(paused){renderPause();return;}
   if(s.stage>=c.stages.length){renderComplete();return;}
   if(s.phase==='game'){renderGame();return;}
   if(s.phase==='gameResult'){renderGameResult();return;}
   if(s.phase==='question'){renderQuestion();return;}
   renderIntro();
  }
- function renderIntro(){
-  const t=stage();s.phase='intro';
-  view.innerHTML='<div class="zz-panel zz-reader"><div><p class="zz-kicker">'+esc(level())+' ／ 第 '+(s.stage+1)+' 段</p><h2>'+esc(t.title)+'</h2><div class="zz-passage">'+esc(t.passage)+'</div>'+source(t)+'<details><summary>閱讀提示</summary><p class="zz-gloss">'+esc(t.gloss)+'</p></details><p class="zz-intro">'+esc(t.story)+'</p><div class="zz-mission"><strong>'+esc(t.game.title)+'</strong><p>'+esc(t.game.goal)+'</p><p>目標概念：'+t.game.targets.map(esc).join('、')+'。操作完成後回讀文本並作答。</p><label><input type="checkbox" id="zz-assist" '+(s.assist?'checked':'')+'> 練習模式（速度較緩、時間較寬；不上競技榜）</label><div class="zz-inline">'+button('進入場景','begin',true)+'</div></div></div><aside><div class="zz-art">'+portrait(c.person)+'</div><p class="zz-note">'+esc(c.note)+'</p><p class="zz-note">桌面：方向鍵／WASD 移動，E 互動，空白鍵衝刺。手機：使用畫面下方方向盤與互動鍵。'+c.stages.length+' 段各有獨立挑戰，可暫停、儲存及續玩。</p></aside></div>';
-  view.querySelector('#zz-assist').onchange=e=>{s.assist=e.target.checked;};
-  bind('begin',async()=>{s.world=M.create(t.game.type,s.assist);s.phase='game';s.gameAttempt++;s.questionIndex=0;delete s.questionFeedback;await checkpoint();render();});
+ function sceneHTML(t,who,text,extra='',question=false){
+  return '<div class="zz-scene'+(question?' zz-anchor-scene':'')+'"><div class="zz-scene-place">'+esc(t.adventure.place)+'<span>第 '+(s.stage+1)+' 幕 · '+esc(t.title)+'</span></div><div class="zz-cast"><div class="zz-cast-player"><img src="'+esc(images.player?.src||'')+'" alt="你的策士"><span>'+esc(ZH.player.name())+'</span></div><div class="zz-cast-npc">'+portrait(c.person)+'<span>'+esc(c.person)+'</span></div></div><div class="zz-scene-shade"></div><div class="zz-speech"><div class="zz-speaker">'+esc(who)+'<small>'+(question?'文本問答':who==='旁白'?'場景敘事':'教學改編對話')+'</small></div><p>'+esc(text)+'</p>'+extra+'</div></div>';
  }
- function actionLabel(){const type=stage().game.type;return type==='defend'?'護盾':['flow','seam'].includes(type)?'護身':type==='practice'?'練習':type==='rescue'?'領取／送達':'取簡／交付';}
+ function currentTactic(){return (s.tactics||{})[s.stage]||'read';}
+ function makeWorld(assist){const w=A.create(stage().adventure,assist,currentTactic(),(Date.now()^((s.gameAttempt+1)*2654435761))>>>0);w.gameId=stage().gameId+'_v2';return w;}
+ function gameId(){return s.world?.gameId||stage().gameId;}
+ function stageGames(){return M.stageGames(c.stages,s);}
+ function renderIntro(){
+  const t=stage(),a=t.adventure;s.phase='intro';s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};
+  const i=Math.min(a.frames.length-1,s.storyCursor[s.stage]||0),f=a.frames[i],last=i===a.frames.length-1;
+  const previous=s.stage?s.games.find(g=>g.gameId===(s.stageGames||{})[s.stage-1]):null;
+  let context=previous?'<p class="zz-carry">上一幕首輪 '+previous.firstScore+'／10 · '+(previous.bestScore>previous.firstScore?'已再戰提升至 '+previous.bestScore:'這一步已留在旅程中')+'</p>':'';
+  const navigation='<div class="zz-story-nav"><span>'+ (i+1)+' / '+a.frames.length+'</span>'+(i?button('回看上句','previous'):'')+(!last?button('下一句','dialogue',true):'')+button(c.readerKind==='guide'?'對讀導讀':'原文對讀','passage')+'</div>';
+  const plans=last?'<section class="zz-plans" aria-label="選擇本幕戰術"><h2>這一幕，怎麼出手？</h2><div class="zz-plan-grid">'+PLANS[a.type].map(([key,title,desc])=>'<button class="zz-plan" data-plan="'+key+'" aria-pressed="'+(currentTactic()===key)+'"><b>'+title+'</b><span>'+desc+'</span></button>').join('')+'</div><div class="zz-start-row"><label><input type="checkbox" id="zz-assist" '+(s.assist?'checked':'')+'> 練習（較慢攻勢，不上競技榜）</label>'+button('進入挑戰','begin',true)+'</div><p class="zz-missionline"><b>'+esc(a.title)+'</b> · '+esc(a.objective)+'</p></section>':'';
+  view.innerHTML=context+sceneHTML(t,f.who,f.text,navigation)+plans;
+  bind('previous',async()=>{s.storyCursor[s.stage]=i-1;render();});
+  bind('dialogue',async()=>{s.storyCursor[s.stage]=i+1;render();});
+  bind('passage',()=>ZH.modal({title:t.title+'・'+(c.readerKind==='guide'?'自編導讀':'原文對讀'),body:'<div class="zz-fulltext">'+esc(t.passage)+'</div>'+source(t)+'<p>'+esc(t.gloss)+'</p>',actions:[{label:'回到劇情',value:true,kind:'primary'}]}));
+  view.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{s.tactics[s.stage]=b.dataset.plan;render();});
+  const practice=view.querySelector('#zz-assist');if(practice)practice.onchange=e=>{s.assist=e.target.checked;};
+  bind('begin',async()=>{s.gameAttempt=(s.gameAttempt||0)+1;s.world=makeWorld(s.assist);s.phase='game';s.questionIndex=0;delete s.questionFeedback;render();checkpoint().catch(()=>{});});
+ }
+
+ function actionLabel(){if(s.world?.engine===2)return {clash:'出手',race:'牽制',siege:'擊退',tempo:'合拍'}[s.world.type];const type=stage().game.type;return type==='defend'?'護盾':['flow','seam'].includes(type)?'護身':type==='practice'?'練習':type==='rescue'?'領取／送達':'取簡／交付';}
  function renderGame(){
-  if(!s.world||s.world.type!==stage().game.type)s.world=M.create(stage().game.type,s.assist);
+  if(!s.world)s.world=makeWorld(s.assist);
   const t=stage();
+  if(s.world.engine===2){
+   view.innerHTML='<div class="zz-battle-heading"><div><p class="zz-kicker">'+esc(t.adventure.place)+' · '+(s.world.assist?'練習':'競技')+'</p><h2>'+esc(t.adventure.title)+'</h2></div><span>對手：'+esc(t.adventure.rival)+'</span></div><div class="zz-game zz-new-game"><div class="zz-hud"><span data-goal></span><span data-time></span><span data-health></span><span data-vigor></span></div><div class="zz-racebars"><label>我方<span><i data-me></i></span></label><label>對手<span><i data-rival></i></span></label></div><canvas width="1000" height="560" tabindex="0" aria-label="'+esc(t.adventure.title)+'。方向鍵移動，E '+esc(actionLabel())+'，Q 守備，空白鍵衝刺。"></canvas></div><p data-notice class="zz-battle-notice" role="status"></p><div class="zz-controlbar"><div class="zz-controlhint">'+esc(t.adventure.objective)+'<br>'+(s.world.type==='tempo'?'↑↓ 走位 · E 對拍（不要連按）':'方向鍵／WASD 移動 · E '+actionLabel()+' · Q 守備 · 空白鍵衝刺')+'</div><div class="zz-touch" aria-label="遊戲操作"><div class="zz-dpad"><button class="up" data-hold="up" aria-label="向上移動">↑</button><button class="left" data-hold="left" aria-label="向左移動">←</button><button class="down" data-hold="down" aria-label="向下移動">↓</button><button class="right" data-hold="right" aria-label="向右移動">→</button></div><div class="zz-touchactions"><button data-hold="action">'+esc(actionLabel())+'</button>'+(s.world.type==='tempo'?'':'<button data-hold="guard">守備</button><button data-hold="dash">衝刺</button>')+'</div></div></div>';
+  }else{
   view.innerHTML='<p class="zz-objective"><strong>'+esc(t.game.title)+'</strong> · '+esc(t.game.goal)+'</p><div class="zz-game"><div class="zz-hud"><span data-goal></span><span data-time></span><span data-health></span></div><canvas width="1000" height="560" tabindex="0" aria-label="'+esc(t.game.title)+'遊戲場景。方向鍵或 WASD 移動，E '+esc(actionLabel())+'，空白鍵衝刺。也可使用下方按鈕。"></canvas></div><div class="zz-legend"><span>金色：目標／互動點</span><span>紅色：移動障礙／來襲標記</span></div><p data-notice role="status" class="zz-objective"></p><div class="zz-controlbar"><div class="zz-controlhint">'+(t.game.type==='practice'?'依序走到發光工位，在節奏點進入金色區間時按 E／練習。':t.game.type==='defend'?'移動到來襲標記附近，按 E／護盾擋下六次；可按住連續守備。':t.game.type==='rescue'?'左下補給站領一份物資，再送到尚未完成的求助點；每次都按 E／互動。':['flow','seam'].includes(t.game.type)?'用方向移動碰觸三枚金色概念簡；觀察移動障礙或牆面空隙。':'靠近金色書簡按 E／互動，帶到右上記錄臺再交付；一次帶一束。')+'<br>WASD／方向鍵移動 · E 互動 · 空白鍵衝刺 · Esc 暫停</div><div class="zz-touch" aria-label="遊戲操作"><div class="zz-dpad"><button class="up" data-hold="up" aria-label="向上移動">↑</button><button class="left" data-hold="left" aria-label="向左移動">←</button><button class="down" data-hold="down" aria-label="向下移動">↓</button><button class="right" data-hold="right" aria-label="向右移動">→</button></div><div class="zz-touchactions"><button data-hold="action">'+esc(actionLabel())+'</button><button data-hold="dash">衝刺</button></div></div></div>';
+  }
   canvas=view.querySelector('canvas');ctx=canvas.getContext('2d');
   view.querySelectorAll('[data-hold]').forEach(el=>{
    el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);input[el.dataset.hold]=true;el.classList.add('active');if(el.dataset.hold==='action')act();});
@@ -61,22 +88,23 @@
   lastFrame=0;lastCheckpoint=performance.now();raf=requestAnimationFrame(frame);canvas.focus({preventScroll:true});
  }
  let lastAction=0,lastHud=0;
- function act(){if(!s||s.phase!=='game'||paused)return;const now=performance.now();if(now-lastAction<280)return;lastAction=now;M.interact(s.world);}
+ function act(){if(!s||s.phase!=='game'||paused)return;const now=performance.now();if(now-lastAction<280)return;lastAction=now;if(s.world.engine===2)A.action(s.world);else M.interact(s.world);}
  function frame(now){
   if(disposed||paused||s.phase!=='game'||document.hidden)return;
   const dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):0;lastFrame=now;
-  M.step(s.world,input,dt);if(input.action&&now-lastAction>480)act();draw();
+  const before={hits:s.world.hits,hp:s.world.hp,cues:s.world.cues};(s.world.engine===2?A:M).step(s.world,input,dt);if(s.world.engine===2){if(s.world.cues>before.cues)ZH.sfx('click');if(s.world.hits>before.hits)ZH.sfx(s.world.type==='tempo'?'chime':'click');if(s.world.hp<before.hp)ZH.sfx('ng');}if(input.action&&now-lastAction>480)act();draw();
   if(now-lastHud>160){updateHud();lastHud=now;}
   if(s.world.status!=='playing'){stop();settle().catch(e=>{note(e.message,true);render();});return;}
   if(now-lastCheckpoint>12000){lastCheckpoint=now;checkpoint().catch(()=>{});}
   raf=requestAnimationFrame(frame);
  }
  async function settle(){
-  const result=M.recordGame(s,s.world,stage().gameId);s.phase='gameResult';
+  const result=M.recordGame(s,s.world,gameId());s.stageGames=s.stageGames||{};s.stageGames[s.stage]=gameId();s.phase='gameResult';
   if(!result.practice)ZH.track('minigame',{scenarioId:c.id,...result});
-  await checkpoint().catch(()=>{});render();
+  ZH.sfx(s.world.status==='won'?'ok':'ng');render();checkpoint().catch(()=>{});
  }
  function updateHud(){
+  if(s.world.engine===2){const w=s.world,p=A.progress(w);view.querySelector('[data-goal]').textContent=p.text;view.querySelector('[data-time]').textContent='剩餘 '+Math.max(0,Math.ceil(w.limit-w.time))+' 秒';view.querySelector('[data-health]').textContent='體力 '+Math.max(0,w.hp)+' / '+w.maxHp;view.querySelector('[data-vigor]').textContent='氣力 '+Math.round(w.stamina)+' / '+w.maxStamina;view.querySelector('[data-me]').style.width=(Math.max(0,Math.min(1,p.me))*100)+'%';view.querySelector('[data-rival]').style.width=(Math.max(0,Math.min(1,p.rival))*100)+'%';view.querySelector('[data-notice]').textContent=w.noticeUntil>w.time?w.notice:'觀察對手，留意氣力與場上提示。';return;}
   const w=s.world,type=w.type,done=type==='defend'?Math.min(6,w.hits):['journey','argue'].includes(type)?w.delivered.length:w.done.length;
   view.querySelector('[data-goal]').textContent=(w.assist?'練習 · ':'競技 · ')+(type==='defend'?'守備 ':'完成 ')+done+' / '+(type==='defend'?6:3)+(w.carry>=0?' · 攜帶中':type==='practice'?' · 第 '+(w.done.length+1)+' 站 '+stage().game.targets[w.done.length]:'');
   view.querySelector('[data-time]').textContent='剩餘 '+Math.max(0,Math.ceil(w.limit-w.time))+' 秒';
@@ -91,7 +119,7 @@
   ctx.fillStyle=done?'#d5ebdf':'#425d57';ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.fillText(done?'✓':'簡',x,y-3);label(name,x,y-40,done?'#b7d6c5':null);
  }
  function draw(){
-  const w=s.world,t=stage(),ts=M.targets(w);ctx.clearRect(0,0,1000,560);
+  const w=s.world,t=stage();if(w.engine===2){ZH.adventureCanvas.draw(ctx,w,t,images);return;}const ts=M.targets(w);ctx.clearRect(0,0,1000,560);
   if(images.scene&&images.scene.complete&&images.scene.naturalWidth)ctx.drawImage(images.scene,0,0,1000,560);
   ctx.fillStyle='#10232d69';ctx.fillRect(0,0,1000,560);
   const grd=ctx.createLinearGradient(0,110,0,550);grd.addColorStop(0,'#12313c22');grd.addColorStop(1,'#172b3be0');ctx.fillStyle=grd;ctx.fillRect(0,110,1000,450);
@@ -124,44 +152,50 @@
   label('你',w.x,w.y+40,'#d9f2da');
  }
  function renderGameResult(){
-  const w=s.world,entry=s.games.find(x=>x.gameId===stage().gameId),won=w&&w.status==='won';
-  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(stage().game.title)+' ／ '+(w.assist?'練習模式':'競技模式')+'</p><h2>'+(won?'操作完成，回到文本':'再觀察一次，重新挑戰')+'</h2><p class="zz-intro">'+(won?'你已完成這段場景任務。接著以文本證據檢查理解；操作分數不代替閱讀作答。':'時間或體力已用完。可重試或改用練習模式，已完成的閱讀與首輪成績會保留。')+'</p><div class="zz-resultstat"><div><strong>'+M.score(w)+' / 10</strong>本輪操作</div><div><strong>'+entry.firstScore+' ／ '+entry.bestScore+'</strong>首輪 ／ 最佳操作（含練習）</div></div><p class="zz-note">練習模式不上競技榜。首輪紀錄保留，重試不覆寫首輪；閱讀首答另計。</p><div class="zz-inline">'+(won?button('回讀與作答','questions',true):button('重試這段','retry',true))+button('用練習模式重試','assist')+button('查看競技成績','board')+'</div><div class="zz-board" data-board role="status"></div></div>';
-  bind('retry',async()=>retry(false));bind('assist',async()=>retry(true));
-  bind('questions',async()=>{s.phase='question';s.questionIndex=0;delete s.questionFeedback;await checkpoint();render();});
+  const w=s.world,entry=s.games.find(x=>x.gameId===gameId()),won=w&&w.status==='won';
+  const after={clash:'對手收住攻勢，席間的問對仍未結束。',race:'兩道腳步在終點停下，沿途所見還等待你說明。',siege:'最後一陣動靜暫歇，守住的地方又恢復了聲音。',tempo:'最後一拍落下，舞臺上的回聲仍在延續。'};
+  const detail=w.engine===2?A.progress(w).text+' · 用時 '+Math.round(w.time)+' 秒'+(w.type==='tempo'?' · 命中 '+w.hits+'／'+w.total:' · 剩餘體力 '+Math.max(0,w.hp)+'／'+w.maxHp):'';
+  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(w.engine===2?stage().adventure.title:stage().game.title)+' ／ '+(w.assist?'練習模式':'競技模式')+'</p><h2>'+(won?'這一局，你贏了':'對手佔了上風')+'</h2><p class="zz-intro">'+(won?'對手收住攻勢，下一個問題卻已來到眼前。帶著剛才的選擇，回到人物的話語。':'這次的紀錄已留下。先看蓄力、路線或節拍，再決定要搶先、反擊，還是多留一些氣力。')+'</p><div class="zz-resultstat"><div><strong>'+M.score(w)+' / 10</strong>本輪操作</div><div><strong>'+entry.firstScore+' ／ '+entry.bestScore+'</strong>首輪 ／ 最佳操作（含練習）</div></div><p class="zz-note">練習模式不上競技榜。首輪紀錄保留，重試不覆寫首輪；閱讀首答另計。</p><div class="zz-inline">'+(won?button('繼續劇情','questions',true):button('重試這段','retry',true))+button('用練習模式重試','assist')+button('調整戰術','replan')+button('查看競技成績','board')+'</div><div class="zz-board" data-board role="status"></div></div>';
+  bind('retry',async()=>retry(false));bind('assist',async()=>retry(true));bind('replan',async()=>{s.phase='intro';s.storyCursor=s.storyCursor||{};s.storyCursor[s.stage]=2;render();checkpoint().catch(()=>{});});
+  if(w.engine===2){const story=view.querySelector('.zz-intro');story.textContent=(won?after[w.type]+' 帶著剛才的選擇，回到人物的話語。':(w.notice||'對手佔了上風')+'。調整戰術再戰，首輪紀錄仍會保留。');const metrics=document.createElement('p');metrics.className='zz-battle-detail';metrics.textContent=(won?(M.score(w)>=9?'★★★':M.score(w)>=7?'★★':'★')+' · ':'')+detail;story.after(metrics);}
+  bind('questions',async()=>{s.phase='question';s.questionIndex=0;delete s.questionFeedback;render();checkpoint().catch(()=>{});});
   bind('board',async()=>{
    const box=view.querySelector('[data-board]');box.textContent='讀取成績……';
    if(ZH.isGuest()){box.textContent='本分頁試玩不列入學校競技榜。';return;}
-   try{const flushed=await ZH.flushAll();if(flushed&&flushed.ok===false)throw Error('操作紀錄尚未送出，請稍後再查詢');const r=await ZH.call('api_gameBoard',c.id,stage().gameId);if(!r||!r.ok)throw Error(r&&r.msg||'成績暫時無法讀取');const fmt=x=>x?String(x.score??x.bestScore??'—')+' / 10':'尚無成績';box.textContent='我的最佳：'+fmt(r.me)+'\n班級最佳：'+fmt(r.classBest)+'\n全校最佳：'+fmt(r.schoolBest)+(r.off?'\n教師目前關閉排行榜。':'\n排行榜約兩分鐘更新一次。');}catch(e){box.textContent=e.message;}
+   try{const flushed=await ZH.flushAll();if(flushed&&flushed.ok===false)throw Error('操作紀錄尚未送出，請稍後再查詢');const r=await ZH.call('api_gameBoard',c.id,gameId());if(!r||!r.ok)throw Error(r&&r.msg||'成績暫時無法讀取');const fmt=x=>x?String(x.score??x.bestScore??'—')+' / 10':'尚無成績';box.textContent='我的最佳：'+fmt(r.me)+'\n班級最佳：'+fmt(r.classBest)+'\n全校最佳：'+fmt(r.schoolBest)+(r.off?'\n教師目前關閉排行榜。':'\n排行榜約兩分鐘更新一次。');}catch(e){box.textContent=e.message;}
   });
  }
- async function retry(assist){s.assist=assist;s.world=M.create(stage().game.type,assist);s.gameAttempt++;s.phase='game';await checkpoint();render();}
+ async function retry(assist){s.assist=assist;s.world=makeWorld(assist);s.gameAttempt++;s.phase='game';render();checkpoint().catch(()=>{});}
  function currentQuestion(){return bank[stage().questionIds[s.questionIndex]];}
  function renderQuestion(){
   const t=stage(),q=currentQuestion();if(!q){view.innerHTML='<p role="alert">題目未就緒，請儲存後重新讀取。</p>';return;}
   const f=s.questionFeedback&&s.questionFeedback.id===q.id?s.questionFeedback:null;
   const opts=Array.isArray(q.options)?q.options:Object.entries(q.options).map(([key,v])=>({key,text:v[0],type:v[1]||''}));
-  view.innerHTML='<div class="zz-panel zz-question"><p class="zz-kicker">'+esc(level())+' ／ 本段第 '+(s.questionIndex+1)+' / '+t.questionIds.length+' 題</p><h2>'+esc(q.stem)+'</h2><div class="zz-passage">'+esc(q.passage||t.passage)+'</div>'+source({...t,source:q.sourceRef||q.source||t.source})+'<details><summary>閱讀提示</summary><p class="zz-gloss">'+esc(t.gloss)+'</p></details><div class="zz-options">'+opts.map(o=>'<button type="button" class="zz-option'+(f&&f.choice===o.key?(f.correct?' correct':' wrong'):'')+'" data-choice="'+esc(o.key)+'" '+(f?'disabled':'')+'><b>'+esc(o.key)+'</b><span>'+esc(o.text)+'</span></button>').join('')+'</div>'+(f?'<div class="zz-feedback" role="status"><strong>'+(f.correct?'理解正確':'請回到文本再想一次')+'</strong><p>'+esc(q.explanation||'請核對這段原文中的對象、字義與論證關係。')+'</p><p class="zz-note">首答已保留'+(s.answers[q.id].correct?'為正確':'為待釐清')+'；訂正不覆寫首答。</p></div>'+button(f.correct?(s.questionIndex+1<t.questionIds.length?'下一題':'繼續下一段'):'再答一次',f.correct?'next':'again',true):'')+'</div>';
+  const questionBody='<section class="zz-anchor-dialog"><div class="zz-speaker">'+esc(c.person)+'<small>'+esc(level())+' · 文本問答 '+(s.questionIndex+1)+' / '+t.questionIds.length+'</small></div><h2>'+esc(q.stem)+'</h2><details open class="zz-evidence"><summary>'+(c.readerKind==='guide'?'自編導讀對讀':'原文對讀')+'</summary><blockquote>'+esc(q.passage||t.passage)+'</blockquote>'+source({...t,source:q.sourceRef||q.source||t.source})+'<details><summary>閱讀提示</summary><p>'+esc(t.gloss)+'</p></details></details><div class="zz-options">'+opts.map(o=>'<button type="button" class="zz-option'+(f&&f.choice===o.key?(f.correct?' correct':' wrong'):'')+'" data-choice="'+esc(o.key)+'" '+(f?'disabled':'')+'><b>'+esc(o.key)+'</b><span>'+esc(o.text)+'</span></button>').join('')+'</div>'+(f?'<div class="zz-feedback" role="status"><strong>'+(f.correct?'你的判斷有文本依據':'再看眼前這句話')+'</strong><p>'+esc(q.explanation||t.gloss)+'</p><small>首答'+(s.answers[q.id].correct?'正確':'待釐清')+'；訂正另存。</small></div>'+button(f.correct?(s.questionIndex+1<t.questionIds.length?'接著問':'走向下一幕'):'重新作答',f.correct?'next':'again',true):'')+'</section>';
+  view.innerHTML=sceneHTML(t,'旁白',s.questionIndex===0?'一局暫歇，人物的話又在耳邊響起。剛才的進退，能幫你看清什麼？':'對話還未結束。把注意力放回文字，還有另一層理由等待釐清。','',true)+questionBody;
+
   view.querySelectorAll('[data-choice]').forEach(el=>el.onclick=()=>guard(async()=>{
    view.querySelectorAll('[data-choice]').forEach(b=>b.disabled=true);const choice=el.dataset.choice,event=M.answer(s,q,choice);
    s.questionFeedback={id:q.id,choice,correct:event.correct};
    ZH.track('anchor',{scenarioId:c.id,anchorId:q.id,choice,...event,distractorType:event.correct?'':(opts.find(o=>o.key===choice)||{}).type||'情節',seconds:0});
-   await checkpoint().catch(()=>{});render();
+   render();checkpoint().catch(()=>{});
   }));
-  bind('again',async()=>{delete s.questionFeedback;await checkpoint();render();});
+  bind('again',async()=>{delete s.questionFeedback;render();checkpoint().catch(()=>{});});
   bind('next',async()=>{
    if(!s.recovered[q.id])return;s.questionIndex++;delete s.questionFeedback;
    if(s.questionIndex>=t.questionIds.length){s.stage++;s.phase=s.stage<c.stages.length?'intro':'complete';s.questionIndex=0;s.world=null;}
-   await checkpoint();render();
+   render();checkpoint().catch(()=>{});
   });
  }
  function renderComplete(){
-  const answers=Object.values(s.answers),correct=answers.filter(a=>a.correct).length;
-  view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ '+c.stages.length+' 段完成</p><h2>'+esc(c.episode)+' · 研讀完成</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+s.games.map(g=>g.bestScore).join(' · ')+'</strong>'+c.stages.length+' 段最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p><p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+'</div>';
+  const answers=Object.values(s.answers),correct=answers.filter(a=>a.correct).length,chosen=stageGames();
+  view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ '+c.stages.length+' 幕完成</p><h2>'+esc(c.episode)+' · 本篇通關</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+chosen.map(g=>g.bestScore).join(' · ')+'</strong>'+c.stages.length+' 幕最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p>'+(chosen.some(g=>!g.gameId.endsWith('_v2'))?'<p>新版劇情與挑戰已開放，可按「再戰本篇」進入；原有首答、分數與已存通關紀錄保留。</p>':'')+'<p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+button('再戰本篇・保留首答','relaunch')+'</div>';
+  bind('relaunch',async()=>{s=M.relaunch(s);ZH.runs.begin(c.id,s,'history');await checkpoint();render();});
   bind('finish',async()=>{
    await checkpoint();const anchors=answers.map(a=>({...a,path:a.correct?'direct':s.recovered[a.anchorId]?'fork':'fail',attempts:s.attempts[a.anchorId],recovered:!!s.recovered[a.anchorId]}));
-   const events=c.stages.map((t,i)=>({kind:'reading',id:'zz_read_'+i,title:t.title,text:t.passage,source:t.source,reading:t.gloss,decision:t.game.title,anchors:t.questionIds,notes:[t.gloss],at:new Date().toISOString()}));ZH.session.set('learning:'+c.id,events);
+   const events=c.stages.map((t,i)=>({kind:'reading',id:'zz_read_'+i,title:t.title,text:t.passage,source:t.source,reading:t.gloss,decision:t.adventure.title,anchors:t.questionIds,notes:[t.gloss,'本幕戰術：'+(A.styles[(s.tactics||{})[i]]?.label||'舊版續玩')+'；操作紀錄 '+(chosen[i]?.firstScore??'—')+'／10。'],at:new Date().toISOString()}));ZH.session.set('learning:'+c.id,events);
    await ZH.codex.init();(ZH.CODEX||[]).filter(it=>it.scenarioId===c.id).forEach(it=>ZH.codex.unlock(it.type,it.id,c.id,'',{quiet:true}));
-   tickClock();await ZH.finishScenario({scenarioId:c.id,mode:'history',role:c.person,roleKind:'liezhuan',faction:collection(),country:c.school,ending:{id:'zz_read_complete',title:level()+'・'+c.episode,text:'循文本之跡，據原文之證，辨其言而思其理。',good:true},anchors,games:s.games.map(g=>({gameId:g.gameId,score:g.firstScore,maxScore:10,bestScore:g.bestScore,practice:g.practice})),scoreStrategy:M.strategy(s.games,c.stages.length),turns:c.stages.length,durationSec:Math.round(s.elapsed),deeds:['讀'+c.name+'，核對出處與上下文。','歷'+c.stages.length+'段場景，以操作體察文本中的問題。','首答'+answers.length+'題，答中'+correct+'題；訂正另存，不移首答。'],opener:'讀經典者，當察其時、辨其言、問其所由。',prompts:['選一處原文，說明你的判斷依據。','遊戲操作呈現了文本的哪一面？它又省略了什麼？']});
+   tickClock();await ZH.finishScenario({scenarioId:c.id,mode:'history',role:c.person,roleKind:'liezhuan',faction:collection(),country:c.school,ending:{id:'zz_read_complete',title:level()+'・'+c.episode,text:'循文本之跡，據原文之證，辨其言而思其理。',good:true},anchors,games:chosen.map(g=>({gameId:g.gameId,score:g.firstScore,maxScore:10,bestScore:g.bestScore,practice:g.practice})),scoreStrategy:M.strategy(chosen,c.stages.length),turns:c.stages.length,durationSec:Math.round(s.elapsed),deeds:['讀'+c.name+'，核對出處與上下文。','歷'+c.stages.length+'段場景，以操作體察文本中的問題。','首答'+answers.length+'題，答中'+correct+'題；訂正另存，不移首答。'],opener:'讀經典者，當察其時、辨其言、問其所由。',prompts:['選一處原文，說明你的判斷依據。','遊戲操作呈現了文本的哪一面？它又省略了什麼？']});
   });
  }
  function pause(){if(!s||paused||disposed)return;tickClock();paused=true;stop();checkpoint().catch(()=>{});render();}
@@ -171,12 +205,17 @@
  }
  function loadImage(key,url){return new Promise(resolve=>{const img=new Image();img.onload=()=>{images[key]=img;resolve(img);};img.onerror=()=>resolve(null);img.src=url;});}
  function svgUrl(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}
+ function syncStageArt(){
+  const id=stage()?.adventure?.scene||c.scene;if(images.sceneId===id)return;images.sceneId=id;
+  const f=window.ZH_STATIC_MEDIA?.[id],entry=window.ZH_IMAGE_ASSETS?.entries?.[id],url=f&&window.ZH_STATIC_URL?ZH_STATIC_URL(f):'https://s90194yeu-collab.github.io/zongheng-game/media/'+entry?.file;
+  if(f||entry){root.style.setProperty('--zz-scene','url("'+url.replace(/["\\]/g,'')+'")');loadImage('scene',url);}
+ }
  async function loadArt(){
-  const entry=window.ZH_IMAGE_ASSETS&&ZH_IMAGE_ASSETS.entries&&ZH_IMAGE_ASSETS.entries[c.scene];
+  const entry=window.ZH_IMAGE_ASSETS&&ZH_IMAGE_ASSETS.entries&&ZH_IMAGE_ASSETS.entries[stage()?.adventure?.scene||c.scene];
   const fallback='https://s90194yeu-collab.github.io/zongheng-game/media/'+(entry?entry.file:c.vol==='gw'?'scene_'+c.scene.slice(6)+'.webp':'scene_zhuzi_'+c.philosopher+'_ai.webp');
-  const file=window.ZH_STATIC_MEDIA&&window.ZH_STATIC_MEDIA[c.scene],url=file&&window.ZH_STATIC_URL?ZH_STATIC_URL(file):fallback;
+  const file=window.ZH_STATIC_MEDIA&&window.ZH_STATIC_MEDIA[stage()?.adventure?.scene||c.scene],url=file&&window.ZH_STATIC_URL?ZH_STATIC_URL(file):fallback;
   root.style.setProperty('--zz-scene','url("'+url.replace(/["\\]/g,'')+'")');
-  const npc=portrait(c.person);let player;
+  images.sceneId=stage()?.adventure?.scene||c.scene;const npc=portrait(c.person);let player;
   try{const colorOption=ZH.player.LOOK_OPTIONS.color.find(x=>x[0]===ZH.player.profile?.appearance?.color);const robe=colorOption?.[2]||'#557f8d';player=window.ART.portrait({id:'zz_player',name:ZH.player.name(),glyph:'士',color:robe,art:{hat:'guan',robe,prop:'scroll'}},{bust:false});}catch(e){player=window.ART.portrait({id:'zz_player',name:'策士',glyph:'士',color:'#6b9e9c',art:{hat:'guan',robe:'#557f8d',prop:'scroll'}},{bust:false});}
   await Promise.all([loadImage('scene',url),loadImage('npc',svgUrl(npc)),loadImage('player',svgUrl(player))]);
  }
@@ -192,12 +231,13 @@
    const old=saved.state;
    if(old&&old.schema==='zhuzi-v1'&&old.chapterId===c.id){s=Object.assign(M.fresh(c.id),old);if(!Number.isInteger(s.stage)||s.stage<0||s.stage>c.stages.length||!['intro','game','gameResult','question','complete'].includes(s.phase))throw Error('本章存檔格式無法辨認，請從首頁管理自己的紀錄');}
    else if(old)throw Error('本章存檔版本不相符，請從首頁管理自己的紀錄');else s=M.fresh(c.id);
-   ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
+   s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};s.stageGames=s.stageGames||{};ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
   }catch(e){root.innerHTML='<div class="zz-loading"><h1>本章暫時無法開啟</h1><p role="alert">'+esc(e.message)+'</p>'+button('重新讀取文本與進度','reload',true)+button('回首頁','home')+'</div>';root.querySelector('[data-action=reload]').onclick=()=>start(bootOptions);root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');}
  }
  document.addEventListener('keydown',e=>{
   if(!s||disposed||busy||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   if(e.code==='Escape'){e.preventDefault();if(paused){paused=false;lastClock=Date.now();render();}else pause();return;}
+  if(s.phase==='intro'&&['Enter','Space'].includes(e.code)&&!['BUTTON','SUMMARY'].includes(e.target.tagName)){const next=view.querySelector('[data-action=dialogue]');if(next){e.preventDefault();next.click();}return;}
   if(s.phase!=='game'||paused)return;if(keys[e.code]){e.preventDefault();input[keys[e.code]]=true;}
   if(e.code==='KeyE'){e.preventDefault();input.action=true;if(!e.repeat)act();}
  });

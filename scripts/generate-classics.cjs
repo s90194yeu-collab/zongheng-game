@@ -15,16 +15,17 @@ for(const e of entries.filter(e=>!e.reuse)){
    anchors.push({id:qid,seq:n,kind:'reading',source:'〈'+e.title+'〉',passage,stem:q.stem,answer:'ABCD'[correct],options,explanation:q.explanation,followUp:''});return qid;
   });const{questions,...publicStage}=s;return {...publicStage,questionIds,gameId:'gw_'+e.key+'_'+(si+1)};
  });
- const meta={id:e.id,vol:'gw',ep:e.no,name:e.title,episode:e.episode,year:0,period:e.period,genre:'角色操作＋文本閱讀',source:'〈'+e.title+'〉',guest:false,status:'ready',scene:e.scene,study:true,author:e.author};catalog.push(meta);
+ const meta={id:e.id,vol:'gw',ep:e.no,name:e.title,episode:e.episode,year:0,period:e.period,genre:'劇情RPG＋攻防競技',source:'〈'+e.title+'〉',guest:false,status:'ready',scene:e.scene,study:true,author:e.author};catalog.push(meta);
  chapters[e.id]={...meta,collection:'古文十五篇',studyLabel:'課文情境・原文閱讀',person:e.person,philosopher:e.key,glyph:e.glyph,color:e.color,school:e.author,note:e.note,intro:e.focus,fullText:e.fullText,url:e.url,stages};
  drafts[e.id]={version,status:'ready',meta,anchors,codex:[
   {type:'text',id:'gw_'+e.key,name:e.title,glyph:e.glyph,title:e.author+'・'+e.period,text:e.focus,quote:stages[0].passage,source:meta.source},
   {type:'treasure',id:'gw_'+e.key+'_notes',name:e.title+'・研讀札記',glyph:'簡',title:e.episode,text:e.note,quote:'',source:meta.source}
  ]};
- const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_classics','Zhuzi_models','Zhuzi_js'].map(n=>"<?!= include('"+n+"') ?>").join('\n');
+ const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_classics','Zhuzi_models','Adventure_models','Adventure_canvas','Zhuzi_js'].map(n=>"<?!= include('"+n+"') ?>").join('\n');
  write(path.join(dir,e.id+'.html'),`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top"><title>${e.title}｜Re:縱橫鼎業</title><script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script><?!= include('Core_css') ?><?!= include('Zhuzi_css') ?></head><body class="zhuzi-page"><main id="zhuzi-root"></main>\n${includes}\n<script>ZH.ready(()=>ZH.zhuzi.start({id:${JSON.stringify(e.id)},collection:'classics',anchorOrder:${JSON.stringify(anchors.map(a=>a.id))}}));</script></body></html>\n`);
 }
 const library=Object.fromEntries(entries.map(e=>[e.id,{id:e.id,title:e.title,author:e.author,period:e.period,url:e.url,fullText:e.fullText,focus:e.focus,reuse:!!e.reuse}]));
+Object.values(chapters).forEach(require('../src/content/adventure.cjs').enrich);
 write(path.join(dir,'Data_classics.html'),'<script>window.ZH.CLASSICS='+json({version,chapters,library})+';</script>\n');
 write(path.join(dir,'Classics_data.gs'),'/** 古文十五篇；generated from src/content/classics.cjs. Existing four routes keep their IDs and saves. */\nvar SCENARIO_DATA=SCENARIO_DATA||{};\nObject.assign(SCENARIO_DATA,'+json(drafts)+');\n');
 const menu=entries.map(e=>({id:e.id,no:e.no,title:e.title,author:e.author,period:e.period,scene:e.scene,reuse:!!e.reuse,focus:e.focus}));
