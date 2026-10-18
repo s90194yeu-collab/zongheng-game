@@ -1,0 +1,20 @@
+<script>
+(function(ZH){
+ 'use strict';
+ const modes={},clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),copy=o=>JSON.parse(JSON.stringify(o));
+ const cells=()=>Array.from({length:12},(_,i)=>({x:180+i%4*210,y:170+Math.floor(i/4)*130}));
+ const U={clamp,dist,copy,cells,random(w){let n=w.seed>>>0;n^=n<<13;n^=n>>>17;n^=n<<5;w.seed=n>>>0;return w.seed/4294967296;},say(w,t){w.notice=t;w.noticeUntil=w.time+3;},hurt(w,t,n=1){if(w.inv>0)return;w.hp-=n;w.mistakes++;w.inv=.7;U.say(w,t);},win(w,t){w.status='won';w.hits++;U.say(w,t||'本幕任務完成，回到文本核對。');},move(w,input,dt,speed=220,bounds={x:55,y:130,r:945,b:510}){let x=Number(!!input.right)-Number(!!input.left),y=Number(!!input.down)-Number(!!input.up);if(input.pointer){x=input.pointer.x-w.x;y=input.pointer.y-w.y;const d=Math.hypot(x,y);if(d<3){x=y=0;}else{x/=d;y/=d;}}const k=Math.max(1,Math.hypot(x,y));w.x=clamp(w.x+x/k*speed*dt,bounds.x,bounds.r);w.y=clamp(w.y+y/k*speed*dt,bounds.y,bounds.b);},select(w,input,dt,count,cols=4){w.nav-=dt;if(w.nav>0)return;const dx=Number(!!input.right)-Number(!!input.left),dy=Number(!!input.down)-Number(!!input.up);if(dx||dy){w.selected=(w.selected+dx+dy*cols+count*2)%count;w.nav=.18;}},button(command,label,disabled=false){return {command,label,disabled};}};
+ function register(name,model){if(modes[name])throw Error('重複玩法 '+name);modes[name]=model;}
+ function create(config,assist=false,tactic='read',seed=1){if(!modes[config.mode])throw Error('未知課文玩法 '+config.mode);const w={engine:3,mode:config.mode,key:config.key,index:config.index||0,seed:(seed>>>0)||1,initialSeed:(seed>>>0)||1,assist:!!assist,time:0,limit:assist?210:150,status:'playing',x:110,y:390,hp:6,maxHp:6,hits:0,misses:0,mistakes:0,inv:0,nav:0,cooldown:0,selected:0,notice:config.rule||'',noticeUntil:8,steps:0,log:[],config:{mode:config.mode,index:config.index||0,key:config.key},pulse:0,quality:0,combo:0,bestCombo:0};modes[w.mode].init(w);if(assist){w.limit*=1.45;w.hp+=2;w.maxHp=w.hp;if(w.mode==='knife')w.width+=12;}return w;}
+ function restore(w){if(w&&modes[w.mode])modes[w.mode].restore?.(w);return w;}
+ function step(w,input={},dt){if(w.status!=='playing')return w;dt=clamp(Number(dt)||0,0,.05);w.time+=dt;w.inv=Math.max(0,w.inv-dt);w.cooldown=Math.max(0,w.cooldown-dt);w.pulse=Math.max(0,w.pulse-dt);modes[w.mode].step(w,input,dt);if(w.status==='playing'&&(w.hp<=0||w.time>=w.limit)){w.status='lost';U.say(w,w.hp<=0?'本幕條件已失守，可調整做法再試。':'本幕時間已到，保留首輪紀錄，可練習後再試。');}return w;}
+ function command(w,c){if(w.status!=='playing')return false;if(c.startsWith('select:')){const i=Number(c.slice(7)),opts=options(w);if(Number.isInteger(i)&&i>=0&&i<opts.length)w.selected=i;return true;}w.steps++;const r=modes[w.mode].command(w,c);w.log.push({at:Math.round(w.time*10)/10,action:c});if(w.log.length>16)w.log.shift();return r;}
+ function action(w){return command(w,'primary');}function secondary(w){return command(w,'secondary');}function skill(w){return command(w,'skill');}
+ function options(w){return modes[w.mode].options?.(w)||[];}
+ function point(w,x,y,down){const m=modes[w.mode];if(m.point)return m.point(w,x,y,down);const opts=options(w);if(!opts.length)return;const i=opts.map((p,i)=>({i,d:dist(p,{x,y})})).sort((a,b)=>a.d-b.d)[0];if(i.d<140){w.selected=i.i;if(down)command(w,'primary');}}
+ function controls(w){return modes[w.mode].controls?.(w)||[U.button('primary','互動'),U.button('secondary','切換工具')];}
+ function progress(w){return {me:0,other:0,goal:'',detail:'',resource:'',threat:'',...modes[w.mode].view(w)};}
+ function score(w){if(w.status!=='won')return 0;return clamp(Math.round(5+3*w.hp/w.maxHp+2*(1-w.time/w.limit)-Math.min(2,w.mistakes*.2)),1,10);}
+ ZH.literary={register,create,restore,step,command,action,secondary,skill,point,options,controls,progress,score,modes,U};
+})(window.ZH);
+</script>

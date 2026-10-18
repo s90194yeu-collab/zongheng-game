@@ -1,0 +1,77 @@
+<script>
+(function(L){
+ 'use strict';const U=L.U,B=U.button,pts=U.cells;
+ const opts=(w,labels)=>labels.map((label,i)=>({...pts()[i],label}));
+ function bad(w,t){U.hurt(w,t);return false;}function good(w,t){w.hits++;U.say(w,t);}
+ L.register('archive',{
+ init(w){w.order=[3,0,5,1,4,2];w.flip=[true,false,true,false,true,false];w.covers=Array(6).fill(w.index===1);w.limit=180;},
+ step(w,k,d){U.select(w,k,d,6,3);},
+ command(w,c){const i=w.selected;if(c==='primary')w.flip[i]=!w.flip[i];else if(c==='secondary'){const n=(i+1)%6;for(const key of ['order','flip','covers'])[w[key][i],w[key][n]]=[w[key][n],w[key][i]];w.selected=n;}else if(c==='skill')w.covers[i]=false;
+ if(w.order.every((n,i)=>n===i)&&w.flip.every(x=>!x)&&w.covers.every(x=>!x))U.win(w,'斷口與墨跡相接，簡卷得以留存。');},
+ options(w){return opts(w,w.order.map((n,i)=>(w.covers[i]?'綴飾遮住':(w.flip[i]?(n+1)+'←'+n:n+'→'+(n+1)))+'・第'+(i+1)+'簡位'));},
+ controls(){return[B('primary','翻轉所選簡片'),B('secondary','與右側簡片交換'),B('skill','卸去無益綴飾')];},
+ view(w){return{goal:'接成 0→1→2→3→4→5→6，斷口須相連',detail:'先選簡位，再翻轉或交換；方向鍵也能選位置。',resource:'已對上 '+w.order.filter((n,i)=>n===i&&!w.flip[i]&&!w.covers[i]).length+'／6',threat:'校簡操作 '+w.steps,me:w.order.filter((n,i)=>n===i&&!w.flip[i]).length/6};}
+ });
+ const masks=[10,3,12,5,9,6,10,3,12,5,9,6];const rotate=n=>((n<<1)&15)|(n>>3);
+ function flow(w){const seen=[],todo=[[0,3]];while(todo.length){const [i,from]=todo.shift();if(seen.includes(i)||!(w.pipes[i]&(1<<from)))continue;seen.push(i);for(const [d,off]of [[0,-4],[1,1],[2,4],[3,-1]]){const n=i+off;if((d===1&&i%4===3)||(d===3&&i%4===0)||n<0||n>11)continue;if(w.pipes[i]&(1<<d))todo.push([n,(d+2)%4]);}}return seen;}
+ L.register('waterworks',{
+ init(w){w.pipes=Array(12).fill(0);const route=[0,1,5,6,10,11],base=[10,12,0,0,0,3,12,0,0,0,3,10];w.pipes=base.map((v,i)=>{let x=v||masks[i];for(let n=0;n<(i+w.index+1)%4;n++)x=rotate(x);return x;});w.target=11;w.wet=0;w.water=100;w.clay=[1,1,1,1,1,1,1,1,1,1,1,1];w.clay[1]=0;w.clay[5]=1;w.clay[6]=0;w.flow=[];w.demand=route;w.limit=165;},
+ step(w,k,d){U.select(w,k,d,12);if(w.index===1){w.flow=[5,6].filter(i=>!w.clay[i]);const wall=[0,1,2,3,4,7,8,9,10,11].every(i=>w.clay[i]);if(wall&&!w.clay[5]&&!w.clay[6])w.wet+=d;else w.wet=0;if(w.wet>1.5)U.win(w,'器壁留住形體，空腔才有容物之用。');}else{w.flow=flow(w);if(w.flow.includes(11)&&(w.pipes[11]&2)){w.wet+=d;if(w.wet>2)U.win(w,'水沿通路到了低田，沒有憑空增減。');}else w.wet=0;w.water-=d*(w.index===2?.38:.22);if(w.water<=0)w.hp=0;}},
+ command(w,c){if(c==='primary'){if(w.index===1)w.clay[w.selected]=1-w.clay[w.selected];else w.pipes[w.selected]=rotate(w.pipes[w.selected]);}else if(c==='secondary'&&w.index!==1)w.pipes[w.selected]=rotate(rotate(rotate(w.pipes[w.selected])));},
+ options(w){return opts(w,Array.from({length:12},(_,i)=>(i+1)+'號'+(w.index===1?(w.clay[i]?'泥壁':'空腔'):'水閘')));},
+ controls(w){return w.index===1?[B('primary','塑壁／留出空腔')]:[B('primary','順時針轉閘'),B('secondary','逆時針轉閘')];},
+ view(w){return{goal:w.index===1?'保留四周器壁、挖出中央兩格空腔':'把左上水源送到右下出口；管口須彼此接通',resource:w.index===1?'水試 '+w.wet.toFixed(1)+' 秒':'可用水 '+Math.ceil(w.water),detail:'轉動方向顯示在場景，流到的管段呈藍色。',threat:'水已到 '+w.flow.length+' 段',me:w.index===1?w.wet/1.5:w.wet/2};}
+ });
+ L.register('slices',{
+ init(w){w.rot=[1,2,3];w.cut=0;w.checks=6;},step(w,k,d){U.select(w,k,d,3,1);},
+ command(w,c){if(c==='primary')w.rot[w.selected]=(w.rot[w.selected]+1)%4;else if(c==='secondary'){const holes=[[0,2],[0,1],[0,3]],common=[0,1,2,3].filter(a=>holes.every((h,i)=>h.some(n=>(n+w.rot[i])%4===a)));if(common.length){w.cut=common[0];U.win(w,'三層空隙相通，結構仍然完整。');}else{w.checks--;U.say(w,'截面尚未相通，先換一個角度。');if(w.checks<=0)w.hp=0;}}},
+ options(w){return opts(w,w.rot.map((r,i)=>'第'+(i+1)+'層剖面・已轉'+r+'格'));},controls(){return[B('primary','轉動所選剖面'),B('secondary','檢查相通空隙')];},view(w){return{goal:'找出三層天然空隙共同指向的一處',detail:'淺色為空隙；可以轉剖面，不能削掉筋骨。',resource:'剩餘檢視 '+w.checks,threat:'剖面 '+w.rot.join('／'),me:0};}
+ });
+ L.register('haoliang',{
+ init(w){w.side=0;w.seen=[[],[]];w.matches=[];w.selected=0;w.fish=[1,3,w.index===1?0:2];},step(w,k,d){U.select(w,k,d,5,5);},
+ command(w,c){if(c==='secondary')w.side=1-w.side;else if(c==='primary'){const world=w.side?4-w.selected:w.selected;if(!w.seen[w.side].includes(world))w.seen[w.side].push(world);good(w,'留下這一位置的觀察，還須換到另一面核對。');w.matches=w.fish.filter(n=>w.seen[0].includes(n)&&w.seen[1].includes(n));if(w.matches.length===w.fish.length)U.win(w,'同一現場從兩個位置留下了可核對的觀察。');}},
+ options(w){return Array.from({length:5},(_,i)=>({x:130+i*180,y:w.side?360:190,label:(w.side?'水側':'橋上')+'第'+(i+1)+'觀察位'}));},controls(){return[B('primary','停步觀察此處'),B('secondary','換到另一觀察位置')];},view(w){return{goal:'在兩個位置核對三段魚跡；水側左右與橋上相反',resource:'互相核對 '+w.matches.length+'／3',detail:'魚的可見位置不同，不能把單側沒看見當成不存在。',threat:w.side?'目前在水側':'目前在橋上',me:w.matches.length/3};}
+ });
+ const turn=(dir,mirror)=>mirror===0?dir^1:mirror===1?3-dir:dir;
+ function ray(w){let x=-1,y=1,d=1;const seen=[],line=[];for(let s=0;s<35;s++){x+=[0,1,0,-1][d];y+=[-1,0,1,0][d];if(x<0||x>=4||y<0||y>=3)break;const i=x+y*4,key=i+':'+d;if(seen.includes(key))break;seen.push(key);line.push(i);if(w.screen===i)break;if([1,5,9,10].includes(i))d=turn(d,w.mirrors[i]);}return line;}
+ L.register('paperMoon',{
+ init(w){w.mirrors={1:2,5:2,9:2,10:0};w.screen=4;w.targets=[0,8,11];w.lit=[];w.beam=[];w.hold=0;},
+ step(w,k,d){U.select(w,k,d,12);w.beam=ray(w);const target=w.targets[w.lit.length];if(w.beam.includes(target)){w.hold+=d;if(w.hold>1){w.lit.push(target);w.hold=0;if(w.lit.length===3)U.win(w,'紙月之光照到了三處案面。');}}else w.hold=0;},
+ command(w,c){if(c==='secondary'){w.screen=w.screen<0?4:-1;return;}if(c==='primary'&&Object.hasOwn(w.mirrors,w.selected))w.mirrors[w.selected]=(w.mirrors[w.selected]+1)%3;},
+ options(w){return opts(w,Array.from({length:12},(_,i)=>[1,5,9,10].includes(i)?'第'+(i+1)+'格紙鏡':'第'+(i+1)+'格案面'));},controls(){return[B('primary','轉動此紙鏡'),B('secondary','移開／放回屏風')];},view(w){return{goal:'依序照亮左上、左下、右下案面，各停留一秒',detail:'鏡面可呈斜向或讓光直行；屏風會遮光。',resource:'照明 '+w.lit.length+'／3',threat:w.screen<0?'屏風已移開':'屏風正在遮光',me:w.lit.length/3};}
+ });
+ L.register('studio',{
+ restore(w){if(!Array.isArray(w.opened)){w.opened=w.window>=0&&w.window<4?[w.window]:[];if(w.window>=4)w.window=-1;w.sun=-1;}if(!Array.isArray(w.deskPlaces))w.deskPlaces=[5,6,9,10];if(!Number.isFinite(w.sunAngle))w.sunAngle=w.index%3;if(!Number.isFinite(w.lightHold))w.lightHold=0;},
+ init(w){w.leaks=[1,3,6];w.patched=[];w.wood=5;w.window=-1;w.opened=[];w.mirror=2;w.sunAngle=w.index%3;w.desk=9;w.wall=w.index===1?[5,9]:w.index===2?[7,10]:[];w.deskPlaces=[5,6,9,10];w.sun=-1;w.lightHold=0;w.limit=180;},
+ step(w,k,d){U.select(w,k,d,12);w.requiredWindow=(w.mirror+w.sunAngle)%4;w.sun=w.opened.includes(w.requiredWindow)?8+(w.mirror+1)%4:-1;const safe=w.patched.length===3,lit=w.desk===w.sun&&!w.wall.includes(w.sun)&&w.deskPlaces.includes(w.desk);w.lightHold=safe&&lit?w.lightHold+d:0;if(w.lightHold>3)U.win(w,'漏處已補，日影入室；門牆與樹影仍留下年月。');},
+ command(w,c){const p=w.selected;if(c==='primary'){if(w.leaks.includes(p)&&!w.patched.includes(p)&&w.wood>0){w.patched.push(p);w.wood--;good(w,'補好一處漏，木料還有'+w.wood+'份。');}else U.say(w,'此處沒有待補的漏。');}else if(c==='secondary'){if(p<4){if(w.opened.includes(p)){w.window=p;}else if(w.wood>0){w.wood--;w.opened.push(p);w.window=p;}else U.say(w,'木料不足，須先看反光方向再決定開窗。');}else U.say(w,'北向這面外牆才是可開窗處；庭牆須反光相接。');}else if(c==='skill')w.mirror=(w.mirror+1)%4;else if(c==='desk'){if(w.deskPlaces.includes(p)&&!w.wall.includes(p)&&!w.leaks.filter(n=>!w.patched.includes(n)).includes(p))w.desk=p;else U.say(w,'此處有櫃、門牆、樹影或仍漏雨，書案不可任意放置。');}},
+ options(w){return opts(w,Array.from({length:12},(_,i)=>'屋內第'+(i+1)+'處'+(w.wall.includes(i)?'・門牆／樹影':w.leaks.includes(i)&&!w.patched.includes(i)?'・漏雨':'')));},controls(){return[B('primary','用木料補漏'),B('secondary','在此外牆開窗'),B('skill','轉動反光板'),B('desk','移書案到此處')];},view(w){return{goal:'補好三處漏，把書案移到真正受光而未被擋住的位置',resource:'木料 '+w.wood+'；補漏 '+w.patched.length+'／3；引光 '+w.lightHold.toFixed(1)+'／3秒',threat:w.sun<0?'庭牆反光未接北窗': '日影落在第'+(w.sun+1)+'處',detail:'先看庭牆反光所接的窗位；只可在北面四格開窗，每開一組耗一木料。書案只容於第6、7、10、11處，門牆與樹影還會占位。',me:w.patched.length/4+(w.desk===w.sun?.25:0)};}
+ });
+ L.register('seals',{
+ init(w){w.tokens=[{pos:3,verify:2,checked:false,home:false},{pos:5,verify:4,checked:false,home:false}];w.clock=0;w.breach=0;w.gate=Array(6).fill(1);w.limit=85;},
+ step(w,k,d){U.select(w,k,d,6,3);w.clock+=d;if(w.clock>1.7){w.clock=0;w.tokens.forEach((t,i)=>{if(t.home)return;t.pos=(t.pos+w.gate[t.pos]+6)%6;if(t.pos===0&&t.checked){t.home=true;good(w,['賞印','刑印'][i]+'已驗證收回。');}else if(t.pos===0&&!t.checked)w.breach++;});if(w.breach>=4)w.hp=0;if(w.tokens.every(t=>t.home))U.win(w,'兩柄各自核對，印信都已收回。');}},
+ command(w,c){if(c==='secondary')w.gate[w.selected]*=-1;else if(c==='primary'){const found=w.tokens.filter(t=>!t.home&&t.pos===w.selected&&t.verify===w.selected);if(found.length)found.forEach(t=>t.checked=true);else U.say(w,'須在賞核或刑核節點檢視對應印信，原處不能替自己免驗。');}},
+ options(w){return Array.from({length:6},(_,i)=>({x:190+i%3*310,y:210+Math.floor(i/3)*210,label:i===0?'君主收回處':i===2?'賞印來源核對處':i===4?'刑印來源核對處':'第'+i+'代理節點'}));},controls(){return[B('primary','核對此節點印信'),B('secondary','反轉此節點的傳遞方向')];},view(w){return{goal:'賞印到第2節點、刑印到第4節點核對，再收回',resource:'已收回 '+w.tokens.filter(t=>t.home).length+'／2',threat:'未驗證越權 '+w.breach+'／4',detail:'選節點核對；箭頭改變印信下一步，兩柄都必須處理。',me:w.tokens.filter(t=>t.home).length/2,other:w.breach/4};}
+ });
+ L.register('contracts',{
+ init(w){w.orders=Array.from({length:4},(_,i)=>({claim:3+i,actual:3+i+(i%2?1:0),due:7+i*2,elapsed:6+i*2,registered:false,measured:false,done:false}));w.check=0;},step(w,k,d){U.select(w,k,d,4);},
+ command(w,c){const o=w.orders[w.selected];if(o.done)return;if(c==='primary'){if(!o.registered){o.registered=true;U.say(w,'承諾已登記，接著驗收。');}else{o.measured=true;U.say(w,'實量'+o.actual+'件，交件於第'+o.elapsed+'刻。');}}else if(c==='secondary'||c==='skill'){if(!o.registered||!o.measured)return bad(w,'未登記與量測，無從核對名實。');const valid=o.actual===o.claim&&o.elapsed<=o.due;if((c==='secondary')===valid){o.done=true;good(w,'按照先前公布條件完成驗收。');}else bad(w,'此判定未依已登記的名與實。');}if(w.orders.every(x=>x.done))U.win(w,'承諾、量測與判定都有可回溯的記錄。');},
+ options(w){return opts(w,w.orders.map((o,i)=>'第'+(i+1)+'官・承諾'+o.claim+'件／第'+o.due+'刻'));},controls(){return[B('primary','登記承諾／實際量測'),B('secondary','依條件通過'),B('skill','指出不符條件')];},view(w){const o=w.orders[w.selected];return{goal:'先登承諾，再量實績，核對四份交件',resource:'已驗 '+w.orders.filter(o=>o.done).length+'／4',threat:'可用核對餘裕 '+w.hp,detail:o.measured?'實際'+o.actual+'件／第'+o.elapsed+'刻':o.registered?'承諾已登記，尚待量測':'未登記，不能先下判定',me:w.orders.filter(o=>o.done).length/4};}
+ });
+ L.register('audience',{
+ init(w){w.concerns=[Math.floor(U.random(w)*3),Math.floor(U.random(w)*3)];w.known=[false,false];w.round=0;w.trust=9;w.topics=['名望','眼前利害','安全疑懼'];w.history=[];},step(w,k,d){U.select(w,k,d,3,3);},
+ command(w,c){if(c==='secondary'){if(!w.known[w.round]){w.trust-=2;w.known[w.round]=true;U.say(w,'對方反覆提起'+w.topics[w.concerns[w.round]]+'，這是可核對的關切。');}else U.say(w,'這一層關切已探明，再問只會耗時。');}else if(c==='primary'){if(!w.known[w.round]){w.trust-=3;U.say(w,'尚未聽明白，進說未被接住。');}else if(w.selected===w.concerns[w.round]){w.history.push(w.topics[w.selected]);w.round++;good(w,'這層說辭與已知關切相合，對話得以繼續。');if(w.round>=2)U.win(w,'兩層關切都先聽後說，會見得以完成。');}else{w.trust-=2;U.say(w,'你已聽到的關切，與這番話沒有相接。');}}if(w.trust<=0)w.hp=0;},
+ options(w){return opts(w,w.topics);},controls(){return[B('secondary','探問真正關切'),B('primary','以所選方向進說')];},view(w){return{goal:'在有限信任中，先聽後說，接續兩層不同關切',resource:'信任餘地 '+w.trust,threat:'已接續 '+w.round+'／2',detail:w.known[w.round]?'對方顧慮：'+w.topics[w.concerns[w.round]]:'表面稱許尚不足以知道其心',me:w.round/2};}
+ });
+ L.register('weave',{
+ init(w){w.strands=[2,4,1,0,3];w.target=[[0,1,2,3,4],[1,3,0,4,2],[4,2,0,3,1]][w.index];w.trace=[];},step(w,k,d){U.select(w,k,d,4,4);},
+ command(w,c){if(c==='primary'){const i=w.selected;w.trace.push(w.strands.slice());[w.strands[i],w.strands[i+1]]=[w.strands[i+1],w.strands[i]];}else if(c==='secondary'&&w.trace.length)w.strands=w.trace.pop();if(w.strands.every((n,i)=>n===w.target[i]))U.win(w,'線索接回前後年代，沒有替人物排出高下。');},
+ options(w){return Array.from({length:4},(_,i)=>({x:230+i*180,y:340,label:'交織第'+(i+1)+'與第'+(i+2)+'束'}));},controls(){return[B('primary','交織這兩束'),B('secondary','回看並退回上一交織')];},view(w){return{goal:'依記憶端點接線：'+w.target.map(n=>['物件','梳理','習慣','時光','回望'][n]).join('／'),resource:'交織 '+w.steps+' 次',detail:'選兩束相鄰髮束交換；上方是可對照的記憶端點，下方是現在的線頭。',threat:'線索完整 '+w.strands.filter((n,i)=>n===w.target[i]).length+'／5',me:w.strands.filter((n,i)=>n===w.target[i]).length/5};}
+ });
+ L.register('chess',{
+ init(w){w.piece=5;w.enemy=[2,3,6];w.blocked=[1,7];w.turn=0;w.visited=[5];w.exit=11;},step(w,k,d){U.select(w,k,d,12);},
+ command(w,c){if(c==='secondary'){w.revealed=true;U.say(w,'右下通向海路；中原的相持不等於天下只剩這一處。');return;}if(c!=='primary')return;const a=w.piece,b=w.selected;if(Math.abs(a%4-b%4)+Math.abs(Math.floor(a/4)-Math.floor(b/4))!==1)return U.say(w,'棋子只能走到相鄰一格。');if(w.blocked.includes(b)||w.enemy.includes(b))return bad(w,'此路已被封住，仍可換一個方向。');w.piece=b;w.visited.push(b);w.turn++;if(b===w.exit&&w.revealed)U.win(w,'保留棋子與通路，轉向此局之外。');else if(b===w.exit)U.say(w,'先觀整局，再決定這一步所往。');},
+ options(w){return opts(w,Array.from({length:12},(_,i)=>'棋盤'+(i+1)+(i===11?'・他方海路':'')));},controls(){return[B('primary','落子到此鄰格'),B('secondary','觀察天下與退路')];},view(w){return{goal:'辨明局勢後，讓棋子從中原轉到右下海路',resource:'落子 '+w.turn+' 手',threat:'可轉身的棋子仍在第'+(w.piece+1)+'格',detail:'保留出口，並非以吃子數計勝；紅格為不可硬闖的局。',me:w.piece===11?1:w.visited.length/8};}
+ });
+})(window.ZH.literary);
+</script>
