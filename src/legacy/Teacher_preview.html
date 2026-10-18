@@ -1,0 +1,84 @@
+<!-- 教師章內預覽：僅依正式登入身分啟用；操作資料只留在本頁記憶體。 -->
+<style>
+.tp-tools{position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:85;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:calc(100vw - 24px);padding:6px;border:1px solid #c9a24a;border-radius:10px;background:#181d31f5;color:#fff0c5;box-shadow:0 4px 18px #0007}.tp-tools button,.tp-tools a{min-height:40px;padding:7px 12px;font:inherit;font-size:14px;border:1px solid #b99a5d;border-radius:6px;color:inherit;background:#303346;text-decoration:none}.tp-tools strong{align-self:center;padding:4px;font-size:13px}.tp-picker{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:16px;background:#080b16d9}.tp-picker article{width:min(820px,100%);max-height:90dvh;overflow:auto;padding:20px;border:1px solid #c9a24a;border-radius:14px;background:#1c2238;color:#f2e5c7}.tp-picker header{display:flex;align-items:center;justify-content:space-between;gap:12px}.tp-picker h2{font-size:24px}.tp-picker p{line-height:1.7}.tp-picker input{width:100%;margin:12px 0;padding:12px;font:inherit;border:1px solid #aa925d;border-radius:6px;color:#f2e5c7;background:#12172a}.tp-picker ol{list-style:none;padding:0;display:grid;gap:8px}.tp-picker li{padding:12px;border:1px solid #806e4a;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.tp-picker li span{flex:1 1 220px;line-height:1.6}.tp-picker small{display:block;color:#b9b6aa}.tp-picker button{min-height:44px;padding:8px 12px;border:1px solid #b99a5d;border-radius:6px;background:#303346;color:inherit;font:inherit}.tp-picker .tp-direct{background:#425a50}.tp-picker [hidden]{display:none!important}
+</style>
+<script>
+(function(w){
+ 'use strict';const ZH=w.ZH=w.ZH||{};if(ZH.teacherPreview)return;
+ const boot=ZH.boot||w.ZH_BOOT||{},params=boot.params||{},trusted=boot.user?.isTeacher===true;
+ let enabled=trusted&&String(params.teacherPreview)==='1',entering=null,settleHook=null,pickerHook=null,tools=null,autoStarted=false,launchExtra={};
+ const flights=new Set(),memory={local:new Map(),session:new Map()},copy=v=>v===undefined?undefined:JSON.parse(JSON.stringify(v));let callFailures=0;
+ const ok=()=>({ok:true,preview:true}),active=()=>trusted&&enabled,isTeacher=()=>trusted;
+ const readOnly=new Set(['api_getStoryAnchors','api_getAnchors','api_gameBoard','api_getProgressAccess','api_getPlayerProfile','api_getStudentProfile']);
+ const rawCall=ZH.call;
+ if(rawCall)ZH.call=function(name,...args){
+  if(active()&&!readOnly.has(name))return Promise.resolve(Object.assign(ok(),{state:null,runs:[],saves:[],completed:{},blocked:true}));
+  const p=Promise.resolve().then(()=>rawCall.call(ZH,name,...args));flights.add(p);p.then(r=>{flights.delete(p);if(r?.ok===false)callFailures++;},()=>{flights.delete(p);callFailures++;});return p;
+ };
+ for(const kind of ['local','session']){const store=ZH[kind];if(!store)continue;for(const method of ['get','set','remove']){const original=store[method].bind(store);store[method]=function(key,value){if(!active())return original(key,value);const box=memory[kind];if(method==='get')return box.has(key)?copy(box.get(key)):value;if(method==='set')box.set(key,copy(value));else box.delete(key);};}}
+ const guard=(owner,name,replacement)=>{if(!owner||typeof owner[name]!=='function')return;const original=owner[name];owner[name]=function(...args){return active()?replacement.apply(this,args):original.apply(this,args);};};
+ guard(ZH,'save',()=>Promise.resolve(ok()));guard(ZH,'load',()=>Promise.resolve({...ok(),state:null}));
+ for(const name of ['deleteSave','clearDeviceSave','discardAndLeave'])guard(ZH,name,()=>Promise.resolve(ok()));
+ guard(ZH,'track',()=>{});guard(ZH,'flush',()=>Promise.resolve(ok()));guard(ZH,'flushAll',()=>Promise.resolve(ok()));guard(ZH,'pendingCount',()=>0);
+ guard(ZH,'finishScenario',result=>{ZH.toast?.('教師測試完成；不列入正式通關與成績。','ok');return Promise.resolve({...ok(),result:copy(result)});});
+ for(const name of ['record','ensure','choose','restart'])guard(ZH.runs,name,()=>Promise.resolve({...ok(),runs:[]}));
+ // 這兩個管理入口在API回覆後還會直接清除裝置資料，須在入口一併隔離。
+ guard(ZH.records,'remove',()=>Promise.resolve(ok()));
+ guard(ZH.records,'summary',()=>Promise.resolve({...ok(),saves:[],chapters:[],collection:{items:[]}}));
+ guard(ZH.access,'set',()=>Promise.resolve(ok()));
+ guard(ZH.runs,'begin',(id,state)=>{state._playRunId='preview_'+Date.now().toString(36);});
+ guard(ZH.codex,'unlock',()=>true);guard(ZH.codex,'grantFor',()=>[]);guard(ZH.codex,'fresh',()=>[]);
+ guard(ZH.player,'initRun',(state,scope,context)=>{state._player={runId:'preview',scope,context,loadout:[],uses:[],applied:[]};delete state._playerError;return Promise.resolve(state._player);});
+ guard(ZH.player,'consume',(state,id,target)=>Promise.resolve({id,target,key:'preview_'+id,assisted:true,preview:true}));
+ // 退出採完整換頁，重新讀取正式局；測試資料從不反向合併。
+ function cleanParams(){const p={...(boot.params||{})};for(const k of ['page','teacherPreview','previewNode','previewGame','previewEvent','previewRole'])delete p[k];return p;}
+ function exit(){ZH.go(boot.page||'hub',cleanParams());}
+ function navigate(extra={}){ZH.go(boot.page||'hub',{...cleanParams(),teacherPreview:'1',...extra});}
+ async function enter(options={}){
+  if(!trusted)throw Error('只有已登入的教師可以自由選關。');if(active())return ok();if(entering)return entering;
+  const failureStart=callFailures;let curtain=null;
+  if(document.body){curtain=document.createElement('section');curtain.className='tp-picker tp-transition zh-modal';curtain.setAttribute('role','status');curtain.setAttribute('aria-live','polite');curtain.innerHTML='<article><h2>準備教師測試</h2><p>正在保存原本進度與紀錄……</p></article>';document.body.appendChild(curtain);}
+  entering=(async()=>{const settle=options.settle||settleHook;if(settle){const r=await settle();if(r?.ok===false)throw Error(r.msg||'原本進度尚未保存，請稍後再試。');}
+   if(ZH.flushJournals)await ZH.flushJournals(options.scenarioId||boot.page,options.mode||params.mode||'history');
+   if(ZH.flushAll){const r=await ZH.flushAll();if(r?.ok===false)throw Error('原本紀錄尚未送出，請稍後再試。');}
+   const pending=await Promise.allSettled([...flights]);if(callFailures!==failureStart||pending.some(r=>r.status==='rejected'||r.status==='fulfilled'&&r.value?.ok===false))throw Error('原本連線尚未完成，請稍後再試。');
+   enabled=true;renderTools();return ok();})();try{return await entering;}finally{entering=null;curtain?.remove();}
+ }
+ async function launch(extra={},options={}){await enter(options);navigate(extra);}
+ function renderTools(){if(!trusted||!document.body)return;if(!tools){tools=document.createElement('aside');tools.className='tp-tools';tools.setAttribute('aria-label','教師測試工具');document.body.appendChild(tools);}tools.innerHTML=active()?'<strong>教師測試・不記錄</strong><button type="button" data-tp="pick">自由選關</button><button type="button" data-tp="exit">回正式進度</button>':'<button type="button" data-tp="launch">教師自由選關</button>';tools.querySelector('[data-tp="exit"]')?.addEventListener('click',exit);tools.querySelector('[data-tp="pick"]')?.addEventListener('click',()=>pickerHook?pickerHook():ZH.toast?.('請先選擇角色並開始遊戲，即可選關。'));tools.querySelector('[data-tp="launch"]')?.addEventListener('click',async e=>{const button=e.currentTarget;button.disabled=true;try{await launch(launchExtra);}catch(err){ZH.toast?.(err.message,'bad');if(button.isConnected)button.disabled=false;}});}
+ function pick({title='自由選關',items=[],onSelect}={}){
+  if(!active())return Promise.resolve(null);document.querySelector('.tp-picker')?.remove();
+  return new Promise(resolve=>{const root=document.createElement('section');root.className='tp-picker zh-modal';root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-label',title);root.innerHTML='<article><header><h2>'+ZH.esc(title)+'</h2><button type="button" data-close>關閉</button></header><p>任意選擇劇情或直接試玩。測試不寫入存檔、首答、排行榜、收藏與通關紀錄；回正式進度後接續原局。</p><p>前置局勢採本幕測試起點，未操作的成果以示範值呈現。</p><label>尋找關卡<input type="search" aria-label="尋找關卡" placeholder="輸入情節或遊戲名稱"></label><ol>'+items.map((item,i)=>'<li data-row="'+i+'"><span>'+ZH.esc(item.label||item.id)+'<small>'+ZH.esc(item.detail||'')+'</small></span><button type="button" data-pick="'+i+'">'+ZH.esc(item.action||'看這段劇情')+'</button>'+(item.game?'<button type="button" class="tp-direct" data-game="'+i+'">直接試玩'+ZH.esc(item.game.title||'')+'</button>':'')+'</li>').join('')+'</ol></article>';
+   const close=value=>{root.remove();resolve(value);};root.querySelector('[data-close]').onclick=()=>close(null);root.querySelector('input').oninput=e=>{const q=e.target.value.trim();root.querySelectorAll('[data-row]').forEach(row=>{const item=items[Number(row.dataset.row)];row.hidden=![item.label,item.detail,item.game?.title,item.id].join(' ').includes(q);});};root.addEventListener('click',e=>{const b=e.target.closest('[data-pick],[data-game]');if(!b)return;const direct=b.dataset.game!==undefined,item=items[Number(direct?b.dataset.game:b.dataset.pick)];close({item,direct});if(onSelect)onSelect(item,direct);});root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close(null);}if(e.key==='Tab'){const all=[...root.querySelectorAll('button,input')].filter(x=>!x.closest('[hidden]'));if(e.shiftKey&&document.activeElement===all[0]){e.preventDefault();all.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===all.at(-1)){e.preventDefault();all[0].focus();}}});document.body.appendChild(root);root.querySelector('input').focus();});
+ }
+ function historyItems(nodes){
+  return Object.entries(nodes||{}).flatMap(([id,fn],i)=>{
+   const source=String(fn),read=pattern=>source.match(pattern)?.[2]||'';
+   const title=read(/\.chapter\(\s*(['"])(.*?)\1/)||read(/\bplace\s*:\s*(['"])(.*?)\1/)||read(/\btext\s*:\s*(['"])(.*?)\1/);
+   const games=[];
+   for(const m of source.matchAll(/\bchallenge\(\s*\w+\s*,\s*(['"])(.*?)\1\s*,\s*(['"])(.*?)\3\s*,\s*(['"])(.*?)\5/g))games.push({id:m[2],title:m[6]});
+   for(const m of source.matchAll(/\.minigame\s*\(\s*\{([\s\S]*?)\}\s*,/g)){
+    const gameId=m[1].match(/\bid\s*:\s*(['"])(.*?)\1/)?.[2],gameTitle=m[1].match(/\btitle\s*:\s*(['"])(.*?)\1/)?.[2];
+    if(gameId)games.push({id:gameId,title:gameTitle||gameId});
+   }
+   for(const m of source.matchAll(/\.stealth\.challenge\([\s\S]*?\bgameId\s*:\s*(['"])(.*?)\1[\s\S]*?\btitle\s*:\s*(['"])(.*?)\3/g))games.push({id:m[2],title:m[4],stealth:true});
+   const first={id,nodeId:id,label:String(i+1).padStart(2,'0')+'・'+(title||games[0]?.title||'劇情銜接').slice(0,52),detail:games.length?'挑戰：'+games[0].title:'原劇情節點',game:games[0]||null};
+   return [first,...games.slice(1).map(game=>({id:id+'::'+game.id,nodeId:id,label:game.title,detail:'同節點另一項挑戰',game}))];
+  });
+ }
+ function prepareState(state,nodes){
+  const sample=()=>({preview:true,score:0,max:10,firstScore:0,firstMax:10,passed:false,completed:false,assisted:false,first:{score:0,max:10,turns:0,losses:0,exposed:0},completion:{complete:false},answers:[],rounds:[]});
+  // 回報節點也能單獨查看；這些未評分示範值不加入 anchors、games 或 progress。
+  for(const fn of Object.values(nodes||{})){
+   const source=String(fn),names=[...source.matchAll(/(?:state|s)\.vars\.([a-zA-Z_]\w*)\s*\./g)].map(m=>m[1]);
+   for(const m of source.matchAll(/\bchallenge\(\s*\w+\s*,\s*(['"])(.*?)\1\s*,\s*(['"])(.*?)\3/g))names.push(m[4]);
+   for(const name of names)if(!['schema','runId'].includes(name)&&state.vars[name]===undefined)state.vars[name]=name==='choices'?{}:sample();
+  }
+  for(const name of ['appointment','song','chuge','breakout','battle','command','guangwu'])if(state.vars[name]===undefined)state.vars[name]=sample();
+  return state;
+ }
+
+ ZH.teacherPreview={version:'1.0.0',isTeacher,active,enter,launch,exit,navigate,pick,historyItems,prepareState,mountLauncher(options={}){if(options.settle)settleHook=options.settle;if(options.pick)pickerHook=options.pick;if(options.launchParams)launchExtra={...options.launchParams};renderTools();},setPicker(fn){pickerHook=fn;renderTools();}};
+ ZH.ready?.(()=>{if(!trusted||!/^S_(cq|zg|ch)\d{2}_/.test(boot.page||''))return;renderTools();if(!active())return;const start=()=>{if(autoStarted||document.querySelector('.sty,.slg'))return;const role=String(params.previewRole||''),selector=role?'[data-a="'+role+':new"]':'[data-new],[data-a="new"]',b=document.querySelector(selector);if(b){autoStarted=true;setTimeout(()=>b.click(),0);}};const observer=new MutationObserver(start);observer.observe(document.body,{childList:true,subtree:true});start();});
+})(window);
+</script>

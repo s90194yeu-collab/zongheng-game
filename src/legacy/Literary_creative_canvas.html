@@ -1,0 +1,55 @@
+<script>
+(function(ZH){
+'use strict';const original=ZH.literaryCanvas.draw,keys=['archive','haoliang','contracts','weave','paperMoon','riverSong','moonwalk','woodcut'];
+ZH.literaryCanvas.draw=function(ctx,w,t,images={}){
+ if(w.creativeVersion!==2||!keys.includes(w.mode))return original(ctx,w,t,images);
+ const gold='#edcf84',cream='#f2e7c7',green='#a4cfba',blue='#8fc8d3',red='#e4a28f',dark='#173342',paper='#d7c49a';
+ const box=(x,y,a,b,fill,stroke=null,r=9)=>{ctx.beginPath();ctx.roundRect(x,y,a,b,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}};
+ const text=(s,x,y,size=21,color=cream)=>{ctx.font='600 '+size+'px "Noto Serif TC","PingFang TC",serif';ctx.textAlign='center';ctx.fillStyle=color;ctx.fillText(String(s),x,y);};
+ const line=(a,b,color=gold,width=3)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineWidth=width;ctx.strokeStyle=color;ctx.stroke();};
+ const circle=(x,y,r,fill,stroke=null)=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}};
+ const meter=(x,y,value,width=200,color=gold)=>{box(x,y,width,12,'#0c2632');box(x,y,width*Math.max(0,Math.min(1,value)),12,color);};
+ ctx.save();ctx.clearRect(0,0,1000,560);if(images.scene?.complete&&images.scene.naturalWidth)ctx.drawImage(images.scene,0,0,1000,560);else box(0,0,1000,560,'#2c4d54');box(0,0,1000,560,'#102c3aa8');box(25,15,950,64,'#102a38e8',gold);text(t.mission.title,500,44,25,gold);text(t.mission.genre+'・'+(t.mission.place||'文本工坊'),500,68,16,green);
+ if(w.mode==='archive'){
+  const glyphs=['日','水','山','木','雲','月','川'],x=i=>160+i*136;
+  box(75,135,850,160,'#937b56a0',gold);text('卷面斷口・從左向右接續',500,122,21,gold);
+  for(let i=0;i<6;i++){box(x(i)-57,155,114,132,'#193b48aa',gold);text(glyphs[i]+' → '+glyphs[i+1],x(i),315,19,green);}
+  const piece=(i,p,held=false)=>{const n=w.order[i],flip=w.flip[i];box(p.x-54,p.y-62,108,124,w.placed[i]>=0?'#cbb67e':paper,held?cream:w.selected===i?gold:'#746748');line({x:p.x-39,y:p.y-39},{x:p.x+39,y:p.y-39},'#867652',2);line({x:p.x-39,y:p.y+39},{x:p.x+39,y:p.y+39},'#867652',2);if(w.covers[i]){box(p.x-47,p.y-28,94,56,'#995a5d',gold);text('綴飾遮痕',p.x,p.y+6,17);}else{text(glyphs[flip?n+1:n],p.x-26,p.y+7,27,dark);text('→',p.x,p.y+7,23,dark);text(glyphs[flip?n:n+1],p.x+28,p.y+7,27,dark);text(flip?'背面':'正面',p.x,p.y+54,15,dark);}};
+  for(let i=0;i<6;i++)if(i!==w.carry)piece(i,{x:x(w.placed[i]>=0?w.placed[i]:i),y:w.placed[i]>=0?220:420});if(w.carry>=0)piece(w.carry,w.dragPoint||{x:x(w.carry),y:420},true);text('拿起 → 翻正／卸飾 → 對斷口接入',500,535,23,gold);
+ }else if(w.mode==='haoliang'){
+  box(75,155,380,365,'#776a52b8',gold);box(535,155,380,365,'#336b7dbb',blue);text('橋上：由岸望水',265,125,23,gold);text('水側：回望橋影',725,125,23,blue);
+  const p=(s,i)=>({x:(s?605:155)+(i%2)*180,y:205+Math.floor(i/2)*145});
+  for(const pair of w.pairs)line(p(0,pair[0]),p(1,pair[1]),green,6);if(w.from>=0&&w.linkPoint)line(p(0,w.from),w.linkPoint,gold,4);
+  for(let s=0;s<2;s++)for(let i=0;i<4;i++){const q=p(s,i),mark=(s?w.rightMarks:w.leftMarks)[i],done=w.pairs.some(a=>a[s]===i);box(q.x-71,q.y-42,142,84,done?'#487f70':'#183a49e8',w.selected===i+s*4?gold:s?blue:cream);text(mark.split('・')[0],q.x,q.y-4,22,done?green:cream);text(mark.split('・')[1],q.x,q.y+25,17,green);}
+  text('同位置不等於同一魚；紋理與水層須同時對上',500,547,20,gold);
+ }else if(w.mode==='contracts'){
+  w.orders.forEach((o,i)=>{const x=170+i*220;box(x-92,100,184,89,i===w.orderIndex?'#637a70':'#203e4ce8',i===w.orderIndex?gold:green);text(o.done?'已驗留據':'交件單 '+(i+1),x,127,21,o.done?green:gold);text('承諾 '+o.claim+'件・限'+o.due+'刻',x,157,17);});
+  const o=w.orders[w.orderIndex];box(770,210,155,70,o.registered?'#507464':'#7d6451',gold);text(o.registered?'承諾已登簿':'點此登承諾',847,252,20);
+  ctx.save();ctx.translate(470,277);ctx.rotate(w.beamAngle);line({x:-210,y:0},{x:210,y:0},gold,12);line({x:-180,y:0},{x:-180,y:55},cream,3);line({x:180,y:0},{x:180,y:55},cream,3);box(-220,55,80,23,'#8d795b',gold);box(140,55,80,23,'#8d795b',gold);text('實績',-180,101,19);text(w.weight+'砝碼',180,101,19);ctx.restore();line({x:470,y:277},{x:470,y:350},gold,6);text(o.measured?'實量 '+o.actual+'件・第'+o.elapsed+'刻交件':'實量尚未形成穩定證據',500,425,23,o.measured?green:cream);
+  line({x:180,y:382},{x:820,y:382},gold,5);for(let i=0;i<=10;i++){line({x:180+i*64,y:370},{x:180+i*64,y:394},cream,2);text(i,180+i*64,358,16);}circle(180+w.weight*64,382,19,gold);meter(345,444,w.balanceHold/.65,310,green);
+  box(120,473,320,62,'#406d63',green);text('數量、期限均符：通過',280,512,22);box(560,473,320,62,'#765a52',red);text('指出不符，留下依據',720,512,22);
+ }else if(w.mode==='weave'){
+  const pattern=Array.from({length:5},(_,i)=>(i+w.row+w.index)%2),names=['物件','梳理','習慣','時光','回望'],colors=['#d7bd7e','#c79c9c','#8cb8b2','#adc18c','#baa1c8'];box(100,115,800,350,'#8f7956b8',gold);
+  for(let i=0;i<5;i++){const x=220+i*140;text(names[i],x,143,19);box(x-44,167,88,60,w.warp[i]?'#6e9d8d':'#495769',w.selected===i?gold:cream);text(w.warp[i]?'已升':'已降',x,205,22);line({x,y:230},{x,y:450},colors[i],w.warp[i]?7:16);if(w.warp[i])box(x-15,295,30,48,'#102d3b',green);text('此梭需'+(pattern[i]?'升':'降'),x,493,19,w.warp[i]===pattern[i]?green:gold);}
+  for(let row=0;row<w.row;row++)line({x:150,y:397+row*18},{x:850,y:397+row*18},colors[row],9);box(w.shuttle.x-45,w.shuttle.y-17,90,34,'#d5bc87',gold,15);circle(w.shuttle.x,w.shuttle.y,8,dark);text(w.row%2?'← 這一梭由右往左':'這一梭由左往右 →',500,539,23,gold);
+ }else if(w.mode==='paperMoon'){
+  const mirrors=[{x:300,y:310},{x:300,y:150},{x:720,y:150},{x:720,y:420}];box(60,100,880,385,'#142f3cc2',gold);circle(80,310,30,'#f1dfaa',gold);text('紙月',100,366,19,gold);for(const [a,b]of w.optic.segments)line(a,b,'#f5de8c',5);box(862,375,70,90,w.optic.lit?'#b7c886':'#716953',gold);text('暗案',896,493,19);
+  mirrors.forEach((p,i)=>{circle(p.x,p.y,46,'#4f6f7b99',w.selected===i?gold:blue);const a=w.mirrorAngles[i],v={x:Math.cos(a)*50,y:Math.sin(a)*50};line({x:p.x-v.x,y:p.y-v.y},{x:p.x+v.x,y:p.y+v.y},blue,9);circle(p.x+v.x,p.y+v.y,9,gold);text('鏡'+(i+1),p.x,p.y+72,18);});
+  box(173,254,34,112,w.screen>=0?'#9e7465':'#53746355',w.screen>=0?red:green);text(w.screen>=0?'屏風遮光':'屏風已移',190,237,17);meter(340,515,w.hold/1.6,320,green);text('拖鏡緣轉角，沿光線逐面調整',500,551,20,gold);
+ }else if(w.mode==='riverSong'){
+  box(65,110,870,255,'#1c4058b8',blue);for(let i=0;i<3;i++){const y=160+i*78;line({x:115,y},{x:810,y},'#8eb4ba55',2);text(['低','中','高'][i],95,y+8,21,green);}line({x:280,y:125},{x:280,y:335},gold,5);text('金線',280,353,16,gold);
+  for(let i=w.next;i<8;i++){const x=280+(w.noteTimes[i]-w.time)*95,y=160+w.notes[i]*78;if(x>920||x<100)continue;box(x-35,y-23,70,46,i===w.next?'#a48453':'#3c6979',i===w.next?gold:blue);text('吹',x,y+7,22);}
+  [240,500,760].forEach((x,i)=>{circle(x,425,67,w.pitch===i&&(w.valve||w.tubeDown)?'#aa9261':'#244c5b',w.selected===i?gold:blue);circle(x,425,27,'#0a2634',gold);text(['低音孔','中音孔','高音孔'][i],x,516,21);});circle(870,170,44,w.scale?'#c9d3be':'#7f9aaf',gold);text(w.scale?'不盡':'變化',870,178,20,dark);meter(100,541,w.breath/100,800,green);
+ }else if(w.mode==='moonwalk'){
+  const n=w.targets[w.shots.length]??5,g={x:w.bridges[n].x+25,y:285+(n%2?10:-10),zoom:[1,1.25,1.5][w.shots.length]??1.5};box(70,165,825,275,'#487c8e77',blue);line({x:110,y:130},{x:890,y:130},gold,4);for(let h=0;h<24;h+=3)text(h,110+h*32.5,109,16,green);circle(110+w.hour*32.5,130,14,gold);
+  for(let i=0;i<6;i++){const p=w.bridges[i];ctx.beginPath();ctx.arc(p.x,310,39,Math.PI,0);ctx.strokeStyle=i===n?gold:'#a3bab4';ctx.lineWidth=9;ctx.stroke();ctx.beginPath();ctx.arc(p.x,333,39,0,Math.PI);ctx.lineWidth=3;ctx.strokeStyle='#a7ced16b';ctx.stroke();text((i+1)+'橋',p.x,411,17,i===n?gold:green);}circle(150+w.hour*25,200,25,w.hour>20?'#d8e0cf':'#e4be7a',gold);
+  const gw=160/g.zoom,gh=210/g.zoom,fw=160/w.zoom,fh=210/w.zoom;box(g.x-gw/2,g.y-gh/2,gw,gh,null,gold,0);box(w.frame.x-fw/2,w.frame.y-fh/2,fw,fh,'#b9d4dd16',cream,0);line({x:w.frame.x-13,y:w.frame.y},{x:w.frame.x+13,y:w.frame.y},cream,2);line({x:w.frame.x,y:w.frame.y-13},{x:w.frame.x,y:w.frame.y+13},cream,2);
+  line({x:930,y:220},{x:930,y:430},gold,5);circle(930,220+(2-w.zoom)*140,12,cream);text('焦距',930,464,17);line({x:170,y:500},{x:670,y:500},gold,4);for(let i=0;i<5;i++)text(i,170+i*125,532,17,green);circle(170+w.exposure*125,500,13,gold);circle(850,500,35,'#b39a6b',gold);text('快門',850,507,19,dark);text('金框是此幅構圖；拖動白框使之重合',500,157,18,gold);
+ }else if(w.mode==='woodcut'){
+  const shapes=[[-.35,420],[.25,560],[-.1,485],[.4,590],[-.25,445],[.1,525]],goal=shapes[(w.wood+w.index)%6];box(350,125,300,315,'#a0875b',gold);for(let i=0;i<9;i++)line({x:365+i*33,y:140},{x:390+i*27+Math.sin(i)*13,y:420},'#d6be8c77',3);for(const x of [390,470,550,610])if(Math.abs(x-goal[1])>28){ctx.beginPath();ctx.ellipse(x,290+(x%3)*32,21,37,.2,0,Math.PI*2);ctx.strokeStyle='#61563c';ctx.lineWidth=4;ctx.stroke();}line({x:goal[1]-goal[0]*90,y:205},{x:goal[1]+goal[0]*90,y:385},gold,8);circle(goal[1],290,24,'#efd18b55',gold);line({x:w.strikeX-w.angle*90,y:205},{x:w.strikeX+w.angle*90,y:385},cream,4);text('白斧線須循金紋，避開木結',500,113,21,gold);
+  line({x:380,y:480},{x:620,y:480},gold,5);circle(w.strikeX,480,16,cream);text('拖落點',500,526,20);line({x:105,y:260},{x:275,y:260},gold,5);circle(190+w.angle*125,260,14,cream);text('拖角規',190,221,20);text(w.angle.toFixed(2),190,307,23,green);box(755,220,160,90,'#3d675f',green);text('收斧歇力',835,272,21);meter(355,454,w.charge/1.4,290,w.charge>.6?green:gold);text('木面按住蓄力，放手落斧',500,553,20,gold);
+ }
+ ctx.restore();
+};
+})(window.ZH);
+</script>

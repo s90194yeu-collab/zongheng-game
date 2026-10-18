@@ -11,10 +11,14 @@
  function command(w,c){if(w.status!=='playing')return false;if(c.startsWith('select:')){const i=Number(c.slice(7)),opts=options(w);if(Number.isInteger(i)&&i>=0&&i<opts.length)w.selected=i;return true;}w.steps++;const r=modes[w.mode].command(w,c);w.log.push({at:Math.round(w.time*10)/10,action:c});if(w.log.length>16)w.log.shift();return r;}
  function action(w){return command(w,'primary');}function secondary(w){return command(w,'secondary');}function skill(w){return command(w,'skill');}
  function options(w){return modes[w.mode].options?.(w)||[];}
- function point(w,x,y,down){const m=modes[w.mode];if(m.point)return m.point(w,x,y,down);const opts=options(w);if(!opts.length)return;const i=opts.map((p,i)=>({i,d:dist(p,{x,y})})).sort((a,b)=>a.d-b.d)[0];if(i.d<140){w.selected=i.i;if(down)command(w,'primary');}}
+ function point(w,x,y,down){if(!w||w.status!=='playing'||!Number.isFinite(x)||!Number.isFinite(y))return;const m=modes[w.mode];if(m.point)return m.point(w,x,y,down);const opts=options(w);if(!opts.length)return;const i=opts.map((p,i)=>({i,d:dist(p,{x,y})})).sort((a,b)=>a.d-b.d)[0];if(i.d<140){w.selected=i.i;if(down)command(w,'primary');}}
+ function drag(w,x,y){if(w?.status==='playing'&&Number.isFinite(x)&&Number.isFinite(y))return modes[w.mode].drag?.(w,x,y);}
+ function release(w,x,y){if(w&&Number.isFinite(x)&&Number.isFinite(y))return modes[w.mode].release?.(w,x,y);}
+ function cancel(w){if(w&&modes[w.mode])modes[w.mode].cancel?.(w);}
+ function interaction(w){return w&&modes[w.mode].interaction?.(w)||null;}
  function controls(w){return modes[w.mode].controls?.(w)||[U.button('primary','互動'),U.button('secondary','切換工具')];}
  function progress(w){return {me:0,other:0,goal:'',detail:'',resource:'',threat:'',...modes[w.mode].view(w)};}
  function score(w){if(w.status!=='won')return 0;return clamp(Math.round(5+3*w.hp/w.maxHp+2*(1-w.time/w.limit)-Math.min(2,w.mistakes*.2)),1,10);}
- ZH.literary={register,create,restore,step,command,action,secondary,skill,point,options,controls,progress,score,modes,U};
+ ZH.literary={register,create,restore,step,command,action,secondary,skill,point,drag,release,cancel,interaction,options,controls,progress,score,modes,U};
 })(window.ZH);
 </script>

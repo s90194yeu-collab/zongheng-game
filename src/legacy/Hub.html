@@ -428,7 +428,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
         (s.guest ? '<span class="zh-chip zh-chip--gilt">課綱選文・訪客可玩</span>' : '') +
         (['gw','al'].includes(vol.key)?'<span class="zh-chip">'+ZH.esc(s.author)+'</span><span class="zh-chip zh-chip--patina">'+(s.classicReuse?'沿用原關卡':'新增課文任務')+'</span>':'') +
         (done?'<span class="zh-chip zh-chip--patina">通關 '+(done.count||1)+' 局'+(done.pending?'・待選紀錄':'')+'</span>':'')+
-        '</span><span class="pl-texts">文本：'+ZH.learningTexts(s.id).map(ZH.esc).join('、')+'</span><span>'+ 
+        '</span>'+(s.playline?'<span class="pl-texts pl-gameplay">玩法：'+ZH.esc(s.playline)+'</span>':'')+'<span class="pl-texts">文本：'+ZH.learningTexts(s.id).map(ZH.esc).join('、')+'</span><span>'+ 
         '</span></span>' +
         '<span class="hub-ep__state">' + stateText + '</span>' +
         '</button>'

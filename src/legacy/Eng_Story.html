@@ -380,6 +380,20 @@
     const bgCleanup = new Map();
     let anchorCatalog = Object.create(null);
     let anchorRequest = null;
+    const teacher = ZH.teacherPreview, previewStop = { teacherPreviewStop:true };
+    const previewParams = ZH.boot?.params || {};
+    const previewGame = teacher?.active() ? String(previewParams.previewGame || '') : '';
+    const previewing = () => !!teacher?.active();
+    function previewSummary(result) {
+      ZH.toast(result ? '這次試玩已完成；不寫入正式成績。' : '這段劇情已播放完畢，可自由選另一關。', 'ok');
+      return previewPicker();
+    }
+    function previewPicker() {
+      const items=teacher?.historyItems(C.nodes).map(item=>({...item,game:(C.previewGames||{})[item.nodeId]||item.game}));
+      return teacher?.pick({ title:C.title+'・教師自由選關', items, onSelect(item,direct) {
+        teacher.navigate({ previewNode:item.nodeId||item.id, previewGame:direct ? item.game?.id : '', previewRole:previewParams.previewRole||'' });
+      }});
+    }
 
     // 題目保存在本次引擎內，避開舊 Anchor_js 對空陣列的永久快取。
     function readStoryAnchors(required) {
@@ -783,6 +797,7 @@
     // ───────────── 小遊戲 ─────────────
 
     async function minigame(opts, legacyFn) {
+      if (previewGame && opts?.id !== previewGame) return { skipped:true, passed:false, score:0, max:10, completed:false };
       const originalOpts = Object.assign({}, opts || {}), storyGameId = originalOpts.id;
       const textTask = ZH.textplay?.route(C.id,storyGameId,S.state);
       const upgrade = ZH.gameplay && ZH.gameplay.route(C.id, storyGameId, S.state);
@@ -995,6 +1010,7 @@
 
     /** 存檔：存「進入目前節點時」的狀態，加上之後答過的錨點與解鎖的圖鑑 */
     function save() {
+      if (previewing()) return Promise.resolve({ok:true,preview:true});
       if (!C.save || !S.entry) return Promise.resolve();
       if (S.saving) { S.saveAgain = true; return S.saving; }
       const snap = snapshotState();
@@ -1057,6 +1073,7 @@
       minigame: minigame,
       refresh: renderTop,
       end(result) {
+        if (previewing()) { S.ended = true; return previewSummary(result); }
         if (S.ended) return Promise.resolve();
         S.ended = true;
         clearTimeout(S.autoSaveTimer);
@@ -1099,6 +1116,7 @@
         .then(() => fn(ctx))
         .then(async next => {
           if (S.ended) return null;
+          if (previewing()) { S.ended = true; return previewSummary(); }
           if (next && next !== id) await cutinCue('afterNode', {next:next});
           if (S.ended) return null;
           if (!next) {
@@ -1108,6 +1126,7 @@
           return runNode(next);
         })
         .catch(err => {
+          if (err === previewStop) { S.ended = true; return previewSummary(S.state.games.at(-1)); }
           if (global.console) console.error(err);
           return ZH.modal({
             title: '這一段發生錯誤',
@@ -1129,7 +1148,8 @@
 
     async function start(saved) {
       if(ZH.requireStudentProfile&&!await ZH.requireStudentProfile())return;
-      S.state = saved && saved.v && !ZH.isEndedSave(saved) ? saved : freshState();
+      S.state = !previewing() && saved && saved.v && !ZH.isEndedSave(saved) ? saved : freshState();
+      if (previewing()) { teacher.prepareState(S.state,C.nodes);C.previewPrepare?.(S.state); }
       C.help=ZH.textplay?.eligible(S.state)?ZH.textplay.helpHTML(C.id):textOriginalHelp;
       if(ZH.runs)ZH.runs.begin(C.id,S.state,C.mode);
       if(ZH.player)await ZH.player.initRun(S.state,'story',C.id);
@@ -1150,6 +1170,21 @@
       S.castIds = (S.state.cast || []).slice();
       S.expr = Object.assign({}, S.state.expr || {});
       renderCast(null);
+      if (teacher?.isTeacher()) teacher.mountLauncher({settle:save,pick:previewPicker});
+      if (previewing()) {
+        teacher.setPicker(previewPicker);
+        const id=String(previewParams.previewNode||'');
+        if (!Object.hasOwn(C.nodes,id)) return previewPicker();
+        S.state.node=id;
+        if (previewGame) {
+          // 直接試玩只略過前導文字，不替玩家完成挑戰，也不移用舊局首答。
+          ctx.say=()=>Promise.resolve();ctx.anchor=id=>Promise.resolve({anchorId:id,correct:false,preview:true});ctx.chapter=()=>Promise.resolve();ctx.wait=()=>Promise.resolve();
+          const play=ctx.minigame;ctx.minigame=async(opts,fn)=>{const r=await play(opts,fn);if(opts?.id===previewGame)throw previewStop;return r;};
+          if (ZH.stealth && teacher.historyItems(C.nodes).find(x=>x.id===id)?.game?.stealth) {
+            const playStealth=ZH.stealth.challenge;ZH.stealth.challenge=async(...args)=>{const r=await playStealth(...args);throw previewStop;};
+          }
+        }
+      }
       let rz = null;
       global.addEventListener('resize', () => {
         document.documentElement.style.setProperty('--sty-top', el.top.offsetHeight + 'px');
@@ -1170,23 +1205,24 @@
   // Checkpoint adapters store only serialized ctx.state; presentation objects never enter saves.
 function createJournal({id,mode,scope='guest',remote}){
  const global=window,L=global.ZHGameLibs||{},copy=v=>JSON.parse(JSON.stringify(v));
+ const preview=()=>ZH.teacherPreview?.active();let previewMemory=null;
  const key=JSON.stringify([scope,id,mode]);let db=null,memory=null,queue=Promise.resolve(),timer=null,pending=null,flight=null,epoch=0,stamp=0,closed=false;
- try{if(scope!=='guest'&&L.Dexie){db=new L.Dexie('ZH_Game_Journal_v3');db.version(1).stores({saves:'key,updatedAt'});}}catch(e){db=null;}
+ try{if(!preview()&&scope!=='guest'&&L.Dexie){db=new L.Dexie('ZH_Game_Journal_v3');db.version(1).stores({saves:'key,updatedAt'});}}catch(e){db=null;}
  async function put(entry){memory=entry;if(scope==='guest'){ZH.session.set('journal:'+key,entry);return;}try{if(db){await db.saves.put(entry);return;}}catch(e){}try{global.localStorage.setItem('zhgame:'+key,JSON.stringify(entry));}catch(e){} }
  async function get(){if(scope==='guest')return ZH.session.get('journal:'+key,null);try{const stored=db&&await db.saves.get(key);if(stored)return stored;}catch(e){}try{return JSON.parse(global.localStorage.getItem('zhgame:'+key))||memory;}catch(e){return memory;}}
  function snapshot(state){const snap=copy(state);stamp=Math.max(Date.now(),stamp+1);snap._runtime={schema:2,savedAt:stamp};return snap;}
  function writeLocal(state){const entry={key,updatedAt:state._runtime.savedAt,state};queue=queue.then(()=>put(entry));return queue;}
- async function flush(){clearTimeout(timer);timer=null;await queue;if(flight)return flight;const myEpoch=epoch;
+ async function flush(){if(preview())return{ok:true,preview:true};clearTimeout(timer);timer=null;await queue;if(flight)return flight;const myEpoch=epoch;
   flight=(async()=>{let result={ok:true};while(pending&&myEpoch===epoch){const next=pending;pending=null;try{result=await remote(next);}catch(e){result={ok:false};}if(!result||result.ok!==true){if(!pending)pending=next;return{ok:false,local:true};}}return result;})();
   try{return await flight;}finally{flight=null;}
  }
  function schedule(){clearTimeout(timer);timer=setTimeout(()=>{flush().catch(()=>{});},650);}
- function enqueue(state,force=false){if(closed)return Promise.resolve({ok:true,closed:true});pending=snapshot(state);const saved=pending;writeLocal(saved);if(force)return flush();schedule();return queue.then(()=>({ok:true,local:true}));}
- async function load(server){await queue;const local=await get(),remoteStamp=server?._runtime?.savedAt||0;
+ function enqueue(state,force=false){if(preview()){previewMemory=copy(state);return Promise.resolve({ok:true,preview:true});}if(closed)return Promise.resolve({ok:true,closed:true});pending=snapshot(state);const saved=pending;writeLocal(saved);if(force)return flush();schedule();return queue.then(()=>({ok:true,local:true}));}
+ async function load(server){if(preview())return copy(previewMemory);await queue;const local=await get(),remoteStamp=server?._runtime?.savedAt||0;
   if(ZH.isEndedSave(server))server=null;
   if(local&&!ZH.isEndedSave(local.state)&&local.updatedAt>remoteStamp)return{...copy(local.state),local:true};return server;
  }
- async function clear(terminal=false){closed=terminal;epoch++;clearTimeout(timer);timer=null;pending=null;if(flight)await flight;pending=null;await queue;memory=null;if(scope==='guest')ZH.session.remove('journal:'+key);try{if(db)await db.saves.delete(key);}catch(e){}try{global.localStorage.removeItem('zhgame:'+key);}catch(e){} }
+ async function clear(terminal=false){if(preview()){previewMemory=null;return;}closed=terminal;epoch++;clearTimeout(timer);timer=null;pending=null;if(flight)await flight;pending=null;await queue;memory=null;if(scope==='guest')ZH.session.remove('journal:'+key);try{if(db)await db.saves.delete(key);}catch(e){}try{global.localStorage.removeItem('zhgame:'+key);}catch(e){} }
  const journal={enqueue,flush,load,clear,key};return ZH.registerJournal?ZH.registerJournal(journal):journal;
 }
 

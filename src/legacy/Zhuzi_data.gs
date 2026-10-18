@@ -12,13 +12,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "守藏與出關",
       "year": 500,
       "period": "史傳與人物",
-      "genre": "人物情境冒險",
+      "genre": "器物拼裝",
       "source": "《史記・老子韓非列傳》",
       "guest": false,
       "status": "ready",
       "philosopher": "laozi",
       "level": "bio",
-      "scene": "scene:zhuzi_laozi"
+      "scene": "scene:zhuzi_laozi",
+      "playline": "斷簡重綴",
+      "gameTypes": [
+        "PUZ／器物拼裝"
+      ]
     },
     "anchors": [
       {
@@ -149,13 +153,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "有無與不爭",
       "year": 500,
       "period": "原典與論證",
-      "genre": "思想情境實作",
+      "genre": "處下通流",
       "source": "《老子》第八章、《老子》第十一章、《老子》第六十四章",
       "guest": false,
       "status": "ready",
       "philosopher": "laozi",
       "level": "read",
-      "scene": "scene:zhuzi_laozi"
+      "scene": "scene:zhuzi_laozi",
+      "playline": "處下通流",
+      "gameTypes": [
+        "Sandbox／PUZ"
+      ]
     },
     "anchors": [
       {
@@ -379,13 +387,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "漆園與江湖",
       "year": 330,
       "period": "史傳與人物",
-      "genre": "人物情境冒險",
+      "genre": "曳尾泥途",
       "source": "《史記・老子韓非列傳》",
       "guest": false,
       "status": "ready",
       "philosopher": "zhuangzi",
       "level": "bio",
-      "scene": "scene:zhuzi_zhuangzi"
+      "scene": "scene:zhuzi_zhuangzi",
+      "playline": "曳尾泥途",
+      "gameTypes": [
+        "AAVG"
+      ]
     },
     "anchors": [
       {
@@ -516,13 +528,19 @@ Object.assign(SCENARIO_DATA,{
       "episode": "循隙與觀點",
       "year": 330,
       "period": "原典與論證",
-      "genre": "思想情境實作",
+      "genre": "剖視察隙＋證據串接＋大瓠浮江",
       "source": "《莊子・養生主》、《莊子・秋水》、《莊子・逍遙遊》",
       "guest": false,
       "status": "ready",
       "philosopher": "zhuangzi",
       "level": "read",
-      "scene": "scene:zhuzi_zhuangzi"
+      "scene": "scene:zhuzi_zhuangzi",
+      "playline": "剖視察隙 → 濠梁互證 → 大瓠浮江",
+      "gameTypes": [
+        "PUZ",
+        "AVG／證據串接",
+        "SIM／AAVG"
+      ]
     },
     "anchors": [
       {
@@ -746,13 +764,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "稷下至蘭陵",
       "year": 270,
       "period": "史傳與人物",
-      "genre": "人物情境冒險",
+      "genre": "稷下講席",
       "source": "《史記・孟子荀卿列傳》",
       "guest": false,
       "status": "ready",
       "philosopher": "xunzi",
       "level": "bio",
-      "scene": "scene:zhuzi_xunzi"
+      "scene": "scene:zhuzi_xunzi",
+      "playline": "稷下講席",
+      "gameTypes": [
+        "TBS／SLG"
+      ]
     },
     "anchors": [
       {
@@ -883,13 +905,19 @@ Object.assign(SCENARIO_DATA,{
       "episode": "積學與化性",
       "year": 270,
       "period": "原典與論證",
-      "genre": "思想情境實作",
+      "genre": "取藍成青＋善假於物＋化性工坊",
       "source": "《荀子・勸學》、《荀子・性惡》",
       "guest": false,
       "status": "ready",
       "philosopher": "xunzi",
       "level": "read",
-      "scene": "scene:zhuzi_xunzi"
+      "scene": "scene:zhuzi_xunzi",
+      "playline": "取藍成青 → 善假於物 → 化性工坊",
+      "gameTypes": [
+        "SIM／ACT",
+        "Platformer／PUZ",
+        "RTS／SIM"
+      ]
     },
     "anchors": [
       {
@@ -1113,13 +1141,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "書成與入秦",
       "year": 240,
       "period": "史傳與人物",
-      "genre": "人物情境冒險",
+      "genre": "潛行",
       "source": "《史記・老子韓非列傳》",
       "guest": false,
       "status": "ready",
       "philosopher": "hanfei",
       "level": "bio",
-      "scene": "scene:zhuzi_hanfei"
+      "scene": "scene:zhuzi_hanfei",
+      "playline": "書諫暗廊",
+      "gameTypes": [
+        "AVG／潛行"
+      ]
     },
     "anchors": [
       {
@@ -1250,13 +1282,19 @@ Object.assign(SCENARIO_DATA,{
       "episode": "說難與名實",
       "year": 240,
       "period": "原典與論證",
-      "genre": "思想情境實作",
+      "genre": "說難聽心＋二柄封印＋量規驗收",
       "source": "《韓非子・說難》、《韓非子・二柄》、《韓非子・定法》",
       "guest": false,
       "status": "ready",
       "philosopher": "hanfei",
       "level": "read",
-      "scene": "scene:zhuzi_hanfei"
+      "scene": "scene:zhuzi_hanfei",
+      "playline": "說難聽心 → 二柄封印 → 名實量規",
+      "gameTypes": [
+        "RPG／SLG",
+        "PUZ／SLG",
+        "SIM／量規驗收"
+      ]
     },
     "anchors": [
       {
@@ -1480,13 +1518,18 @@ Object.assign(SCENARIO_DATA,{
       "episode": "赴楚止攻",
       "year": 400,
       "period": "史傳與人物",
-      "genre": "人物情境冒險",
+      "genre": "止楚攻宋＋十日十夜赴楚",
       "source": "《史記・孟子荀卿列傳》、《墨子・公輸》",
       "guest": false,
       "status": "ready",
       "philosopher": "mozi",
       "level": "bio",
-      "scene": "scene:zhuzi_mozi"
+      "scene": "scene:zhuzi_mozi",
+      "playline": "止楚攻宋 → 十日十夜赴楚",
+      "gameTypes": [
+        "SRPG／RTS",
+        "ACT／Platformer"
+      ]
     },
     "anchors": [
       {
@@ -1617,13 +1660,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "兼愛與非攻",
       "year": 400,
       "period": "原典與論證",
-      "genre": "思想情境實作",
+      "genre": "兼愛互利網",
       "source": "《墨子・兼愛中》、《墨子・非攻上》、《墨子・公輸》",
       "guest": false,
       "status": "ready",
       "philosopher": "mozi",
       "level": "read",
-      "scene": "scene:zhuzi_mozi"
+      "scene": "scene:zhuzi_mozi",
+      "playline": "兼愛互利網",
+      "gameTypes": [
+        "SLG／PUZ"
+      ]
     },
     "anchors": [
       {
@@ -1847,13 +1894,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "遊說與著書",
       "year": 320,
       "period": "史傳與人物",
-      "genre": "人物情境冒險",
+      "genre": "遊說與七篇",
       "source": "《史記・孟子荀卿列傳》",
       "guest": false,
       "status": "ready",
       "philosopher": "mengzi",
       "level": "bio",
-      "scene": "scene:zhuzi_mengzi"
+      "scene": "scene:zhuzi_mengzi",
+      "playline": "遊說與七篇",
+      "gameTypes": [
+        "RPG／TBS"
+      ]
     },
     "anchors": [
       {
@@ -1984,13 +2035,19 @@ Object.assign(SCENARIO_DATA,{
       "episode": "義利與推恩",
       "year": 320,
       "period": "原典與論證",
-      "genre": "思想情境實作",
+      "genre": "上下交征利＋物理解謎＋路線規畫",
       "source": "《孟子・梁惠王上》、《孟子・公孫丑上》",
       "guest": false,
       "status": "ready",
       "philosopher": "mengzi",
       "level": "read",
-      "scene": "scene:zhuzi_mengzi"
+      "scene": "scene:zhuzi_mengzi",
+      "playline": "上下交征利 → 孺子井邊 → 推恩接力",
+      "gameTypes": [
+        "TBS／SIM",
+        "AAVG／物理解謎",
+        "RPG／路線規畫"
+      ]
     },
     "anchors": [
       {

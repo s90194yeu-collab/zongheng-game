@@ -12,7 +12,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "江潭對話，清濁之辨",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "水流SIM",
       "source": "〈漁父〉",
       "guest": false,
       "status": "ready",
@@ -21,7 +21,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "屈原（傳）",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "滄浪鼓枻",
+      "gameTypes": [
+        "AAVG／水流SIM"
+      ]
     },
     "anchors": [
       {
@@ -245,7 +249,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "笑聲裡，看見人的處境",
       "year": 0,
       "period": "清代",
-      "genre": "課文情境冒險",
+      "genre": "喜劇演出",
       "source": "〈劉姥姥〉",
       "guest": false,
       "status": "ready",
@@ -254,7 +258,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "曹雪芹",
       "stageCount": 3,
       "readerKind": "selected",
-      "aliases": []
+      "aliases": [],
+      "playline": "賈府席間的留白",
+      "gameTypes": [
+        "ACT／喜劇演出"
+      ]
     },
     "anchors": [
       {
@@ -478,7 +486,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "循隙而行，也知難而止",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "精密操作",
       "source": "〈庖丁解牛〉",
       "guest": false,
       "status": "ready",
@@ -487,7 +495,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "莊子",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "遊刃有餘",
+      "gameTypes": [
+        "ACT／精密操作"
+      ]
     },
     "anchors": [
       {
@@ -711,7 +723,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "從人口之問，到不歸罪年成",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "雙角色＋生態策略＋王無罪歲",
       "source": "〈王道之始（五十步笑百步）〉",
       "guest": false,
       "status": "ready",
@@ -723,7 +735,13 @@ Object.assign(SCENARIO_DATA,{
       "aliases": [],
       "level": "read",
       "philosopher": "mengzi",
-      "integratedWith": "mengzi_read"
+      "integratedWith": "mengzi_read",
+      "playline": "五十與百步 → 不違農時 → 王無罪歲",
+      "gameTypes": [
+        "ACT／雙角色",
+        "SIM／生態策略",
+        "SLG／SIM"
+      ]
     },
     "anchors": [
       {
@@ -947,7 +965,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "以一生，回看學與成人",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "修學六境",
       "source": "〈吾十有五而志於學〉",
       "guest": false,
       "status": "ready",
@@ -957,7 +975,11 @@ Object.assign(SCENARIO_DATA,{
       "stageCount": 1,
       "readerKind": "full",
       "aliases": [],
-      "legacyOnly": true
+      "legacyOnly": true,
+      "playline": "修學六境",
+      "gameTypes": [
+        "Platformer／Roguelite"
+      ]
     },
     "anchors": [
       {
@@ -1057,7 +1079,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "在日常裡，把所學做出來",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "生活SIM",
       "source": "〈弟子入則孝（入孝出弟）〉",
       "guest": false,
       "status": "ready",
@@ -1067,7 +1089,11 @@ Object.assign(SCENARIO_DATA,{
       "stageCount": 1,
       "readerKind": "full",
       "aliases": [],
-      "legacyOnly": true
+      "legacyOnly": true,
+      "playline": "入孝出弟的一日",
+      "gameTypes": [
+        "RPG／生活SIM"
+      ]
     },
     "anchors": [
       {
@@ -1167,7 +1193,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "學與思，交互校正",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "雙層解謎",
       "source": "〈學而不思則罔〉",
       "guest": false,
       "status": "ready",
@@ -1177,7 +1203,11 @@ Object.assign(SCENARIO_DATA,{
       "stageCount": 1,
       "readerKind": "full",
       "aliases": [],
-      "legacyOnly": true
+      "legacyOnly": true,
+      "playline": "學思雙層迷宮",
+      "gameTypes": [
+        "AVG／雙層解謎"
+      ]
     },
     "anchors": [
       {
@@ -1277,7 +1307,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "仁的工夫，從自己開始",
       "year": 0,
       "period": "先秦",
-      "genre": "課文情境冒險",
+      "genre": "注意力策略",
       "source": "〈顏淵問仁（克己復禮為仁）〉",
       "guest": false,
       "status": "ready",
@@ -1287,7 +1317,11 @@ Object.assign(SCENARIO_DATA,{
       "stageCount": 1,
       "readerKind": "full",
       "aliases": [],
-      "legacyOnly": true
+      "legacyOnly": true,
+      "playline": "視聽言動四門",
+      "gameTypes": [
+        "ACT／注意力策略"
+      ]
     },
     "anchors": [
       {
@@ -1387,7 +1421,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "酒店笑聲，誰被留在門外",
       "year": 0,
       "period": "現代小說",
-      "genre": "課文情境冒險",
+      "genre": "經營SIM",
       "source": "〈孔乙己〉",
       "guest": false,
       "status": "ready",
@@ -1396,7 +1430,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "魯迅",
       "stageCount": 3,
       "readerKind": "selected",
-      "aliases": []
+      "aliases": [],
+      "playline": "咸亨酒店的一日",
+      "gameTypes": [
+        "RPG／經營SIM"
+      ]
     },
     "anchors": [
       {
@@ -1620,7 +1658,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "一桿稱仔，衡量誰的公道",
       "year": 0,
       "period": "日治臺灣",
-      "genre": "課文情境冒險",
+      "genre": "物理解謎",
       "source": "〈一桿「稱仔」〉",
       "guest": false,
       "status": "ready",
@@ -1633,6 +1671,10 @@ Object.assign(SCENARIO_DATA,{
         "一桿稱仔",
         "一桿秤仔",
         "一桿「秤仔」"
+      ],
+      "playline": "稱仔驗衡",
+      "gameTypes": [
+        "SIM／物理解謎"
       ]
     },
     "anchors": [
@@ -1857,7 +1899,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "戲還未散，人如何留下",
       "year": 0,
       "period": "現代小說",
-      "genre": "課文情境冒險",
+      "genre": "舞臺調度",
       "source": "〈散戲〉・自編導讀",
       "guest": false,
       "status": "ready",
@@ -1866,7 +1908,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "洪醒夫",
       "stageCount": 3,
       "readerKind": "guide",
-      "aliases": []
+      "aliases": [],
+      "playline": "散戲後場",
+      "gameTypes": [
+        "ACT／舞臺調度"
+      ]
     },
     "anchors": [
       {
@@ -2090,7 +2136,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "由髮式，讀人的一生",
       "year": 0,
       "period": "現代散文",
-      "genre": "課文情境冒險",
+      "genre": "織機操作",
       "source": "〈髻〉・自編導讀",
       "guest": false,
       "status": "ready",
@@ -2099,7 +2145,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "琦君",
       "stageCount": 3,
       "readerKind": "guide",
-      "aliases": []
+      "aliases": [],
+      "playline": "記憶經緯",
+      "gameTypes": [
+        "PUZ／織機操作"
+      ]
     },
     "anchors": [
       {
@@ -2323,7 +2373,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "一湖風雨，先憂後樂",
       "year": 0,
       "period": "北宋",
-      "genre": "課文情境冒險",
+      "genre": "航道指揮",
       "source": "〈岳陽樓記〉",
       "guest": false,
       "status": "ready",
@@ -2332,7 +2382,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "范仲淹",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "洞庭風候臺",
+      "gameTypes": [
+        "ACT／航道指揮"
+      ]
     },
     "anchors": [
       {
@@ -2556,7 +2610,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "循水聲入山，與眾同樂",
       "year": 0,
       "period": "北宋",
-      "genre": "課文情境冒險",
+      "genre": "聲景尋路",
       "source": "〈醉翁亭記〉",
       "guest": false,
       "status": "ready",
@@ -2565,7 +2619,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "歐陽脩",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "琅琊聞泉",
+      "gameTypes": [
+        "AAVG／聲景尋路"
+      ]
     },
     "anchors": [
       {
@@ -2789,7 +2847,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "知遇、斥退與承志",
       "year": 0,
       "period": "清代",
-      "genre": "課文情境冒險",
+      "genre": "風場護卷＋身分潛入＋輪休調度",
       "source": "〈左忠毅公逸事〉",
       "guest": false,
       "status": "ready",
@@ -2798,7 +2856,13 @@ Object.assign(SCENARIO_DATA,{
       "author": "方苞",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "雪寺覆貂 → 廠獄易裝 → 寒夜更番",
+      "gameTypes": [
+        "ACT／風場護卷",
+        "AVG／身分潛入",
+        "RTS／輪休調度"
+      ]
     },
     "anchors": [
       {
@@ -3022,7 +3086,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "各有所長，文章何以傳後",
       "year": 0,
       "period": "三國魏",
-      "genre": "課文情境冒險",
+      "genre": "落簡解謎",
       "source": "〈典論論文〉",
       "guest": false,
       "status": "ready",
@@ -3031,7 +3095,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "曹丕",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "筆札落格",
+      "gameTypes": [
+        "ACT／落簡解謎"
+      ]
     },
     "anchors": [
       {
@@ -3255,7 +3323,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "居安思危，慎始敬終",
       "year": 0,
       "period": "唐代",
-      "genre": "課文情境冒險",
+      "genre": "馭車平衡",
       "source": "〈諫太宗十思疏〉",
       "guest": false,
       "status": "ready",
@@ -3264,7 +3332,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "魏徵",
       "stageCount": 3,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "朽索行車",
+      "gameTypes": [
+        "ACT／馭車平衡"
+      ]
     },
     "anchors": [
       {
@@ -3488,7 +3560,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "怒呼與苦啼，夜後只餘誰",
       "year": 0,
       "period": "唐代",
-      "genre": "課文情境冒險",
+      "genre": "雙線掩護",
       "source": "〈石壕吏〉",
       "guest": false,
       "status": "ready",
@@ -3497,7 +3569,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "杜甫",
       "stageCount": 1,
       "readerKind": "full",
-      "aliases": []
+      "aliases": [],
+      "playline": "石壕兩線夜",
+      "gameTypes": [
+        "ACT／雙線掩護"
+      ]
     },
     "anchors": [
       {
@@ -3659,7 +3735,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "先問情願，再出手止強",
       "year": 0,
       "period": "明代章回小說",
-      "genre": "課文情境冒險",
+      "genre": "帳前拆招",
       "source": "〈花和尚大鬧桃花村〉",
       "guest": false,
       "status": "ready",
@@ -3670,6 +3746,10 @@ Object.assign(SCENARIO_DATA,{
       "readerKind": "selected",
       "aliases": [
         "花和尚打鬧桃花村"
+      ],
+      "playline": "桃花帳前擒拿",
+      "gameTypes": [
+        "FTG／帳前拆招"
       ]
     },
     "anchors": [
@@ -3832,7 +3912,7 @@ Object.assign(SCENARIO_DATA,{
       "episode": "雪夜護信，水泊問津",
       "year": 0,
       "period": "明代章回小說",
-      "genre": "課文情境冒險",
+      "genre": "雪地生存",
       "source": "〈林沖夜奔〉",
       "guest": false,
       "status": "ready",
@@ -3841,7 +3921,11 @@ Object.assign(SCENARIO_DATA,{
       "author": "施耐庵（傳）",
       "stageCount": 3,
       "readerKind": "selected",
-      "aliases": []
+      "aliases": [],
+      "playline": "雪夜投梁山",
+      "gameTypes": [
+        "AAVG／雪地生存"
+      ]
     },
     "anchors": [
       {

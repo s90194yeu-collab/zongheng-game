@@ -26,7 +26,7 @@ for(const [pi,p]of people.entries())for(const [li,level]of ['bio','read'].entrie
   {type:level==='bio'?'person':'text',id:'zz_'+p.key+'_'+level,name:level==='bio'?p.name+'的生平傳述':p.name+'思想選讀',glyph:p.glyph,title,text:p.note,quote:stages[0].passage,source:meta.source},
   {type:'treasure',id:'zz_'+p.key+'_'+level+'_notes',name:title+'・研讀札記',glyph:'簡',title:'三段文本與操作回讀',quote:'',text:p.intro+'動作紀錄與首次作答分開呈現。',source:meta.source}
  ]};
- const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_zhuzi','Zhuzi_models','Adventure_models','Adventure_canvas','Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_canvas','Zhuzi_js'].map(x=>"<?!= include('"+x+"') ?>").join('\n');
+ const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_zhuzi','Zhuzi_models','Adventure_models','Adventure_canvas','Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_canvas','Literary_creative_canvas','Literary_pointer','Zhuzi_js'].map(x=>"<?!= include('"+x+"') ?>").join('\n');
  write(path.join(dir,id+'.html'),`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top"><title>${name}｜Re:縱橫鼎業</title>
 <script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script>
 <?!= include('Core_css') ?><?!= include('Zhuzi_css') ?></head><body class="zhuzi-page"><main id="zhuzi-root"></main>
@@ -35,6 +35,7 @@ ${includes}
 }
 Object.values(chapters).forEach(require('../src/content/adventure.cjs').enrich);
 Object.values(chapters).forEach(require('../src/content/literary-missions.cjs').enrich);
+require('../src/content/game-genres.cjs').apply(chapters,catalog,drafts);
 write(path.join(dir,'Data_zhuzi.html'),'<script>window.ZH.ZHUZI='+json({version,chapters})+';\nObject.values(ZH.ZHUZI.chapters).forEach(c=>{ZH.LEARNING_TEXTS[c.id]={titles:[...new Set(c.stages.map(s=>s.source))]};});</script>\n');
 write(path.join(dir,'Zhuzi_data.gs'),'/** 先秦諸子 '+version+'; generated from src/content/zhuzi.cjs. No sheet import required. */\nvar SCENARIO_DATA=SCENARIO_DATA||{};\nObject.assign(SCENARIO_DATA,'+json(drafts)+');\n');
 const catFile=path.join(dir,'Data_catalog.html');let cat=fs.readFileSync(catFile,'utf8');

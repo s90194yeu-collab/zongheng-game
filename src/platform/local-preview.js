@@ -3,7 +3,7 @@
  const calls=[];window.ZH_LOCAL_PREVIEW_CALLS=calls;
  async function call(name,args){
   calls.push({name,args});
-  if(name==='api_getUser')return {ok:true,email:'',isSchool:false,isGuest:true,isTeacher:false,profile:null,loginUrl:''};
+  if(name==='api_getUser')return {ok:true,email:'',isSchool:false,isGuest:true,isTeacher:window.ZH_BOOT?.user?.isTeacher===true,profile:null,loginUrl:''};
   if(name==='api_getAnchors'||name==='api_getStoryAnchors')return {ok:true,anchors:window.ZH_PREVIEW_ANCHORS[args[0]]||[],missing:[],source:'local-preview'};
   if(name==='api_getLearningReview')return {ok:true,anchors:window.ZH_PREVIEW_ANCHORS[args[0]]||[]};
   if(name==='api_listSaves')return {ok:true,saves:[]};

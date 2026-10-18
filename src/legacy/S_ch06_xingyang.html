@@ -1033,6 +1033,8 @@
       seed: Number(params.seed) || 0, start: 'n_01',
       characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP, scenes: SCENES,
       anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
+      previewGames:{n_07:{id:'xy_deck_1',title:STAGES[0].title},n_11:{id:'xy_deck_2',title:STAGES[1].title},n_15:{id:'xy_deck_3',title:STAGES[2].title}},
+      previewPrepare(state){state.vars.campaign={preview:true,deck:STARTER_DECK.slice(),onceUsed:false,scores:[0,0,0],stages:Array.from({length:3},()=>({preview:true,score:0,max:10,completed:false,rounds:[],reward:null})),gold:state.meters.gold,doubt:state.meters.doubt,siege:state.meters.siege};},
       onEnd:onEnd,save:saveState,snapshot:XY.snapshot,anchorRunner:XY.runAnchor,onProgress:XY.cacheProgress,actions:[{label:"史冊",run:XY.book},{label:"存檔",run:XY.saveMenu}]
     });
     window.__ep=game;

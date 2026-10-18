@@ -43,6 +43,7 @@ function read(name){let text=raw(name);
   text=text.replace(/function get\(id,options\)\{[^\n]*\}/,`function get(id,options){return Promise.resolve(Object.hasOwn(window.ZH_STATIC_MEDIA,id)?window.ZH_STATIC_URL(window.ZH_STATIC_MEDIA[id]):null);}`);
   text=text.replace(/function getHubArt\(key,priority=1\)\{[^\n]*\}/,`function getHubArt(key,priority=1){return Promise.resolve(Object.hasOwn(window.ZH_STATIC_HOME,key)?window.ZH_STATIC_URL(window.ZH_STATIC_HOME[key]):null);}`);
  }
+ if(name==='Core_js')text+='\n'+raw('Teacher_preview');
  return text;
 }
 function environment(){

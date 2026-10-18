@@ -12,13 +12,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "出征之前，先讓忠言到達",
       "year": 0,
       "period": "三國",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "出師前的託付",
       "source": "〈出師表〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:camp",
       "study": true,
-      "author": "諸葛亮"
+      "author": "諸葛亮",
+      "playline": "出師前的託付",
+      "gameTypes": [
+        "SRPG／SLG"
+      ]
     },
     "anchors": [
       {
@@ -242,13 +246,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "找到入口之後，為何再也回不去",
       "year": 0,
       "period": "東晉",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "桃林問津",
       "source": "〈桃花源記〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_peach",
       "study": true,
-      "author": "陶淵明"
+      "author": "陶淵明",
+      "playline": "桃林問津",
+      "gameTypes": [
+        "AVG／AAVG"
+      ]
     },
     "anchors": [
       {
@@ -472,13 +480,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "越過身分的門檻，找到能解惑的人",
       "year": 0,
       "period": "唐代",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "角色切換",
       "source": "〈師說〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_study",
       "study": true,
-      "author": "韓愈"
+      "author": "韓愈",
+      "playline": "三人同行",
+      "gameTypes": [
+        "AAVG／角色切換"
+      ]
     },
     "anchors": [
       {
@@ -702,13 +714,18 @@ Object.assign(SCENARIO_DATA,{
       "episode": "風塵同行，辨英雄的去與留",
       "year": 0,
       "period": "唐傳奇",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "平台潛行＋此局之外",
       "source": "〈虯髯客傳〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:night",
       "study": true,
-      "author": "杜光庭（傳）"
+      "author": "杜光庭（傳）",
+      "playline": "府院覓路 → 紅拂夜奔 → 此局之外",
+      "gameTypes": [
+        "ACT／平台潛行",
+        "SRPG／PUZ"
+      ]
     },
     "anchors": [
       {
@@ -932,13 +949,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "一江風月，從悲聲走向共適",
       "year": 0,
       "period": "宋代",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "呼吸節拍",
       "source": "〈赤壁賦〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_moon",
       "study": true,
-      "author": "蘇軾"
+      "author": "蘇軾",
+      "playline": "江月八拍",
+      "gameTypes": [
+        "MUG／呼吸節拍"
+      ]
     },
     "anchors": [
       {
@@ -1162,13 +1183,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "在一間小屋裡，找回流逝的年月",
       "year": 0,
       "period": "明代",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "項脊修屋",
       "source": "〈項脊軒志〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_study",
       "study": true,
-      "author": "歸有光"
+      "author": "歸有光",
+      "playline": "項脊修屋",
+      "gameTypes": [
+        "Sandbox／PUZ"
+      ]
     },
     "anchors": [
       {
@@ -1392,13 +1417,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "離開午間人潮，等一輪自己的月亮",
       "year": 0,
       "period": "明代",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "取景構圖",
       "source": "〈晚遊六橋待月記〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_moon",
       "study": true,
-      "author": "袁宏道"
+      "author": "袁宏道",
+      "playline": "六橋光景簿",
+      "gameTypes": [
+        "SIM／取景構圖"
+      ]
     },
     "anchors": [
       {
@@ -1622,13 +1651,19 @@ Object.assign(SCENARIO_DATA,{
       "episode": "穿牆之前，先問自己學到了什麼",
       "year": 0,
       "period": "清代",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "壓力與手作＋光學實驗＋反應冒險",
       "source": "〈勞山道士〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:mountain",
       "study": true,
-      "author": "蒲松齡"
+      "author": "蒲松齡",
+      "playline": "循紋避結 → 四鏡借月 → 硬壁前的分寸",
+      "gameTypes": [
+        "ACT／壓力與手作",
+        "PUZ／光學實驗",
+        "ACT／反應冒險"
+      ]
     },
     "anchors": [
       {
@@ -1852,13 +1887,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "走過分類的界線，把物資送到每一戶",
       "year": 0,
       "period": "清代臺灣",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "兩手一身",
       "source": "〈勸和論〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_port",
       "study": true,
-      "author": "鄭用錫"
+      "author": "鄭用錫",
+      "playline": "兩手一身",
+      "gameTypes": [
+        "雙角色ACT／PUZ"
+      ]
     },
     "anchors": [
       {
@@ -2082,13 +2121,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "一葉竹筏，追問港口為何沉寂",
       "year": 0,
       "period": "日治時期臺灣",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "鹿港潮汐簿",
       "source": "〈鹿港乘桴記〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_port",
       "study": true,
-      "author": "洪繻"
+      "author": "洪繻",
+      "playline": "鹿港潮汐簿",
+      "gameTypes": [
+        "SIM／SLG"
+      ]
     },
     "anchors": [
       {
@@ -2312,13 +2355,17 @@ Object.assign(SCENARIO_DATA,{
       "episode": "在生活的空隙，畫出自己的志趣",
       "year": 0,
       "period": "1950年臺灣",
-      "genre": "劇情RPG＋攻防競技",
+      "genre": "創作SIM",
       "source": "〈畫菊自序〉",
       "guest": false,
       "status": "ready",
       "scene": "scene:classic_chrysanthemum",
       "study": true,
-      "author": "張李德和"
+      "author": "張李德和",
+      "playline": "菊影墨坊",
+      "gameTypes": [
+        "ACT／創作SIM"
+      ]
     },
     "anchors": [
       {

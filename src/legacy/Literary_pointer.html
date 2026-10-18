@@ -1,0 +1,184 @@
+<script>
+(function(ZH){
+'use strict';
+const L=ZH.literary,U=L.U,C=U.clamp,D=U.dist,handlers={};
+const meta={
+ lookout:{kind:'drag-signal',hint:'先點淺／中／深水道，再按住水面拖動燈旗；照準浮標區內的航船，放手收旗。',directions:false},
+ soundtrail:{kind:'trace-listen',hint:'沿可行小徑拖曳行路；在聲圈停住按壓凝聽，放開作回應。林壁須親自繞過。',directions:false},
+ snowcloak:{kind:'drag-pin',hint:'先點案上文卷展讀，再把藍色衣角慢拖到同側金色案角，放開壓穩；點已固定的衣角可鬆開重調。',directions:false},
+ incognito:{kind:'dress-sweep',hint:'點上方物件穿卸；在下方左右拖動掃帚，保持清掃姿態候巡查背向再過門。到右端點左公，見師後原路掃回。',directions:false},
+ watchrelay:{kind:'dispatch-watch',hint:'把休足的一班健卒拖到上方哨位。漏鼓四秒後換班；上一班不能立刻重派。',directions:false},
+ fallingText:{kind:'drag-drop-scroll',hint:'左右拖動落簡選欄，點右側「轉簡」改橫直；在棋盤放手落下。先看文體與所需形制。',directions:false},
+ reins:{kind:'reins-lever',hint:'拖動右側韁把：上下控向，向右催車、向左緩行；放手持續收韁煞停。入彎前先降速。',directions:false},
+ doorflee:{kind:'split-swipe',hint:'上半院內左右拖行老翁，向上划越牆；下半點老婦應門，兩線各須等到合適位置。',directions:false},
+ grapple:{kind:'catch-release',hint:'先點左側護人；拖行到帳邊垂帳。對方伸手時按住來人，穩住0.2～1.2秒再放手卸勢；退讓後後划退開並收手。',directions:false},
+ frost:{kind:'slide-brake',hint:'在雪路向前拖曳滑行，放手收步；到背風棚按住一秒整衣護信。港口須停穩，等燈號後點登舟。',directions:false},
+ knife:{kind:'trace-seam',hint:'按住刀尖沿金色骨隙慢拖，抬指收刀；右下可切換凝視緩行。不能從下一段隔空落刀。',directions:false},
+ dye:{kind:'hold-dip-release',hint:'按住染缸浸布1.2～3秒，放手提布；等氧化完成再入缸。可點左下清水略去浮色。',directions:false},
+ engineer:{kind:'drag-defence',hint:'把上方守具拖到城壁：雲梯用鉤、衝車用樑、地道用甕。後波會改變器械，須觀察再重架。',directions:false},
+ well:{kind:'rope-end',hint:'先按住井沿支點架繩；按住井中目標放繩調擺，繩端接近幼童後放手抓牢，再往井沿慢拖穩提。',directions:false},
+ ink:{kind:'hover-dab',hint:'拖曳筆尖移位，停住按壓才落墨，抬指收筆。構圖分層完成，點住左下硯臺可移筆蘸墨。',directions:false},
+ canglang:{kind:'oar-stroke',hint:'在水上划向右的篙勢推舟，斜划可改方向；點水情用途纓／足，再點「洗用」。每划有收篙間隔。',directions:false},
+ steelyard:{kind:'drag-weight',hint:'沿刻度拖動稱錘，等秤桿穩定再點「記讀」。第三幕要先點「空盤校正」，不是先猜斤兩。',directions:false},
+ waterworks:{kind:'turn-sluice',hint:'點閘片順轉，或按住閘片沿圓周順逆旋轉。器物空腔幕則直接點泥格塑壁／留空。',directions:false}
+};
+const pstate=w=>w.pointerControl||(w.pointerControl={version:1,down:false,kind:'',x:0,y:0,startX:0,startY:0,at:0});
+function begin(w,x,y,kind){const p=pstate(w);Object.assign(p,{down:true,kind,x,y,startX:x,startY:y,at:w.time,movedAt:w.time,pendingDrop:false,stroke:false,braking:false,dipReleased:false});return p;}
+function command(w,c){return L.command(w,c);}
+function select(w,i){command(w,'select:'+i);}
+function nearest(ps,x,y,r=65){let index=-1,best=r;ps.forEach((p,i)=>{const d=D(p,{x,y});if(d<best){index=i;best=d;}});return index;}
+function inBox(x,y,q){return x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h;}
+function steer(k,dx,dy,dead=5){if(Math.abs(dx)>dead)k[dx>0?'right':'left']=true;if(Math.abs(dy)>dead)k[dy>0?'down':'up']=true;}
+function buttons(w){switch(w.mode){
+ case 'knife':return [{x:770,y:504,w:200,h:45,label:'凝視緩行：'+(w.pointerControl?.careful?'開':'收'),id:'careful'}];
+ case 'snowcloak':return [{x:370,y:280,w:260,h:96,label:'展讀文稿',id:'read',ghost:true}];
+ case 'watchrelay':return [{x:400,y:94,w:200,h:48,label:'寒夜哨位',id:'watch'}];
+ case 'fallingText':return [{x:715,y:411,w:240,h:57,label:'↻ 橫直轉簡',id:'rotate'}];
+ case 'reins':return [{x:714,y:92,w:242,h:54,label:'放鬆索繩',id:'slack'}];
+ case 'grapple':return w.phase==='prepare'?[{x:700,y:490,w:260,h:53,label:'到帳邊後垂帳',id:'curtain'}]:w.phase==='yield'?[{x:700,y:490,w:260,h:53,label:'退開後收勢',id:'stop'}]:[];
+ case 'dye':return [{x:80,y:419,w:210,h:70,label:'清水略去浮色',id:'rinse'}];
+ case 'canglang':return [{x:90,y:90,w:160,h:50,label:'洗纓'+(!w.use?' ✓':''),id:'cap'},{x:270,y:90,w:160,h:50,label:'濯足'+(w.use?' ✓':''),id:'foot'},{x:730,y:90,w:190,h:50,label:'依水情洗用',id:'wash'}];
+ case 'steelyard':return [{x:55,y:87,w:255,h:54,label:'空盤校正',id:'zero'},{x:715,y:453,w:240,h:60,label:'平衡後記讀',id:'read'}];
+ default:return[];
+}}
+function clickButton(w,x,y){const b=buttons(w).find(q=>inBox(x,y,q));if(!b||b.ghost)return false;const p=pstate(w);switch(b.id){
+ case 'careful':p.careful=!p.careful;break;
+ case 'rotate':command(w,'secondary');break;
+ case 'slack':case 'rinse':case 'zero':command(w,'secondary');break;
+ case 'curtain':case 'stop':command(w,'secondary');break;
+ case 'read':command(w,'primary');break;
+ case 'cap':if(w.use!==0)command(w,'secondary');break;
+ case 'foot':if(w.use!==1)command(w,'secondary');break;
+ case 'wash':command(w,'skill');break;
+ default:return false;
+ }Object.assign(p,{down:false,kind:'',pendingDrop:false,stroke:false,braking:false});return true;
+}
+handlers.lookout={
+ down(w,x,y){if(y>=460){const i=nearest(L.options(w),x,y,110);if(i>=0)select(w,i);return;}begin(w,x,y,'signal');},
+ input(w,p,k){if(p.down){steer(k,p.x-w.aim,0,5);k.action=true;}}
+};
+handlers.soundtrail={
+ down(w,x,y){begin(w,x,y,'sound');},
+ input(w,p,k){if(p.down){k.pointer={x:p.x,y:p.y};const target=w.spots[w.next];k.action=!!target&&D({x:p.x,y:p.y},target)<76&&D(w,target)<76;}},
+ up(w,p){if(p.kind==='sound'&&w.heard)command(w,'secondary');}
+};
+handlers.snowcloak={
+ down(w,x,y){if(x>450&&x<575&&y>280&&y<370){command(w,'secondary');return;}const i=nearest(w.corners,x,y,70);if(i>=0){select(w,i);if(w.corners[i].pinned)command(w,'skill');const p=begin(w,x,y,'cloth');p.corner=i;}},
+ input(w,p,k){if(p.down&&p.kind==='cloth'){const c=w.corners[p.corner];if(c&&!c.pinned)steer(k,p.x-c.x,p.y-c.y,3);}},
+ up(w,p){if(p.kind==='cloth')command(w,'primary');}
+};
+handlers.incognito={
+ down(w,x,y){if(y<255){const i=nearest(L.options(w),x,y,95);if(i>=0){select(w,i);command(w,'primary');}return;}if(x>805&&w.x>820){command(w,'primary');return;}const p=begin(w,x,y,'broom');if(!w.sweeping)command(w,'secondary');p.sweeping=true;},
+ input(w,p,k){if(p.down&&p.kind==='broom')steer(k,p.x-p.startX,0,18);},
+ up(w,p){if(p.sweeping&&w.sweeping)command(w,'secondary');p.sweeping=false;},
+ cancel(w,p){if(p)p.sweeping=false;}
+};
+handlers.watchrelay={
+ down(w,x,y){const i=nearest(L.options(w),x,y,90);if(i<0)return;select(w,i);const p=begin(w,x,y,'watch');p.pair=i;},
+ up(w,p,x,y){if(p.kind==='watch'&&inBox(x,y,{x:370,y:88,w:260,h:72}))command(w,'primary');}
+};
+handlers.fallingText={
+ down(w,x,y){if(x<330||x>675||y<110||y>535)return;const p=begin(w,x,y,'slip');p.column=C(Math.floor((x-340)/40),0,w.piece.vertical?7:6);},
+ drag(w,p,x){p.column=C(Math.floor((x-340)/40),0,w.piece.vertical?7:6);},
+ input(w,p,k){if((p.down||p.pendingDrop)&&p.kind==='slip'){steer(k,p.column-w.piece.x,0,.1);if(p.pendingDrop&&w.piece.x===p.column){p.pendingDrop=false;command(w,'primary');}}},
+ up(w,p,x,y){if(p.kind==='slip'&&x>=330&&x<=675&&y>=110&&y<=535)p.pendingDrop=true;}
+};
+handlers.reins={
+ down(w,x,y){if(x<710||y<160||y>490)return;begin(w,x,y,'reins');},
+ input(w,p,k){if(p.down&&p.kind==='reins'){const speed=C((p.x-720)*.75,0,170);if(w.speed<speed-3)k.up=true;else if(w.speed>speed+3)k.down=true;steer(k,p.y-w.y,0,5);k.guard=true;}else if(p.braking){k.action=true;if(w.speed<.2)p.braking=false;}},
+ up(w,p){if(p.kind==='reins')p.braking=true;}
+};
+handlers.doorflee={
+ down(w,x,y){if(y>310){if(x>580&&x<815){if(w.actor!==1)command(w,'secondary');command(w,'primary');}return;}if(w.actor!==0)command(w,'secondary');begin(w,x,y,'yard');},
+ drag(w,p,x,y){if(p.kind==='yard'&&y<p.startY-38&&!p.jumped){command(w,'skill');p.jumped=true;}if(y>p.startY-15)p.jumped=false;},
+ input(w,p,k){if(p.down&&p.kind==='yard')steer(k,p.x-p.startX,0,18);}
+};
+handlers.grapple={
+ down(w,x,y){if(w.phase==='protect'&&x<250&&y>290){command(w,'primary');return;}if(w.phase==='prepare'){begin(w,x,y,'approach');return;}if(w.phase==='duel'&&Math.abs(x-w.enemy.x)<95&&y>270){const p=begin(w,x,y,'catch');command(w,'primary');p.caught=!!w.grip;return;}if(w.phase==='yield')begin(w,x,y,'withdraw');},
+ drag(w,p,x){if(p.kind==='withdraw'&&x<p.startX-45&&!p.jumped){command(w,'skill');p.jumped=true;}},
+ input(w,p,k){if(p.down&&p.kind==='approach')steer(k,p.x-w.x,0,8);},
+ up(w,p){if(p.kind==='catch'&&p.caught)command(w,'secondary');else if(p.kind==='approach'&&Math.abs(w.x-335)<70)command(w,'secondary');}
+};
+handlers.frost={
+ down(w,x,y){const cam=Math.max(0,w.x-240),spot=nearest(w.shelters.map(q=>({x:q.x-cam,y:q.y})),x,y,88),shore=2140-cam;if(w.index===2&&w.x>2030&&x>shore-50&&x<shore+160&&y>110&&y<470){command(w,'primary');return;}const p=begin(w,x,y,spot>=0?'rest':'snow');p.bay=spot;},
+ input(w,p,k){if(p.down&&p.kind==='snow')steer(k,p.x-p.startX,p.y-p.startY,15);else if(p.down&&p.kind==='rest'){k.guard=true;if(w.restHold>=1&&!p.completed){command(w,'primary');p.completed=w.rested.includes(p.bay);}}else if(p.braking){k.guard=true;if(Math.hypot(w.vx,w.vy)<2)p.braking=false;}},
+ up(w,p){p.braking=true;}
+};
+handlers.knife={
+ down(w,x,y){const p=begin(w,x,y,'knife');p.canCut=D(w,{x,y})<70;if(!p.canCut)U.say(w,'先在刀尖附近按住，再沿天然隙道拖行；不能隔空換段。');},
+ input(w,p,k){if(p.down&&p.canCut){k.pointer={x:p.x,y:p.y};k.action=true;k.guard=!!p.careful;}}
+};
+handlers.dye={
+ down(w,x,y){if(inBox(x,y,{x:335,y:125,w:470,h:340}))begin(w,x,y,'dye');},
+ input(w,p,k){if(p.down&&p.kind==='dye')k.action=true;},
+ up(w,p){if(p.kind==='dye')p.dipReleased=true;},
+ cancel(w,p){if(!p?.dipReleased){w.last=false;w.dip=0;}},
+ after(w,p){if(p?.dipReleased&&!w.last)p.dipReleased=false;}
+};
+handlers.engineer={
+ down(w,x,y){if(y>80&&y<148&&x>380){const tool=C(Math.floor((x-380)/190),0,2),p=begin(w,x,y,'tool');p.tool=tool;}},
+ up(w,p,x,y){if(p.kind!=='tool'||x<80||x>375)return;const lane=C(Math.round((y-170)/135),0,2);if(Math.abs(y-(170+lane*135))>65)return;select(w,lane);for(let n=0;n<3&&w.tool!==p.tool;n++)command(w,'secondary');command(w,'primary');}
+};
+handlers.well={
+ down(w,x,y){if(!w.anchored&&D({x,y},w.anchor)>85)return;begin(w,x,y,w.anchored?'rope':'anchor');},
+ input(w,p,k){if(!p.down)return;if(p.kind==='anchor'){k.pointer={x:w.anchor.x,y:w.anchor.y};if(D(w,w.anchor)<70&&!p.completed){command(w,'primary');p.completed=!!w.anchored;p.kind='rope';p.x=w.tip.x;p.y=w.tip.y;}}else if(p.kind==='rope'){
+  const dx=p.x-w.anchor.x,dy=Math.max(0,p.y-w.anchor.y),length=C(Math.hypot(dx,dy),70,480),angle=C(Math.atan2(dx,dy),-1.2,1.2),force=(angle-w.angle)*6-w.omega*3+w.angle*.7;
+  if(Math.abs(force)>.06)k[force>0?'right':'left']=true;const dl=length-w.length;if(Math.abs(dl)>4)k[dl>0?'down':'up']=true;k.guard=true;
+ }},
+ up(w,p){if(p.kind==='rope'&&w.anchored&&!w.caught)command(w,'primary');}
+};
+handlers.ink={
+ down(w,x,y){begin(w,x,y,D({x,y},w.well)<75?'inkwell':'brush');},
+ input(w,p,k){if(!p.down)return;k.pointer={x:p.x,y:p.y};if(p.kind==='inkwell'){if(D(w,w.well)<75&&!p.completed){command(w,'secondary');p.completed=true;}}else k.action=D(w,{x:p.x,y:p.y})<25&&w.time-p.movedAt>.16;}
+};
+handlers.canglang={
+ down(w,x,y){if(y>145)begin(w,x,y,'oar');},
+ up(w,p,x,y){if(p.kind!=='oar')return;const dx=x-p.startX,dy=y-p.startY;if(dx<45){U.say(w,'篙要向前送出一段，再收回；輕點不等於一篙。');return;}p.angle=C(Math.atan2(dy,dx),-1,1);p.stroke=true;},
+ input(w,p,k){if(!p.stroke)return;const difference=p.angle-w.angle;if(Math.abs(difference)>.04)k[difference>0?'down':'up']=true;else{command(w,'primary');p.stroke=false;}}
+};
+const weightValue=(w,x,y)=>C(Math.round(((x-500)*Math.cos(w.angle)+(y-225)*Math.sin(w.angle)+160)/12),0,40);
+handlers.steelyard={
+ down(w,x,y){if(y>150&&y<420){const p=begin(w,x,y,'weight');p.value=weightValue(w,x,y);}},
+ drag(w,p,x,y){p.value=weightValue(w,x,y);},
+ input(w,p,k){if(p.down&&p.kind==='weight')steer(k,p.value-w.slider,0,.1);}
+};
+handlers.waterworks={
+ down(w,x,y){const i=nearest(L.options(w),x,y,105);if(i<0)return;select(w,i);const p=begin(w,x,y,'sluice');p.cell=i;p.center=L.options(w)[i];p.angle=Math.atan2(y-p.center.y,x-p.center.x);p.arc=0;p.turns=0;},
+ drag(w,p,x,y){if(w.index===1)return;const a=Math.atan2(y-p.center.y,x-p.center.x),d=Math.atan2(Math.sin(a-p.angle),Math.cos(a-p.angle));p.angle=a;p.arc=(p.arc||0)+d;if(Math.abs(p.arc)>Math.PI/2){command(w,p.arc>0?'primary':'secondary');p.arc=0;p.turns++;}},
+ up(w,p){if(p.kind==='sluice'&&!p.turns)command(w,'primary');}
+};
+function describe(w){return meta[w.mode]?{...meta[w.mode],tools:true,canvas:true}:null;}
+function down(w,x,y){if(w.status!=='playing'||!Number.isFinite(x)||!Number.isFinite(y))return false;cancel(w);if(clickButton(w,x,y))return true;handlers[w.mode]?.down(w,x,y);return !!handlers[w.mode];}
+function drag(w,x,y){const p=w.pointerControl;if(w.status!=='playing'||!p?.down||!Number.isFinite(x)||!Number.isFinite(y))return false;if(Math.hypot(x-p.x,y-p.y)>1)p.movedAt=w.time;p.x=x;p.y=y;handlers[w.mode]?.drag?.(w,p,x,y);return true;}
+function release(w,x,y){const p=w.pointerControl;if(!p?.down)return false;if(Number.isFinite(x)&&Number.isFinite(y))drag(w,x,y);handlers[w.mode]?.up?.(w,p,p.x,p.y);p.down=false;return true;}
+function cancel(w){const p=w.pointerControl;handlers[w.mode]?.cancel?.(w,p);if(!p)return;if(p.down)Object.assign(p,{pendingDrop:false,stroke:false,braking:false,dipReleased:false});const committed=p.pendingDrop||p.stroke||p.braking||p.dipReleased;Object.assign(p,{down:false,...(!committed?{kind:''}:{}),completed:false,jumped:false,caught:false});}
+for(const [name,h]of Object.entries(handlers)){
+ const m=L.modes[name];if(!m)continue;const original=m.step;
+ m.interaction=w=>describe(w);m.point=(w,x,y,isDown)=>isDown?down(w,x,y):drag(w,x,y);m.drag=(w,x,y)=>drag(w,x,y);m.release=(w,x,y)=>release(w,x,y);m.cancel=w=>cancel(w);
+ m.step=function(w,k,d){const p=w.pointerControl;if(p&&(p.down||p.pendingDrop||p.stroke||p.braking)){k={...k};h.input?.(w,p,k,d);}const result=original.call(this,w,k,d);h.after?.(w,p,k,d);return result;};
+}
+// Only controls are stored here. Position, physics, stamina and success still belong to each original model.
+function draw(ctx,w){if(!meta[w.mode])return;ctx.save();const gold='#f1d18d',blue='#9ed3df';
+ const box=(x,y,a,b,fill,stroke=gold)=>{ctx.beginPath();ctx.roundRect(x,y,a,b,9);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}};
+ const text=(s,x,y,n=20,c=gold)=>{ctx.fillStyle=c;ctx.font='600 '+n+'px "PingFang TC",sans-serif';ctx.textAlign='center';ctx.fillText(s,x,y);};
+ const line=(a,b,c=gold,n=3)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=c;ctx.lineWidth=n;ctx.stroke();};
+ const p=w.pointerControl;
+ if(w.mode==='dye'){
+  box(50,90,900,425,'#173e4af5');box(335,145,470,302,'#3d7792dd',blue);ctx.beginPath();ctx.ellipse(570,145,235,48,0,0,Math.PI*2);ctx.fillStyle='#183d57';ctx.fill();ctx.strokeStyle=blue;ctx.stroke();
+  const dipping=!!p?.down&&p.kind==='dye',depth=C(w.color/2.5,0,1);box(460,dipping?230:91,220,185,dipping?'#7d9ca2':'#c5c8ad',gold);box(460,dipping?230:91+185*(1-depth),220,185*depth,'#365c99b0',null);text(dipping?'按住浸染':'提布氧化',570,474,27);text(w.air>0?'氧化 '+w.air.toFixed(1)+'秒':'本次浸染 '+w.dip.toFixed(1)+'秒',570,509,22);
+  text('浸1.2～3秒後放手',570,135,22);text('色深 '+w.color.toFixed(2),180,260,25);text('完成 '+w.cycles+' 次',180,310,25);
+ }
+ if(w.mode==='reins'){
+  box(714,160,242,322,'#132e3cd9',blue);line({x:735,y:180},{x:935,y:180},gold,4);text('左緩 ← 韁把 → 右催',835,204,17);text('上下拉動控向',835,456,17);const x=p?.down&&p.kind==='reins'?C(p.x,729,940):729,y=p?.down&&p.kind==='reins'?C(p.y,225,425):325;box(x-12,y-20,24,40,'#e2c68c',gold);line({x:835,y:225},{x:835,y:425},'#9ed3df88',2);
+ }
+ if(w.mode==='engineer'&&p?.down&&p.kind==='tool'){box(p.x-55,p.y-29,110,58,'#3a6370dd');text(['拒梯鉤','防衝樑','聽穴甕'][p.tool],p.x,p.y+7,21);}
+ if(w.mode==='watchrelay'&&p?.down&&p.kind==='watch'){box(p.x-55,p.y-29,110,58,'#4d7466ee');text('第'+(p.pair+1)+'班',p.x,p.y+7,21);}
+ if(w.mode==='canglang'&&p?.down&&p.kind==='oar'){line({x:p.startX,y:p.startY},p,blue,7);}
+ if(w.mode==='well'&&p?.down&&p.kind==='rope'){ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.strokeStyle=blue;ctx.lineWidth=3;ctx.stroke();line(w.tip,p,'#9ed3df55',2);}
+ if(w.mode==='snowcloak'&&p?.down&&p.kind==='cloth')line(w.corners[p.corner],p,blue,3);
+ for(const b of buttons(w)){if(b.ghost)continue;box(b.x,b.y,b.w,b.h,'#183947ed',blue);text(b.label,b.x+b.w/2,b.y+b.h/2+8,b.w<180?20:22);}
+ ctx.restore();
+}
+ZH.literaryPointer={describe,down,drag,release,cancel,draw,geometry:w=>({buttons:buttons(w).map(b=>({...b})),mode:w.mode,canvas:{width:1000,height:560}}),modes:Object.keys(meta)};
+})(window.ZH);
+</script>

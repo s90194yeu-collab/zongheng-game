@@ -460,6 +460,7 @@
   // ───────────────────────── 引擎 ─────────────────────────
 
   function create(root, config) {
+    const teacher=ZH.teacherPreview,preview=()=>!!teacher?.active(),previewParams=ZH.boot?.params||{};
     const C = Object.assign({
       mode: 'history', turns: 12, orders: 3, map: {}, factions: [], resources: [], meters: [],
       characters: [], speakers: {}, commands: [], intel: [], events: [], tutorial: [],
@@ -1561,6 +1562,7 @@
 
     /** 存檔：同一時間只送一份；存檔中又要存，就等這次存完再存一次最新的狀態 */
     function save() {
+      if(preview())return Promise.resolve({ok:true,preview:true});
       if (!C.save) return Promise.resolve();
       if (S.saving) { S.saveAgain = true; return S.saving; }
       S.saving = Promise.resolve(C.save(JSON.parse(JSON.stringify(S.state))))
@@ -1726,6 +1728,7 @@
     }
 
     function finish(result) {
+      if(preview()){S.ended=true;ZH.toast('教師測試完成；不列入正式通關與成績。','ok');previewPicker();return;}
       if (S.ended) return;
       S.ended = true;
       S.state.ended = result;
@@ -1735,7 +1738,14 @@
       save().then(() => { if (C.onEnd) C.onEnd(result, ctx); });
     }
 
-    function start(saved) {
+    function previewItems(){
+      const events=C.events.map(e=>({id:'event:'+e.id,label:e.title||teacher.historyItems({[e.id]:e.run})[0].label.replace(/^01・/,''),detail:'情節事件',run:e.run}));
+      const commands=C.commands.flatMap(c=>(c.targets?.length?c.targets:[null]).map(target=>({id:'command:'+c.id+(target?':'+target:''),label:c.label+(target?'・'+((C.map.nodes||[]).find(n=>n.id===target)?.name||target):''),detail:'操作指令',run:ctx=>c.run(ctx,target)})));
+      return [...events,...(C.previewEvents||[]).map(e=>({...e,id:'extra:'+e.id})),...commands];
+    }
+    function previewPicker(){return teacher?.pick({title:C.title+'・教師自由選關',items:previewItems(),onSelect(item,direct){teacher.navigate({previewEvent:item.id,previewGame:direct?item.game?.id:'',previewRole:C.player==='zheng'?'':C.player||''});}});}
+    async function start(saved) {
+      if(preview())saved=null;
       // 舊章節由首頁直續時可能傳入 { faction, engine }，一般續玩按鈕則傳 engine。
       if (saved && saved.engine && saved.engine.v) saved = saved.engine;
       S.state = saved && saved.v ? saved : freshState();
@@ -1758,6 +1768,15 @@
         clearTimeout(t);
         t = setTimeout(() => { closePop(); topH(); if (!isMobile()) setOpen(false); if (ST.on) castLayout(); }, 150);
       });
+      if(teacher?.isTeacher())teacher.mountLauncher({settle:save,pick:previewPicker,launchParams:{previewRole:C.player==='zheng'?'':C.player||''}});
+      if(preview()){
+        teacher.setPicker(previewPicker);
+        const item=previewItems().find(e=>e.id===String(previewParams.previewEvent||''));
+        if(!item)return previewPicker();
+        // 指定事件在獨立新局執行；不觸發前置解鎖、回合耗糧或其他自動事件。
+        if(previewParams.previewGame){ctx.say=()=>Promise.resolve();ctx.anchor=()=>Promise.resolve({preview:true});ctx.banner=()=>Promise.resolve();ctx.wait=()=>Promise.resolve();ctx.coach=()=>Promise.resolve();}
+        try{await item.run(ctx,{});ZH.toast('這段測試已完成，可自由選另一關。','ok');return previewPicker();}catch(err){ZH.toast('這段測試需要其他情節條件：'+err.message,'bad');return previewPicker();}
+      }
       if (S.state.ended) { S.ended = true; if (C.onEnd) C.onEnd(S.state.ended, ctx); return; }
       if (!saved) {
         return startTurn();

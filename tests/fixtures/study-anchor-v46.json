@@ -1,0 +1,14 @@
+{
+  "Zhuzi_data.gs": {
+    "count": 54,
+    "sha256": "ac470634bb6119db4d06e1e26c500a8691810522ca3200f7aedeadfc3229f06b"
+  },
+  "Classics_data.gs": {
+    "count": 66,
+    "sha256": "a9da1c7e3820964c6c47183b6a80cb18263b7a82395c3e5694f5a83914308efe"
+  },
+  "ASelections_data.gs": {
+    "count": 100,
+    "sha256": "d476ff4ef336d38729e819ba2d2364b5278b1651d5963cb6d411c1c6a9f3e260"
+  }
+}

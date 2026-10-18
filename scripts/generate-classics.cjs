@@ -21,12 +21,13 @@ for(const e of entries.filter(e=>!e.reuse)){
   {type:'text',id:'gw_'+e.key,name:e.title,glyph:e.glyph,title:e.author+'・'+e.period,text:e.focus,quote:stages[0].passage,source:meta.source},
   {type:'treasure',id:'gw_'+e.key+'_notes',name:e.title+'・研讀札記',glyph:'簡',title:e.episode,text:e.note,quote:'',source:meta.source}
  ]};
- const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_classics','Zhuzi_models','Adventure_models','Adventure_canvas','Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_canvas','Zhuzi_js'].map(n=>"<?!= include('"+n+"') ?>").join('\n');
+ const includes=['Core_js','Data_catalog','Data_codex','Art_kit','Data_classics','Zhuzi_models','Adventure_models','Adventure_canvas','Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_canvas','Literary_creative_canvas','Literary_pointer','Zhuzi_js'].map(n=>"<?!= include('"+n+"') ?>").join('\n');
  write(path.join(dir,e.id+'.html'),`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base target="_top"><title>${e.title}｜Re:縱橫鼎業</title><script>window.ZH_BOOT={appUrl:<?!= JSON.stringify(appUrl) ?>,page:<?!= JSON.stringify(page) ?>,params:<?!= params ?>,version:<?!= JSON.stringify(version) ?>,user:<?!= userJson ?>,guestScenarios:<?!= guestScenariosJson ?>};</script><?!= include('Core_css') ?><?!= include('Zhuzi_css') ?></head><body class="zhuzi-page"><main id="zhuzi-root"></main>\n${includes}\n<script>ZH.ready(()=>ZH.zhuzi.start({id:${JSON.stringify(e.id)},collection:'classics',anchorOrder:${JSON.stringify(anchors.map(a=>a.id))}}));</script></body></html>\n`);
 }
 const library=Object.fromEntries(entries.map(e=>[e.id,{id:e.id,title:e.title,author:e.author,period:e.period,url:e.url,fullText:e.fullText,focus:e.focus,reuse:!!e.reuse}]));
 Object.values(chapters).forEach(require('../src/content/adventure.cjs').enrich);
 Object.values(chapters).forEach(require('../src/content/literary-missions.cjs').enrich);
+require('../src/content/game-genres.cjs').apply(chapters,catalog,drafts);
 write(path.join(dir,'Data_classics.html'),'<script>window.ZH.CLASSICS='+json({version,chapters,library})+';</script>\n');
 write(path.join(dir,'Classics_data.gs'),'/** 古文十五篇；generated from src/content/classics.cjs. Existing four routes keep their IDs and saves. */\nvar SCENARIO_DATA=SCENARIO_DATA||{};\nObject.assign(SCENARIO_DATA,'+json(drafts)+');\n');
 const menu=entries.map(e=>({id:e.id,no:e.no,title:e.title,author:e.author,period:e.period,scene:e.scene,reuse:!!e.reuse,focus:e.focus}));

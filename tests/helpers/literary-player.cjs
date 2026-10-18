@@ -5,6 +5,7 @@ function play(L,w,{maxFrames=24000}={}){
  const hold=(key,sec)=>{cmd({action:'primary',guard:'secondary',dash:'skill'}[key]);tick({[key]:true},sec);tick({},.05);};
  const walk=(target,get=()=>w,extra={})=>{let n=0;while(w.status==='playing'&&Math.hypot(get().x-target.x,get().y-target.y)>12&&n++<3600){const p=get(),dx=target.x-p.x,dy=target.y-p.y;tick({...extra,right:dx>7,left:dx< -7,down:dy>7,up:dy< -7});}if(n>=3600)throw Error('walk blocked '+w.mode+' '+JSON.stringify({target,current:get()}));};
  const wait=(pred,max=3000)=>{let n=0;while(w.status==='playing'&&!pred()&&n++<max)tick();};
+ if(w.creativeVersion===2&&require('./creative-player.cjs').play(L,w,{tick,cmd,sel,primary,secondary,skill,wait}))return {status:w.status,time:w.time,hp:w.hp,view:L.progress(w),frames};
  switch(w.mode){
  case 'archive':for(let i=0;i<6;i++){let j=w.order.indexOf(i);while(j>i){sel(j-1);secondary();j--;}sel(i);if(w.flip[i])primary();if(w.covers[i])skill();}break;
  case 'waterworks':if(w.index===1){for(let i=0;i<12;i++){const target=[5,6].includes(i)?0:1;if(w.clay[i]!==target){sel(i);primary();}}}else{const base={0:10,1:12,5:3,6:12,10:3,11:10};for(const [i,target]of Object.entries(base)){sel(+i);let n=0;while(w.pipes[+i]!==target&&n++<4)primary();}}tick({},3);break;

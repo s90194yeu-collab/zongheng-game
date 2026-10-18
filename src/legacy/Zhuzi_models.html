@@ -82,7 +82,7 @@
   return result;
  }
  function strategy(games,stageCount){return Math.round(games.reduce((n,g)=>n+g.firstScore,0)/Math.max(1,stageCount)*10);}
- function stageGames(stages,s){return stages.map((t,i)=>s.games.find(g=>g.gameId===(s.stageGames||{})[i])||s.games.find(g=>g.gameId===t.gameId+'_v3')||s.games.find(g=>g.gameId===t.gameId+'_v2')||s.games.find(g=>g.gameId===t.gameId)).filter(Boolean);}
+ function stageGames(stages,s){return stages.map((t,i)=>s.games.find(g=>g.gameId===(s.stageGames||{})[i])||s.games.find(g=>g.gameId===t.gameId+'_v4')||s.games.find(g=>g.gameId===t.gameId+'_v3')||s.games.find(g=>g.gameId===t.gameId+'_v2')||s.games.find(g=>g.gameId===t.gameId)).filter(Boolean);}
  function relaunch(old){const s=fresh(old.chapterId);for(const key of ['answers','attempts','recovered','games'])s[key]=JSON.parse(JSON.stringify(old[key]||s[key]));s.storyCursor={};s.stageGames={};s.tactics={};s.adventureVersion=2;return s;}
  ZH.zhuziModel={stageGames,relaunch,strategy,create,targets,barriers,hazards,blocked,step,interact,score,fresh,answer,recordGame,dist};
 })(window.ZH);

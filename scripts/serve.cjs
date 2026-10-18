@@ -11,7 +11,7 @@ http.createServer((req,res)=>{
     const name=names[key]||key,entry=manifest.pages[name];
     if(!entry){res.writeHead(404).end('找不到試玩頁');return;}
     const site='http://127.0.0.1:'+port+'/',chapters=Object.keys(manifest.pages).filter(n=>/^S_/.test(n));
-    const boot={appUrl:site+'__preview__/',page:/^S_/.test(name)?name:name.toLowerCase(),params:Object.fromEntries(url.searchParams),version:'v4-local-preview',assetBase:site,user:{email:'',isSchool:false,isGuest:true,isTeacher:false},guestScenarios:chapters};
+    const boot={appUrl:site+'__preview__/',page:/^S_/.test(name)?name:name.toLowerCase(),params:Object.fromEntries(url.searchParams),version:'v4-local-preview',assetBase:site,user:{email:'',isSchool:false,isGuest:true,isTeacher:url.searchParams.get('previewTeacher')==='1'},guestScenarios:chapters};
     const anchors=fs.readFileSync(path.resolve(__dirname,'../qa/anchors.json'),'utf8');
     const adapter=fs.readFileSync(path.resolve(__dirname,'../src/platform/local-preview.js'),'utf8');
     let html=fs.readFileSync(path.join(root,'releases',release,entry.file),'utf8').replaceAll('https://s90194yeu-collab.github.io/zongheng-game/',site);

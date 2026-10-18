@@ -2,7 +2,8 @@
 (function(ZH){
  'use strict';
  const M=ZH.zhuziModel,A=ZH.adventureModel,L=ZH.literary,esc=ZH.esc;
- let c,s,bank,root,view,canvas,ctx,raf=0,lastFrame=0,lastCheckpoint=0,lastClock=Date.now(),saving=Promise.resolve(),busy=false,paused=false,disposed=false,bootOptions,saveError='';
+ let c,s,bank,root,view,canvas,ctx,raf=0,lastFrame=0,lastCheckpoint=0,lastClock=Date.now(),saving=Promise.resolve(),busy=false,paused=false,disposed=false,bootOptions,saveError='',teacherPanelOpen=false;
+ const testing=()=>!!ZH.teacherPreview?.active(),teacher=()=>!!ZH.teacherPreview?.isTeacher();
  const input={},images={},keys={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'dash',KeyQ:'guard'};
  const button=(text,action,primary)=>'<button type="button" class="zz-btn'+(primary?' primary':'')+'" data-action="'+action+'">'+esc(text)+'</button>';
  const collection=()=>c.collection||'先秦諸子';
@@ -14,24 +15,43 @@
   siege:[['guard','固守要口','多2格體力，移動較慢；守住近處再尋機接應。'],['rush','前出攔截','擊退力較強、跑得較快，卻更不耐受擊。'],['read','預留接應','氣力較充足，能在三路之間多作一次移動。']],
   tempo:[['guard','穩住基本拍','判定稍寬，空拍只減少連段；上下移動較慢。'],['rush','搶下重拍','精準拍聲勢更高，但判定較窄，空拍損失較多。'],['read','聽拍再行','判定範圍較寬，保留標準走位速度。']]
  };
- function clearInput(){Object.keys(input).forEach(k=>delete input[k]);document.querySelectorAll('.zz-touch .active').forEach(el=>el.classList.remove('active'));}
+ function clearInput(){if(s?.world?.engine===3)L.cancel?.(s.world);Object.keys(input).forEach(k=>delete input[k]);document.querySelectorAll('.zz-touch .active').forEach(el=>el.classList.remove('active'));}
  function stop(){cancelAnimationFrame(raf);raf=0;clearInput();lastFrame=0;}
  function note(text,error){saveError=error?text:'';const el=root.querySelector('[data-save]');if(el){el.textContent=text;el.classList.toggle('error',!!error);}}
  function tickClock(){const now=Date.now();if(!paused&&!document.hidden)s.elapsed+=(now-lastClock)/1000;lastClock=now;}
  async function checkpoint(){
-  tickClock();const snapshot=JSON.parse(JSON.stringify(s));note(ZH.isGuest()?'保存本分頁進度……':'保存進度……');
+  tickClock();const snapshot=JSON.parse(JSON.stringify(s));note(testing()?'暫存教師測試……':ZH.isGuest()?'保存本分頁進度……':'保存進度……');
   const job=saving.catch(()=>{}).then(()=>ZH.save(c.id,'history',snapshot));saving=job;
-  try{const r=await job;if(!r||!r.ok)throw Error(r&&r.msg||'存檔尚未完成');note(ZH.isGuest()?'已保存在本分頁':'已儲存至學校帳號');return true;}
+  try{const r=await job;if(!r||!r.ok)throw Error(r&&r.msg||'存檔尚未完成');note(testing()?'教師測試局已暫存，不寫入正式紀錄':ZH.isGuest()?'已保存在本分頁':'已儲存至學校帳號');return true;}
   catch(e){note('存檔失敗：'+e.message+'。請按「儲存」重試。',true);throw e;}
  }
  function shell(){
-  root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+button(c.readerLabel||'原典札記','text')+button('儲存','save')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div><div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
+  root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+button(c.readerLabel||'原典札記','text')+button(testing()?'暫存測試':'儲存','save')+(teacher()?button('教師自由選關','teacher'): '')+(testing()?button('回正式進度','exit-preview'):'')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>teacher()?'<button type="button" class="zz-stage-jump '+(i===s.stage?'current':'')+'" data-teacher-jump="'+i+':intro:0">'+(i+1)+' · '+esc(t.title)+'</button>':'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div>'+teacherPanel()+'<div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
   view=root.querySelector('#zz-view');
   if(saveError)note(saveError,true);
   root.scrollIntoView({block:'start'});
-  root.querySelector('[data-action=save]').onclick=()=>guard(async()=>{await checkpoint();ZH.toast('進度已儲存。','ok');});
+  root.querySelector('[data-action=save]').onclick=()=>guard(async()=>{await checkpoint();ZH.toast(testing()?'測試局已暫存，正式進度未變更。':'進度已儲存。','ok');});
   root.querySelector('[data-action=pause]').onclick=()=>pause();
+  const exitPreview=root.querySelector('[data-action=exit-preview]');if(exitPreview)exitPreview.onclick=()=>ZH.teacherPreview.exit();
+  const chooser=root.querySelector('[data-action=teacher]');if(chooser)chooser.onclick=()=>{teacherPanelOpen=!teacherPanelOpen;if(s.phase==='game'&&!paused){tickClock();paused=true;stop();checkpoint().catch(()=>{});}render();};
+  root.querySelectorAll('[data-teacher-jump]').forEach(el=>el.onclick=()=>guard(()=>jumpForTeacher(...el.dataset.teacherJump.split(':'))));
+  const exit=root.querySelector('[data-teacher-exit]');if(exit)exit.onclick=()=>ZH.teacherPreview.exit();
   const reader=root.querySelector('[data-action=text]');if(reader)reader.onclick=()=>{if(s.phase==='game'&&!paused)pause();ZH.modal({title:c.name+'・'+(c.readerLabel||'原文閱讀'),body:'<p>'+esc(c.school)+' · '+esc(c.period)+'</p>'+(c.fullText||c.stages.map(t=>t.passage)).map(p=>'<p class="zz-fulltext">'+esc(p)+'</p>').join('')+(c.readerKind==='guide'?'<p>本頁為自編導讀，全文請配合課本閱讀。</p>':'')+(c.editionNote?'<p>'+esc(c.editionNote)+'</p>':'')+'<p><a target="_blank" rel="noopener noreferrer" href="'+esc(c.url||stage()?.url||c.stages[0].url)+'">核對文本或教學來源</a></p>',actions:[{label:'返回本章',value:true,kind:'primary'}]});};
+ }
+ function showTeacherPanel(){teacherPanelOpen=true;if(s.phase==='game'&&!paused){tickClock();paused=true;stop();checkpoint().catch(()=>{});}render();}
+ function teacherPanel(){
+  if(!teacher()||!teacherPanelOpen)return '';
+  return '<section class="zz-teacher-panel" aria-label="教師章內自由選關"><div class="zz-teacher-top"><h2>教師自由選關</h2><p>'+(testing()?'正在測試局：跳關、作答與通關不寫入正式紀錄。':'點選任一幕，直接測遊戲或閱讀題；原本進度會先保存。')+'</p>'+(testing()?'<button class="zz-btn" type="button" data-teacher-exit>結束測試，回原進度</button>':'')+'</div><div class="zz-teacher-grid">'+c.stages.map((t,i)=>'<article><h3>第'+(i+1)+'幕・'+esc(t.title)+'</h3><p>'+esc(t.mission?.genre||t.adventure?.title||t.game.title)+'</p><div class="zz-inline"><button class="zz-btn" type="button" data-teacher-jump="'+i+':intro:0">看劇情</button><button class="zz-btn primary" type="button" data-teacher-jump="'+i+':game:0">直接測遊戲</button></div><div class="zz-teacher-questions">'+t.questionIds.map((q,j)=>'<button class="zz-btn" type="button" data-teacher-jump="'+i+':question:'+j+'">閱讀第'+(j+1)+'題</button>').join('')+'</div></article>').join('')+'</div></section>';
+ }
+ async function jumpForTeacher(index,phase,question){
+  if(!teacher())throw Error('僅教師帳號可使用自由選關');index=Number(index);question=Number(question)||0;
+  if(!Number.isInteger(index)||index<0||index>=c.stages.length||!['intro','game','question'].includes(phase))throw Error('找不到測試關卡');
+  if(question<0||question>=c.stages[index].questionIds.length)throw Error('找不到測試題目');
+  tickClock();paused=true;stop();
+  try{if(!testing())await ZH.teacherPreview.enter({scenarioId:c.id,mode:'history',settle:async()=>{await saving;await checkpoint();}});}catch(e){paused=false;lastClock=Date.now();render();throw e;}
+  ZH.teacherPreview.setPicker(showTeacherPanel);
+  s=M.fresh(c.id);s.stage=index;s.phase=phase;s.questionIndex=question;s.assist=false;s.gameAttempt=1;s.storyCursor={};s.tactics={};s.stageGames={};
+  if(phase==='game')s.world=makeWorld(false);paused=false;teacherPanelOpen=false;lastClock=Date.now();render();note('教師測試局：不寫入正式紀錄');
  }
  function bind(action,fn){const el=view.querySelector('[data-action="'+action+'"]');if(el)el.onclick=()=>guard(fn);}
  async function guard(fn){if(busy)return;busy=true;try{await fn();}catch(e){ZH.toast(e.message||'操作未完成，請重試。','bad');}finally{busy=false;}}
@@ -41,7 +61,7 @@
  }
  function render(){
   stop();document.body.classList.toggle('zz-inbattle',s.phase==='game'&&!paused);syncStageArt();shell();if(paused){renderPause();return;}
-  if(s.stage>=c.stages.length){renderComplete();return;}
+  if(s.stage>=c.stages.length){if(testing()){view.innerHTML='<section class="zz-panel"><h2>這段測試已完成</h2><p>本次操作與作答只留在測試局。可從上方「教師自由選關」繼續測另一幕。</p><button class="zz-btn primary" data-action="exit-test">結束測試，回原進度</button></section>';bind('exit-test',()=>ZH.teacherPreview.exit());}else renderComplete();return;}
   if(s.phase==='game'){renderGame();return;}
   if(s.phase==='gameResult'){renderGameResult();return;}
   if(s.phase==='question'){renderQuestion();return;}
@@ -52,7 +72,7 @@
   return '<div class="zz-scene'+(question?' zz-anchor-scene':'')+'"><div class="zz-scene-place">'+esc((t.mission||t.adventure).place)+'<span>第 '+(s.stage+1)+' 幕 · '+esc(t.title)+'</span></div><div class="zz-cast"><div class="zz-cast-player"><img src="'+esc(images.player?.src||'')+'" alt="你的策士"><span>'+esc(ZH.player.name())+'</span></div><div class="zz-cast-npc">'+portrait(c.person)+'<span>'+esc(c.person)+'</span></div></div><div class="zz-scene-shade"></div><div class="zz-speech"><div class="zz-speaker">'+esc(who)+'<small>'+(question?'文本問答':who==='旁白'?'場景敘事':'教學改編對話')+'</small></div><p>'+esc(text)+'</p>'+extra+'</div></div>';
  }
  function currentTactic(){return (s.tactics||{})[s.stage]||'read';}
- function makeWorld(assist){const fresh=stage().mission;const w=(fresh?L:A).create(fresh||stage().adventure,assist,currentTactic(),(Date.now()^((s.gameAttempt+1)*2654435761))>>>0);w.gameId=stage().gameId+(fresh?'_v3':'_v2');return w;}
+ function makeWorld(assist){const fresh=stage().mission;const w=(fresh?L:A).create(fresh||stage().adventure,assist,currentTactic(),(Date.now()^((s.gameAttempt+1)*2654435761))>>>0);w.gameId=stage().gameId+(w.creativeVersion===2?'_v4':fresh?'_v3':'_v2');return w;}
  function gameId(){return s.world?.gameId||stage().gameId;}
  function stageGames(){return M.stageGames(c.stages,s);}
  function renderIntro(){
@@ -91,18 +111,18 @@
  }
 
  function renderLiteraryGame(t){
-  const cfg=t.mission;view.classList.add('zz-literary-view');
-  view.innerHTML='<div class="zz-battle-heading"><div><p class="zz-kicker">'+esc(cfg.genre)+' · '+esc(cfg.place)+' · '+(s.world.assist?'練習':'挑戰')+'</p><h2>'+esc(cfg.title)+'</h2></div><button class="zz-btn" data-mission-help>操作與課文</button></div><div class="zz-game zz-new-game zz-literary-game"><div class="zz-hud zz-mission-hud"><span data-goal></span><span data-time></span><span data-health></span><span data-vigor></span></div><canvas width="1000" height="560" tabindex="0" aria-label="'+esc(cfg.title)+'情境。'+esc(cfg.rule)+'"></canvas></div><p data-notice class="zz-battle-notice" role="status"></p><p data-mission-hint class="zz-controlhint"></p><div class="zz-mission-select"><label for="zz-mission-target">操作位置</label><select id="zz-mission-target" aria-label="選擇操作位置"></select></div><div class="zz-controlbar"><div class="zz-touch zz-mission-directions" aria-label="方向或位置操作"><div class="zz-dpad"><button class="up" data-hold="up" aria-label="向上或上一位置">↑</button><button class="left" data-hold="left" aria-label="向左或上一位置">←</button><button class="down" data-hold="down" aria-label="向下或下一位置">↓</button><button class="right" data-hold="right" aria-label="向右或下一位置">→</button></div></div><div class="zz-mission-tools" aria-label="本幕專用操作"></div></div>';
+  const cfg=t.mission,oldCreative=['archive','haoliang','contracts','weave','paperMoon','riverSong','moonwalk','woodcut'].includes(s.world.mode)&&s.world.creativeVersion!==2,rule=oldCreative?'正在續玩原操作，完成後再戰本篇可用新版。'+L.progress(s.world).detail:cfg.rule;view.classList.add('zz-literary-view');
+  view.innerHTML='<div class="zz-battle-heading"><div><p class="zz-kicker">'+esc(cfg.genre)+' · '+esc(cfg.place)+' · '+(s.world.assist?'練習':'挑戰')+'</p><h2>'+esc(cfg.title)+'</h2></div><button class="zz-btn" data-mission-help>操作與課文</button></div><div class="zz-game zz-new-game zz-literary-game"><div class="zz-hud zz-mission-hud"><span data-goal></span><span data-time></span><span data-health></span><span data-vigor></span></div><canvas width="1000" height="560" tabindex="0" aria-label="'+esc(cfg.title)+'情境。'+esc(rule)+'"></canvas></div><p data-notice class="zz-battle-notice" role="status"></p><p data-mission-hint class="zz-controlhint"></p><div class="zz-mission-select"><label for="zz-mission-target">操作位置</label><select id="zz-mission-target" aria-label="選擇操作位置"></select></div><div class="zz-controlbar"><div class="zz-touch zz-mission-directions" aria-label="方向或位置操作"><div class="zz-dpad"><button class="up" data-hold="up" aria-label="向上或上一位置">↑</button><button class="left" data-hold="left" aria-label="向左或上一位置">←</button><button class="down" data-hold="down" aria-label="向下或下一位置">↓</button><button class="right" data-hold="right" aria-label="向右或下一位置">→</button></div></div><div class="zz-mission-tools" aria-label="本幕專用操作"></div></div>';
   canvas=view.querySelector('canvas');ctx=canvas.getContext('2d');
-  view.querySelector('[data-mission-help]').onclick=()=>{pause();ZH.modal({title:cfg.title+'・操作與課文',body:'<p>'+esc(cfg.rule)+'</p><p>'+esc(L.progress(s.world).detail)+'</p><p>'+esc(cfg.loss)+'</p><p>'+esc(cfg.connection)+'</p>',actions:[{label:'回到暫停畫面',value:true,kind:'primary'}]});};
+  view.querySelector('[data-mission-help]').onclick=()=>{pause();ZH.modal({title:cfg.title+'・操作與課文',body:'<p>'+esc(rule)+'</p><p>'+esc(L.progress(s.world).detail)+'</p><p>'+esc(cfg.loss)+'</p><p>'+esc(cfg.connection)+'</p>',actions:[{label:'回到暫停畫面',value:true,kind:'primary'}]});};
   const target=view.querySelector('#zz-mission-target');target.onchange=()=>{L.command(s.world,'select:'+target.value);updateLiteraryHud();draw();};
   view.querySelectorAll('[data-hold]').forEach(el=>bindHeld(el,el.dataset.hold));
-  if(['knife','ink'].includes(s.world.mode)){
-   const coord=e=>{const b=canvas.getBoundingClientRect();return {x:(e.clientX-b.left)*1000/b.width,y:(e.clientY-b.top)*560/b.height};};
-   canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);input.pointer=coord(e);input.action=true;L.point(s.world,input.pointer.x,input.pointer.y,true);});
-   canvas.addEventListener('pointermove',e=>{if(canvas.hasPointerCapture(e.pointerId))input.pointer=coord(e);});
-   const end=()=>{delete input.pointer;delete input.action;};for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,end);
-  }else canvas.addEventListener('pointerdown',e=>{e.preventDefault();const b=canvas.getBoundingClientRect();L.point(s.world,(e.clientX-b.left)*1000/b.width,(e.clientY-b.top)*560/b.height,true);updateLiteraryHud();draw();});
+  const coord=e=>{const b=canvas.getBoundingClientRect();return {x:(e.clientX-b.left)*1000/b.width,y:(e.clientY-b.top)*560/b.height};};
+  let activePointerId=null;
+  canvas.addEventListener('pointerdown',e=>{if(activePointerId!==null)return;e.preventDefault();activePointerId=e.pointerId;canvas.setPointerCapture(e.pointerId);const p=coord(e);L.point(s.world,p.x,p.y,true);updateLiteraryHud();draw();});
+  canvas.addEventListener('pointermove',e=>{if(activePointerId===e.pointerId){const p=coord(e);L.drag(s.world,p.x,p.y);updateLiteraryHud();draw();}});
+  canvas.addEventListener('pointerup',e=>{if(activePointerId===e.pointerId){const p=coord(e);activePointerId=null;L.release(s.world,p.x,p.y);if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);updateLiteraryHud();draw();}});
+  const cancel=e=>{if(activePointerId===e.pointerId){activePointerId=null;L.cancel(s.world);}};canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',cancel);
   updateLiteraryHud();lastFrame=0;lastCheckpoint=performance.now();raf=requestAnimationFrame(frame);canvas.focus({preventScroll:true});
  }
  function bindHeld(el,key,command){
@@ -112,12 +132,14 @@
  function updateLiteraryHud(){
   const w=s.world,p=L.progress(w),options=L.options(w),controls=L.controls(w);
   view.querySelector('[data-goal]').textContent=p.goal;view.querySelector('[data-time]').textContent='本幕餘時 '+Math.max(0,Math.ceil(w.limit-w.time))+' 秒';view.querySelector('[data-health]').textContent=p.resource;view.querySelector('[data-vigor]').textContent=p.threat;
-  view.querySelector('[data-notice]').textContent=w.noticeUntil>w.time?w.notice:p.detail;view.querySelector('[data-mission-hint]').textContent=p.detail+' · Esc 暫停；各專用按鈕也標有鍵位。';
+  const interaction=L.interaction(w);view.querySelector('[data-notice]').textContent=w.noticeUntil>w.time?w.notice:interaction?.hint||p.detail;view.querySelector('[data-mission-hint]').textContent=(interaction?.hint||(['archive','haoliang','contracts','weave','paperMoon','riverSong','moonwalk','woodcut'].includes(w.mode)&&w.creativeVersion!==2?'原操作續局；完成後再戰可用新版。'+p.detail:p.detail))+' · Esc 暫停';
+  const directions=view.querySelector('.zz-mission-directions');directions.hidden=interaction?.directions===false;view.querySelector('.zz-controlbar').classList.toggle('zz-direct-controls',interaction?.directions===false);
+  let keyboard=view.querySelector('.zz-keyboard-help');if(!keyboard){keyboard=document.createElement('details');keyboard.className='zz-keyboard-help';keyboard.innerHTML='<summary>鍵盤備用操作</summary><p></p>';view.querySelector('[data-mission-hint]').after(keyboard);}keyboard.querySelector('p').textContent=p.detail+' · 方向鍵／WASD；E主操作、Q次操作、空白特技；Esc暫停。';
   const wrap=view.querySelector('.zz-mission-select'),select=view.querySelector('#zz-mission-target');wrap.hidden=!options.length;
   if(options.length){if(select.options.length!==options.length)select.innerHTML=options.map((o,i)=>'<option value="'+i+'">'+esc(o.label)+'</option>').join('');else options.forEach((o,i)=>{if(select.options[i].text!==o.label)select.options[i].text=o.label;});if(document.activeElement!==select)select.value=String(w.selected);}
   const tools=view.querySelector('.zz-mission-tools'),signature=controls.map(c=>c.command).join('|');
-  if(tools.dataset.signature!==signature){tools.dataset.signature=signature;tools.innerHTML=controls.map(c=>'<button class="zz-btn" data-command="'+esc(c.command)+'"></button>').join('');tools.querySelectorAll('[data-command]').forEach(el=>{const key={primary:'action',secondary:'guard',skill:'dash'}[el.dataset.command];if(key)bindHeld(el,key,el.dataset.command);else el.onclick=()=>{L.command(w,el.dataset.command);updateLiteraryHud();};});}
-  controls.forEach((c,i)=>{const b=tools.children[i];const label=({primary:'[E] ',secondary:'[Q] ',skill:'[空白] '}[c.command]||'')+c.label;if(b.textContent!==label)b.textContent=label;b.disabled=!!c.disabled;});
+  if(tools.dataset.signature!==signature){tools.dataset.signature=signature;tools.innerHTML=controls.map(c=>'<button class="zz-btn" data-command="'+esc(c.command)+'"></button>').join('');tools.querySelectorAll('[data-command]').forEach(el=>{const key={primary:'action',secondary:'guard',skill:'dash'}[el.dataset.command];if(key&&!(w.mode==='riverSong'&&w.creativeVersion===2))bindHeld(el,key,el.dataset.command);else el.onclick=()=>{L.command(w,el.dataset.command);updateLiteraryHud();};});}
+  tools.hidden=interaction?.tools===false;controls.forEach((c,i)=>{const b=tools.children[i];const label=(interaction?'':({primary:'[E] ',secondary:'[Q] ',skill:'[空白] '}[c.command]||''))+c.label;if(b.textContent!==label)b.textContent=label;b.disabled=!!c.disabled;});
  }
 
  let lastAction=0,lastHud=0;
@@ -153,7 +175,7 @@
   ctx.fillStyle=done?'#d5ebdf':'#425d57';ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.fillText(done?'✓':'簡',x,y-3);label(name,x,y-40,done?'#b7d6c5':null);
  }
  function draw(){
-  const w=s.world,t=stage();if(w.engine===3){ZH.literaryCanvas.draw(ctx,w,t,images);return;}if(w.engine===2){ZH.adventureCanvas.draw(ctx,w,t,images);return;}const ts=M.targets(w);ctx.clearRect(0,0,1000,560);
+  const w=s.world,t=stage();if(w.engine===3){ZH.literaryCanvas.draw(ctx,w,t,images);ZH.literaryPointer?.draw(ctx,w,t,images);return;}if(w.engine===2){ZH.adventureCanvas.draw(ctx,w,t,images);return;}const ts=M.targets(w);ctx.clearRect(0,0,1000,560);
   if(images.scene&&images.scene.complete&&images.scene.naturalWidth)ctx.drawImage(images.scene,0,0,1000,560);
   ctx.fillStyle='#10232d69';ctx.fillRect(0,0,1000,560);
   const grd=ctx.createLinearGradient(0,110,0,550);grd.addColorStop(0,'#12313c22');grd.addColorStop(1,'#172b3be0');ctx.fillStyle=grd;ctx.fillRect(0,110,1000,450);
@@ -193,9 +215,11 @@
   bind('retry',async()=>retry(false));bind('assist',async()=>retry(true));bind('replan',async()=>{s.phase='intro';s.storyCursor=s.storyCursor||{};s.storyCursor[s.stage]=2;render();checkpoint().catch(()=>{});});
   if(w.engine===3){const story=view.querySelector('.zz-intro');view.querySelector('h2').textContent=won?'這一幕，你做到了':'這次條件尚未接上';story.textContent=won?stage().mission.after:stage().mission.loss+' 首輪紀錄仍保留，可看操作說明後重試。';const metrics=document.createElement('p');metrics.className='zz-battle-detail';metrics.textContent=detail;story.after(metrics);}
   if(w.engine===2){const story=view.querySelector('.zz-intro');story.textContent=(won?after[w.type]+' 帶著剛才的選擇，回到人物的話語。':(w.notice||'對手佔了上風')+'。調整戰術再戰，首輪紀錄仍會保留。');const metrics=document.createElement('p');metrics.className='zz-battle-detail';metrics.textContent=(won?(M.score(w)>=9?'★★★':M.score(w)>=7?'★★':'★')+' · ':'')+detail;story.after(metrics);}
+  if(testing()){view.querySelector('.zz-note').textContent='教師測試：本頁分數只供檢查操作，不寫入正式首輪、最佳成績或排行榜。';view.querySelector('.zz-kicker').textContent+=' · 教師測試';}
   bind('questions',async()=>{s.phase='question';s.questionIndex=0;delete s.questionFeedback;render();checkpoint().catch(()=>{});});
   bind('board',async()=>{
    const box=view.querySelector('[data-board]');box.textContent='讀取成績……';
+   if(testing()){box.textContent='教師測試不登記成績，也不列入競技榜。';return;}
    if(ZH.isGuest()){box.textContent='本分頁試玩不列入學校競技榜。';return;}
    try{const flushed=await ZH.flushAll();if(flushed&&flushed.ok===false)throw Error('操作紀錄尚未送出，請稍後再查詢');const r=await ZH.call('api_gameBoard',c.id,gameId());if(!r||!r.ok)throw Error(r&&r.msg||'成績暫時無法讀取');const fmt=x=>x?String(x.score??x.bestScore??'—')+' / 10':'尚無成績';box.textContent='我的最佳：'+fmt(r.me)+'\n班級最佳：'+fmt(r.classBest)+'\n全校最佳：'+fmt(r.schoolBest)+(r.off?'\n教師目前關閉排行榜。':'\n排行榜約兩分鐘更新一次。');}catch(e){box.textContent=e.message;}
   });
@@ -207,7 +231,7 @@
   const f=s.questionFeedback&&s.questionFeedback.id===q.id?s.questionFeedback:null;
   const opts=Array.isArray(q.options)?q.options:Object.entries(q.options).map(([key,v])=>({key,text:v[0],type:v[1]||''}));
   const questionBody='<section class="zz-anchor-dialog"><div class="zz-speaker">'+esc(c.person)+'<small>'+esc(level())+' · 文本問答 '+(s.questionIndex+1)+' / '+t.questionIds.length+'</small></div><h2>'+esc(q.stem)+'</h2><details open class="zz-evidence"><summary>'+(c.readerKind==='guide'?'自編導讀對讀':'原文對讀')+'</summary><blockquote>'+esc(q.passage||t.passage)+'</blockquote>'+source({...t,source:q.sourceRef||q.source||t.source})+'<details><summary>閱讀提示</summary><p>'+esc(t.gloss)+'</p></details></details><div class="zz-options">'+opts.map(o=>'<button type="button" class="zz-option'+(f&&f.choice===o.key?(f.correct?' correct':' wrong'):'')+'" data-choice="'+esc(o.key)+'" '+(f?'disabled':'')+'><b>'+esc(o.key)+'</b><span>'+esc(o.text)+'</span></button>').join('')+'</div>'+(f?'<div class="zz-feedback" role="status"><strong>'+(f.correct?'你的判斷有文本依據':'再看眼前這句話')+'</strong><p>'+esc(q.explanation||t.gloss)+'</p><small>首答'+(s.answers[q.id].correct?'正確':'待釐清')+'；訂正另存。</small></div>'+button(f.correct?(s.questionIndex+1<t.questionIds.length?'接著問':'走向下一幕'):'重新作答',f.correct?'next':'again',true):'')+'</section>';
-  view.innerHTML=sceneHTML(t,'旁白',s.questionIndex===0?(t.mission?.after||'一局暫歇，人物的話又在耳邊響起。剛才的進退，能幫你看清什麼？'):'對話還未結束。把注意力放回文字，還有另一層理由等待釐清。','',true)+questionBody;
+  view.innerHTML=sceneHTML(t,'旁白',s.questionIndex===0?(testing()&&!s.stageGames?.[s.stage]?'教師測試：你直接開啟了這一道閱讀題，可核對原文與作答回饋。':t.mission?.after||'一局暫歇，人物的話又在耳邊響起。剛才的進退，能幫你看清什麼？'):'對話還未結束。把注意力放回文字，還有另一層理由等待釐清。','',true)+questionBody;
 
   view.querySelectorAll('[data-choice]').forEach(el=>el.onclick=()=>guard(async()=>{
    view.querySelectorAll('[data-choice]').forEach(b=>b.disabled=true);const choice=el.dataset.choice,event=M.answer(s,q,choice);
@@ -224,7 +248,7 @@
  }
  function renderComplete(){
   const answers=Object.values(s.answers),correct=answers.filter(a=>a.correct).length,chosen=stageGames();
-  view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ '+c.stages.length+' 幕完成</p><h2>'+esc(c.episode)+' · 本篇通關</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+chosen.map(g=>g.bestScore).join(' · ')+'</strong>'+c.stages.length+' 幕最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p>'+(chosen.some(g=>!g.gameId.endsWith('_v3'))?'<p>新版劇情與挑戰已開放，可按「再戰本篇」進入；原有首答、分數與已存通關紀錄保留。</p>':'')+'<p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+button('再戰本篇・保留首答','relaunch')+'</div>';
+  view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ '+c.stages.length+' 幕完成</p><h2>'+esc(c.episode)+' · 本篇通關</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+chosen.map(g=>g.bestScore).join(' · ')+'</strong>'+c.stages.length+' 幕最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p>'+(chosen.some(g=>!/_v[34]$/.test(g.gameId))?'<p>新版劇情與挑戰已開放，可按「再戰本篇」進入；原有首答、分數與已存通關紀錄保留。</p>':'')+'<p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+button('再戰本篇・保留首答','relaunch')+'</div>';
   bind('relaunch',async()=>{s=M.relaunch(s);ZH.runs.begin(c.id,s,'history');await checkpoint();render();});
   bind('finish',async()=>{
    await checkpoint();const anchors=answers.map(a=>({...a,path:a.correct?'direct':s.recovered[a.anchorId]?'fork':'fail',attempts:s.attempts[a.anchorId],recovered:!!s.recovered[a.anchorId]}));
@@ -235,8 +259,8 @@
  }
  function pause(){if(!s||paused||disposed)return;tickClock();paused=true;stop();checkpoint().catch(()=>{});render();}
  function renderPause(){
-  view.innerHTML='<div class="zz-panel zz-pause"><p class="zz-kicker">挑戰與計時已暫停</p><h2>稍停片刻，再讀一段</h2><p>本章有獨立存檔。回首頁前會再確認存檔完成。</p><div class="zz-inline">'+button('繼續遊戲','resume',true)+button('儲存並回首頁','leave')+'</div><p class="zz-note">若存檔失敗，請留在本頁按「儲存」重試。</p></div>';
-  bind('resume',()=>{paused=false;lastClock=Date.now();render();});bind('leave',async()=>{await checkpoint();await ZH.flushAll();disposed=true;ZH.go('hub');});
+  view.innerHTML='<div class="zz-panel zz-pause"><p class="zz-kicker">挑戰與計時已暫停</p><h2>稍停片刻，再讀一段</h2><p>'+(testing()?'教師測試局不寫入正式紀錄；結束測試後回到原進度。':'本章有獨立存檔。回首頁前會再確認存檔完成。')+'</p><div class="zz-inline">'+button('繼續遊戲','resume',true)+button(testing()?'結束教師測試':'儲存並回首頁','leave')+'</div><p class="zz-note">若存檔失敗，請留在本頁按「儲存」重試。</p></div>';
+  bind('resume',()=>{paused=false;lastClock=Date.now();render();});bind('leave',async()=>{if(testing()){ZH.teacherPreview.exit();return;}await checkpoint();await ZH.flushAll();disposed=true;ZH.go('hub');});
  }
  function loadImage(key,url){return new Promise(resolve=>{const img=new Image();img.onload=()=>{images[key]=img;resolve(img);};img.onerror=()=>resolve(null);img.src=url;});}
  function svgUrl(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}
@@ -255,7 +279,7 @@
   await Promise.all([loadImage('scene',url),loadImage('npc',svgUrl(npc)),loadImage('player',svgUrl(player))]);
  }
  async function start(options){
-  bootOptions=options;root=document.getElementById('zhuzi-root');disposed=false;paused=false;busy=false;
+  bootOptions=options;document.body.classList.add('zz-study-page');root=document.getElementById('zhuzi-root');disposed=false;paused=false;busy=false;
   root.innerHTML='<div class="zz-loading"><h1>'+esc(options.loadingTitle||(options.collection==='aSelections'?'經典著作':options.collection==='classics'?'古文十五篇':'先秦諸子'))+'</h1><p role="status">讀取文本與本章進度……</p></div>';
   try{
    c=(options.collection==='aSelections'?ZH.A_SELECTIONS:options.collection==='classics'?ZH.CLASSICS:ZH.ZHUZI)?.chapters[options.id];if(!c)throw Error('找不到本章內容');if(!await ZH.requireStudentProfile())return;
@@ -266,8 +290,8 @@
    const old=saved.state;
    if(old&&old.schema==='zhuzi-v1'&&old.chapterId===c.id){s=Object.assign(M.fresh(c.id),old);if(!Number.isInteger(s.stage)||s.stage<0||s.stage>c.stages.length||!['intro','game','gameResult','question','complete'].includes(s.phase))throw Error('本章存檔格式無法辨認，請從首頁管理自己的紀錄');}
    else if(old)throw Error('本章存檔版本不相符，請從首頁管理自己的紀錄');else s=M.fresh(c.id);
-   if(s.world?.engine===3)L.restore(s.world);
-   s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};s.stageGames=s.stageGames||{};ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
+   if(s.world?.engine===3){L.restore(s.world);L.cancel(s.world);}
+   s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};s.stageGames=s.stageGames||{};if(testing())ZH.teacherPreview.setPicker(showTeacherPanel);ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
   }catch(e){root.innerHTML='<div class="zz-loading"><h1>本章暫時無法開啟</h1><p role="alert">'+esc(e.message)+'</p>'+button('重新讀取文本與進度','reload',true)+button('回首頁','home')+'</div>';root.querySelector('[data-action=reload]').onclick=()=>start(bootOptions);root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');}
  }
  document.addEventListener('keydown',e=>{

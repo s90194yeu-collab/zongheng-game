@@ -1331,6 +1331,13 @@
       characters: CHARACTERS, speakers: SPEAKERS, intel: INTEL,
       intelGoal: { kind: ARG, total: 5, label: '說服秦伯的論據', note: '論據越多，之後說服秦伯越有把握。' },
       commands: COMMANDS, events: EVENTS, ai: ai, upkeep: upkeep, check: check, onEnd: onEnd,
+      previewEvents:[
+        {id:'nightIntro',label:'夜縋・城頭出發',detail:'第二幕情節',run:a2Intro},
+        {id:'nightSneak',label:'夜縋潛行・直達操作',detail:'繩索與晉軍崗哨',game:{id:STL_GAME,title:'夜縋潛行'},run:a2Sneak},
+        {id:'qinTalk',label:'帳中說秦伯',detail:'第二幕交涉與原文',run:a2Talk},
+        {id:'qinLeave',label:'秦鄭結盟・秦軍退去',detail:'第二幕情節',run:a2Qin},
+        {id:'jinLeave',label:'晉侯不擊・鄭圍解除',detail:'第二幕情節',run:a2Jin}
+      ],
       tutorial: TUTORIAL, help: HELP, anchorTotal: 14,
       initState: () => ({ vars: { qinWill: 70, jinWrath: 80, jinBoost: 0, startedAt: Date.now() } }),
       save: saveState
