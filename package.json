@@ -9,11 +9,15 @@
     "preview": "node scripts/serve.cjs",
     "check": "node scripts/check.cjs"
   },
-  "dependencies": {},
+  "dependencies": {
+    "html2canvas": "1.4.1"
+  },
   "devDependencies": {
     "acorn": "8.19.0",
     "esbuild": "0.28.2",
     "three": "0.180.0"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  }
 }

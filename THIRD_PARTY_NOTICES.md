@@ -15,3 +15,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 The game's original authors retain their rights in the teaching text, scenarios, interface, artwork and music. No new license for those materials is granted here.
 
 The existing dialogue font is redistributed with its original SIL Open Font License text in `public/font-license.txt`, published at `/font-license.txt`.
+
+
+## html2canvas 1.4.1
+
+Copyright (c) 2012 Niklas von Hertzen. Distributed under the MIT License, with the same permission grant and warranty disclaimer printed above. Used locally in the browser to prepare optional issue-report images. The library does not upload screenshots.
+
+Full MIT license notices for html2canvas and its bundled dependencies are retained in [public/academy-licenses.txt](public/academy-licenses.txt).

@@ -300,7 +300,9 @@
   }finally{chapterLoading=false;}
  }
  document.addEventListener('zh:connection-retry',e=>{if(!chapterLoading)return;const status=root?.querySelector('.zz-loading [role=status]');if(status)status.textContent='與學校資料的連線暫時中斷，正在重試（'+e.detail.attempt+'／'+e.detail.maxAttempts+'）……';});
+ document.addEventListener('zh:academy-open',()=>{if(s&&s.phase==='game'&&!paused)pause();});
  document.addEventListener('keydown',e=>{
+  if(document.querySelector('.ac-layer'))return;
   if(!s||disposed||busy||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   if(e.code==='Escape'){e.preventDefault();if(paused){paused=false;lastClock=Date.now();render();}else pause();return;}
   if(s.phase==='intro'&&['Enter','Space'].includes(e.code)&&!['BUTTON','SUMMARY'].includes(e.target.tagName)){const next=view.querySelector('[data-action=dialogue]');if(next){e.preventDefault();next.click();}return;}

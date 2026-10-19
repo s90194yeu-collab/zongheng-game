@@ -8,6 +8,7 @@ const raw=name=>fs.readFileSync(path.join(source,name+'.html'),'utf8');
 const manifest=JSON.parse(raw('Data_assets').split('/* ASSET_MANIFEST_START */')[1].split('/* ASSET_MANIFEST_END */')[0]);
 const fingerprints=fs.readdirSync(source).sort().filter(n=>/\.html$|_data\.gs$|^code\.gs$/.test(n)).map(n=>hash(fs.readFileSync(path.join(source,n))));
 for(const dir of ['media','music'])for(const file of fs.readdirSync(path.join(root,'public',dir)).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'public',dir,file))));
+for(const file of fs.readdirSync(path.join(root,'src/academy')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/academy',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -15,6 +16,12 @@ fs.rmSync(dist,{recursive:true,force:true});
 fs.mkdirSync(releaseDir,{recursive:true});fs.mkdirSync(path.join(dist,'assets'),{recursive:true});
 fs.cpSync(path.join(root,'public'),dist,{recursive:true});
 esbuild.buildSync({entryPoints:[path.join(path.dirname(require.resolve('three')),'three.module.js')],outfile:path.join(dist,'assets/three-r180.min.js'),bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none'});
+function academyAsset(label,text){const file='assets/'+label+'-'+hash(text).slice(0,16)+'.'+(label==='academy-data'?'json':label==='academy-style'?'css':'js');fs.writeFileSync(path.join(dist,file),text);return file;}
+const academyApp=esbuild.buildSync({entryPoints:[path.join(root,'src/academy/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
+const screenshotApp=esbuild.buildSync({entryPoints:[require.resolve('html2canvas')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
+const gameFiles=['Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_classics','Literary_canvas','Literary_classics_canvas','Literary_creative_canvas','Literary_pointer'];
+const gameSource='window.ZH_ACADEMY_ENGINE={};\n'+gameFiles.map(n=>raw(n).replace(/<\/?script>/g,'').replaceAll('window.ZH','window.ZH_ACADEMY_ENGINE')).join('\n');
+const academyAssets={version:config.version,release,app:academyAsset('academy-app',academyApp),screenshot:academyAsset('academy-screenshot',screenshotApp),css:academyAsset('academy-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/academy/style.css'),'utf8'),{loader:'css',minify:true}).code),games:academyAsset('academy-games',esbuild.transformSync(gameSource,{minify:true,target:'es2020',charset:'utf8',legalComments:'none'}).code),data:''};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -43,7 +50,7 @@ function read(name){let text=raw(name);
   text=text.replace(/function get\(id,options\)\{[^\n]*\}/,`function get(id,options){return Promise.resolve(Object.hasOwn(window.ZH_STATIC_MEDIA,id)?window.ZH_STATIC_URL(window.ZH_STATIC_MEDIA[id]):null);}`);
   text=text.replace(/function getHubArt\(key,priority=1\)\{[^\n]*\}/,`function getHubArt(key,priority=1){return Promise.resolve(Object.hasOwn(window.ZH_STATIC_HOME,key)?window.ZH_STATIC_URL(window.ZH_STATIC_HOME[key]):null);}`);
  }
- if(name==='Core_js')text+='\n'+raw('Teacher_preview');
+ if(name==='Core_js')text+='\n'+raw('Teacher_preview')+'\n<script>window.ZH_ACADEMY_ASSETS='+JSON.stringify(academyAssets)+';</script>\n'+raw('Academy_boot');
  return text;
 }
 function environment(){
@@ -84,6 +91,9 @@ const chapters=catalogModel.window.ZH.CATALOG.filter(s=>s.status==='ready');if(c
 const central=JSON.parse(fs.readFileSync(path.join(root,'src/central-anchors.json'),'utf8')),registry=e.scenarioRegistry_();
 const localAnchors={};
 for(const s of chapters)localAnchors[s.id]=(registry[s.id]?.anchors||central[s.id]||[]).map(a=>({...a,scenarioId:s.id,options:Object.entries(a.options||{}).map(([key,v])=>({key,text:v[0],type:v[1]||'',fork:v[2]||''}))}));
+const studyChapters={...require('./generate-zhuzi.cjs').chapters,...require('./generate-classics.cjs').chapters,...require('./generate-a-selections.cjs').chapters};
+const activityEnv={window:{}};vm.createContext(activityEnv);vm.runInContext(raw('Textplay_data').replace(/<\/?script>/g,''),activityEnv);
+academyAssets.data=academyAsset('academy-data',JSON.stringify(require('../src/academy/content.cjs').makeData(chapters,studyChapters,localAnchors,activityEnv.window.ZH_TEXTPLAY.activities)));
 fs.writeFileSync(path.join(root,'qa/anchors.json'),JSON.stringify(localAnchors));
 const routes={Hub:'hub',Profile:'profile',Gallery:'gallery',Map:'map',Result:'result',Teacher:'teacher',...Object.fromEntries(chapters.map(s=>[s.id,s.id]))};
 const pages={};fs.mkdirSync(path.join(releaseDir,'pages'),{recursive:true});
