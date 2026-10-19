@@ -1,8 +1,12 @@
 // 僅由 localhost 預覽工具注入，不會發布到 GitHub Pages 或正式 GAS 畫面。
 (function(){
  const calls=[];window.ZH_LOCAL_PREVIEW_CALLS=calls;
+ const fault=location.hostname==='127.0.0.1'&&window.ZH_BOOT?.version==='v4-local-preview'?window.ZH_BOOT.params?.previewNetwork:'';
+ let faultCalls=0,reloaded=false;
+ if(fault==='reload'){const key='zh:network-fixture:'+window.ZH_BOOT.page+':'+(window.ZH_BOOT.params.previewFaultId||'default');reloaded=sessionStorage.getItem(key)==='seen';sessionStorage.setItem(key,'seen');}
  async function call(name,args){
   calls.push({name,args});
+  if(name==='api_getStoryAnchors'&&((fault==='twice'&&faultCalls++<2)||(fault==='retry'&&faultCalls++<3)||(fault==='reload'&&!reloaded)))throw Error('NetworkError: 連線失敗。原因： HTTP 0');
   if(name==='api_getUser')return {ok:true,email:'',isSchool:false,isGuest:true,isTeacher:window.ZH_BOOT?.user?.isTeacher===true,profile:null,loginUrl:''};
   if(name==='api_getAnchors'||name==='api_getStoryAnchors')return {ok:true,anchors:window.ZH_PREVIEW_ANCHORS[args[0]]||[],missing:[],source:'local-preview'};
   if(name==='api_getLearningReview')return {ok:true,anchors:window.ZH_PREVIEW_ANCHORS[args[0]]||[]};

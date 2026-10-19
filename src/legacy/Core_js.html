@@ -1,4 +1,4 @@
-<!-- Core_js.html — v0.3.8（2026-10-16）
+<!-- Core_js.html — v0.3.9（2026-10-19）
 完整替換 Apps Script 的 Core_js HTML 內容，不是追加段。
 結算改用原分頁原生連結；保留所有既有平台、紙娃娃、技能、收藏與配樂功能。
 保留平台 v0.3.0 功能，整合配樂 v0.1.3（沿用 v0.1.2 播放與快取）；沿用 MusicApi.gs。
@@ -11,7 +11,7 @@
   const ZH = global.ZH || {};
   const BOOT = global.ZH_BOOT || {};
 
-  ZH.VERSION = 'v0.3.8';
+  ZH.VERSION = 'v0.3.9';
   ZH.boot = BOOT;
   ZH.user = Object.assign({ email: '', isSchool: false, isGuest: true, isTeacher: false, loginUrl: '' }, BOOT.user || {});
   ZH.guestScenarios = Array.isArray(BOOT.guestScenarios) ? BOOT.guestScenarios : [];
@@ -84,8 +84,9 @@
    * 呼叫伺服器函式，回傳 Promise。
    * 例：ZH.call('api_saveGame', 'S_cq08_weizheng', 'history', state, ZH.VERSION)
    */
-  ZH.call = function (fnName) {
-    const args = Array.prototype.slice.call(arguments, 1);
+  const RETRY_READS = new Set(['api_loadGame', 'api_getStoryAnchors', 'api_getAnchors', 'api_getStudentProfile', 'api_getPlayerProfile', 'api_getProgressAccess', 'api_listSaves']);
+  ZH.isConnectionError = error => !!error && (error.code === 'RPC_TIMEOUT' || /\bNetworkError\b|\bHTTP\s*0\b|\bERR_NETWORK\b|\bFailed to fetch\b|\bNetwork request failed\b|連線失敗/i.test(String(error.message || error)));
+  function callOnce(fnName, args) {
     return new Promise((resolve, reject) => {
       if (!(global.google && google.script && google.script.run)) {
         reject(new Error('目前不在遊戲網址中，無法連線伺服器。'));
@@ -95,8 +96,16 @@
       const timer = setTimeout(() => {
         if (done) return;
         done = true;
-        reject(new Error('伺服器回應逾時，請檢查網路後再試一次。'));
+        const error = new Error('伺服器回應逾時，請檢查網路後再試一次。');
+        error.code = 'RPC_TIMEOUT'; error.operation = fnName; reject(error);
       }, 30000);
+      const fail = error => {
+        if (done) return;
+        done = true; clearTimeout(timer);
+        const failure = new Error(String((error && error.message) || error || '伺服器連線失敗。'));
+        failure.operation = fnName; failure.code = error && error.code; reject(failure);
+      };
+      try {
       const runner = google.script.run
         .withSuccessHandler(result => {
           if (done) return;
@@ -104,14 +113,21 @@
           clearTimeout(timer);
           resolve(result);
         })
-        .withFailureHandler(error => {
-          if (done) return;
-          done = true;
-          clearTimeout(timer);
-          reject(error instanceof Error ? error : new Error(String((error && error.message) || error)));
-        });
+        .withFailureHandler(fail);
       runner[fnName].apply(runner, args);
+      } catch (error) { fail(error); }
     });
+  }
+  ZH.call = async function (fnName) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    for (let attempt = 0; ; attempt++) {
+      try { return await callOnce(fnName, args); }
+      catch (error) {
+        if (!RETRY_READS.has(fnName) || attempt >= 2 || error.code === 'RPC_TIMEOUT' || !ZH.isConnectionError(error)) throw error;
+        if (typeof global.CustomEvent === 'function') document.dispatchEvent(new global.CustomEvent('zh:connection-retry', {detail:{operation:fnName,attempt:attempt + 2,maxAttempts:3}}));
+        await ZH.sleep([700, 1800][attempt]);
+      }
+    }
   };
 
 

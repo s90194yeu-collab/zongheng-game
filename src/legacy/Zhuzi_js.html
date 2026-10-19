@@ -2,7 +2,7 @@
 (function(ZH){
  'use strict';
  const M=ZH.zhuziModel,A=ZH.adventureModel,L=ZH.literary,esc=ZH.esc;
- let c,s,bank,root,view,canvas,ctx,raf=0,lastFrame=0,lastCheckpoint=0,lastClock=Date.now(),saving=Promise.resolve(),busy=false,paused=false,disposed=false,bootOptions,saveError='',teacherPanelOpen=false;
+ let c,s,bank,root,view,canvas,ctx,raf=0,lastFrame=0,lastCheckpoint=0,lastClock=Date.now(),saving=Promise.resolve(),busy=false,paused=false,disposed=false,bootOptions,saveError='',teacherPanelOpen=false,chapterLoading=false;
  const testing=()=>!!ZH.teacherPreview?.active(),teacher=()=>!!ZH.teacherPreview?.isTeacher();
  const input={},images={},keys={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'dash',KeyQ:'guard'};
  const button=(text,action,primary)=>'<button type="button" class="zz-btn'+(primary?' primary':'')+'" data-action="'+action+'">'+esc(text)+'</button>';
@@ -279,6 +279,7 @@
   await Promise.all([loadImage('scene',url),loadImage('npc',svgUrl(npc)),loadImage('player',svgUrl(player))]);
  }
  async function start(options){
+  if(chapterLoading)return;chapterLoading=true;stop();s=null;
   bootOptions=options;document.body.classList.add('zz-study-page');root=document.getElementById('zhuzi-root');disposed=false;paused=false;busy=false;
   root.innerHTML='<div class="zz-loading"><h1>'+esc(options.loadingTitle||(options.collection==='aSelections'?'經典著作':options.collection==='classics'?'古文十五篇':'先秦諸子'))+'</h1><p role="status">讀取文本與本章進度……</p></div>';
   try{
@@ -292,8 +293,13 @@
    else if(old)throw Error('本章存檔版本不相符，請從首頁管理自己的紀錄');else s=M.fresh(c.id);
    if(s.world?.engine===3){L.restore(s.world);L.cancel(s.world);}
    s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};s.stageGames=s.stageGames||{};if(testing())ZH.teacherPreview.setPicker(showTeacherPanel);ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
-  }catch(e){root.innerHTML='<div class="zz-loading"><h1>本章暫時無法開啟</h1><p role="alert">'+esc(e.message)+'</p>'+button('重新讀取文本與進度','reload',true)+button('回首頁','home')+'</div>';root.querySelector('[data-action=reload]').onclick=()=>start(bootOptions);root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');}
+  }catch(e){
+   const connection=ZH.isConnectionError(e),part={api_loadGame:'讀取存檔',api_getStoryAnchors:'讀取原文題庫',api_getStudentProfile:'讀取帳號資料'}[e.operation]||'讀取本章資料',params={...(ZH.boot?.params||{})};delete params.page;
+   root.innerHTML='<div class="zz-loading"><h1>'+(connection?'本章連線暫時中斷':'本章暫時無法開啟')+'</h1><p role="alert">'+esc(connection?part+'時未能完成連線。請先重試；若仍失敗，可重新連線本章。':e.message)+'</p>'+(connection?'<p>本次尚未讀取完整資料，沒有用空白進度覆蓋原存檔。</p><details><summary>連線詳情</summary><p>'+esc(e.message)+'</p></details>':'')+button('重新讀取文本與進度','reload',true)+(connection?'<a class="zz-btn" data-reconnect href="'+esc(ZH.url(options.id,params))+'" target="_top">重新連線本章</a>':'')+button('回首頁','home')+'</div>';
+   const retry=root.querySelector('[data-action=reload]');retry.onclick=()=>{retry.disabled=true;start(bootOptions);};root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');
+  }finally{chapterLoading=false;}
  }
+ document.addEventListener('zh:connection-retry',e=>{if(!chapterLoading)return;const status=root?.querySelector('.zz-loading [role=status]');if(status)status.textContent='與學校資料的連線暫時中斷，正在重試（'+e.detail.attempt+'／'+e.detail.maxAttempts+'）……';});
  document.addEventListener('keydown',e=>{
   if(!s||disposed||busy||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   if(e.code==='Escape'){e.preventDefault();if(paused){paused=false;lastClock=Date.now();render();}else pause();return;}
