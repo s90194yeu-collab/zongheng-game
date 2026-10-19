@@ -1406,7 +1406,7 @@
   ZH.findScenario = id => ZH.CATALOG.find(s => s.id === id) || null;
 
   /** 某一卷的劇本 */
-  ZH.scenariosOf = vol => ["gw","al"].includes(vol) ? (vol==="al"?ZH.A_SELECTIONS_MENU:ZH.CLASSICS_MENU).map(e=>({...ZH.findScenario(e.id),classicNo:e.no,name:e.title,episode:e.focus,period:e.period,author:e.author,scene:e.scene,classicReuse:e.reuse,classicTitle:e.title,readerKind:e.readerKind,aliases:e.aliases||[]})) : ZH.CATALOG.filter(s => s.vol === vol);
+  ZH.scenariosOf = vol => ["gw","al"].includes(vol) ? (vol==="al"?ZH.A_SELECTIONS_MENU:ZH.CLASSICS_MENU).map(e=>({...ZH.findScenario(e.id),classicNo:e.no,name:e.title,period:e.period,author:e.author,scene:e.scene,classicReuse:e.reuse,classicTitle:e.title,readerKind:e.readerKind,aliases:e.aliases||[]})) : ZH.CATALOG.filter(s => s.vol === vol);
 
   /** 話數的顯示文字 */
   ZH.episodeLabel = s => (s.classicNo || ['gw','al'].includes(s.vol)) ? ('第 '+(s.classicNo||s.ep)+' 篇') : s.vol === 'zz' ? (s.level === 'bio' ? '初階・人物' : '進階・思想') : (s.ep === 0 ? '序章' : s.ep === -1 ? '尾聲' : '第 ' + s.ep + ' 話');
