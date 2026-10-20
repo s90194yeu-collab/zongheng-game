@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),env={window:{ZH:{}}};vm.createContext(env);
-for(const name of ['Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_canvas','Literary_classics','Literary_classics_canvas','Literary_pointer'])vm.runInContext(fs.readFileSync(path.join(root,'src/legacy',name+'.html'),'utf8').replace(/<\/?script>/g,''),env);
+for(const name of ['Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_canvas','Literary_classics','Literary_seven','Literary_classics_canvas','Literary_seven_canvas','Literary_pointer'])vm.runInContext(fs.readFileSync(path.join(root,'src/legacy',name+'.html'),'utf8').replace(/<\/?script>/g,''),env);
 const ZH=env.window.ZH,L=ZH.literary,P=ZH.literaryPointer;
 const fresh=(mode,index=0)=>L.create({mode,index,key:'public-pointer'},false,'read',91);
 function ticks(w,seconds,k={}){for(let i=0;i<Math.ceil(seconds*60)&&w.status==='playing';i++)L.step(w,k,1/60);}

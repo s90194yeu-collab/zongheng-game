@@ -5,6 +5,7 @@ function play(L,w,{maxFrames=24000}={}){
  const hold=(key,sec)=>{cmd({action:'primary',guard:'secondary',dash:'skill'}[key]);tick({[key]:true},sec);tick({},.05);};
  const walk=(target,get=()=>w,extra={})=>{let n=0;while(w.status==='playing'&&Math.hypot(get().x-target.x,get().y-target.y)>12&&n++<3600){const p=get(),dx=target.x-p.x,dy=target.y-p.y;tick({...extra,right:dx>7,left:dx< -7,down:dy>7,up:dy< -7});}if(n>=3600)throw Error('walk blocked '+w.mode+' '+JSON.stringify({target,current:get()}));};
  const wait=(pred,max=3000)=>{let n=0;while(w.status==='playing'&&!pred()&&n++<max)tick();};
+ if(require('./seven-player.cjs').play(L,w,{tick,cmd,sel,primary,secondary,skill,walk,wait}))return {status:w.status,time:w.time,hp:w.hp,view:L.progress(w),frames};
  if(w.creativeVersion===2&&require('./creative-player.cjs').play(L,w,{tick,cmd,sel,primary,secondary,skill,wait}))return {status:w.status,time:w.time,hp:w.hp,view:L.progress(w),frames};
  switch(w.mode){
  case 'archive':for(let i=0;i<6;i++){let j=w.order.indexOf(i);while(j>i){sel(j-1);secondary();j--;}sel(i);if(w.flip[i])primary();if(w.covers[i])skill();}break;

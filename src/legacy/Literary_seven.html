@@ -1,0 +1,92 @@
+<script>
+(function(ZH){
+'use strict';
+const L=ZH.literary,U=L.U,C=U.clamp,D=U.dist,B=U.button,TAU=Math.PI*2;
+const hint=(w,t)=>U.say(w,t),bad=(w,t)=>{w.mistakes++;w.hp--;hint(w,t);};
+const interaction=hint=>()=>({kind:'dedicated-pointer',canvas:true,tools:true,directions:false,hint});
+const hit=(x,y,p,r=45)=>Math.hypot(x-p.x,y-p.y)<r;
+function pointer(w,x,y,kind,extra={}){w.gesture={x,y,startX:x,startY:y,kind,...extra};return w.gesture;}
+function cancel(w){delete w.gesture;w.cutting=false;}
+const empireLoads=w=>{const base=w.phase===2?[1,3,2,1,3,2]:[3,1,2,3,1,2],rot=Math.floor(w.clock/3)%6;return base.map((_,i)=>base[(i+rot)%6]);};
+L.register('empireLoad',{
+ init(w){w.alloc=[0,0,0,0,0,0];w.pressures=[8,8,8,8,8,8];w.reserve=12;w.phase=0;w.clock=0;w.reforms=0;w.moves=0;w.limit=110;},
+ step(w,k,d){if(w.phase!==1)w.clock+=d;w.loads=empireLoads(w);for(let i=0;i<6;i++){w.pressures[i]=C(w.pressures[i]+(w.loads[i]-w.alloc[i])*9*d,0,100);if(w.pressures[i]>=100)w.hp=0;}if(w.phase===0&&w.clock>=10){w.phase=1;w.clock=0;hint(w,'攻取已過，先按「轉為休養」重整守成負荷。');}if(w.phase===1){w.pressures=w.pressures.map(p=>C(p+d*3,0,100));}if(w.phase===2&&w.clock>=12+w.index*4&&w.moves>=18)U.win(w,'城臺已度過攻守轉換；回讀賈誼如何解釋仁義與情勢。');},
+ command(w,c){if(c==='primary'){if(w.reserve>0){w.alloc[w.selected]++;w.reserve--;w.moves++;}else hint(w,'十二籌已用完，先從別柱收回。');}if(c==='secondary'&&w.alloc[w.selected]>0){w.alloc[w.selected]--;w.reserve++;w.moves++;}if(c==='skill'&&w.phase===1){w.phase=2;w.clock=0;w.reserve=12;w.alloc.fill(0);w.reforms++;hint(w,'征發籌已收回；依新負荷重新支撐。');}},
+ options(w){return w.alloc.map((_,i)=>({x:135+i*145,y:300,label:'第'+(i+1)+'柱'}));},controls(){return[B('primary','添一籌'),B('secondary','收一籌'),B('skill','轉為休養')];},
+ point(w,x,y,down){if(!down)return;if(y>470){L.command(w,'skill');return;}const i=Math.round((x-135)/145);if(i>=0&&i<6){w.selected=i;L.command(w,y>395?'secondary':'primary');}},cancel,
+ interaction:interaction('點柱身添籌、點柱腳收籌；注意負荷數與壓力條。攻取結束後，點下方「轉為休養」，再按新負荷重排。'),
+ view(w){return{goal:w.phase===1?'轉為休養，再重配十二籌':w.phase===2?'守成：讓六柱承擔新的負荷':'攻取：以十二籌支撐六柱',resource:'尚有 '+w.reserve+' 籌；最高壓力 '+Math.ceil(Math.max(...w.pressures))+'％',threat:(w.phase===2?'休養後':'攻取中')+' '+w.clock.toFixed(1)+'秒',detail:'各柱金字是即時負荷，籌數至少相等便能降壓。每三秒負荷換位，需主動重配。',me:(w.phase===2?.45+w.clock/32:w.clock/25)};}
+});
+const bases=[[220,650,710],[730,260,540],[410,780,190]];
+const horizonX=(w,i)=>bases[Math.min(2,w.recorded)][i]+w.shifts[i]+Math.sin(w.time*(i+1)*.5)*[8,4,1][i];
+L.register('horizon',{
+ init(w){w.shifts=[0,0,0];w.recorded=0;w.steady=0;w.limit=120;},
+ step(w,k,d){w.shifts[w.selected]=C(w.shifts[w.selected]+(Number(!!k.right)-Number(!!k.left))*190*d,-340,340);const all=[0,1,2].every(i=>Math.abs(horizonX(w,i)-500)<16);w.steady=all?w.steady+d:0;},
+ command(w,c){if(c==='secondary')w.selected=(w.selected+1)%3;if(c==='primary'){if(w.steady<.5){bad(w,'三層仍未對齊停穩；先看路標與中央金線。');return;}w.recorded++;w.steady=0;if(w.recorded===3)U.win(w,'三次四望已留下方向；歸路仍阻，登樓未使憂思消失。');else{w.shifts=[0,0,0];hint(w,'換一處遠望；三層視差已改變。');}}},
+ options(){return ['近景欄影','中景河灣','遠景山口'].map((label,i)=>({x:500,y:175+i*105,label}));},controls(){return[B('primary','記下此向'),B('secondary','切換景層')];},
+ point(w,x,y,down){if(!down)return;if(y>470){L.action(w);return;}const i=C(Math.round((y-175)/105),0,2);w.selected=i;pointer(w,x,y,'layer',{layer:i,shift:w.shifts[i]});},
+ drag(w,x,y){if(w.gesture)w.shifts[w.gesture.layer]=C(w.gesture.shift+x-w.gesture.startX,-340,340);},release(w){delete w.gesture;},cancel,
+ interaction:interaction('在三層景色上左右拖曳，讓三個菱形路標都靠近中央金線；穩住半秒後點「記向」。近景仍會隨風搖動。'),
+ view(w){return{goal:'接通三層視線，完成三次四望',resource:'已記 '+w.recorded+'／3 向；停穩 '+w.steady.toFixed(1)+'／0.5秒',threat:w.index?'暮煙遮景，近景仍在風中偏移':'欄影、河灣、山口各有視差',detail:'三個金色菱形需一起對準中央直線，不能只移一層。左右鍵可微調所選層。',me:w.recorded/3};}
+});
+const cupSpots=[{x:360,y:415},{x:600,y:339},{x:820,y:310}],cupStart=()=>({x:140,y:450,vx:0,vy:0});
+function throwCup(w,dx,dy){if(w.caught||Math.hypot(w.cup.vx,w.cup.vy)>45)return;const scale=1.7,len=Math.hypot(dx,dy),m=Math.min(1,760/Math.max(1,len));w.cup.vx=dx*scale*m;w.cup.vy=dy*scale*m;w.shots++;}
+L.register('cupCurrent',{
+ init(w){w.cup=cupStart();w.next=0;w.hold=0;w.caught=false;w.shots=0;w.aim={x:350,y:350};w.limit=140;},
+ step(w,k,d){const c=w.cup,flow=Math.sin(w.time*.8+w.index)*3;c.vx+=(flow-c.vx*1.7)*d;c.vy+=(-flow*.3-c.vy*1.7)*d;c.x+=c.vx*d;c.y+=c.vy*d;w.aim.x=C(w.aim.x+(Number(!!k.right)-Number(!!k.left))*180*d,70,930);w.aim.y=C(w.aim.y+(Number(!!k.down)-Number(!!k.up))*180*d,130,490);if(c.x<65||c.x>945||c.y<125||c.y>500){bad(w,'杯觴撞離溪面，回溪口重新出手。');w.cup=cupStart();w.hold=0;}const t=cupSpots[w.next];if(D(c,t)<42&&Math.hypot(c.vx,c.vy)<35)w.hold+=d;else w.hold=0;w.caught=w.hold>.45;},
+ command(w,c){if(c==='primary'){if(!w.caught){hint(w,'先讓杯在本席光圈停穩，再接詩札。');return;}w.next++;if(w.next===3){U.win(w,'三席詩札皆已接住；留存文字仍不能使歲月停止。');return;}w.cup=cupStart();w.hold=0;w.caught=false;}if(c==='secondary'){w.cup=cupStart();w.hold=0;w.caught=false;w.mistakes++;}if(c==='skill')throwCup(w,w.aim.x-w.cup.x,w.aim.y-w.cup.y);},
+ options(){return[];},controls(){return[B('primary','停穩接札'),B('secondary','收回溪口'),B('skill','向準星放觴')];},
+ point(w,x,y,down){if(!down)return;if(y>500&&x>690){L.action(w);return;}if(hit(x,y,w.cup,48)&&Math.hypot(w.cup.vx,w.cup.vy)<45)pointer(w,x,y,'throw');},drag(w,x,y){if(w.gesture)Object.assign(w.gesture,{x,y});},
+ release(w,x,y){if(w.gesture){throwCup(w,x-w.gesture.startX,y-w.gesture.startY);delete w.gesture;}},cancel,
+ interaction:interaction('從溪口的杯觴拖向本席金圈，放手施力；水流有慣性，停穩後點右下「接札」。若偏得太遠可收回再試。'),
+ view(w){return{goal:'依序停入三席，再親自接札',resource:'已接 '+w.next+'／3 札；出手 '+w.shots+' 次',threat:w.caught?'杯已停穩，請接札':'杯速 '+Math.round(Math.hypot(w.cup.vx,w.cup.vy)),detail:'從杯向目的地方向拖引，長拖力大、短拖力小。金圈只標本席，先前席位不能重複計數。',me:w.next/3};}
+});
+const handScreen=(w,p)=>({x:p.x,y:p.y-C(w.bodyY-355,0,650)});
+function grip(w,n){const hand=w.hand,other=w.hands[1-hand],target=w.holds[n];if(!target||n<2||target.grey||n%2!==hand||n<=w.top||D(target,other)>305){bad(w,'此岩點不合這隻手或超出可及範圍，另一手仍須留穩。');return;}w.hands[hand]={x:target.x,y:target.y};w.top=n;w.bodyY=(w.hands[0].y+w.hands[1].y)/2+50;w.hand=1-hand;w.grip= Math.min(100,w.grip+5);if(n===8)U.win(w,'已登上西山，群山盡入眼底；回讀始得與心凝形釋。');}
+L.register('cliffHands',{
+ init(w){w.holds=[{x:390,y:850},{x:530,y:850},...Array.from({length:7},(_,i)=>({x:i%2?590:380,y:730-i*110}))];w.hands=[{...w.holds[0]},{...w.holds[1]}];w.top=1;w.hand=0;w.holds.forEach((p,i)=>{p.y+=90;if(w.index&&i>1)p.x+=i%2?20:-20;});w.decoys=[{x:570,y:860},{x:450,y:640},{x:535,y:420}];w.hands=w.holds.slice(0,2).map(p=>({...p}));w.bodyY=990;w.grip=100;w.limit=120;},
+ step(w,k,d){w.grip-=d*(w.gesture?2.6:1.1);if(w.grip<=0)w.hp=0;},command(w,c){if(c==='primary')grip(w,w.selected);if(c==='secondary'){w.hand=1-w.hand;hint(w,'換手前，確認另一隻手已承重。');}},
+ options(w){return w.holds.map((p,i)=>({...handScreen(w,p),label:(i%2?'右':'左')+'手岩點 '+i}));},controls(){return[B('primary','抓所選岩點'),B('secondary','切換操作的手')];},
+ point(w,x,y,down){if(!down)return;const i=w.hands.findIndex(p=>hit(x,y,handScreen(w,p),35));if(i>=0){w.hand=i;pointer(w,x,y,'hand');}},drag(w,x,y){if(w.gesture)Object.assign(w.gesture,{x,y});},
+ release(w,x,y){if(!w.gesture)return;const n=w.holds.findIndex(p=>hit(x,y,handScreen(w,p),33));delete w.gesture;grip(w,n);},cancel,
+ interaction:interaction('按住畫面中的左／右手，拖到同色、可及的岩點後放開；另一手保持承重。左右交替向上，畫面會跟著登高。'),
+ view(w){return{goal:'交替換手登頂，展開西山全景',resource:'握力 '+Math.round(w.grip)+'％；已到第 '+w.top+'／8 岩點',threat:'下一手：'+(w.hand?'右手':'左手')+'；單次可及305',detail:'圓點標左／右，切勿把同一隻手連續跨過數層。點手再拖岩點，鬆手才會確認抓牢。',me:(w.top-1)/7};}
+});
+function peelPath(w){const rot=(w.fruit+w.index)*.6;return Array.from({length:38},(_,i)=>{const a=rot+i/37*TAU*1.25,r=112-i*1.45;return{x:500+Math.cos(a)*r,y:295+Math.sin(a)*r};});}
+function cutAt(w,x,y){if(w.cut>=w.path.length)return;const p=w.path[w.cut],last=w.cursor;if(D({x,y},last)>43){hint(w,'刀尖不能隔段跳切；從下一個金點接續。');return;}w.cursor={x,y};if(D(w.cursor,p)<19)w.cut++;else if(D(w.cursor,p)>48&&w.time>(w.cutWarn||0)){w.cutWarn=w.time+.7;bad(w,'刀尖偏離金線，收刀看清下一段。');}}
+L.register('citrusPeel',{
+ init(w){w.fruit=0;w.cut=0;w.path=peelPath(w);w.cursor={...w.path[0]};w.kinds=[U.random(w)>.5,true,false];w.limit=140;},
+ step(w,k,d){if(w.cutting){cutAt(w,w.cursor.x+(Number(!!k.right)-Number(!!k.left))*130*d,w.cursor.y+(Number(!!k.down)-Number(!!k.up))*130*d);}},
+ command(w,c){if(c==='primary')w.cutting=!w.cutting;if(c==='secondary'||c==='skill'){if(w.cut<w.path.length){hint(w,'尚未剖驗完整，不能憑外皮猜。');return;}const fresh=c==='secondary';if(fresh!==w.kinds[w.fruit]){bad(w,'登記與已剖見的實況不符，重新核對果肉。');return;}w.fruit++;if(w.fruit===3){U.win(w,'三顆均已剖驗並登記，接著看託柑諷世的問答。');return;}w.cut=0;w.path=peelPath(w);w.cursor={...w.path[0]};w.cutting=false;}},
+ options(){return[];},controls(){return[B('primary','剖切／收刀'),B('secondary','登記鮮實'),B('skill','登記敗絮')];},
+ point(w,x,y,down){if(!down)return;if(y>470){L.command(w,x<500?'secondary':'skill');return;}if(w.cut<w.path.length&&D({x,y},w.path[w.cut])<32){w.cursor={x,y};pointer(w,x,y,'peel');cutAt(w,x,y);}else hint(w,'從下一個發亮的金點落刀，沿金線向內剖。');},
+ drag(w,x,y){if(w.gesture)cutAt(w,x,y);},release(w){delete w.gesture;},cancel,
+ interaction:interaction('從發亮金點按住，沿螺旋金線逐段拖入；剖完再看果肉，點下方「鮮實／敗絮」登記。放手收刀，可從金點接續。'),
+ view(w){const seen=w.cut>=w.path.length;return{goal:'逐顆剖驗，完成三顆實況紀錄',resource:'已驗 '+w.fruit+'／3 顆；剖切 '+w.cut+'／'+w.path.length+' 段',threat:seen?(w.kinds[w.fruit]?'剖見：鮮實果肉':'剖見：乾枯敗絮'):'外皮相近，內裏尚不可判',detail:'金線顯示剖切順序，切忌隔空跳到內圈；剖驗完成後才可判定。',me:(w.fruit+w.cut/w.path.length)/3};}
+});
+function edgeList(){const a=[];for(let n=0;n<20;n++){if(n%5<4)a.push([n,n+1]);if(n<15)a.push([n,n+5]);}return a;}
+const nodePoint=n=>({x:150+n%5*170,y:140+Math.floor(n/5)*100});
+L.register('faultContain',{
+ init(w){w.edges=edgeList();w.active=w.index?[0,5]:[0];w.cuts=[];w.turn=0;w.phase=0;w.damage=0;w.stable=0;w.rewound=false;w.limit=140;},step(){},
+ command(w,c){if(c==='primary'){const i=w.selected,j=w.cuts.indexOf(i);if(j>=0)w.cuts.splice(j,1);else if(w.cuts.length<4)w.cuts.push(i);else hint(w,'四道閘已用完；先撤一道，再改設其他連線。');}if(c==='secondary'){w.previous={active:w.active.slice(),turn:w.turn,stable:w.stable,damage:w.damage};const next=new Set(w.active);w.edges.forEach(([a,b],i)=>{if(w.cuts.includes(i))return;if(w.active.includes(a))next.add(b);if(w.active.includes(b))next.add(a);});const same=next.size===w.active.length;w.damage+=next.size-w.active.length;w.active=[...next].sort((a,b)=>a-b);w.turn++;w.stable=same?w.stable+1:0;w.hp=6-Math.floor(w.damage/2);if(w.active.includes(4)||w.active.includes(19)){w.hp=0;hint(w,'裂隙已抵守護點，這一局失守。');}else if(w.stable>=2&&w.turn>=2){if(w.phase<2){w.phase++;w.active=w.phase===1?(w.index?[10,15]:[15]):[5,10];w.cuts=[];w.stable=0;w.previous=null;hint(w,'第'+(w.phase+1)+'處微隙出現，已收回四道閘；改看新的出口。');}else U.win(w,'三處微隙都已封住，守護點仍完整；回讀治微與遲治的差別。');}}if(c==='skill'&&w.previous&&!w.rewound){Object.assign(w,{active:w.previous.active.slice(),turn:w.previous.turn,stable:w.previous.stable,damage:w.previous.damage,hp:6-Math.floor(w.previous.damage/2),rewound:true});hint(w,'回看一刻，保留封線；這次看清分支再推進。');}},
+ options(w){return w.edges.map(([a,b])=>{const p=nodePoint(a),q=nodePoint(b);return{x:(p.x+q.x)/2,y:(p.y+q.y)/2,label:'連線 '+a+'—'+b};});},controls(){return[B('primary','設閘／撤閘'),B('secondary','推進一刻'),B('skill','回看一刻（限一次）')];},
+ point(w,x,y,down){if(!down)return;if(y>485){L.command(w,x<650?'secondary':'skill');return;}const es=L.options(w);let best=-1,d=26;es.forEach((e,i)=>{const n=D(e,{x,y});if(n<d){best=i;d=n;}});if(best>=0){w.selected=best;L.action(w);}},cancel,
+ interaction:interaction('點節點之間的連線設閘，再點「推進一刻」。紅點會沿未封的線擴散；要護住右上、右下兩處，並讓擴散連續停止兩刻。'),
+ view(w){return{goal:'封住擴散，保留右側兩個守護點',resource:'設閘 '+w.cuts.length+'／4 道；受損 '+w.active.length+' 格',threat:'第 '+(w.phase+1)+'／3 處・'+w.turn+' 刻；連續受控 '+w.stable+'／2 刻',detail:'這是抽象裂隙棋局，不是診療模擬。每推一刻會同時擴散，先查來源附近的所有出口。',me:(w.phase+w.stable/2)/3};}
+});
+const pressRows=[['舊志','口碑','體例','轉抄'],['有清一朝','巷議街譚','紀志傳','同一底本'],['範圍受限','仍須查證','文本明載','留待考']];
+const wrap=n=>(n%4+4)%4;
+function publish(w,uncertain){const slots=w.pos.map(p=>wrap(Math.round(p)));const steady=w.vel.every(v=>Math.abs(v)<.025)&&w.pos.every(p=>Math.abs(p-Math.round(p))<.14);if(!steady||!slots.every(i=>i===w.printed)){bad(w,'三軌未對齊本次事項，或仍在滑動；暫緩刊入。');return;}const needsUncertain=[1,3].includes(w.printed);if(uncertain!==needsUncertain){bad(w,needsUncertain?'仍有不確定性，請留待考。':'文本明載，可有據刊入；留待考不能代替所有判斷。');return;}w.printed++;if(w.printed===4)U.win(w,'四項各依來源狀態保存；把能確定與仍待考的界線留下。');else{w.braked=[false,false,false];hint(w,'下一項校刊，紙帶重新行進。');}}
+L.register('sourcePress',{
+ init(w){w.pos=[1.3,2.6,.8];w.vel=[.6,.8,1];w.braked=[false,false,false];w.printed=0;w.limit=150;},
+ step(w,k,d){for(let i=0;i<3;i++){const target=w.braked[i]?0:[.6,.8,1][i]*(1+w.index*.15);w.vel[i]+=(target-w.vel[i])*Math.min(1,d*6);w.pos[i]=wrap(w.pos[i]+w.vel[i]*d);}if(w.braked[w.selected])w.pos[w.selected]=wrap(w.pos[w.selected]+(Number(!!k.right)-Number(!!k.left))*.7*d);},
+ command(w,c){if(c==='primary')w.braked[w.selected]=!w.braked[w.selected];if(c==='publish')publish(w,false);if(c==='uncertain')publish(w,true);},
+ options(){return ['事項軌','記錄軌','核證軌'].map((label,i)=>({x:500,y:175+i*105,label}));},controls(){return[B('primary','煞停／續行此軌'),B('publish','有據刊入'),B('uncertain','留待考')];},
+ point(w,x,y,down){if(!down)return;if(y>470){L.command(w,x<500?'publish':'uncertain');return;}const row=C(Math.round((y-175)/105),0,2);w.selected=row;const was=w.braked[row];w.braked[row]=true;pointer(w,x,y,'belt',{row,was,pos:w.pos[row],moved:false});},
+ drag(w,x,y){const g=w.gesture;if(g&&Math.abs(w.vel[g.row])<.05){g.moved=g.moved||Math.abs(x-g.startX)>5;w.pos[g.row]=wrap(g.pos-(x-g.startX)/190);}},release(w){const g=w.gesture;if(g&&g.was&&!g.moved)w.braked[g.row]=false;delete w.gesture;},cancel,
+ interaction:interaction('先點三條紙帶煞停；停穩後再拖曳微調，使本次事項的三片紙落在中央金框。再依證據選「有據刊入」或「留待考」。'),
+ view(w){return{goal:w.printed===4?'校刊完成':'本次校刊：'+pressRows[0][w.printed],resource:'已校 '+w.printed+'／4 項；三軌均需穩定',threat:w.braked.filter(Boolean).length+'／3 軌已煞停',detail:'口碑尚須查證，轉抄同一底本不能充作獨立互證；這些項目留待考。舊志範圍與紀志傳體例則可由原文明確核對。',me:w.printed/4};}
+});
+ZH.sevenGames={empireLoads,horizonX,bases,cupSpots,handScreen,nodePoint,pressRows};
+})(window.ZH);
+</script>

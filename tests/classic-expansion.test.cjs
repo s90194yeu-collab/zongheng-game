@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),e={window:{ZH:{}}};vm.createContext(e);
-for(const f of ['Literary_core','Literary_classics'])vm.runInContext(fs.readFileSync(path.join(root,'src/legacy',f+'.html'),'utf8').replace(/<\/?script>/g,''),e);
+for(const f of ['Literary_core','Literary_classics','Literary_seven'])vm.runInContext(fs.readFileSync(path.join(root,'src/legacy',f+'.html'),'utf8').replace(/<\/?script>/g,''),e);
 const L=e.window.ZH.literary,fresh=(mode,index=0)=>L.create({mode,index,key:'test'}),tick=(w,k,seconds)=>{for(let i=0;i<Math.ceil(seconds*60)&&w.status==='playing';i++)L.step(w,k,1/60);};
 test('林沖採百回本第十一回小說選段，含柴進薦書、風雪與朱貴號箭；八篇44題及AI場景皆可核對',()=>{
  const texts=require('../src/content/classic-texts.json'),{additional}=require('../src/content/classic-expansion.cjs');

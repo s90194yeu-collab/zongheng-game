@@ -1,0 +1,55 @@
+<script>
+(function(ZH){
+'use strict';
+const old=ZH.literaryCanvas.draw,keys=['empireLoad','horizon','cupCurrent','cliffHands','citrusPeel','faultContain','sourcePress'];
+ZH.literaryCanvas.draw=function(ctx,w,t,images={}){
+ if(!keys.includes(w.mode))return old(ctx,w,t,images);
+ const G=ZH.sevenGames,gold='#f2ce81',blue='#a5d5df',green='#aed4b1',red='#efb3a2',ink='#142b3b',cream='#f1e4c6';
+ const box=(x,y,a,b,fill,stroke=null,r=9)=>{ctx.beginPath();ctx.roundRect(x,y,a,b,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}};
+ const text=(s,x,y,n=22,c=cream,align='center')=>{ctx.fillStyle=c;ctx.font='600 '+n+'px "Noto Serif TC","PingFang TC",serif';ctx.textAlign=align;ctx.fillText(String(s),x,y,930);};
+ const line=(a,b,c=gold,n=3)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=c;ctx.lineWidth=n;ctx.stroke();};
+ const circle=(x,y,r,fill,stroke=null)=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.lineWidth=3;ctx.strokeStyle=stroke;ctx.stroke();}};
+ const diamond=(x,y,c=gold)=>{ctx.beginPath();ctx.moveTo(x,y-16);ctx.lineTo(x+16,y);ctx.lineTo(x,y+16);ctx.lineTo(x-16,y);ctx.closePath();ctx.fillStyle=c;ctx.fill();};
+ const button=(x,y,a,b,label,c=blue)=>{box(x,y,a,b,'#173b49ee',c);text(label,x+a/2,y+b/2+8,23,c);};
+ const bar=(x,y,v,width=100,c=green)=>{box(x,y,width,12,'#061e2be6');box(x,y,width*Math.max(0,Math.min(1,v)),12,c);};
+ ctx.save();ctx.clearRect(0,0,1000,560);if(images.scene)ctx.drawImage(images.scene,0,0,1000,560);else box(0,0,1000,560,ink);box(0,0,1000,560,'#0c253f55');box(25,14,950,65,'#152b3fe8',gold);text(t.mission.title,500,43,25,gold);text(t.mission.genre+'・'+t.mission.place,500,68,17,green);
+ if(w.mode==='empireLoad'){
+  box(50,105,900,345,'#142d3cbd',gold);box(80,115,840,42,w.phase===2?'#739480':'#887653',gold);text(w.phase===2?'守成：休養後的新負荷':w.phase===1?'攻取已過，請轉為休養':'攻取：負荷每三秒換位',500,145,24);
+  const loads=G.empireLoads(w);for(let i=0;i<6;i++){const x=135+i*145,p=w.pressures[i];box(x-45,200,90,190,'#b2aa86b0',w.selected===i?gold:blue);for(let a=0;a<loads[i];a++)box(x-30+a*17,171,13,20,gold);text('負荷 '+loads[i],x,195,18,ink);text(w.alloc[i]+' 籌',x,300,30,ink);bar(x-44,347,p/100,88,p>65?red:green);text(Math.round(p)+'％',x,386,18,ink);button(x-45,401,90,35,'收籌',blue);}
+  text('餘籌 '+w.reserve+'／12',235,502,27,gold);button(580,475,310,58,'轉為休養',w.phase===1?gold:blue);
+ }else if(w.mode==='horizon'){
+  for(let row=0;row<3;row++){const y=130+row*105;ctx.save();ctx.beginPath();ctx.rect(60,y,880,90);ctx.clip();box(60,y,880,90,['#214459dd','#376779c9','#68878dc9'][row]);const pos=G.horizonX(w,row);for(let n=-3;n<4;n++){const x=pos+n*210;ctx.beginPath();ctx.moveTo(x-100,y+88);ctx.lineTo(x-30,y+35);ctx.lineTo(x+5,y+65);ctx.lineTo(x+55,y+18);ctx.lineTo(x+120,y+88);ctx.fillStyle=['#182f3f','#335d68','#759399'][row];ctx.fill();}diamond(pos,y+44,row===w.selected?gold:cream);ctx.restore();text(['近景・欄影','中景・河灣','遠景・山口'][row],175,y+78,18,gold);line({x:500,y},{x:500,y:y+90},gold,2);}
+  bar(290,460,w.steady/.5,360,green);text('三層停穩 '+w.steady.toFixed(1)+' 秒',500,442,21,gold);button(315,485,370,56,'記向 '+(w.recorded+1)+'／3',w.steady>=.5?green:blue);
+  if(w.index){for(let i=0;i<5;i++)box(60,130+i*65,880,25,'#bec7ba15');}
+ }else if(w.mode==='cupCurrent'){
+  ctx.beginPath();ctx.moveTo(90,455);ctx.bezierCurveTo(280,470,350,385,500,363);ctx.bezierCurveTo(680,315,780,275,930,320);ctx.lineWidth=132;ctx.strokeStyle='#18465de6';ctx.stroke();ctx.lineWidth=109;ctx.strokeStyle='#5b9aa4c9';ctx.stroke();
+  for(let n=0;n<16;n++){const x=110+n*51,y=380+70*Math.cos((x-140)/210);line({x,y:y+Math.sin(w.time+n)*12},{x:x+24,y:y+Math.sin(w.time+n)*12-5},'#d6eee57a',2);}
+  G.cupSpots.forEach((p,i)=>{circle(p.x,p.y,44,i<w.next?'#97c5a480':'#d9bd7930',i===w.next?gold:green);text('第'+(i+1)+'席',p.x,p.y-58,22,i===w.next?gold:green);if(i<w.next)text('已留詠',p.x,p.y+9,19,green);});
+  const c=w.cup;ctx.beginPath();ctx.ellipse(c.x,c.y,26,17,0,0,Math.PI*2);ctx.fillStyle='#8b3d31';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=gold;ctx.stroke();line({x:c.x-20,y:c.y+2},{x:c.x-13,y:c.y+22},gold,3);line({x:c.x+20,y:c.y+2},{x:c.x+13,y:c.y+22},gold,3);line({x:c.x-13,y:c.y+22},{x:c.x+13,y:c.y+22},gold,3);
+  if(w.gesture)line(w.gesture,{x:w.gesture.startX,y:w.gesture.startY},gold,4);else{line({x:w.aim.x-13,y:w.aim.y},{x:w.aim.x+13,y:w.aim.y},'#edebbd55',2);line({x:w.aim.x,y:w.aim.y-13},{x:w.aim.x,y:w.aim.y+13},'#edebbd55',2);}
+  text(w.caught?'已停穩，接住詩札':'從杯拖向本席，放手施力',370,500,23,gold);button(710,505,240,44,'接札',w.caught?green:blue);
+ }else if(w.mode==='cliffHands'){
+  box(195,90,610,400,'#706c5aa8',gold);for(let n=0;n<12;n++)line({x:230+n*48,y:90},{x:190+n*50,y:490},'#cfbf9488',2);
+  for(const q of w.decoys||[]){const p=G.handScreen(w,q);if(p.y>110&&p.y<470){circle(p.x,p.y,26,'#626c6b',red);text('鬆',p.x,p.y+7,18,cream);}}
+  for(let i=0;i<w.holds.length;i++){const p=G.handScreen(w,w.holds[i]);if(p.y<95||p.y>490)continue;circle(p.x,p.y,28,i%2?'#6f9da5':'#a99770',i===w.top+1?gold:cream);text((i%2?'右':'左')+i,p.x,p.y+8,18,ink);}
+  const left=G.handScreen(w,w.hands[0]),right=G.handScreen(w,w.hands[1]),body=G.handScreen(w,{x:(left.x+right.x)/2,y:w.bodyY});
+  line(left,{x:body.x-18,y:body.y-40},gold,9);line(right,{x:body.x+18,y:body.y-40},blue,9);circle(body.x,body.y-58,16,'#e4c6a2',gold);box(body.x-25,body.y-40,50,63,'#6f8c87',gold);line({x:body.x-12,y:body.y+20},{x:body.x-35,y:body.y+52},gold,8);line({x:body.x+12,y:body.y+20},{x:body.x+35,y:body.y+52},blue,8);circle(left.x,left.y,19,gold);circle(right.x,right.y,19,blue);
+  if(w.gesture){const p=w.hand?right:left;line(p,w.gesture,w.hand?blue:gold,5);circle(w.gesture.x,w.gesture.y,20,null,gold);}text('金色左手・青色右手，交替抓牢',500,524,24,gold);bar(330,540,w.grip/100,340,green);
+ }else if(w.mode==='citrusPeel'){
+  box(170,102,660,352,'#65523de3',gold);circle(500,295,146,'#be862d',gold);for(let n=0;n<22;n++)circle(500+Math.cos(n*2.2)*120,295+Math.sin(n*2.2)*120,3,'#e3b75d');
+  if(w.cut<w.path.length){ctx.beginPath();w.path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#ffdfa4';ctx.lineWidth=5;ctx.stroke();if(w.cut){ctx.beginPath();w.path.slice(0,w.cut).forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#254b45';ctx.lineWidth=11;ctx.stroke();}const p=w.path[w.cut];circle(p.x,p.y,14,gold);line({x:w.cursor.x-10,y:w.cursor.y-16},{x:w.cursor.x+10,y:w.cursor.y+16},cream,6);text('從金點接續，逐段剖開',500,135,23,gold);
+  }else if(w.kinds[w.fruit]){circle(500,295,115,'#edbc62',cream);for(let n=0;n<9;n++){const a=n*Math.PI*2/9;line({x:500,y:295},{x:500+Math.cos(a)*105,y:295+Math.sin(a)*105},cream,4);}text('鮮實果肉',500,142,27,green);
+  }else{circle(500,295,115,'#bcbaa0',cream);for(let n=0;n<24;n++){const x=430+n%7*23,y=220+Math.floor(n/7)*40;line({x,y},{x:x+35,y:y+40},cream,3);line({x:x+10,y},{x:x-15,y:y+43},'#e3ddba',2);}text('乾枯敗絮',500,142,27,red);}
+  text('第 '+Math.min(3,w.fruit+1)+'／3 顆',500,440,24,gold);button(120,475,320,65,'登記鮮實',green);button(560,475,320,65,'登記敗絮',red);
+ }else if(w.mode==='faultContain'){
+  box(75,95,850,380,'#173b49eb',gold);w.edges.forEach(([a,b],i)=>{const p=G.nodePoint(a),q=G.nodePoint(b);line(p,q,w.cuts.includes(i)?'#26424e':'#9dbab77a',4);if(w.cuts.includes(i)){const m={x:(p.x+q.x)/2,y:(p.y+q.y)/2};line({x:m.x-12,y:m.y-12},{x:m.x+12,y:m.y+12},gold,8);line({x:m.x-12,y:m.y+12},{x:m.x+12,y:m.y-12},gold,8);}});
+  for(let n=0;n<20;n++){const p=G.nodePoint(n),infected=w.active.includes(n),guard=n===4||n===19;circle(p.x,p.y,25,infected?'#bb7562':guard?'#82a78c':'#698b94',guard?gold:cream);text(guard?'守':infected?'裂':n,p.x,p.y+8,19,ink);}button(120,488,455,55,'推進一刻',green);button(645,488,240,55,w.rewound?'已回看一次':'回看一刻',blue);
+ }else if(w.mode==='sourcePress'){
+  text(w.printed===4?'校刊完成':'本次：'+G.pressRows[0][w.printed],500,110,24,gold);
+  for(let row=0;row<3;row++){const y=132+row*105;ctx.save();ctx.beginPath();ctx.rect(70,y,860,88);ctx.clip();box(70,y,860,88,'#1c3a4ce8',blue);for(let j=0;j<4;j++){const x=500+((j-w.pos[row]+6)%4-2)*190;box(x-84,y+10,168,66,w.braked[row]?'#c8bd9b':'#9faf9b',gold);text(G.pressRows[row][j],x,y+52,22,ink);}ctx.restore();text(['事項','記錄','核證'][row],42,y+53,18,gold);box(410,y-4,180,96,null,gold);circle(953,y+44,12,w.braked[row]?green:red);}
+  text('點軌煞停，停穩後再拖曳微調',500,463,23,gold);button(110,482,330,61,'有據刊入',green);button(560,482,330,61,'留待考',gold);
+ }
+ ctx.restore();
+};
+})(window.ZH);
+</script>
