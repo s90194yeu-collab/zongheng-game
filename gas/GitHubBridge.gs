@@ -5,7 +5,7 @@
  * 現有網頁已部署橋接核心時，啟用設定立即生效，不需要再次部署。
  */
 const GH_SITE_DEFAULT_ = 'https://s90194yeu-collab.github.io/zongheng-game/';
-const GH_RELEASE_DEFAULT_ = 'v4-789983f7f60ae2';
+const GH_RELEASE_DEFAULT_ = 'v4-1b74c9f0863351';
 
 /** 手動執行入口：只允許目前的部署教師操作，不能由訪客或學生切換全站設定。 */
 function githubRequireSetupUser_() {

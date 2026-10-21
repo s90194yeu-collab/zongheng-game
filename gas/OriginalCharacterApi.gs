@@ -1,6 +1,9 @@
 /** 原創角色試點。每帳號一角；配點／獨立冒險表，不寫原篇首答或成績。 */
 var OC_PROFILE_HEADERS_=['email','configJson','journalJson','revision','updatedAt'];
 var OC_RUN_HEADERS_=['email','scenarioId','runId','stateJson','revision','updatedAt'];
+// google.script.run 不保證物件欄位順序；比較值而非傳輸後的插入順序。
+function ocComparable_(o){if(Array.isArray(o))return o.map(ocComparable_);if(o&&typeof o==='object'){const out={};Object.keys(o).sort().forEach(k=>out[k]=ocComparable_(o[k]));return out;}return o;}
+function ocSame_(a,b){return JSON.stringify(ocComparable_(a))===JSON.stringify(ocComparable_(b));}
 function ocProfile_(email){
  const rows=pfRows_('OriginalCharacters',OC_PROFILE_HEADERS_),i=rows.findIndex(r=>paEmail_(r[0])===email),r=rows[i];
  if(!r)return {config:OC_RULES_.defaults(),journal:[],row:0};
@@ -19,11 +22,11 @@ function api_startCharacterAdventure(sid){try{const u=paUser_();OC_RULES_.pilot(
 function api_saveCharacterAdventure(input){try{
  const u=paUser_(),o=input||{};if(!o.world||typeof o.world!=='object')throw Error('冒險資料不完整。');OC_RULES_.pilot(o.world.id);
  return paLock_(()=>{const r=ocRun_(u.email,o.world.id);if(!r||r.runId!==o.runId)throw Error('這份冒險已被新局取代，請重新讀取。');if(r.revision!==o.revision)throw Error('冒險已在另一分頁更新，請重新讀取。');
-  const before=r.world,incoming=o.world;if(JSON.stringify(incoming.snapshot.config)!==JSON.stringify(before.snapshot.config))throw Error('續玩不能變更開局配點與能力。');
+  const before=r.world,incoming=o.world;if(!ocSame_(OC_RULES_.config(incoming.snapshot?.config),OC_RULES_.config(before.snapshot.config)))throw Error('續玩不能變更開局配點與能力。');
   const common=['status','time','uses','cooldowns','buffs','notice','errors','trace'],fields=before.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:before.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
   const merged=JSON.parse(JSON.stringify(before));common.concat(fields).forEach(k=>{if(Object.prototype.hasOwnProperty.call(incoming,k))merged[k]=incoming[k];});merged.notice=String(merged.notice||'').slice(0,300);const next=OC_RULES_.restore(merged);
   if(next.time<before.time||Object.entries(before.uses||{}).some(([k,n])=>(next.uses[k]||0)<n))throw Error('續玩時間或能力次數不能倒退。');
-  if(before.status!=='playing'&&JSON.stringify(next)!==JSON.stringify(before))throw Error('本局已結束；請開新局再挑戰。');
+  if(before.status!=='playing'&&!ocSame_(next,before))throw Error('本局已結束；請開新局再挑戰。');
   r.world=next;r.revision++;const p=ocProfile_(u.email);if(next.status==='won'){const j={id:next.id,score:OC_RULES_.score(next),seconds:Math.round(next.time),at:nowStr_()},i=p.journal.findIndex(x=>x.id===j.id);if(i<0)p.journal.push(j);else if(j.score>p.journal[i].score)p.journal[i]=j;ocWriteProfile_(u.email,p);}
   ocWriteRun_(u.email,r);return {ok:true,revision:r.revision,journal:p.journal};
  });

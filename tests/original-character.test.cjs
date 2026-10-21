@@ -62,6 +62,13 @@ test('學校雲端只保存本人、固定預算與兩配裝，拒絕舊revision
 test('雲端冒險通關重送只留一筆旅歷，原題、原分數與存檔工作表不被寫入',()=>{
  const h=apiHarness(),a=h.ctx;let c=conf(R.PILOTS[1].id);assert(a.api_saveOriginalCharacter(c).ok);const r=a.api_startCharacterAdventure(R.PILOTS[1].id).run;solve(r.world);const v=a.api_saveCharacterAdventure({runId:r.runId,revision:0,world:r.world});assert(v.ok,v.msg);assert.equal(v.journal.length,1);assert(a.api_saveCharacterAdventure({runId:r.runId,revision:v.revision,world:r.world}).ok);assert.equal(a.api_getOriginalCharacter().character.journal.length,1);assert(!h.tables.has('Saves'));assert(!h.tables.has('MiniGameLog'));assert(!h.tables.has('AnchorLog'));
 });
+test('GAS傳輸重排物件欄位後，相同配點仍可保存及續玩，改點仍被拒絕',()=>{
+ const wire=o=>Array.isArray(o)?o.map(wire):o&&typeof o==='object'?Object.fromEntries(Object.keys(o).sort().map(k=>[k,wire(o[k])])):o;
+ const h=apiHarness(),a=h.ctx;assert(a.api_saveOriginalCharacter(wire(conf(R.PILOTS[1].id))).ok);const r=wire(a.api_startCharacterAdventure(R.PILOTS[1].id).run);solve(r.world);
+ const v=a.api_saveCharacterAdventure(wire({runId:r.runId,revision:0,world:r.world}));assert(v.ok,v.msg);assert.equal(a.api_getCharacterAdventure(R.PILOTS[1].id).run.world.status,'won');
+ assert(a.api_saveCharacterAdventure(wire({runId:r.runId,revision:v.revision,world:r.world})).ok);
+ const bad=wire(r.world);bad.snapshot.config.stats.agility++;bad.snapshot.config.stats.strength--;assert(!a.api_saveCharacterAdventure(wire({runId:r.runId,revision:2,world:bad})).ok);
+});
 test('角色能力不發送正式作答／分數；教師試玩與訪客使用隔離分頁儲存',()=>{
  const app=raw('src/character/app.js');assert(!/ZH\.(track|finishScenario|save)\(/.test(app));assert(app.includes('ZH.isGuest()||test()'));assert(app.includes('inTest!==test()'));assert(app.includes("ZH.session.set(key(snapshot.id),own)"));assert(app.includes('api_saveCharacterAdventure'));
  const preview=raw('src/legacy/Teacher_preview.html');assert(preview.includes('if(active()&&!readOnly.has(name))'));
