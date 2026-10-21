@@ -1,0 +1,13 @@
+<script>
+(function(ZH){
+ 'use strict';const assets=window.ZH_CHARACTER_ASSETS;if(!assets||ZH.character)return;let app,loading;
+ async function ensure(){if(app)return app;if(!loading)loading=import(ZH_STATIC_URL(assets.app)).then(m=>m.install({ZH})).then(a=>app=a).catch(e=>{loading=null;throw e;});return loading;}
+ async function open(){try{const a=await ensure();await a.open();}catch(e){ZH.toast('原創角色暫時無法開啟：'+e.message,'bad');}}
+ ZH.character={open,version:'4.10.0'};
+ ZH.ready(()=>{if(!['hub','profile'].includes(ZH.boot.page))return;const css=document.createElement('link');css.rel='stylesheet';css.href=ZH_STATIC_URL(assets.css);document.head.appendChild(css);
+  const bar=document.querySelector('.ac-tools');if(bar){const b=document.createElement('button');b.type='button';b.className='oc-launch';b.textContent='原創角色';b.onclick=open;bar.appendChild(b);}
+  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，體驗夜縋、治理與校勘。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
+  if(ZH.boot.params?.character==='1')setTimeout(open,0);
+ });
+})(window.ZH);
+</script>

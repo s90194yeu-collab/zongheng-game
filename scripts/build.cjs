@@ -4,11 +4,13 @@ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
 require('./generate-zhuzi.cjs');
 require('./generate-classics.cjs');
 require('./generate-a-selections.cjs');
+require('./generate-character.cjs');
 const raw=name=>fs.readFileSync(path.join(source,name+'.html'),'utf8');
 const manifest=JSON.parse(raw('Data_assets').split('/* ASSET_MANIFEST_START */')[1].split('/* ASSET_MANIFEST_END */')[0]);
 const fingerprints=fs.readdirSync(source).sort().filter(n=>/\.html$|_data\.gs$|^code\.gs$/.test(n)).map(n=>hash(fs.readFileSync(path.join(source,n))));
 for(const dir of ['media','music'])for(const file of fs.readdirSync(path.join(root,'public',dir)).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'public',dir,file))));
 for(const file of fs.readdirSync(path.join(root,'src/academy')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/academy',file))));
+for(const file of fs.readdirSync(path.join(root,'src/character')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -16,12 +18,14 @@ fs.rmSync(dist,{recursive:true,force:true});
 fs.mkdirSync(releaseDir,{recursive:true});fs.mkdirSync(path.join(dist,'assets'),{recursive:true});
 fs.cpSync(path.join(root,'public'),dist,{recursive:true});
 esbuild.buildSync({entryPoints:[path.join(path.dirname(require.resolve('three')),'three.module.js')],outfile:path.join(dist,'assets/three-r180.min.js'),bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none'});
-function academyAsset(label,text){const file='assets/'+label+'-'+hash(text).slice(0,16)+'.'+(label==='academy-data'?'json':label==='academy-style'?'css':'js');fs.writeFileSync(path.join(dist,file),text);return file;}
+function academyAsset(label,text){const file='assets/'+label+'-'+hash(text).slice(0,16)+'.'+(label==='academy-data'?'json':label.endsWith('-style')?'css':'js');fs.writeFileSync(path.join(dist,file),text);return file;}
 const academyApp=esbuild.buildSync({entryPoints:[path.join(root,'src/academy/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
 const screenshotApp=esbuild.buildSync({entryPoints:[require.resolve('html2canvas')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
 const gameFiles=['Literary_core','Literary_puzzles','Literary_strategy','Literary_action','Literary_simulations','Literary_classics','Literary_seven','Literary_canvas','Literary_classics_canvas','Literary_seven_canvas','Literary_creative_canvas','Literary_pointer'];
 const gameSource='window.ZH_ACADEMY_ENGINE={};\n'+gameFiles.map(n=>raw(n).replace(/<\/?script>/g,'').replaceAll('window.ZH','window.ZH_ACADEMY_ENGINE')).join('\n');
 const academyAssets={version:config.version,release,app:academyAsset('academy-app',academyApp),screenshot:academyAsset('academy-screenshot',screenshotApp),css:academyAsset('academy-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/academy/style.css'),'utf8'),{loader:'css',minify:true}).code),games:academyAsset('academy-games',esbuild.transformSync(gameSource,{minify:true,target:'es2020',charset:'utf8',legalComments:'none'}).code),data:''};
+const characterApp=esbuild.buildSync({entryPoints:[path.join(root,'src/character/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
+const characterAssets={version:config.version,app:academyAsset('character-app',characterApp),css:academyAsset('character-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/character/style.css'),'utf8'),{loader:'css',minify:true}).code)};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -51,6 +55,7 @@ function read(name){let text=raw(name);
   text=text.replace(/function getHubArt\(key,priority=1\)\{[^\n]*\}/,`function getHubArt(key,priority=1){return Promise.resolve(Object.hasOwn(window.ZH_STATIC_HOME,key)?window.ZH_STATIC_URL(window.ZH_STATIC_HOME[key]):null);}`);
  }
  if(name==='Core_js')text+='\n'+raw('Teacher_preview')+'\n<script>window.ZH_ACADEMY_ASSETS='+JSON.stringify(academyAssets)+';</script>\n'+raw('Academy_boot');
+ if(name==='Core_js')text+='\n<script>window.ZH_CHARACTER_ASSETS='+JSON.stringify(characterAssets)+';</script>\n'+raw('Character_boot');
  return text;
 }
 function environment(){
