@@ -154,7 +154,7 @@
         meta(state);
       }
     },
-    snapshot(snap) { meta(snap); },
+    snapshot(snap,live) { if(live?._ocChapter)snap._ocChapter=clone(live._ocChapter);meta(snap); },
     progress(k) { return progress[k] || {}; },
     saveProgress(k, value) { progress[k] = clone(value); },
     cacheProgress(state) { meta(state); latest = {engine:clone(state), updatedAt:Date.now(), chapterVersion:'v1.1.0'}; if(ZH.isGuest()) ZH.save(SID,'history',latest); else write('save',latest); },
@@ -924,13 +924,14 @@
     const game = ZH.story.create(ROOT, {
       id: SID, mode: MODE, title: META.name, subtitle: META.episode,
       seed: Number(params.seed) || 0, start: 'n01',
-      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP,
+      characters: CHARACTERS, meters: METERS, nodes: ZH.character?.chuhanNodes(SID,NODES,()=>game.save())||NODES, help: HELP,
+      initState:()=>({_ocChapter:ZH.character?.newChapterState(SID)}),
       anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
       onEnd: onEnd, save: saveState, snapshot: SQ.snapshot, anchorRunner: SQ.runAnchor, onProgress: SQ.cacheProgress, actions: [{label:"史冊",run:SQ.book},{label:"存檔",run:SQ.saveMenu}]
     });
     window.__ep = game;
     if(typeof game.save!=='function'){showCoreMessage();return;}
-    game.start(saved || null);
+    game.start(saved?ZH.character?.applyChapterChoice(SID,saved)||saved:null);
   }
 
   function renderTitle(saved) {
@@ -948,6 +949,7 @@
       (st ? btn('continue', st.ended ? '查看結局' : '繼續', true) + btn('new', '重新開始', false) : btn('new', '開始遊戲', true)) +
       '</div></section><section class="sq-title-scene" aria-label="咸陽宮與本話人物">'+ART.scene('palace',{banner:'#3d4352',glyph:'秦'})+'<div class="sq-title-cast">'+['lisi','qinshihuang','zhaogao','fusu'].map(id=>'<span>'+ART.portrait(CHARACTERS.find(c=>c.id===id),{expr:id==='zhaogao'?'smirk':'normal'})+'</span>').join('')+'</div></section><section class="ep-points" aria-label="本話重點">' + POINTS.map(p => '<div class="ep-point"><b>' + esc(p.title) + '</b><span>' + esc(p.text) + '</span></div>').join('') + '</section>' +
       '<p class="ep-note">本話共 12 個史實錨點與 3 項必經體驗。中途離開會自動存檔。</p></main></div>';
+    const characterEntry=document.createElement('div');characterEntry.setAttribute('data-character-entry','');ROOT.querySelector('.ep-start').after(characterEntry);ZH.character?.mountEntry(characterEntry,SID,st);
     ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
     const cont = ROOT.querySelector('[data-a="continue"]');
     if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });

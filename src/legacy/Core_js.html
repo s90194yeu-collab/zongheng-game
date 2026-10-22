@@ -84,7 +84,7 @@
    * 呼叫伺服器函式，回傳 Promise。
    * 例：ZH.call('api_saveGame', 'S_cq08_weizheng', 'history', state, ZH.VERSION)
    */
-  const RETRY_READS = new Set(['api_loadGame', 'api_getStoryAnchors', 'api_getAnchors', 'api_getStudentProfile', 'api_getPlayerProfile', 'api_getProgressAccess', 'api_listSaves']);
+  const RETRY_READS = new Set(['api_loadGame', 'api_getStoryAnchors', 'api_getAnchors', 'api_getStudentProfile', 'api_getPlayerProfile', 'api_getProgressAccess', 'api_listSaves', 'api_getOriginalCharacter', 'api_getCharacterAdventure', 'api_getCharacterAdventures']);
   ZH.isConnectionError = error => !!error && (error.code === 'RPC_TIMEOUT' || /\bNetworkError\b|\bHTTP\s*0\b|\bERR_NETWORK\b|\bFailed to fetch\b|\bNetwork request failed\b|連線失敗/i.test(String(error.message || error)));
   function callOnce(fnName, args) {
     return new Promise((resolve, reject) => {

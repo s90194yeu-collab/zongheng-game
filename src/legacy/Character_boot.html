@@ -6,6 +6,8 @@
   S_cq16_datong:{title:'大同與小康',mission:'公天下調度',point:'讀完照養責任、進入照養簿之前',detail:'你的角色依八位鄉人的專長安排四日輪值；再回言偃的三期糧與照護配置，分清「誰來做」與「各戶需要什麼」。'},
   S_zg11_zhuke:{title:'諫逐客書',mission:'諫書對勘',point:'李斯整備最後校書、上書排序之前',detail:'你的角色逐字對勘書簡、辨論證作用，再回李斯親排十二段摘要；校字與組織論證各有任務。'}
  },choices=new Map(),copy=v=>JSON.parse(JSON.stringify(v));
+ Object.assign(CHAPTERS,{"S_ch01_shaqiu":{"title":"沙丘","mission":"合符驗詔","point":"沙丘密議前","detail":"以自己的造型完成「合符驗詔」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n20"},"S_ch02_dazexiang":{"title":"大澤鄉","mission":"雨夜急遞","point":"雨阻失期後","detail":"以自己的造型完成「雨夜急遞」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_04"},"S_ch03_julu":{"title":"鉅鹿","mission":"限舟接應","point":"鉅鹿決戰前","detail":"以自己的造型完成「限舟接應」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch04_hongmen":{"title":"鴻門宴","mission":"席外傳訊","point":"沛公離席後、張良留謝前","detail":"以自己的造型完成「席外傳訊」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_24"},"S_ch05_sanqin":{"title":"三秦","mission":"棧道雙線","point":"漢中整備時","detail":"以自己的造型完成「棧道雙線」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch06_xingyang":{"title":"滎陽","mission":"糧車護行","point":"滎陽相持的糧道任務","detail":"以自己的造型完成「糧車護行」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch07_hanxin":{"title":"韓信","mission":"拔旗換幟","point":"井陘部署時","detail":"以自己的造型完成「拔旗換幟」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch08_gaixia":{"title":"垓下","mission":"回聲尋伴","point":"夜間突圍時","detail":"以自己的造型完成「回聲尋伴」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_09"},"S_ch09_dafeng":{"title":"大風","mission":"歸鄉重建","point":"還鄉守成時","detail":"以自己的造型完成「歸鄉重建」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_20"}});
+ function chuhanNodes(id,nodes,save){const c=CHAPTERS[id];if(!c?.node||!nodes[c.node])return nodes;return{...nodes,[c.node]:async ctx=>{if(enabled(id,ctx.state)){const r=await checkpoint(id,ctx.state,save,{checkpoint:'chuhan-companion',nodeId:c.node,title:c.mission});if(r.modeChanged)return null;await ctx.say([{text:r.completed?'你的同行任務已完成，現在回到原篇人物與事件。':'同行任務已保存返回點；原篇照常接續，之後可從角色入口續玩。'}]);}return nodes[c.node](ctx);}};}
  function eligible(id){return !!CHAPTERS[id]&&(!ZH.isGuest()||(ZH.boot.guestScenarios||[]).includes(id));}
  function ensureCss(){if(cssReady)return;cssReady=true;const css=document.createElement('link');css.rel='stylesheet';css.href=ZH_STATIC_URL(assets.css);document.head.appendChild(css);}
  async function ensure(){ensureCss();if(app)return app;if(!loading)loading=import(ZH_STATIC_URL(assets.app)).then(m=>m.install({ZH})).then(a=>app=a).catch(e=>{loading=null;throw e;});return loading;}
@@ -30,10 +32,10 @@
   const result={status,completed:status==='completed',left:status!=='completed',id,runId:String(r?.runId||''),at:Date.now()};
   if(Number.isFinite(r?.score))result.score=r.score;c.checkpoints[key]=result;delete c.pending;await save();return{...r,...result};
  }
- ZH.character={open,playChapter,newChapterState,applyChapterChoice,mountEntry,checkpoint,enabled,chapters:CHAPTERS,version:'4.11.0'};
+ ZH.character={open,playChapter,newChapterState,applyChapterChoice,mountEntry,checkpoint,enabled,chuhanNodes,chapters:CHAPTERS,version:'4.12.0'};
  ZH.ready(()=>{if(!['hub','profile',...Object.keys(CHAPTERS)].includes(ZH.boot.page))return;ensureCss();
   const bar=document.querySelector('.ac-tools');if(bar){const b=document.createElement('button');b.type='button';b.className='oc-launch';b.textContent='原創角色';b.onclick=open;bar.appendChild(b);}
-  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，走進夜縋、治理與校勘三篇章。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
+  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，走進夜縋、治理、校勘與楚漢九話的各式任務。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
   if(['hub','profile'].includes(ZH.boot.page)&&ZH.boot.params?.character==='1')setTimeout(open,0);
  });
 })(window.ZH);

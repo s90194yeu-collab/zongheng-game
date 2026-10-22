@@ -198,7 +198,7 @@ guestScenarios: <?!= guestScenariosJson ?> };
         meta(state);
       }
     },
-    snapshot(snap) { meta(snap); },
+    snapshot(snap,live) { if(live?._ocChapter)snap._ocChapter=clone(live._ocChapter);meta(snap); },
     progress(k) { return progress[k] || {}; },
     saveProgress(k, value) { progress[k] = clone(value); },
     cacheProgress(state) { meta(state); latest = {engine:clone(state), updatedAt:Date.now(), chapterVersion:'v1.1.0'}; if(ZH.isGuest()) ZH.save(SID,'history',latest); else write('save',latest); },
@@ -1120,12 +1120,13 @@ guestScenarios: <?!= guestScenariosJson ?> };
     const game = ZH.story.create(ROOT, {
       id: SID, mode: MODE, title: META.name, subtitle: META.episode,
       seed: Number(params.seed) || 0, start: 'n_01',
-      characters: CHARACTERS, meters: METERS, nodes: NODES, help: HELP,
+      characters: CHARACTERS, meters: METERS, nodes: ZH.character?.chuhanNodes(SID,NODES,()=>game.save())||NODES, help: HELP,
+      initState:()=>({_ocChapter:ZH.character?.newChapterState(SID)}),
       anchorTotal: ANCHOR_ORDER.length, anchorOrder: ANCHOR_ORDER,
       onEnd: onEnd, save: saveState, actions: [{label:'史冊',run:HM.book},{label:'存檔',run:HM.saveMenu}], snapshot: HM.snapshot, anchorRunner: HM.runAnchor, onProgress: HM.cacheProgress
     });
     window.__ep = game;
-    game.start(saved || null);
+    game.start(saved?ZH.character?.applyChapterChoice(SID,saved)||saved:null);
   }
 
   function renderTitle(saved) {
@@ -1152,6 +1153,7 @@ guestScenarios: <?!= guestScenariosJson ?> };
       '<p class="ep-note">本話共 ' + ANCHOR_ORDER.length + ' 個原文對讀。中途離開可接續目前短段落。</p><div class="hm-actions"><button type="button" class="zh-btn" data-import>匯入進度</button><button type="button" class="zh-btn" data-teacher>教師紀錄</button></div><input class="hm-import" type="file" accept="application/json,.json"><p class="hm-savebar" data-hm-save>' + (ZH.isGuest() ? '訪客進度暫存於此分頁' : '使用平台存檔與學習紀錄') + '</p>' +
       '</main></div>';
     ROOT.querySelector('.hm-title-scene').innerHTML = ART.scene('banquet', {tod:'day'}) + '<div class="hm-title-cast">' + ['liubang','zhangliang','xiangyu','fanzeng'].map(id => '<span>' + portrait(id) + '</span>').join('') + '</div>';ROOT.querySelector('[data-teacher]').onclick=HM.teacher;ROOT.querySelector('[data-teacher]').hidden=!ZH.user.isTeacher;ROOT.querySelector('[data-import]').onclick=()=>ROOT.querySelector('.hm-import').click();ROOT.querySelector('.hm-import').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());if(d.format!=='hongmen-full'||d.version!==1||!d.save?.engine?.node||!/^n_\d{2}$/.test(d.save.engine.node)||!NODES[d.save.engine.node])throw Error('這份檔案不是鴻門宴的有效進度');await HM.importSave(d);startGame(d.save.engine);}catch(err){ZH.toast(err.message,'bad');}};
+    const characterEntry=document.createElement('div');characterEntry.setAttribute('data-character-entry','');ROOT.querySelector('.ep-start').after(characterEntry);ZH.character?.mountEntry(characterEntry,SID,st);
     ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
     const cont = ROOT.querySelector('[data-a="continue"]');
     if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });

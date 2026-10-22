@@ -3,7 +3,7 @@ const R=require('../src/character/model.cjs'),root=path.resolve(__dirname,'..'),
 const conf=(id,stats)=>({...R.defaults(),skills:R.pilot(id).recommended.slice(),...(stats?{stats}:{} )});
 const allocations=R.NEEDS.map(()=>[]);{const people=Array(8).fill(0);function walk(i){if(i===8){const got=R.counts({people});R.NEEDS.forEach((need,d)=>{if(need.every((n,j)=>got[j]>=n))allocations[d].push(people.slice());});return;}for(let j=0;j<5;j++){people[i]=j;walk(i+1);}}walk(0);}
 function tick(w,n=1,input={}){for(let i=0;i<n&&w.status==='playing';i++)R.step(w,input,.05);}
-function solve(w){
+function solve(w){if(w.kind==='chuhan')return require('./helpers/chuhan-player.cjs')(R,w);
  if(w.kind==='action'){
   const go=(x,y)=>{R.command(w,'move',{x,y});let guard=0;while(w.status==='playing'&&(Math.abs(w.x-x)>.7||Math.abs(w.y-y)>.3)&&guard++<2000)tick(w);R.command(w,'stop');assert(w.status==='playing',w.notice);};
   go(22,0);go(22,26);assert(R.command(w,'deliver'));go(22,35);go(78,35);go(78,57);assert(R.command(w,'deliver'));go(78,66);go(42,66);go(42,83);assert(R.command(w,'deliver'));go(42,100);assert(R.command(w,'finish'));
@@ -15,7 +15,7 @@ function solve(w){
 }
 test('一角固定12點、八能力與本次訪客三篇範圍，拒絕越界配點與多裝備',()=>{
  assert.equal(R.SKILLS.length,8);assert.equal(new Set(R.SKILLS.map(s=>s.id)).size,8);
- for(const p of R.PILOTS)assert(['S_cq08_weizheng','S_cq16_datong','S_zg11_zhuke'].includes(p.id));
+ assert.equal(R.PILOTS.length,12);assert.equal(R.PILOTS.filter(p=>p.kind==='chuhan').length,9);
  assert.throws(()=>R.config({...R.defaults(),stats:{...R.defaults().stats,agility:3}}),/12點/);
  assert.throws(()=>R.config({...R.defaults(),stats:{...R.defaults().stats,agility:-1}}));
  assert.throws(()=>R.config({...R.defaults(),skills:['swift','steady','trace']}));
@@ -51,7 +51,7 @@ test('還原拒絕未完成卻自稱通關、超額次數與無限增益',()=>{
 function apiHarness(){
  const tables=new Map(),calls=[];let email='a@school.test',uuid=0;const ctx={console,Math,Date,JSON,Number,Object,Array,Set,Map,Error,Utilities:{getUuid:()=>String(++uuid)},paUser_:()=>({email}),paEmail_:x=>String(x).toLowerCase(),paLock_:fn=>fn(),nowStr_:()=> '2026-10-21 16:00:00',pfJson_:(x,f)=>{try{return JSON.parse(x);}catch{return f;}},pfRead_:e=>({email:e}),pfPublic_:p=>({nickname:p.email==='a@school.test'?'甲角':'乙角',avatarId:'ink',appearance:null}),pfRows_:name=>(tables.get(name)||[]).slice(1),pfSheet_:(name,headers)=>{
   if(!tables.has(name))tables.set(name,[headers]);const rows=tables.get(name);return {getLastRow:()=>rows.length,getRange:(row,col,h,w)=>({setNumberFormat(){return this;},setValues(values){for(let i=0;i<h;i++){rows[row-1+i]=rows[row-1+i]||[];for(let j=0;j<w;j++)rows[row-1+i][col-1+j]=values[i][j];}calls.push(name);return this;}})};}};
- vm.createContext(ctx);vm.runInContext('var OC_RULES_=(function(){var module={exports:{}};'+raw('src/character/model.cjs')+';return module.exports;})();',ctx);vm.runInContext(raw('gas/OriginalCharacterApi.gs'),ctx);return {ctx,tables,calls,user:v=>email=v};
+ vm.createContext(ctx);vm.runInContext(raw('gas/OriginalCharacterRules.gs'),ctx);vm.runInContext(raw('gas/OriginalCharacterApi.gs'),ctx);return {ctx,tables,calls,user:v=>email=v};
 }
 test('學校雲端只保存本人、固定預算與兩配裝，拒絕舊revision及換角續檔',()=>{
  const h=apiHarness(),a=h.ctx;let c=a.api_getOriginalCharacter().character.config;assert(a.api_saveOriginalCharacter(c).ok);assert(!a.api_saveOriginalCharacter(c).ok);c=a.api_getOriginalCharacter().character.config;c.stats.agility=9;assert(!a.api_saveOriginalCharacter(c).ok);

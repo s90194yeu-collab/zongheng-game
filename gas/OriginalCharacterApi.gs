@@ -18,13 +18,20 @@ function ocWriteRun_(email,r){const sh=pfSheet_('CharacterAdventures',OC_RUN_HEA
 function api_getOriginalCharacter(){try{const u=paUser_();return {ok:true,character:ocPublic_(ocProfile_(u.email))};}catch(e){return {ok:false,msg:e.message};}}
 function api_saveOriginalCharacter(input){try{const u=paUser_(),c=OC_RULES_.config(input);return paLock_(()=>{const p=ocProfile_(u.email);if(c.revision!==p.config.revision)throw Error('角色已在另一分頁更新，請重新讀取後再配點。');c.revision++;p.config=c;ocWriteProfile_(u.email,p);return {ok:true,character:ocPublic_(p)};});}catch(e){return {ok:false,msg:e.message};}}
 function api_getCharacterAdventure(sid){try{const u=paUser_();OC_RULES_.pilot(sid);return {ok:true,run:ocRunPublic_(ocRun_(u.email,sid))};}catch(e){return {ok:false,msg:e.message};}}
+// 一次讀取本人所選篇章，避免開設定時同時送出十二次試算表請求。
+function api_getCharacterAdventures(ids){try{
+ const u=paUser_();if(!Array.isArray(ids)||ids.length>12||new Set(ids).size!==ids.length)throw Error('角色篇章清單不正確。');ids.forEach(id=>OC_RULES_.pilot(id));
+ const runs={};ids.forEach(id=>runs[id]=null);
+ pfRows_('CharacterAdventures',OC_RUN_HEADERS_).forEach(r=>{if(paEmail_(r[0])!==u.email||!Object.prototype.hasOwnProperty.call(runs,r[1])||runs[r[1]])return;runs[r[1]]={runId:String(r[2]),revision:Number(r[4]),world:OC_RULES_.restore(pfJson_(r[3],null))};});
+ return {ok:true,runs};
+}catch(e){return {ok:false,msg:e.message};}}
 function api_startCharacterAdventure(sid,options){try{const u=paUser_();OC_RULES_.pilot(sid);const o=options||{};if(typeof o!=='object'||Array.isArray(o)||Object.keys(o).some(k=>!['chapter','route'].includes(k))||(o.chapter!==undefined&&typeof o.chapter!=='boolean'))throw Error('角色章內模式設定不正確。');return paLock_(()=>{const p=ocProfile_(u.email),base=pfPublic_(pfRead_(u.email)),identity={nickname:base.nickname,avatarId:base.avatarId,appearance:base.appearance||null},old=ocRun_(u.email,sid),seed=Math.floor(Math.random()*99991)+1,r={row:old&&old.row||0,runId:'oc_'+Utilities.getUuid().replace(/-/g,''),revision:0,world:o.chapter?OC_RULES_.createChapter(sid,p.config,identity,seed,{route:o.route}):OC_RULES_.create(sid,p.config,identity,seed)};ocWriteRun_(u.email,r);return {ok:true,run:ocRunPublic_(r)};});}catch(e){return {ok:false,msg:e.message};}}
 function api_saveCharacterAdventure(input){try{
  const u=paUser_(),o=input||{};if(!o.world||typeof o.world!=='object')throw Error('冒險資料不完整。');OC_RULES_.pilot(o.world.id);
  return paLock_(()=>{const r=ocRun_(u.email,o.world.id);if(!r||r.runId!==o.runId)throw Error('這份冒險已被新局取代，請重新讀取。');if(r.revision!==o.revision)throw Error('冒險已在另一分頁更新，請重新讀取。');
   const before=r.world,incoming=o.world;if(!ocSame_(OC_RULES_.config(incoming.snapshot?.config),OC_RULES_.config(before.snapshot.config)))throw Error('續玩不能變更開局配點與能力。');
   if(!!before.chapter!==!!incoming.chapter)throw Error('續玩不能切換角色章內模式。');
-  const common=['status','time','uses','cooldowns','buffs','notice','errors','trace'].concat(before.chapter?['chapter']:[]),fields=before.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:before.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
+  const common=['status','time','uses','cooldowns','buffs','notice','errors','trace'].concat(before.chapter?['chapter']:[]),fields=before.kind==='chuhan'?['campaign']:before.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:before.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
   const merged=JSON.parse(JSON.stringify(before));common.concat(fields).forEach(k=>{if(Object.prototype.hasOwnProperty.call(incoming,k))merged[k]=incoming[k];});merged.notice=String(merged.notice||'').slice(0,300);const next=OC_RULES_.restore(merged);
   if(next.time<before.time||Object.entries(before.uses||{}).some(([k,n])=>(next.uses[k]||0)<n))throw Error('續玩時間或能力次數不能倒退。');
   if(before.chapter)OC_RULES_.chapterProgress(before,next);

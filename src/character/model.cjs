@@ -1,7 +1,8 @@
 'use strict';
 // 同一份純規則用於瀏覽器、GAS 配點核對與測試；不接觸原篇分數。
+const CH=require('./chuhan.cjs');
 const VERSION='oc-1',BUDGET=12;
-const STATS=[['agility','身法','夜縋移位速度'],['strength','臂力','夜縋握力消耗'],['dexterity','巧手','對勘展讀速度'],['focus','定力','潛行察覺餘裕與校勘時間'],['insight','察勢','觀測持續時間'],['planning','籌算','治理每輪可用調度令']];
+const STATS=[['agility','身法','移位速度與楚漢行動時機'],['strength','臂力','握力、渡運載重與攜糧'],['dexterity','巧手','展讀速度與拼符、試放餘裕'],['focus','定力','察覺餘裕、校勘時間與起跳窗口'],['insight','察勢','觀測持續時間'],['planning','籌算','輪值調度、護衛令與解謎餘裕']];
 const SKILLS=[
  {id:'swift',name:'迅影',kinds:['action'],uses:2,desc:'短暫加速2.5秒，耗握力12並增加聲響。'},
  {id:'steady',name:'握定',kinds:['action','collation'],uses:2,desc:'夜縋減少橫風但放繩變慢；對勘讓照明停留較久。'},
@@ -17,6 +18,7 @@ const PILOTS=[
  {id:'S_cq16_datong',kind:'strategy',name:'大同與小康',title:'公天下調度',scene:'scene:cq16_world',role:'鄉里調度者',recommended:['plan','foresight'],quote:'故人不獨親其親，不獨子其子。使老有所終，壯有所用，幼有所長，矜寡孤獨廢疾者皆有所養。',source:'《禮記・禮運》',brief:'八位鄉人各有兩項專長。你要讓養老、育幼、照護、勞作與公共倉五處分工在四日中都有人承擔。需求來自自編治理情境。',rule:'選一位鄉人再點工作區：專長可承擔2份，一般分工1份。首輪八令，其後每輪三令加籌算加成；調動一人耗一令。需求每日改變，四日都達標才完成。',after:'你完成了四日的公共分工。文本還要求選賢與能、講信修睦，不能只用人數配置概括大同；接著回原篇比較天下為公與天下為家。'},
  {id:'S_zg11_zhuke',kind:'collation',name:'諫逐客書',title:'諫書對勘',scene:'scene:zg11_world',role:'書簡校讀者',recommended:['precise','trace'],quote:'此四君者，皆以客之功。由此觀之，客何負於秦哉！',source:'李斯〈諫逐客書〉',brief:'李斯上書之前，你受託對讀三段書簡。展開底本，圈出待校文字，修正並說明它在論證中的作用。訛字為自編教學材料，不當作真實版本異文。',rule:'在上方底本移動光窗並停留展讀，下方點選待校字，再選替換字。每段另選論證標籤並按「核對本段」；三段都校妥才完成。',after:'書簡校讀完成。首段判斷、四君事證與取人標準的對照共同支撐李斯的諫言；上書與秦王的決策仍按原篇敘述。'}
 ];
+PILOTS.push(...CH.PILOTS);
 const JOBS=['養老','育幼','照護','勞作','公共倉'];
 const SPECIALTIES=[[0,2],[0,4],[1,2],[1,3],[2,4],[3,0],[3,1],[4,2]];
 const NEEDS=[[4,2,2,3,2],[2,3,4,2,2],[3,2,2,2,4],[2,4,3,3,2]];
@@ -62,6 +64,7 @@ const CHAPTERS={
   {id:'zk-r-standard',tags:['對比論證','字詞與論旨'],tag:'對比論證',prompt:'對讀「不問可否」時，應保留哪個意思？',choices:['已逐一問清人才是否可用','尚未察人可用與否，便按出身驅逐','逐客完全沒有國家影響'],evidence:[{id:'standard',text:'不問可否，不論曲直，非秦者去，為客者逐。'}],answer:1,correctEvidence:'standard',explain:'兩個不字與後面的逐客相連；校正文字後還要掌握它對取人標準的批評。'}
  ]}
 };
+Object.assign(CHAPTERS,CH.CHAPTERS);
 const CHAPTER_ROUTES={
  action:[{id:'shadow',name:'巡燈迂迴線',brief:'沿三處暗龕橫移，觀察巡燈後穿越。',build:'察勢型：先觀察、分段前進。',tradeoff:'移動距離較長，停在暗龕可回握力。',points:[{x:22,y:26},{x:78,y:57},{x:42,y:83}],speed:1,grip:1,radius:10,limit:150},
  {id:'shelter',name:'近壁守穩線',brief:'暗龕沿牆排列，較少橫移，放繩需耐心。',build:'臂力型：慢行、保握力、把握停留。',tradeoff:'速度降15%，握力耗損降25%，可停靠範圍較寬。',points:[{x:22,y:26},{x:27,y:57},{x:22,y:83}],speed:.85,grip:.75,radius:13,limit:180},
@@ -70,6 +73,7 @@ const CHAPTER_ROUTES={
  {id:'rotation',name:'倉雨調序',brief:'倉儲整備提前，雨後照護延後，重新推演調度。',build:'預看需求，降低反覆調動。',tradeoff:'需求輪序改變；不能沿用前一局的固定調動順序。',order:[0,2,1,3]}],
  collation:[{id:'original',name:'三段對勘',brief:'首段判斷、歷史事證、取人標準依次校讀。',build:'巧手管理展讀，定力保留核對時間。',tradeoff:'校字與論證標籤都須親自判斷；能力不代答。'}]
 };
+for(const s of SKILLS){s.kinds.push('chuhan');s.chuhanDesc=({swift:'迅影：短暫擴大起跳與傳訊時機，或縮短行路間隔。',steady:'握定：短暫擴大起跳、穿行暗窗。',precise:'巧勁：拼符顯示逐片錯位，營建預覽整塊範圍。',foresight:'望勢：預看後續敵襲、全圖或本篇配置線索。',listen:'聽息：停步2秒，短暫看清全圖及行路時機。',light:'輕裝：行路更快、時機稍寬；總時限減少25秒。',plan:'運籌：依本篇增加航次、護衛令、換旗令或重畫餘裕。',trace:'留痕：記下自己目前的進度，供後續比較。'})[s.id];}
 const copy=x=>JSON.parse(JSON.stringify(x)),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function pilot(id){const p=PILOTS.find(p=>p.id===id);if(!p)throw Error('此篇尚未開放角色冒險。');return p;}
 function config(value){
@@ -81,17 +85,18 @@ function config(value){
  return {schema:VERSION,stats,skills:skills.slice(),revision};
 }
 function defaults(){return {schema:VERSION,stats:Object.fromEntries(STATS.map(([k])=>[k,2])),skills:['steady','listen'],revision:0};}
-function compatible(c,id){const p=pilot(id);return config(c).skills.every(k=>SKILLS.find(s=>s.id===k).kinds.includes(p.kind));}
+function compatible(c,id){const p=pilot(id);return (p.kind!=='chuhan'||CH.compatible(c,p.id))&&config(c).skills.every(k=>SKILLS.find(s=>s.id===k).kinds.includes(p.kind));}
 function create(id,raw,identity={},seed=1){
  const p=pilot(id),c=config(raw);if(!compatible(c,id))throw Error('請先改配本篇可用的兩項能力。');
  const snapshot={config:c,identity:copy(identity)},w={schema:VERSION,id,kind:p.kind,seed:Math.abs(seed|0)||1,snapshot,status:'playing',time:0,limit:p.kind==='action'?150:p.kind==='collation'?190+c.stats.focus*6:720,uses:{},cooldowns:{},buffs:{},notice:'',errors:0,trace:null};
+ if(p.kind==='chuhan'){w.limit=210+c.stats.focus*8+(p.mechanic==='seal'?c.stats.dexterity*6:0)-(c.skills.includes('light')?25:0);w.campaign=CH.initial(w);}
  if(p.kind==='action')Object.assign(w,{x:50,y:0,target:null,grip:c.skills.includes('light')?80:100,maxGrip:c.skills.includes('light')?80:100,exposure:0,maxExposure:100+c.stats.focus*5,delivered:[],pins:[],lanternOffset:(w.seed%30)/10});
  if(p.kind==='strategy')Object.assign(w,{day:0,people:Array(8).fill(-1),selected:0,orders:8,results:[],plannedDay:-1});
  if(p.kind==='collation')Object.assign(w,{page:0,draft:Array.from(TEXTS[0].draft),seen:{},probe:-1,selected:-1,reason:-1,finished:[]});
  return w;
 }
-function chapterRoutes(id){return copy(CHAPTER_ROUTES[pilot(id).kind]);}
-function routeFor(w){return CHAPTER_ROUTES[w.kind].find(r=>r.id===w.chapter?.route)||CHAPTER_ROUTES[w.kind][0];}
+function chapterRoutes(id){return pilot(id).kind==='chuhan'?CH.routes(id):copy(CHAPTER_ROUTES[pilot(id).kind]);}
+function routeFor(w){if(w.kind==='chuhan')return CH.routes(w.id)[0];return CHAPTER_ROUTES[w.kind].find(r=>r.id===w.chapter?.route)||CHAPTER_ROUTES[w.kind][0];}
 function coverPoints(w){return copy(w.chapter?routeFor(w).points:[{x:22,y:26},{x:78,y:57},{x:42,y:83}]);}
 function needs(w,day=w.day){return NEEDS[w.chapter?routeFor(w).order[day]:day]?.slice()||[];}
 function event(w,day=w.day){return EVENTS[w.chapter?routeFor(w).order[day]:day]||'';}
@@ -102,6 +107,7 @@ function createChapter(id,raw,identity={},seed=1,options={}){
  w.notice='先讀原文並選出支持判斷的證據，任務計時尚未開始。';return w;
 }
 function skill(w,id){
+ if(w.kind==='chuhan')return command(w,'skill',id);
  if(w.status!=='playing'||w.chapter&&w.chapter.phase!=='mission')return false;const s=SKILLS.find(s=>s.id===id);if(!s||!w.snapshot.config.skills.includes(id)||!s.kinds.includes(w.kind)){w.notice='本局未裝備這項能力。';return false;}
  if(!s.uses){w.notice='輕裝已在開局生效；握力上限為80。';return false;}
  if((w.uses[id]||0)>=s.uses||w.time<(w.cooldowns[id]||0)){w.notice='次數已用完，或能力尚在冷卻。';return false;}
@@ -176,6 +182,7 @@ function check(w){
 }
 function coreCommand(w,name,value){
  if(w.status!=='playing')return false;
+ if(w.kind==='chuhan'){if(name==='stop')return true;return CH.command(w,name,value);}
  if(name==='skill')return skill(w,value);
  if(name==='move'&&w.kind==='action'&&value&&Number.isFinite(value.x)&&Number.isFinite(value.y)){w.target={x:clamp(value.x,5,95),y:clamp(value.y,0,100)};return true;}
  if(name==='stop'){w.target=null;w.probe=-1;return true;}
@@ -192,17 +199,20 @@ function coreCommand(w,name,value){
 function missionScore(w){return Math.round(clamp(100-w.errors*4-(w.kind==='action'?w.exposure*.15:0)-Math.max(0,w.time-45)*.08,0,100));}
 function score(w){return w.status==='won'?missionScore(w):0;}
 function coreComplete(w){
+ if(w.kind==='chuhan')return CH.complete(w);
  if(w.kind==='action')return w.delivered.length===3&&w.y>=95;
  if(w.kind==='strategy')return w.day===4&&w.results.length===4&&w.results.every((r,i)=>r.day===i&&r.ok===true&&Array.isArray(r.got)&&r.got.length===5&&Array.isArray(r.people)&&r.people.length===8&&r.people.every(n=>Number.isInteger(n)&&n>=0&&n<5)&&counts(r).every((v,j)=>v===r.got[j])&&needs(w,i).every((n,j)=>r.got[j]>=n));
  return Array.isArray(w.finished)&&w.finished.join(',')==='0,1,2'&&w.draft.join('')===TEXTS[2].original&&w.reason===TEXTS[2].reason;
 }
 function chapterObjectives(w){
  if(!w.chapter)return [];
+ if(w.kind==='chuhan')return CH.objectives(w);
  if(w.kind==='action')return [{id:'seal',label:'繞道拾回封印',done:w.chapter.optional.seal===true,x:85,y:41},{id:'quiet',label:'最高暴露低於25',done:w.chapter.metrics.peakExposure<25},{id:'grip',label:'結束保有至少65握力',done:w.grip>=65}];
  if(w.kind==='strategy')return [{id:'specialty',label:'四日都依專長分工',done:w.results.length===4&&w.results.every(r=>r.people.every((to,i)=>SPECIALTIES[i].includes(to)))},{id:'handover',label:'總調動不超過14次',done:w.chapter.metrics.transfers<=14}];
  return [{id:'characters',label:'校字沒有誤改',done:w.chapter.metrics.patchErrors===0},{id:'argument',label:'論證標籤首次皆正確',done:w.chapter.metrics.argumentErrors===0}];
 }
 function operationReport(w){
+ if(w.kind==='chuhan')return CH.report(w);
  const m=w.chapter.metrics,won=!!w.chapter.missionResult,seconds=Math.round(w.time*10)/10,items=[],suggestions=[];let quality=0;
  if(w.kind==='action'){
   quality=Math.round(clamp(100-m.peakExposure*.35-Math.max(0,65-w.grip)*.3,0,100));
@@ -297,7 +307,7 @@ function validateChapter(w){
  if(w.kind==='collation'&&(m.peakExposure||m.minGrip!==100||m.distance||m.transfers||m.redundantTransfers||m.patchErrors>w.errors||m.argumentErrors>w.errors))fail();
  if(c.phase==='evidence'&&(w.time!==0||w.status!=='playing'||Object.keys(w.uses).length||Object.keys(w.buffs).length||Object.keys(c.optional).length||metricKeys.some(k=>m[k]!== (k==='minGrip'?(w.grip??100):0))))fail();
  if(c.phase==='evidence'){
-  const fresh=create(w.id,w.snapshot.config,w.snapshot.identity,w.seed),fields=w.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:w.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
+  const fresh=create(w.id,w.snapshot.config,w.snapshot.identity,w.seed),fields=w.kind==='chuhan'?['campaign']:w.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:w.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
   if(w.errors!==0||w.trace!==null||fields.some(k=>stable(w[k])!==stable(fresh[k])))fail();
  }
  if(w.kind==='strategy'&&w.results.some((r,i)=>!r||r.day!==i||!Array.isArray(r.people)||r.people.length!==8||r.people.some(n=>!Number.isInteger(n)||n< -1||n>4)||stable(r.need)!==stable(needs(w,i))||stable(r.got)!==stable(counts(r))||r.ok!==needs(w,i).every((n,j)=>r.got[j]>=n)))fail();
@@ -309,7 +319,7 @@ function validateChapter(w){
 }
 function chapterProgress(before,next){
  if(!before.chapter&&!next.chapter)return true;if(!before.chapter||!next.chapter)throw Error('續玩不能改換章內模式。');
- validateChapter(before);validateChapter(next);const a=before.chapter,b=next.chapter,order=['evidence','mission','reflection','remedy','done'];
+ validateChapter(before);validateChapter(next);if(before.kind==='chuhan')CH.progress(before,next);const a=before.chapter,b=next.chapter,order=['evidence','mission','reflection','remedy','done'];
  if(a.version!==b.version||a.route!==b.route||order.indexOf(b.phase)<order.indexOf(a.phase)||a.history.length>b.history.length||stable(a.history)!==stable(b.history.slice(0,a.history.length))||a.missionResult&&stable(a.missionResult)!==stable(b.missionResult)||Object.keys(a.optional).some(k=>!b.optional[k]))throw Error('續玩不能倒退或改寫已完成的章內紀錄。');
  if(a.missionResult){const core=w=>{const x=copy(w);delete x.chapter;delete x.status;delete x.notice;return x;};if(stable(core(before))!==stable(core(next))||stable(a.metrics)!==stable(b.metrics)||stable(a.optional)!==stable(b.optional))throw Error('完成任務後不能改寫操作紀錄。');}
  for(const k of ['peakExposure','distance','transfers','redundantTransfers','patchErrors','argumentErrors','unreadPatchAttempts'])if(b.metrics[k]<a.metrics[k])throw Error('操作診斷紀錄不能倒退。');
@@ -325,6 +335,7 @@ function restore(raw){
  for(const [k,v]of Object.entries(w.cooldowns||{}))if(!c.skills.includes(k)||!Number.isFinite(v)||v<0||v>w.time+20)throw Error('能力冷卻不正確。');
  for(const [k,v]of Object.entries(w.buffs||{}))if(!['swift','steady','precise','foresight','listening'].includes(k)||!Number.isFinite(v)||v<0||v>w.time+20)throw Error('能力持續時間不正確。');
  for(const [id,n]of Object.entries(w.uses||{})){const s=SKILLS.find(s=>s.id===id);if(!s||!c.skills.includes(id)||!Number.isInteger(n)||n<0||n>s.uses)throw Error('能力次數不正確。');}
+ if(p.kind==='chuhan')CH.validate(w);
  if(p.kind==='action'&&(!Array.isArray(w.delivered)||new Set(w.delivered).size!==w.delivered.length||w.delivered.some(n=>![0,1,2].includes(n))||!Number.isFinite(w.x)||!Number.isFinite(w.y)||!Number.isFinite(w.grip)||w.x<5||w.x>95||w.y<0||w.y>100||w.maxGrip!==fresh.maxGrip||w.grip<0||w.grip>w.maxGrip||w.maxExposure!==fresh.maxExposure||!Number.isFinite(w.exposure)||w.exposure<0||w.exposure>w.maxExposure))throw Error('夜縋存檔不正確。');
  if(p.kind==='strategy'&&(!Array.isArray(w.people)||w.people.length!==8||w.people.some(n=>!Number.isInteger(n)||n< -1||n>4)||!Number.isInteger(w.day)||w.day<0||w.day>4||!Number.isInteger(w.orders)||w.orders<0||w.orders>9||!Array.isArray(w.results)||![w.day,w.day+1].includes(w.results.length)))throw Error('調度存檔不正確。');
  if(p.kind==='collation'&&(!Number.isInteger(w.page)||w.page<0||w.page>2||!Array.isArray(w.draft)||w.draft.length!==Array.from(TEXTS[w.page].original).length||w.draft.some(x=>typeof x!=='string'||Array.from(x).length!==1)||Object.entries(w.seen||{}).some(([i,n])=>!/^\d+$/.test(i)||+i>=w.draft.length||typeof n!=='number'||n<0||n>1)))throw Error('對勘存檔不正確。');
@@ -334,4 +345,4 @@ function restore(raw){
  }
  if(w.chapter)validateChapter(w);return w;
 }
-module.exports={VERSION,BUDGET,STATS,SKILLS,PILOTS,JOBS,SPECIALTIES,NEEDS,EVENTS,TEXTS,CHAPTER_VERSION,CHAPTERS,copy,clamp,pilot,config,defaults,compatible,create,createChapter,chapterCreate:createChapter,chapterRoutes,chapterQuestions,chapterCommand,chapterReport,chapterObjectives,chapterProgress,mergeJournal,coverPoints,needs,event,skill,lit,cover,step,inspect,command,counts,score,restore};
+module.exports={CH,VERSION,BUDGET,STATS,SKILLS,PILOTS,JOBS,SPECIALTIES,NEEDS,EVENTS,TEXTS,CHAPTER_VERSION,CHAPTERS,copy,clamp,pilot,config,defaults,compatible,create,createChapter,chapterCreate:createChapter,chapterRoutes,chapterQuestions,chapterCommand,chapterReport,chapterObjectives,chapterProgress,mergeJournal,coverPoints,needs,event,skill,lit,cover,step,inspect,command,counts,score,restore};

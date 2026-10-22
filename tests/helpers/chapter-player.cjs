@@ -13,7 +13,8 @@ function answerStage(w,stage,{wrong=false}={}){
 }
 function solveMission(w,{optional=false,wait=0,collationError=false}={}){
  assert.equal(w.chapter?.phase,'mission');tick(w,wait);
- if(w.kind==='action'){
+ if(w.kind==='chuhan'){require('./chuhan-player.cjs')(R,w);}
+ else if(w.kind==='action'){
   const go=(x,y)=>{R.command(w,'move',{x,y});let guard=0;while(w.status==='playing'&&w.chapter.phase==='mission'&&(Math.abs(w.x-x)>.7||Math.abs(w.y-y)>.3)&&guard++<5000)tick(w);R.command(w,'stop');assert.equal(w.status,'playing',w.notice);};
   const pts=R.coverPoints(w);go(pts[0].x,0);
   for(let i=0;i<pts.length;i++){if(i){const gap=pts[i-1].y+10;go(pts[i-1].x,gap);if(optional&&i===1){go(85,41);assert(R.command(w,'recover'));}go(pts[i].x,gap);}go(pts[i].x,pts[i].y);assert(R.command(w,'deliver'),w.notice);}go(pts[2].x,100);assert(R.command(w,'finish'),w.notice);
