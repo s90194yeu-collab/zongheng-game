@@ -1,13 +1,40 @@
 <script>
 (function(ZH){
- 'use strict';const assets=window.ZH_CHARACTER_ASSETS;if(!assets||ZH.character)return;let app,loading;
- async function ensure(){if(app)return app;if(!loading)loading=import(ZH_STATIC_URL(assets.app)).then(m=>m.install({ZH})).then(a=>app=a).catch(e=>{loading=null;throw e;});return loading;}
+ 'use strict';const assets=window.ZH_CHARACTER_ASSETS;if(!assets||ZH.character)return;let app,loading,cssReady=false;
+ const CHAPTERS={
+  S_cq08_weizheng:{title:'燭之武退秦師',mission:'夜縋護簡',point:'鄭國篇第二幕城頭繫繩後',detail:'你的角色護送書簡，燭之武仍親自赴秦營說秦伯。角色護簡與原潛行競技擇一進行，閱讀問題照常親答。'},
+  S_cq16_datong:{title:'大同與小康',mission:'公天下調度',point:'讀完照養責任、進入照養簿之前',detail:'你的角色依八位鄉人的專長安排四日輪值；再回言偃的三期糧與照護配置，分清「誰來做」與「各戶需要什麼」。'},
+  S_zg11_zhuke:{title:'諫逐客書',mission:'諫書對勘',point:'李斯整備最後校書、上書排序之前',detail:'你的角色逐字對勘書簡、辨論證作用，再回李斯親排十二段摘要；校字與組織論證各有任務。'}
+ },choices=new Map(),copy=v=>JSON.parse(JSON.stringify(v));
+ function eligible(id){return !!CHAPTERS[id]&&(!ZH.isGuest()||(ZH.boot.guestScenarios||[]).includes(id));}
+ function ensureCss(){if(cssReady)return;cssReady=true;const css=document.createElement('link');css.rel='stylesheet';css.href=ZH_STATIC_URL(assets.css);document.head.appendChild(css);}
+ async function ensure(){ensureCss();if(app)return app;if(!loading)loading=import(ZH_STATIC_URL(assets.app)).then(m=>m.install({ZH})).then(a=>app=a).catch(e=>{loading=null;throw e;});return loading;}
  async function open(){try{const a=await ensure();await a.open();}catch(e){ZH.toast('原創角色暫時無法開啟：'+e.message,'bad');}}
- ZH.character={open,version:'4.10.0'};
- ZH.ready(()=>{if(!['hub','profile'].includes(ZH.boot.page))return;const css=document.createElement('link');css.rel='stylesheet';css.href=ZH_STATIC_URL(assets.css);document.head.appendChild(css);
+ async function playChapter(id,context={}){if(!eligible(id))throw Error('本篇尚未開放角色同行。');const a=await ensure();if(!a.playChapter)throw Error('角色同行介面尚未更新，請重新載入後再試。');return a.playChapter(id,context);}
+ function newChapterState(id){return{version:1,enabled:choices.has(id)?choices.get(id):true,checkpoints:{}};}
+ function applyChapterChoice(id,state){if(!eligible(id)||!state)return state;const existing=state._ocChapter;state._ocChapter=existing||{version:1,enabled:false,checkpoints:{}};if(choices.has(id))state._ocChapter.enabled=choices.get(id);else if(ZH.boot.params?.character==='1')state._ocChapter.enabled=true;return state;}
+ function scopeToken(){return String(ZH.user?.email||ZH.boot.user?.email||'guest')+':'+ZH.isGuest()+':'+!!ZH.teacherPreview?.active();}
+ function enabled(id,state){return eligible(id)&&state?._ocChapter?.enabled===true;}
+ function mountEntry(holder,id,saved){if(!holder||!eligible(id))return;ensureCss();const c=CHAPTERS[id],checked=ZH.boot.params?.character==='1'||(saved?saved._ocChapter?.enabled===true:true);choices.set(id,checked);holder.innerHTML='<section class="oc-chapter-entry"><div><span class="zh-chip zh-chip--patina">原創角色同行</span><h2>'+ZH.esc(c.mission)+'</h2><p>'+ZH.esc(c.detail)+'</p><p>接入位置：'+ZH.esc(c.point)+'。角色配裝、冒險成績與原篇首輪分開保存。</p></div><div class="oc-chapter-toggle"><label><input type="checkbox" data-character-mode'+(checked?' checked':'')+'>本局加入我的角色</label><button type="button" class="zh-btn zh-btn--quiet" data-character-config>設定配點與能力</button><small>'+(saved&&!saved._ocChapter?'舊局維持原玩法；勾選後才在指定情節加入角色。':'出發前可調整，續玩保留角色任務開局配裝。')+'</small></div></section>';holder.querySelector('[data-character-mode]').onchange=e=>choices.set(id,e.target.checked);holder.querySelector('[data-character-config]').onclick=open;}
+ async function checkpoint(id,state,save,context={}){
+  if(!enabled(id,state))return{status:'disabled',completed:false,left:true,id};
+  const scope=scopeToken(),before=copy(state._ocChapter),changed=()=>{if(scope===scopeToken())return null;state._ocChapter=copy(before);return{status:'left',completed:false,left:true,id,modeChanged:true};};
+  const c=state._ocChapter,key=String(context.checkpoint||context.nodeId||'chapter');c.checkpoints=c.checkpoints||{};
+  if(c.checkpoints[key]?.status==='completed'&&!context.retry)return{...copy(c.checkpoints[key]),completed:true,left:false,id,resumed:true};
+  c.pending={checkpoint:key,nodeId:String(context.nodeId||state.node||''),title:String(context.title||CHAPTERS[id].mission)};await save();const afterSave=changed();if(afterSave)return afterSave;
+  let r;try{r=await playChapter(id,{...context,checkpoint:key});}catch(e){ZH.toast('角色同行暫時無法開啟：'+e.message,'bad');r={status:'left',completed:false,left:true,id,error:e.message};}
+  const afterPlay=changed();if(afterPlay)return afterPlay;
+  // Only the chapter app's completed result advances the companion checkpoint.
+  // Original anchors, games, first attempts and meters are never changed here.
+  const status=r?.status==='completed'&&r.completed!==false?'completed':r?.status==='failed'?'failed':'left';
+  const result={status,completed:status==='completed',left:status!=='completed',id,runId:String(r?.runId||''),at:Date.now()};
+  if(Number.isFinite(r?.score))result.score=r.score;c.checkpoints[key]=result;delete c.pending;await save();return{...r,...result};
+ }
+ ZH.character={open,playChapter,newChapterState,applyChapterChoice,mountEntry,checkpoint,enabled,chapters:CHAPTERS,version:'4.11.0'};
+ ZH.ready(()=>{if(!['hub','profile',...Object.keys(CHAPTERS)].includes(ZH.boot.page))return;ensureCss();
   const bar=document.querySelector('.ac-tools');if(bar){const b=document.createElement('button');b.type='button';b.className='oc-launch';b.textContent='原創角色';b.onclick=open;bar.appendChild(b);}
-  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，體驗夜縋、治理與校勘。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
-  if(ZH.boot.params?.character==='1')setTimeout(open,0);
+  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，走進夜縋、治理與校勘三篇章。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
+  if(['hub','profile'].includes(ZH.boot.page)&&ZH.boot.params?.character==='1')setTimeout(open,0);
  });
 })(window.ZH);
 </script>

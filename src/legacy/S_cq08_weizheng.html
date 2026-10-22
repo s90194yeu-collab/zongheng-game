@@ -1013,11 +1013,12 @@
     return Promise.resolve()
       .then(() => a2Intro(ctx))
       .then(() => a2Sneak(ctx))
-      .then(() => a2Talk(ctx))
+      .then(r => { if (r?.modeChanged) throw Object.assign(new Error('角色模式已切換'), {code:'OC_SCOPE_CHANGED'}); return a2Talk(ctx); })
       .then(() => a2Qin(ctx))
       .then(() => a2Jin(ctx))
       .then(() => a2Finale(ctx))
       .catch(err => {
+        if (err.code === 'OC_SCOPE_CHANGED') return;
         if (window.console) console.error(err);
         ZH.toast('發生錯誤：' + err.message + '。重新整理頁面，可以從這一段繼續。', 'bad');
       });
@@ -1037,17 +1038,42 @@
       .then(() => { ctx.flag('a2_intro', 1); return ctx.save(); });
   }
 
-  function a2Sneak(ctx) {
-    if (ctx.flag('a2_stealth')) return Promise.resolve();
-    return playStealth().then(r => {
-      ctx.flag('a2_stealth', { caught: r.caught || 0, ropeCaught: r.ropeCaught || 0, seconds: r.seconds || 0, assisted: !!r.assisted, skipped: !!r.skipped });
-      ctx.log(r.skipped ? '燭之武繞遠路到了秦營（略過潛行）。' : '燭之武避開晉軍崗哨，到了秦營。被發現 ' + r.caught + ' 次。', r.skipped ? '' : 'good');
-      return ctx.save().then(() => ctx.say([
-        r.skipped ? { text: '燭之武繞了很遠的路，天快亮時，才摸到秦營門口。' }
-          : r.caught === 0 ? { text: '一路無聲無息，晉軍沒有一個人發現他。秦營的轅門就在眼前。' }
-            : { text: '幾次差點被晉軍發現，燭之武伏在蘆葦裡等了很久，終於摸到了秦營門口。' }
-      ]));
-    });
+  async function a2Sneak(ctx) {
+    if (ctx.flag('a2_stealth') || ctx.flag('a2_character_route')) return;
+    if (ZH.character?.enabled(SID, ctx.state)) {
+      let retry = false;
+      for (;;) {
+        const route = await ZH.modal({
+          title: retry ? '仍在城頭接應處' : '城頭分工・選擇夜縋玩法',
+          body: '<p>燭之武依原文夜縋出城，由他親自赴秦營說秦伯。你的角色可同行護簡，或由你操作原潛行競技。</p>' +
+            '<p>' + (retry ? '剛才角色任務尚未完成，沒有記為通關。可續玩角色任務，或改玩原潛行競技。' : '兩種動作玩法選一種即可。角色成績獨立保存；未玩的原潛行不產生成績。') + '</p>',
+          dismissible: false,
+          actions: [{ label: '原潛行競技', value: 'original', kind: 'quiet' }, { label: retry ? '續玩角色夜縋護簡' : '角色夜縋護簡', value: 'character', kind: 'primary' }]
+        });
+        if (route !== 'character') break;
+        const r = await ZH.character.checkpoint(SID, ctx.state, () => ctx.save(), {
+          checkpoint: 'night-rope', nodeId: 'a2Sneak', title: '新鄭城頭・夜縋護簡', returnLabel: '回到城下，接續秦營交涉', retry
+        });
+        if (r.modeChanged) return r;
+        if (r.completed) {
+          ctx.flag('a2_character_route', true);
+          ctx.log('原創角色完成夜縋護簡；同行任務另存，未提交原潛行競技成績。', 'good');
+          await ctx.save();
+          await ctx.say([{ text: '護簡與接應完成，書簡交到城下。燭之武循夜色來到秦營轅門；入帳後的說辭，仍須由他親自陳明秦、晉、鄭的利害。' }]);
+          return;
+        }
+        retry = true;
+      }
+    }
+    const r = await playStealth();
+    ctx.flag('a2_stealth', { caught: r.caught || 0, ropeCaught: r.ropeCaught || 0, seconds: r.seconds || 0, assisted: !!r.assisted, skipped: !!r.skipped });
+    ctx.log(r.skipped ? '燭之武繞遠路到了秦營（略過潛行）。' : '燭之武避開晉軍崗哨，到了秦營。被發現 ' + r.caught + ' 次。', r.skipped ? '' : 'good');
+    await ctx.save();
+    await ctx.say([
+      r.skipped ? { text: '燭之武繞了很遠的路，天快亮時，才摸到秦營門口。' }
+        : r.caught === 0 ? { text: '一路無聲無息，晉軍沒有一個人發現他。秦營的轅門就在眼前。' }
+          : { text: '幾次差點被晉軍發現，燭之武伏在蘆葦裡等了很久，終於摸到了秦營門口。' }
+    ]);
   }
 
   function a2Talk(ctx) {
@@ -1223,9 +1249,10 @@
   function scores2(s) {
     const a1 = scores(s);
     const st = s.flags.a2_stealth || {};
+    const characterOnly = !!s.flags.a2_character_route && !s.flags.a2_stealth;
     const p = Math.min(100, s.flags.persuade || 0);
-    const strategy = Math.round(a1.strategy * 0.45 + p * 0.55 - (st.skipped ? 8 : 0));
-    const calm = st.skipped ? -5 : (st.caught || 0) === 0 ? 8 : st.caught <= 2 ? 4 : 0;
+    const strategy = Math.round(a1.strategy * 0.45 + p * 0.55 - (!characterOnly && st.skipped ? 8 : 0));
+    const calm = characterOnly ? 0 : st.skipped ? -5 : (st.caught || 0) === 0 ? 8 : st.caught <= 2 ? 4 : 0;
     const virtue = a1.virtue + calm;
     return { strategy: Math.max(0, Math.min(100, strategy)), virtue: Math.max(0, Math.min(100, virtue)) };
   }
@@ -1249,8 +1276,10 @@
     list.push('佚之狐言於鄭伯曰：「國危矣！若使燭之武見秦君，師必退。」公從之。');
     list.push('武辭以老，公引咎自責，武乃許之。');
     list.push('城被圍' + CN[nights] + '夜，武夜縋而出。');
-    if (st.ropeCaught) list.push('方縋城，為晉人火光所照，復引而上，再縋乃下。');
-    if (st.skipped) list.push('晉哨甚密，武迂道而行，天將明乃至秦營。');
+    if (f.a2_character_route && !f.a2_stealth) list.push('同行者完成護簡的教學任務，武至秦營；同行操演另存，未記原潛行競技成績。');
+    else if (st.ropeCaught) list.push('方縋城，為晉人火光所照，復引而上，再縋乃下。');
+    if (f.a2_character_route && !f.a2_stealth) { /* Do not invent an unplayed patrol result. */ }
+    else if (st.skipped) list.push('晉哨甚密，武迂道而行，天將明乃至秦營。');
     else if (!st.caught) list.push('潛行避晉軍之哨，人莫之覺，見秦伯於帳中。');
     else if (st.caught <= 2) list.push('途中數為晉哨所驚，伏蘆葦間良久，乃至秦營。');
     else list.push('途中屢為晉哨所逐，幾不得脫，乃至秦營。');
@@ -1272,7 +1301,7 @@
       durationSec: Math.min(5400, Math.round((Date.now() - (s.vars.startedAt || Date.now())) / 1000)), // 分次遊玩時最多記 90 分鐘
       deeds: deeds2(s),
       anchors: s.anchors,
-      games: [{ gameId: STL_GAME, score: stealthScore(st), maxScore: 10 }],
+      games: s.flags.a2_character_route && !s.flags.a2_stealth ? [] : [{ gameId: STL_GAME, score: stealthScore(st), maxScore: 10 }],
       codex: s.codex,
       opener: '余讀《左氏春秋》，至燭之武夜縋而出，未嘗不撫卷而歎也：小國之存亡，繫於一言。',
       prompts: [
@@ -1283,7 +1312,7 @@
       orders: s.orderSeq,
       intel: s.intel,
       persuade: s.flags.persuade || 0,
-      stealth: st
+      stealth: s.flags.a2_character_route && !s.flags.a2_stealth ? null : st
     };
   }
 
@@ -1339,10 +1368,10 @@
         {id:'jinLeave',label:'晉侯不擊・鄭圍解除',detail:'第二幕情節',run:a2Jin}
       ],
       tutorial: TUTORIAL, help: HELP, anchorTotal: 14,
-      initState: () => ({ vars: { qinWill: 70, jinWrath: 80, jinBoost: 0, startedAt: Date.now() } }),
+      initState: () => ({ _ocChapter: ZH.character?.newChapterState(SID), vars: { qinWill: 70, jinWrath: 80, jinBoost: 0, startedAt: Date.now() } }),
       save: saveState
     });
-    game.start(saved || null);
+    game.start(saved ? ZH.character?.applyChapterChoice(SID, saved) || saved : null);
   }
 
   /** 秦國篇、晉國篇是否開放：教師一律開放；學生要先完成鄭國篇 */
@@ -1377,7 +1406,7 @@
       '<div class="wz-chips"><span class="zh-chip zh-chip--gilt">教學關</span><span class="zh-chip">原典' + esc(s.source) + '</span>' +
       '<span class="zh-chip zh-chip--patina">非對稱三方 SLG＋夜縋潛行</span><span class="zh-chip">每篇約 30 分鐘・自動存檔</span></div>' +
       (ZH.isGuest() ? '<p class="wz-note" style="margin-top:12px">你目前是訪客：可以完整遊玩，但進度只保存在這個分頁，也不會留下成績。</p>' : '') +
-      '</header>' +
+      '</header><div data-character-entry></div>' +
       '<section class="wz-factions" aria-label="選擇勢力">' +
       faction('zheng', '鄭', '鄭國篇', '鄭文公（鄭伯）', '一座孤城，兵少糧薄。打不贏，就想辦法讓圍城的聯軍散掉。',
         ['第一幕：每夜三道令，修城、安民、夜探、朝議', '城防、糧草、民心，一項歸零就亡國', '第二幕：夜縋出城，潛行到秦營', '帳中說秦伯：論據越多，越有把握'],
@@ -1393,6 +1422,7 @@
       (ZH.user.isTeacher ? '（教師帳號三篇都直接開放，方便試玩。）' : '') + '</p>' +
       '</main></div>';
 
+    ZH.character?.mountEntry(ROOT.querySelector('[data-character-entry]'), SID, st);
     ROOT.querySelectorAll('[data-a="home"]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); ZH.go('hub'); }));
     const cont = ROOT.querySelector('[data-a="continue"]');
     if (cont) cont.addEventListener('click', () => { ZH.sfx('click'); startGame(st); });
