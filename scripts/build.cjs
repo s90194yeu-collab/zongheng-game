@@ -25,7 +25,7 @@ const gameFiles=['Literary_core','Literary_puzzles','Literary_strategy','Literar
 const gameSource='window.ZH_ACADEMY_ENGINE={};\n'+gameFiles.map(n=>raw(n).replace(/<\/?script>/g,'').replaceAll('window.ZH','window.ZH_ACADEMY_ENGINE')).join('\n');
 const academyAssets={version:config.version,release,app:academyAsset('academy-app',academyApp),screenshot:academyAsset('academy-screenshot',screenshotApp),css:academyAsset('academy-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/academy/style.css'),'utf8'),{loader:'css',minify:true}).code),games:academyAsset('academy-games',esbuild.transformSync(gameSource,{minify:true,target:'es2020',charset:'utf8',legalComments:'none'}).code),data:''};
 const characterApp=esbuild.buildSync({entryPoints:[path.join(root,'src/character/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
-const characterAssets={version:config.version,app:academyAsset('character-app',characterApp),css:academyAsset('character-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/character/style.css'),'utf8'),{loader:'css',minify:true}).code)};
+const characterAssets={version:config.version,app:academyAsset('character-app',characterApp),css:academyAsset('character-style',esbuild.transformSync(['style.css','warring-style.css'].map(f=>fs.readFileSync(path.join(root,'src/character',f),'utf8')).join('\n'),{loader:'css',minify:true}).code)};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);

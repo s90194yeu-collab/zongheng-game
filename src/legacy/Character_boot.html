@@ -7,7 +7,95 @@
   S_zg11_zhuke:{title:'諫逐客書',mission:'諫書對勘',point:'李斯整備最後校書、上書排序之前',detail:'你的角色逐字對勘書簡、辨論證作用，再回李斯親排十二段摘要；校字與組織論證各有任務。'}
  },choices=new Map(),copy=v=>JSON.parse(JSON.stringify(v));
  Object.assign(CHAPTERS,{"S_ch01_shaqiu":{"title":"沙丘","mission":"合符驗詔","point":"沙丘密議前","detail":"以自己的造型完成「合符驗詔」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n20"},"S_ch02_dazexiang":{"title":"大澤鄉","mission":"雨夜急遞","point":"雨阻失期後","detail":"以自己的造型完成「雨夜急遞」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_04"},"S_ch03_julu":{"title":"鉅鹿","mission":"限舟接應","point":"鉅鹿決戰前","detail":"以自己的造型完成「限舟接應」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch04_hongmen":{"title":"鴻門宴","mission":"席外傳訊","point":"沛公離席後、張良留謝前","detail":"以自己的造型完成「席外傳訊」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_24"},"S_ch05_sanqin":{"title":"三秦","mission":"棧道雙線","point":"漢中整備時","detail":"以自己的造型完成「棧道雙線」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch06_xingyang":{"title":"滎陽","mission":"糧車護行","point":"滎陽相持的糧道任務","detail":"以自己的造型完成「糧車護行」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch07_hanxin":{"title":"韓信","mission":"拔旗換幟","point":"井陘部署時","detail":"以自己的造型完成「拔旗換幟」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_10"},"S_ch08_gaixia":{"title":"垓下","mission":"回聲尋伴","point":"夜間突圍時","detail":"以自己的造型完成「回聲尋伴」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_09"},"S_ch09_dafeng":{"title":"大風","mission":"歸鄉重建","point":"還鄉守成時","detail":"以自己的造型完成「歸鄉重建」，操作方式與本篇情境相連；原有必做體驗仍完整保留。","node":"n_20"}});
- function chuhanNodes(id,nodes,save){const c=CHAPTERS[id];if(!c?.node||!nodes[c.node])return nodes;return{...nodes,[c.node]:async ctx=>{if(enabled(id,ctx.state)){const r=await checkpoint(id,ctx.state,save,{checkpoint:'chuhan-companion',nodeId:c.node,title:c.mission});if(r.modeChanged)return null;await ctx.say([{text:r.completed?'你的同行任務已完成，現在回到原篇人物與事件。':'同行任務已保存返回點；原篇照常接續，之後可從角色入口續玩。'}]);}return nodes[c.node](ctx);}};}
+ Object.assign(CHAPTERS,{
+  "S_zg01_sanjia": {
+    "title": "三家分晉",
+    "mission": "晉陽分洪",
+    "node": "n_08",
+    "point": "風雨圍城、親自調度守城前",
+    "detail": "你的角色協助分洪、守護晉陽居民；回到趙襄子的十五回合守城時，仍要親自兼顧城高與民心。"
+  },
+  "S_zg02_weiwen": {
+    "title": "魏文霸業",
+    "mission": "鄴渠分流",
+    "node": "n_23",
+    "point": "鄴城治渠、進入原水網體驗前",
+    "detail": "你的角色試行引水入田的分流安排，再回到西門豹治渠；用水路操作看見破除陋俗之後，持續照顧民生的責任。"
+  },
+  "S_zg03_shangyang": {
+    "title": "商鞅變法",
+    "mission": "徙木守衡",
+    "node": "n_08",
+    "point": "市南門徙木示信之前",
+    "detail": "你的角色在移動與負重之間護住徙木；商鞅仍依原篇徙木立信，信用如何建立與變法代價仍由原文親自判斷。"
+  },
+  "S_zg04_jixia": {
+    "title": "稷下百家",
+    "mission": "開言接力",
+    "node": "n_19",
+    "point": "學宮讀完各家主張、進入論辯競技前",
+    "detail": "你的角色協助諫言與主張接力傳遞；接著回到鄒忌的原篇論辯競技，讓理由、反例與不同聲音一起進入討論。"
+  },
+  "S_zg05_maling": {
+    "title": "馬陵之戰",
+    "mission": "灶影伏節",
+    "node": "n_16",
+    "point": "齊軍減灶傳令、馬陵伏擊部署前",
+    "detail": "你的角色配合灶影與傳令節點協助軍中布局；孫臏的判勢、減灶與馬陵史事仍照原篇推進，原競技另由你親自完成。"
+  },
+  "S_zg06_hezong": {
+    "title": "合縱連橫",
+    "mission": "六國盟約盤",
+    "node": "n_10",
+    "point": "六國遊說、建立縱約之前",
+    "detail": "你的角色處理不同國家之間的盟約連結，檢視共同利益與彼此牽制；蘇秦、張儀仍親自遊說，原篇的論據與外交判向照常。"
+  },
+  "S_zg07_quyuan": {
+    "title": "屈原江畔",
+    "mission": "江流護簡",
+    "node": "n_17",
+    "point": "江畔行吟、重讀散落記憶前",
+    "detail": "你的角色在江流中護住散簡，再陪同讀回屈原的記憶與心志；角色的操作任務不改寫人物遭際，江畔對讀仍親自回答。"
+  },
+  "S_zg08_hufu": {
+    "title": "胡服與火牛",
+    "mission": "騎射校場",
+    "node": "n_04",
+    "point": "趙國騎射教練、進入原騎射競技前",
+    "detail": "你的角色進入趙國校場練習騎射；再回原篇觀察改服與技術、人才與軍事部署的關係，樂毅與田單的史事照常接續。"
+  },
+  "S_zg09_mengchang": {
+    "title": "孟嘗門客",
+    "mission": "三窟機關",
+    "node": "n_17",
+    "point": "三窟規劃之後、薛地宗廟整備時",
+    "detail": "你的角色練習為三處避難所配置鑰匙，回看馮諼為孟嘗君安排的後路。門色與機關屬自編教學模型；原篇的養士、薛邑買義與函谷關脫困仍各有必要體驗。"
+  },
+  "S_zg10_changping": {
+    "title": "將相長平",
+    "mission": "護璧移位",
+    "node": "n_07",
+    "point": "秦廷齋戒之後、從者懷璧走小路時",
+    "detail": "你的角色協助從者護住和氏璧，以移位留出歸趙的道路；藺相如仍留在秦廷陳說，後續澠池、將相合作與長平照原篇推進。"
+  },
+  "S_zg12_handan": {
+    "title": "邯鄲之圍",
+    "mission": "雙使接應",
+    "node": "n_21",
+    "point": "合符後、魏軍在鄴地整軍接應時",
+    "detail": "你的角色處理兩端使者的接應，讓路線與時機彼此配合；信陵君仍親下選兵令，楚魏援軍與趙人守戰共同促成解圍。"
+  },
+  "S_zg13_tongyi": {
+    "title": "天下一統",
+    "mission": "度量衡工坊",
+    "node": "n_28",
+    "point": "六國年表完成後、秦廷議帝號時",
+    "detail": "你的角色進入度量衡工坊，從實際操作理解統一制度面對的差異；六國先後、唐雎與荊軻的原文判斷及歷史結局仍照原篇。"
+  }
+});
+ function storyNodes(id,nodes,save,key='chapter-companion'){const c=CHAPTERS[id];if(!c?.node||!nodes[c.node])return nodes;return{...nodes,[c.node]:async ctx=>{const scope=scopeToken();if(enabled(id,ctx.state)){const r=await checkpoint(id,ctx.state,save,{checkpoint:key,nodeId:c.node,title:c.mission});if(r.modeChanged)return null;await ctx.say([{text:r.completed?'你的同行任務已完成，現在回到原篇人物與事件。':'同行任務已保存返回點；原篇照常接續，之後可從角色入口續玩。'}]);}return scope===scopeToken()?nodes[c.node](ctx):null;}};}
+ function chuhanNodes(id,nodes,save){return storyNodes(id,nodes,save,'chuhan-companion');}
+ function warringNodes(id,nodes,save){return storyNodes(id,nodes,save,'warring-companion');}
  function eligible(id){return !!CHAPTERS[id]&&(!ZH.isGuest()||(ZH.boot.guestScenarios||[]).includes(id));}
  function ensureCss(){if(cssReady)return;cssReady=true;const css=document.createElement('link');css.rel='stylesheet';css.href=ZH_STATIC_URL(assets.css);document.head.appendChild(css);}
  async function ensure(){ensureCss();if(app)return app;if(!loading)loading=import(ZH_STATIC_URL(assets.app)).then(m=>m.install({ZH})).then(a=>app=a).catch(e=>{loading=null;throw e;});return loading;}
@@ -32,10 +120,10 @@
   const result={status,completed:status==='completed',left:status!=='completed',id,runId:String(r?.runId||''),at:Date.now()};
   if(Number.isFinite(r?.score))result.score=r.score;c.checkpoints[key]=result;delete c.pending;await save();return{...r,...result};
  }
- ZH.character={open,playChapter,newChapterState,applyChapterChoice,mountEntry,checkpoint,enabled,chuhanNodes,chapters:CHAPTERS,version:'4.12.0'};
+ ZH.character={open,playChapter,newChapterState,applyChapterChoice,mountEntry,checkpoint,enabled,storyNodes,chuhanNodes,warringNodes,chapters:CHAPTERS,version:'4.13.0'};
  ZH.ready(()=>{if(!['hub','profile',...Object.keys(CHAPTERS)].includes(ZH.boot.page))return;ensureCss();
   const bar=document.querySelector('.ac-tools');if(bar){const b=document.createElement('button');b.type='button';b.className='oc-launch';b.textContent='原創角色';b.onclick=open;bar.appendChild(b);}
-  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，走進夜縋、治理、校勘與楚漢九話的各式任務。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
+  if(ZH.boot.page==='profile'){const box=document.createElement('section');box.className='oc-profile-entry';box.innerHTML='<h2>入卷同行者 · 原創角色</h2><p>用上方完整造型出發，分配12點、裝備八項能力中的兩項，走進夜縋、治理、校勘、戰國十三話與楚漢九話的各式任務。</p><button type="button" class="zh-btn zh-btn--primary">設定配點與進入冒險</button>';box.querySelector('button').onclick=open;document.getElementById('profile-player')?.after(box);}
   if(['hub','profile'].includes(ZH.boot.page)&&ZH.boot.params?.character==='1')setTimeout(open,0);
  });
 })(window.ZH);
