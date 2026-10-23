@@ -31,7 +31,7 @@ function api_saveCharacterAdventure(input){try{
  return paLock_(()=>{const r=ocRun_(u.email,o.world.id);if(!r||r.runId!==o.runId)throw Error('這份冒險已被新局取代，請重新讀取。');if(r.revision!==o.revision)throw Error('冒險已在另一分頁更新，請重新讀取。');
   const before=r.world,incoming=o.world;if(!ocSame_(OC_RULES_.config(incoming.snapshot?.config),OC_RULES_.config(before.snapshot.config)))throw Error('續玩不能變更開局配點與能力。');
   if(!!before.chapter!==!!incoming.chapter)throw Error('續玩不能切換角色章內模式。');
-  const common=['status','time','uses','cooldowns','buffs','notice','errors','trace'].concat(before.chapter?['chapter']:[]),fields=['chuhan','warring'].includes(before.kind)?['campaign']:before.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:before.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
+  const common=['status','time','uses','cooldowns','buffs','notice','errors','trace'].concat(before.chapter?['chapter']:[]),fields=['chuhan','warring','spring'].includes(before.kind)?['campaign']:before.kind==='action'?['x','y','target','grip','exposure','delivered','pins']:before.kind==='strategy'?['day','people','selected','orders','results','plannedDay']:['page','draft','seen','probe','selected','reason','finished'];
   const merged=JSON.parse(JSON.stringify(before));common.concat(fields).forEach(k=>{if(Object.prototype.hasOwnProperty.call(incoming,k))merged[k]=incoming[k];});merged.notice=String(merged.notice||'').slice(0,300);const next=OC_RULES_.restore(merged);
   if(next.time<before.time||Object.entries(before.uses||{}).some(([k,n])=>(next.uses[k]||0)<n))throw Error('續玩時間或能力次數不能倒退。');
   if(before.chapter)OC_RULES_.chapterProgress(before,next);

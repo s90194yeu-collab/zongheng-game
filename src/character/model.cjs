@@ -1,8 +1,8 @@
 'use strict';
 // 同一份純規則用於瀏覽器、GAS 配點核對與測試；不接觸原篇分數。
-const CH=require('./chuhan.cjs'),WA=require('./warring.cjs');
+const CH=require('./chuhan.cjs'),WA=require('./warring.cjs'),SP=require('./spring.cjs');
 const VERSION='oc-1',BUDGET=12;
-const STATS=[['agility','身法','移位速度與楚漢行動時機'],['strength','臂力','握力、渡運載重與攜糧'],['dexterity','巧手','展讀速度與拼符、試放餘裕'],['focus','定力','察覺餘裕、校勘時間與起跳窗口'],['insight','察勢','觀測持續時間'],['planning','籌算','輪值調度、護衛令與解謎餘裕']];
+const STATS=[['agility','身法','移位速度與動作時機'],['strength','臂力','握力、渡運載重與攜糧'],['dexterity','巧手','展讀速度與拼符、試放餘裕'],['focus','定力','察覺餘裕、校勘時間與起跳窗口'],['insight','察勢','觀測持續時間'],['planning','籌算','輪值調度、護衛令與解謎餘裕']];
 const SKILLS=[
  {id:'swift',name:'迅影',kinds:['action'],uses:2,desc:'短暫加速2.5秒，耗握力12並增加聲響。'},
  {id:'steady',name:'握定',kinds:['action','collation'],uses:2,desc:'夜縋減少橫風但放繩變慢；對勘讓照明停留較久。'},
@@ -18,7 +18,7 @@ const PILOTS=[
  {id:'S_cq16_datong',kind:'strategy',name:'大同與小康',title:'公天下調度',scene:'scene:cq16_world',role:'鄉里調度者',recommended:['plan','foresight'],quote:'故人不獨親其親，不獨子其子。使老有所終，壯有所用，幼有所長，矜寡孤獨廢疾者皆有所養。',source:'《禮記・禮運》',brief:'八位鄉人各有兩項專長。你要讓養老、育幼、照護、勞作與公共倉五處分工在四日中都有人承擔。需求來自自編治理情境。',rule:'選一位鄉人再點工作區：專長可承擔2份，一般分工1份。首輪八令，其後每輪三令加籌算加成；調動一人耗一令。需求每日改變，四日都達標才完成。',after:'你完成了四日的公共分工。文本還要求選賢與能、講信修睦，不能只用人數配置概括大同；接著回原篇比較天下為公與天下為家。'},
  {id:'S_zg11_zhuke',kind:'collation',name:'諫逐客書',title:'諫書對勘',scene:'scene:zg11_world',role:'書簡校讀者',recommended:['precise','trace'],quote:'此四君者，皆以客之功。由此觀之，客何負於秦哉！',source:'李斯〈諫逐客書〉',brief:'李斯上書之前，你受託對讀三段書簡。展開底本，圈出待校文字，修正並說明它在論證中的作用。訛字為自編教學材料，不當作真實版本異文。',rule:'在上方底本移動光窗並停留展讀，下方點選待校字，再選替換字。每段另選論證標籤並按「核對本段」；三段都校妥才完成。',after:'書簡校讀完成。首段判斷、四君事證與取人標準的對照共同支撐李斯的諫言；上書與秦王的決策仍按原篇敘述。'}
 ];
-PILOTS.push(...CH.PILOTS,...WA.PILOTS);
+PILOTS.push(...CH.PILOTS,...WA.PILOTS,...SP.PILOTS);
 const JOBS=['養老','育幼','照護','勞作','公共倉'];
 const SPECIALTIES=[[0,2],[0,4],[1,2],[1,3],[2,4],[3,0],[3,1],[4,2]];
 const NEEDS=[[4,2,2,3,2],[2,3,4,2,2],[3,2,2,2,4],[2,4,3,3,2]];
@@ -64,7 +64,7 @@ const CHAPTERS={
   {id:'zk-r-standard',tags:['對比論證','字詞與論旨'],tag:'對比論證',prompt:'對讀「不問可否」時，應保留哪個意思？',choices:['已逐一問清人才是否可用','尚未察人可用與否，便按出身驅逐','逐客完全沒有國家影響'],evidence:[{id:'standard',text:'不問可否，不論曲直，非秦者去，為客者逐。'}],answer:1,correctEvidence:'standard',explain:'兩個不字與後面的逐客相連；校正文字後還要掌握它對取人標準的批評。'}
  ]}
 };
-Object.assign(CHAPTERS,CH.CHAPTERS,WA.CHAPTERS);
+Object.assign(CHAPTERS,CH.CHAPTERS,WA.CHAPTERS,SP.CHAPTERS);
 const CHAPTER_ROUTES={
  action:[{id:'shadow',name:'巡燈迂迴線',brief:'沿三處暗龕橫移，觀察巡燈後穿越。',build:'察勢型：先觀察、分段前進。',tradeoff:'移動距離較長，停在暗龕可回握力。',points:[{x:22,y:26},{x:78,y:57},{x:42,y:83}],speed:1,grip:1,radius:10,limit:150},
  {id:'shelter',name:'近壁守穩線',brief:'暗龕沿牆排列，較少橫移，放繩需耐心。',build:'臂力型：慢行、保握力、把握停留。',tradeoff:'速度降15%，握力耗損降25%，可停靠範圍較寬。',points:[{x:22,y:26},{x:27,y:57},{x:22,y:83}],speed:.85,grip:.75,radius:13,limit:180},
@@ -73,7 +73,7 @@ const CHAPTER_ROUTES={
  {id:'rotation',name:'倉雨調序',brief:'倉儲整備提前，雨後照護延後，重新推演調度。',build:'預看需求，降低反覆調動。',tradeoff:'需求輪序改變；不能沿用前一局的固定調動順序。',order:[0,2,1,3]}],
  collation:[{id:'original',name:'三段對勘',brief:'首段判斷、歷史事證、取人標準依次校讀。',build:'巧手管理展讀，定力保留核對時間。',tradeoff:'校字與論證標籤都須親自判斷；能力不代答。'}]
 };
-for(const s of SKILLS){s.kinds.push('chuhan','warring');s.warringDesc=WA.SKILL_DESCRIPTIONS?.[s.id]||'依本篇操作規則生效，能力不代替原文判斷。';s.chuhanDesc=({swift:'迅影：短暫擴大起跳與傳訊時機，或縮短行路間隔。',steady:'握定：短暫擴大起跳、穿行暗窗。',precise:'巧勁：拼符顯示逐片錯位，營建預覽整塊範圍。',foresight:'望勢：預看後續敵襲、全圖或本篇配置線索。',listen:'聽息：停步2秒，短暫看清全圖及行路時機。',light:'輕裝：行路更快、時機稍寬；總時限減少25秒。',plan:'運籌：依本篇增加航次、護衛令、換旗令或重畫餘裕。',trace:'留痕：記下自己目前的進度，供後續比較。'})[s.id];}
+for(const s of SKILLS){s.kinds.push('chuhan','warring','spring');s.springDesc=SP.SKILL_DESCRIPTIONS?.[s.id]||'依春秋各話操作生效，不替代原文判斷。';s.warringDesc=WA.SKILL_DESCRIPTIONS?.[s.id]||'依本篇操作規則生效，能力不代替原文判斷。';s.chuhanDesc=({swift:'迅影：短暫擴大起跳與傳訊時機，或縮短行路間隔。',steady:'握定：短暫擴大起跳、穿行暗窗。',precise:'巧勁：拼符顯示逐片錯位，營建預覽整塊範圍。',foresight:'望勢：預看後續敵襲、全圖或本篇配置線索。',listen:'聽息：停步2秒，短暫看清全圖及行路時機。',light:'輕裝：行路更快、時機稍寬；總時限減少25秒。',plan:'運籌：依本篇增加航次、護衛令、換旗令或重畫餘裕。',trace:'留痕：記下自己目前的進度，供後續比較。'})[s.id];}
 const copy=x=>JSON.parse(JSON.stringify(x)),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function pilot(id){const p=PILOTS.find(p=>p.id===id);if(!p)throw Error('此篇尚未開放角色冒險。');return p;}
 function config(value){
@@ -85,13 +85,14 @@ function config(value){
  return {schema:VERSION,stats,skills:skills.slice(),revision};
 }
 function defaults(){return {schema:VERSION,stats:Object.fromEntries(STATS.map(([k])=>[k,2])),skills:['steady','listen'],revision:0};}
-function campaignRules(w){return w.kind==='chuhan'?CH:w.kind==='warring'?WA:null;}
+function campaignRules(w){return w.kind==='chuhan'?CH:w.kind==='warring'?WA:w.kind==='spring'?SP:null;}
 function compatible(c,id){const p=pilot(id),checked=config(c),core=campaignRules(p);return (!core||core.compatible(checked,p.id))&&checked.skills.every(k=>SKILLS.find(s=>s.id===k).kinds.includes(p.kind));}
 function create(id,raw,identity={},seed=1){
  const p=pilot(id),c=config(raw);if(!compatible(c,id))throw Error('請先改配本篇可用的兩項能力。');
  const snapshot={config:c,identity:copy(identity)},w={schema:VERSION,id,kind:p.kind,seed:Math.abs(seed|0)||1,snapshot,status:'playing',time:0,limit:p.kind==='action'?150:p.kind==='collation'?190+c.stats.focus*6:720,uses:{},cooldowns:{},buffs:{},notice:'',errors:0,trace:null};
  if(p.kind==='chuhan'){w.limit=210+c.stats.focus*8+(p.mechanic==='seal'?c.stats.dexterity*6:0)-(c.skills.includes('light')?25:0);w.campaign=CH.initial(w);}
  if(p.kind==='warring'){w.limit=WA.limit?WA.limit(c,p):240+c.stats.focus*8-(c.skills.includes('light')?25:0);w.campaign=WA.initial(w);}
+ if(p.kind==='spring'){w.limit=SP.limit(c,p);w.campaign=SP.initial(w);}
  if(p.kind==='action')Object.assign(w,{x:50,y:0,target:null,grip:c.skills.includes('light')?80:100,maxGrip:c.skills.includes('light')?80:100,exposure:0,maxExposure:100+c.stats.focus*5,delivered:[],pins:[],lanternOffset:(w.seed%30)/10});
  if(p.kind==='strategy')Object.assign(w,{day:0,people:Array(8).fill(-1),selected:0,orders:8,results:[],plannedDay:-1});
  if(p.kind==='collation')Object.assign(w,{page:0,draft:Array.from(TEXTS[0].draft),seen:{},probe:-1,selected:-1,reason:-1,finished:[]});
@@ -347,4 +348,4 @@ function restore(raw){
  }
  if(w.chapter)validateChapter(w);return w;
 }
-module.exports={CH,WA,campaignRules,VERSION,BUDGET,STATS,SKILLS,PILOTS,JOBS,SPECIALTIES,NEEDS,EVENTS,TEXTS,CHAPTER_VERSION,CHAPTERS,copy,clamp,pilot,config,defaults,compatible,create,createChapter,chapterCreate:createChapter,chapterRoutes,chapterQuestions,chapterCommand,chapterReport,chapterObjectives,chapterProgress,mergeJournal,coverPoints,needs,event,skill,lit,cover,step,inspect,command,counts,score,restore};
+module.exports={CH,WA,SP,campaignRules,VERSION,BUDGET,STATS,SKILLS,PILOTS,JOBS,SPECIALTIES,NEEDS,EVENTS,TEXTS,CHAPTER_VERSION,CHAPTERS,copy,clamp,pilot,config,defaults,compatible,create,createChapter,chapterCreate:createChapter,chapterRoutes,chapterQuestions,chapterCommand,chapterReport,chapterObjectives,chapterProgress,mergeJournal,coverPoints,needs,event,skill,lit,cover,step,inspect,command,counts,score,restore};

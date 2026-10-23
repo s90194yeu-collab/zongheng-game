@@ -13,7 +13,8 @@ function answerStage(w,stage,{wrong=false}={}){
 }
 function solveMission(w,{optional=false,wait=0,collationError=false}={}){
  assert.equal(w.chapter?.phase,'mission');tick(w,wait);
- if(w.kind==='warring'){require('./warring-player.cjs')(R,w);}
+ if(w.kind==='spring'){require('./spring-player.cjs')(R,w);}
+ else if(w.kind==='warring'){require('./warring-player.cjs')(R,w);}
  else if(w.kind==='chuhan'){require('./chuhan-player.cjs')(R,w);}
  else if(w.kind==='action'){
   const go=(x,y)=>{R.command(w,'move',{x,y});let guard=0;while(w.status==='playing'&&w.chapter.phase==='mission'&&(Math.abs(w.x-x)>.7||Math.abs(w.y-y)>.3)&&guard++<5000)tick(w);R.command(w,'stop');assert.equal(w.status,'playing',w.notice);};
