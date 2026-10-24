@@ -22,7 +22,7 @@ function startHarness(id,bridge,state){
 }
 function stateAt(node){return{node,vars:{schema:'existing-schema',firstAnchors:{wrong:{correct:false}},firstScore:2,act:1},rng:7,anchors:[{anchorId:'original-wrong',correct:false}],games:[{gameId:'original-game',score:3,skipped:false}],progress:{},_ocChapter:{version:1,enabled:true,checkpoints:{}}};}
 test('春秋十六篇接點對齊文本，十八話入口齊備；訪客清單仍是唯一權限來源',()=>{
- const b=boot();assert.equal(b.c.version,'4.14.0');assert.equal(Object.keys(b.c.chapters).filter(k=>k.startsWith('S_cq')).length,18);
+ const b=boot();assert.equal(b.c.version,'4.15.0');assert.equal(Object.keys(b.c.chapters).filter(k=>k.startsWith('S_cq')).length,18);
  for(const [id,node,mission]of points){const chapter=b.c.chapters[id];assert(chapter,id);assert.equal(chapter.node,node);assert.equal(chapter.mission,mission);assert(new RegExp('\\b'+node+':\\s*async ctx').test(raw(id)),id+' hook exists');assert.equal(b.c.newChapterState(id).enabled,true);
   const old={node,vars:{firstScore:2},anchors:[{correct:false}]};b.c.applyChapterChoice(id,old);assert.equal(old._ocChapter.enabled,false);assert.equal(old.vars.firstScore,2);
   const card=holder();b.c.mountEntry(card,id,old);assert.equal(card.controls['[data-character-mode]'].checked,false);card.controls['[data-character-mode]'].onchange({target:{checked:true}});b.c.applyChapterChoice(id,old);assert.equal(old._ocChapter.enabled,true);card.controls['[data-character-mode]'].onchange({target:{checked:false}});assert.equal(b.c.newChapterState(id).enabled,false);

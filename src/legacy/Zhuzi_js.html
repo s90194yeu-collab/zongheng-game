@@ -20,10 +20,13 @@
  function note(text,error){saveError=error?text:'';const el=root.querySelector('[data-save]');if(el){el.textContent=text;el.classList.toggle('error',!!error);}}
  function tickClock(){const now=Date.now();if(!paused&&!document.hidden)s.elapsed+=(now-lastClock)/1000;lastClock=now;}
  async function checkpoint(){
-  tickClock();const snapshot=JSON.parse(JSON.stringify(s));note(testing()?'暫存教師測試……':ZH.isGuest()?'保存本分頁進度……':'保存進度……');
-  const job=saving.catch(()=>{}).then(()=>ZH.save(c.id,'history',snapshot));saving=job;
-  try{const r=await job;if(!r||!r.ok)throw Error(r&&r.msg||'存檔尚未完成');note(testing()?'教師測試局已暫存，不寫入正式紀錄':ZH.isGuest()?'已保存在本分頁':'已儲存至學校帳號');return true;}
-  catch(e){note('存檔失敗：'+e.message+'。請按「儲存」重試。',true);throw e;}
+  tickClock();const owner=s,chapter=c,id=c.id,scope=()=>String(ZH.user?.email||ZH.boot?.user?.email||'guest')+':'+!!ZH.isGuest?.()+':'+testing(),token=scope(),generation=ZH.zhuzi?._generation;
+  const current=()=>!disposed&&s===owner&&c===chapter&&scope()===token&&ZH.zhuzi?._generation===generation;
+  const changed=()=>{const e=Error('章節或帳號已切換，已停止舊局儲存。');e.code='CHAPTER_SCOPE_CHANGED';return e;};
+  if(!current())throw changed();const snapshot=JSON.parse(JSON.stringify(owner));note(testing()?'暫存教師測試……':ZH.isGuest()?'保存本分頁進度……':'保存進度……');
+  const job=saving.catch(()=>{}).then(()=>{if(!current())throw changed();return ZH.save(id,'history',snapshot);});saving=job;
+  try{const r=await job;if(!current())throw changed();if(!r||!r.ok)throw Error(r&&r.msg||'存檔尚未完成');note(testing()?'教師測試局已暫存，不寫入正式紀錄':ZH.isGuest()?'已保存在本分頁':'已儲存至學校帳號');return true;}
+  catch(e){if(current())note('存檔失敗：'+e.message+'。請按「儲存」重試。',true);throw e;}
  }
  function shell(){
   root.innerHTML='<div class="zz-app"><header class="zz-top"><div><div class="zz-brand">Re:縱橫鼎業 ／ '+esc(collection())+'</div><h1>'+esc(c.name)+' · '+esc(c.episode)+'</h1></div><nav class="zz-actions" aria-label="章節操作">'+button(c.readerLabel||'原典札記','text')+button(testing()?'暫存測試':'儲存','save')+(teacher()?button('教師自由選關','teacher'): '')+(testing()?button('回正式進度','exit-preview'):'')+button('暫停／離開','pause')+'</nav></header><div class="zz-progress" aria-label="章節進度">'+c.stages.map((t,i)=>teacher()?'<button type="button" class="zz-stage-jump '+(i===s.stage?'current':'')+'" data-teacher-jump="'+i+':intro:0">'+(i+1)+' · '+esc(t.title)+'</button>':'<span class="'+(i<s.stage?'passed':i===s.stage?'current':'')+'">'+(i+1)+' · '+esc(t.title)+'</span>').join('')+'</div>'+teacherPanel()+'<div data-save class="zz-save" role="status"></div><section id="zz-view"></section></div>';
@@ -51,10 +54,11 @@
   try{if(!testing())await ZH.teacherPreview.enter({scenarioId:c.id,mode:'history',settle:async()=>{await saving;await checkpoint();}});}catch(e){paused=false;lastClock=Date.now();render();throw e;}
   ZH.teacherPreview.setPicker(showTeacherPanel);
   s=M.fresh(c.id);s.stage=index;s.phase=phase;s.questionIndex=question;s.assist=false;s.gameAttempt=1;s.storyCursor={};s.tactics={};s.stageGames={};
+  if(ZH.character?.chapters?.[c.id]?.engine==='zhuzi')s._ocChapter=ZH.character.newChapterState(c.id);
   if(phase==='game')s.world=makeWorld(false);paused=false;teacherPanelOpen=false;lastClock=Date.now();render();note('教師測試局：不寫入正式紀錄');
  }
  function bind(action,fn){const el=view.querySelector('[data-action="'+action+'"]');if(el)el.onclick=()=>guard(fn);}
- async function guard(fn){if(busy)return;busy=true;try{await fn();}catch(e){ZH.toast(e.message||'操作未完成，請重試。','bad');}finally{busy=false;}}
+ async function guard(fn){if(busy)return;const owner=s,chapter=c;busy=true;try{await fn();}catch(e){if(!disposed&&s===owner&&c===chapter&&e.code!=='CHAPTER_SCOPE_CHANGED')ZH.toast(e.message||'操作未完成，請重試。','bad');}finally{if(s===owner&&c===chapter)busy=false;}}
  function source(t){if(c.readerKind==='guide')return '<p class="zz-source">自編導讀・全文請配合課本。<a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">教學參考來源</a></p>';return '<p class="zz-source">選讀：'+esc(t.source)+' · <a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">核對原典</a>（節錄；標點與字形依教學統一）</p>';}
  function portrait(person){
   try{return window.ART.portrait({id:c.philosopher,name:person,glyph:c.glyph,color:c.color,art:{hat:c.vol==='gw'?'jin':'guan',old:c.vol!=='gw',beard:c.vol==='gw'?1:3,robe:c.color,prop:'scroll',...c.art,...(['紅拂女','張李德和'].includes(person)?{female:true,hat:'none',beard:0}: {})}},{bust:false});}catch(e){return '<span>'+esc(person)+'</span>';}
@@ -75,6 +79,21 @@
  function makeWorld(assist){const fresh=stage().mission;const w=(fresh?L:A).create(fresh||stage().adventure,assist,currentTactic(),(Date.now()^((s.gameAttempt+1)*2654435761))>>>0);w.gameId=stage().gameId+(w.creativeVersion===2?'_v4':fresh?'_v3':'_v2');return w;}
  function gameId(){return s.world?.gameId||stage().gameId;}
  function stageGames(){return M.stageGames(c.stages,s);}
+ function mountCharacterEntry(last){
+  const info=ZH.character?.chapters?.[c.id];if(info?.engine!=='zhuzi'||!(s.stage===0||last&&ZH.character.zhuziStage(c.id,s.stage)))return;
+  const owner=s,chapter=c,holder=document.createElement('div');holder.setAttribute('data-character-entry','');view.appendChild(holder);
+  ZH.character.mountEntry(holder,c.id,s,()=>{if(disposed||s!==owner||c!==chapter)return;ZH.character.applyChapterChoice(chapter.id,owner);checkpoint().catch(()=>{});});
+ }
+ async function characterBeforeGame(){
+  const info=ZH.character?.zhuziStage(c.id,s.stage);if(!info)return true;
+  const owner=s,chapter=c,index=s.stage,scope=()=>String(ZH.user?.email||ZH.boot?.user?.email||'guest')+':'+!!ZH.isGuest?.()+':'+testing(),token=scope(),generation=ZH.zhuzi?._generation;
+  const current=()=>!disposed&&s===owner&&c===chapter&&owner.stage===index&&owner.phase==='intro'&&scope()===token&&ZH.zhuzi?._generation===generation;
+  ZH.character.applyChapterChoice(chapter.id,owner);if(!ZH.character.enabled(chapter.id,owner))return current();
+  tickClock();const wasPaused=paused;paused=true;stop();
+  const persist=()=>{if(!current()){const e=Error('章節或帳號已切換，已停止舊同行返回。');e.code='CHAPTER_SCOPE_CHANGED';throw e;}return checkpoint();};
+  try{const result=await ZH.character.checkpoint(chapter.id,owner,persist,{checkpoint:'zhuzi-companion',nodeId:info.node,title:info.mission});return current()&&!result.modeChanged;}
+  finally{if(current()){paused=wasPaused;lastClock=Date.now();}}
+ }
  function renderIntro(){
   const t=stage(),a=t.mission||t.adventure;s.phase='intro';s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};
   const i=Math.min(a.frames.length-1,s.storyCursor[s.stage]||0),f=a.frames[i],last=i===a.frames.length-1;
@@ -83,12 +102,13 @@
   const navigation='<div class="zz-story-nav"><span>'+ (i+1)+' / '+a.frames.length+'</span>'+(i?button('回看上句','previous'):'')+(!last?button('下一句','dialogue',true):'')+button(c.readerKind==='guide'?'對讀導讀':'原文對讀','passage')+'</div>';
   const plans=last&&t.mission?'<section class="zz-plans zz-mission-brief"><p class="zz-kicker">'+esc(a.genre)+' · 依課文情境設計</p><h2>'+esc(a.title)+'</h2><p>'+esc(a.rule)+'</p><p class="zz-mission-warning">'+esc(a.loss)+'</p><details><summary>這個玩法如何接回課文？</summary><p>'+esc(a.connection)+'</p></details><div class="zz-start-row"><label><input type="checkbox" id="zz-assist" '+(s.assist?'checked':'')+'> 練習（較多操作餘裕，不上競技榜）</label>'+button('進入這幕情境','begin',true)+'</div></section>':last?'<section class="zz-plans" aria-label="選擇本幕戰術"><h2>這一幕，怎麼出手？</h2><div class="zz-plan-grid">'+PLANS[a.type].map(([key,title,desc])=>'<button class="zz-plan" data-plan="'+key+'" aria-pressed="'+(currentTactic()===key)+'"><b>'+title+'</b><span>'+desc+'</span></button>').join('')+'</div><div class="zz-start-row"><label><input type="checkbox" id="zz-assist" '+(s.assist?'checked':'')+'> 練習（較慢攻勢，不上競技榜）</label>'+button('進入挑戰','begin',true)+'</div><p class="zz-missionline"><b>'+esc(a.title)+'</b> · '+esc(a.objective)+'</p></section>':'';
   view.innerHTML=context+sceneHTML(t,f.who,f.text,navigation)+plans;
+  mountCharacterEntry(last);
   bind('previous',async()=>{s.storyCursor[s.stage]=i-1;render();});
   bind('dialogue',async()=>{s.storyCursor[s.stage]=i+1;render();});
   bind('passage',()=>ZH.modal({title:t.title+'・'+(c.readerKind==='guide'?'自編導讀':'原文對讀'),body:'<div class="zz-fulltext">'+esc(t.passage)+'</div>'+source(t)+'<p>'+esc(t.gloss)+'</p>',actions:[{label:'回到劇情',value:true,kind:'primary'}]}));
   view.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{s.tactics[s.stage]=b.dataset.plan;render();});
   const practice=view.querySelector('#zz-assist');if(practice)practice.onchange=e=>{s.assist=e.target.checked;};
-  bind('begin',async()=>{s.gameAttempt=(s.gameAttempt||0)+1;s.world=makeWorld(s.assist);s.phase='game';s.questionIndex=0;delete s.questionFeedback;render();checkpoint().catch(()=>{});});
+  bind('begin',async()=>{if(!await characterBeforeGame())return;s.gameAttempt=(s.gameAttempt||0)+1;s.world=makeWorld(s.assist);s.phase='game';s.questionIndex=0;delete s.questionFeedback;render();checkpoint().catch(()=>{});});
  }
 
  function actionLabel(){if(s.world?.engine===3)return stage().mission.verb;if(s.world?.engine===2)return {clash:'出手',race:'牽制',siege:'擊退',tempo:'合拍'}[s.world.type];const type=stage().game.type;return type==='defend'?'護盾':['flow','seam'].includes(type)?'護身':type==='practice'?'練習':type==='rescue'?'領取／送達':'取簡／交付';}
@@ -249,7 +269,7 @@
  function renderComplete(){
   const answers=Object.values(s.answers),correct=answers.filter(a=>a.correct).length,chosen=stageGames();
   view.innerHTML='<div class="zz-panel zz-question"><img class="zz-sectionpic" src="'+esc(images.scene&&images.scene.src||'')+'" alt="'+esc(c.person)+'的 AI 藝術場景"><p class="zz-kicker">'+esc(level())+' ／ '+c.stages.length+' 幕完成</p><h2>'+esc(c.episode)+' · 本篇通關</h2><div class="zz-resultstat"><div><strong>'+correct+' / '+answers.length+'</strong>閱讀首答正確</div><div><strong>'+chosen.map(g=>g.bestScore).join(' · ')+'</strong>'+c.stages.length+' 幕最佳操作（含練習；各滿分 10）</div></div><p class="zz-intro">'+esc(c.note)+'</p>'+(chosen.some(g=>!/_v[34]$/.test(g.gameId))?'<p>新版劇情與挑戰已開放，可按「再戰本篇」進入；原有首答、分數與已存通關紀錄保留。</p>':'')+'<p>完成後可在結算頁回顧文本、保存反思並收錄人物與研讀札記。</p>'+button('保存通關並查看結算','finish',true)+button('再戰本篇・保留首答','relaunch')+'</div>';
-  bind('relaunch',async()=>{s=M.relaunch(s);ZH.runs.begin(c.id,s,'history');await checkpoint();render();});
+  bind('relaunch',async()=>{s=M.relaunch(s);if(ZH.character?.chapters?.[c.id]?.engine==='zhuzi')s._ocChapter=ZH.character.newChapterState(c.id);ZH.runs.begin(c.id,s,'history');await checkpoint();render();});
   bind('finish',async()=>{
    await checkpoint();const anchors=answers.map(a=>({...a,path:a.correct?'direct':s.recovered[a.anchorId]?'fork':'fail',attempts:s.attempts[a.anchorId],recovered:!!s.recovered[a.anchorId]}));
    const events=c.stages.map((t,i)=>({kind:'reading',id:'zz_read_'+i,title:t.title,text:t.passage,source:t.source,reading:t.gloss,decision:t.mission?.title||t.adventure.title,anchors:t.questionIds,notes:[t.gloss,'本幕操作：'+(t.mission?.rule||A.styles[(s.tactics||{})[i]]?.label||'舊版續玩')+'；操作紀錄 '+(chosen[i]?.firstScore??'—')+'／10。'],at:new Date().toISOString()}));ZH.session.set('learning:'+c.id,events);
@@ -262,7 +282,7 @@
   view.innerHTML='<div class="zz-panel zz-pause"><p class="zz-kicker">挑戰與計時已暫停</p><h2>稍停片刻，再讀一段</h2><p>'+(testing()?'教師測試局不寫入正式紀錄；結束測試後回到原進度。':'本章有獨立存檔。回首頁前會再確認存檔完成。')+'</p><div class="zz-inline">'+button('繼續遊戲','resume',true)+button(testing()?'結束教師測試':'儲存並回首頁','leave')+'</div><p class="zz-note">若存檔失敗，請留在本頁按「儲存」重試。</p></div>';
   bind('resume',()=>{paused=false;lastClock=Date.now();render();});bind('leave',async()=>{if(testing()){ZH.teacherPreview.exit();return;}await checkpoint();await ZH.flushAll();disposed=true;ZH.go('hub');});
  }
- function loadImage(key,url){return new Promise(resolve=>{const img=new Image();img.onload=()=>{images[key]=img;resolve(img);};img.onerror=()=>resolve(null);img.src=url;});}
+ function loadImage(key,url){const owner=s,chapter=c;return new Promise(resolve=>{const img=new Image();img.onload=()=>{if(!disposed&&s===owner&&c===chapter)images[key]=img;resolve(img);};img.onerror=()=>resolve(null);img.src=url;});}
  function svgUrl(svg){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}
  function syncStageArt(){
   const id=stage()?.mission?.scene||stage()?.adventure?.scene||c.scene;if(images.sceneId===id)return;images.sceneId=id;
@@ -279,30 +299,36 @@
   await Promise.all([loadImage('scene',url),loadImage('npc',svgUrl(npc)),loadImage('player',svgUrl(player))]);
  }
  async function start(options){
-  if(chapterLoading)return;chapterLoading=true;stop();s=null;
+  if(chapterLoading&&bootOptions?.id===options.id)return;chapterLoading=true;stop();s=null;ZH.zhuzi=ZH.zhuzi||{};
+  const generation=(ZH.zhuzi._generation||0)+1;ZH.zhuzi._generation=generation;
+  const scope=()=>String(ZH.user?.email||ZH.boot?.user?.email||'guest')+':'+!!ZH.isGuest?.()+':'+testing(),token=scope(),current=()=>!disposed&&ZH.zhuzi._generation===generation&&scope()===token;
   bootOptions=options;document.body.classList.add('zz-study-page');root=document.getElementById('zhuzi-root');disposed=false;paused=false;busy=false;
   root.innerHTML='<div class="zz-loading"><h1>'+esc(options.loadingTitle||(options.collection==='aSelections'?'經典著作':options.collection==='classics'?'古文十五篇':'先秦諸子'))+'</h1><p role="status">讀取文本與本章進度……</p></div>';
   try{
-   c=(options.collection==='aSelections'?ZH.A_SELECTIONS:options.collection==='classics'?ZH.CLASSICS:ZH.ZHUZI)?.chapters[options.id];if(!c)throw Error('找不到本章內容');if(!await ZH.requireStudentProfile())return;
+   c=(options.collection==='aSelections'?ZH.A_SELECTIONS:options.collection==='classics'?ZH.CLASSICS:ZH.ZHUZI)?.chapters[options.id];if(!c)throw Error('找不到本章內容');if(!await ZH.requireStudentProfile()||!current())return;
    const [saved,questions]=await Promise.all([ZH.load(c.id,'history'),ZH.call('api_getStoryAnchors',c.id,options.anchorOrder)]);
+   if(!current())return;
    if(!saved||!saved.ok)throw Error(saved&&saved.msg||'讀取存檔失敗');if(!questions||!questions.ok)throw Error(questions&&questions.msg||'題庫未就緒');
    bank={};for(const q of questions.anchors||[])bank[q.id]=q;
    if(options.anchorOrder.some(id=>!bank[id]||!['A','B','C','D'].includes(bank[id].answer)))throw Error('必要題目缺漏，請重新讀取題庫');
    const old=saved.state;
    if(old&&old.schema==='zhuzi-v1'&&old.chapterId===c.id){s=Object.assign(M.fresh(c.id),old);if(!Number.isInteger(s.stage)||s.stage<0||s.stage>c.stages.length||!['intro','game','gameResult','question','complete'].includes(s.phase))throw Error('本章存檔格式無法辨認，請從首頁管理自己的紀錄');}
    else if(old)throw Error('本章存檔版本不相符，請從首頁管理自己的紀錄');else s=M.fresh(c.id);
+   if(ZH.character?.chapters?.[c.id]?.engine==='zhuzi'){if(old)ZH.character.applyChapterChoice(c.id,s);else s._ocChapter=ZH.character.newChapterState(c.id);}
    if(s.world?.engine===3){L.restore(s.world);L.cancel(s.world);}
-   s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};s.stageGames=s.stageGames||{};if(testing())ZH.teacherPreview.setPicker(showTeacherPanel);ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});lastClock=Date.now();await loadArt();render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
+   s.storyCursor=s.storyCursor||{};s.tactics=s.tactics||{};s.stageGames=s.stageGames||{};if(testing())ZH.teacherPreview.setPicker(showTeacherPanel);ZH.runs.begin(c.id,s,'history');await ZH.player.load().catch(()=>{});if(!current())return;lastClock=Date.now();await loadArt();if(!current())return;render();if(old)note('已讀取本章存檔，首答與首輪紀錄保留');
   }catch(e){
+   if(!current())return;
    const connection=ZH.isConnectionError(e),part={api_loadGame:'讀取存檔',api_getStoryAnchors:'讀取原文題庫',api_getStudentProfile:'讀取帳號資料'}[e.operation]||'讀取本章資料',params={...(ZH.boot?.params||{})};delete params.page;
    root.innerHTML='<div class="zz-loading"><h1>'+(connection?'本章連線暫時中斷':'本章暫時無法開啟')+'</h1><p role="alert">'+esc(connection?part+'時未能完成連線。請先重試；若仍失敗，可重新連線本章。':e.message)+'</p>'+(connection?'<p>本次尚未讀取完整資料，沒有用空白進度覆蓋原存檔。</p><details><summary>連線詳情</summary><p>'+esc(e.message)+'</p></details>':'')+button('重新讀取文本與進度','reload',true)+(connection?'<a class="zz-btn" data-reconnect href="'+esc(ZH.url(options.id,params))+'" target="_top">重新連線本章</a>':'')+button('回首頁','home')+'</div>';
-   const retry=root.querySelector('[data-action=reload]');retry.onclick=()=>{retry.disabled=true;start(bootOptions);};root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');
-  }finally{chapterLoading=false;}
+   const retry=root.querySelector('[data-action=reload]');retry.onclick=()=>{retry.disabled=true;start(options);};root.querySelector('[data-action=home]').onclick=()=>ZH.go('hub');
+  }finally{if(ZH.zhuzi._generation===generation)chapterLoading=false;}
  }
  document.addEventListener('zh:connection-retry',e=>{if(!chapterLoading)return;const status=root?.querySelector('.zz-loading [role=status]');if(status)status.textContent='與學校資料的連線暫時中斷，正在重試（'+e.detail.attempt+'／'+e.detail.maxAttempts+'）……';});
  document.addEventListener('zh:academy-open',()=>{if(s&&s.phase==='game'&&!paused)pause();});
+ document.addEventListener('zh:character-open',()=>{if(disposed||!s||root?.isConnected===false)return;clearInput();if(!paused)pause();});
  document.addEventListener('keydown',e=>{
-  if(document.querySelector('.ac-layer'))return;
+  if(document.querySelector('.ac-layer,.oc-layer'))return;
   if(!s||disposed||busy||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   if(e.code==='Escape'){e.preventDefault();if(paused){paused=false;lastClock=Date.now();render();}else pause();return;}
   if(s.phase==='intro'&&['Enter','Space'].includes(e.code)&&!['BUTTON','SUMMARY'].includes(e.target.tagName)){const next=view.querySelector('[data-action=dialogue]');if(next){e.preventDefault();next.click();}return;}

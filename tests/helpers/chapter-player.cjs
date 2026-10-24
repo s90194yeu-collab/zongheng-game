@@ -13,7 +13,8 @@ function answerStage(w,stage,{wrong=false}={}){
 }
 function solveMission(w,{optional=false,wait=0,collationError=false}={}){
  assert.equal(w.chapter?.phase,'mission');tick(w,wait);
- if(w.kind==='spring'){require('./spring-player.cjs')(R,w);}
+ if(w.kind==='zhuzi'){require('./zhuzi-character-player.cjs')(R,w);}
+ else if(w.kind==='spring'){require('./spring-player.cjs')(R,w);}
  else if(w.kind==='warring'){require('./warring-player.cjs')(R,w);}
  else if(w.kind==='chuhan'){require('./chuhan-player.cjs')(R,w);}
  else if(w.kind==='action'){
