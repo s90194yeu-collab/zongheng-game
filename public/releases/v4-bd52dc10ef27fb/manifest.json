@@ -1,0 +1,496 @@
+{
+  "release": "v4-bd52dc10ef27fb",
+  "version": "4.16.0-google",
+  "character3d": {
+    "version": 1,
+    "app": "assets/character3d-app-29d4d7bf578ab79c.js",
+    "model": "models/scholar-pilot-051f0ddbd926f229.glb"
+  },
+  "chapterCount": 90,
+  "activeChapterCount": 86,
+  "mediaCount": 231,
+  "homeCount": 4,
+  "musicCount": 7,
+  "pages": {
+    "Hub": {
+      "file": "pages/Hub.html",
+      "sha256": "997ba364835b2645859d5066f627f9625a275af9fd1f6b4f204d7d159ede83a0",
+      "bytes": 5563
+    },
+    "Profile": {
+      "file": "pages/Profile.html",
+      "sha256": "7fd7b7aed9002d19168cab3d9e4aafe59878a6f686083d26ded5534806d50578",
+      "bytes": 5253
+    },
+    "Gallery": {
+      "file": "pages/Gallery.html",
+      "sha256": "6dcbad6e3d6f9554696ac8ad318001f727926804a554d6861277b2d66c2791a0",
+      "bytes": 7874
+    },
+    "Map": {
+      "file": "pages/Map.html",
+      "sha256": "dc39c98bb1293fa3bb4ac89661e501e07095d51faa16a4b6863b8e8a0721b5fa",
+      "bytes": 4073
+    },
+    "Result": {
+      "file": "pages/Result.html",
+      "sha256": "22cf5c8f0b0a128a000df2d601dc44d41b4ca4fa946fe374b4144be70601ce95",
+      "bytes": 5537
+    },
+    "Teacher": {
+      "file": "pages/Teacher.html",
+      "sha256": "e7d9433eff3e49593d21f7f759bbbc9cd6fb99409ceeee4723aaefb8be3d9ee0",
+      "bytes": 5521
+    },
+    "S_cq00_dongqian": {
+      "file": "pages/S_cq00_dongqian.html",
+      "sha256": "dd710d4a2bdff8e5b61bcb0a663c0e76ccc8f558e33121f044f2e4871748dbb1",
+      "bytes": 5627
+    },
+    "S_cq01_zhengzhuang": {
+      "file": "pages/S_cq01_zhengzhuang.html",
+      "sha256": "9e973df3bb25882a24e42fb32f9e2ba09a7f8385fda89b3765ac160968cce067",
+      "bytes": 5627
+    },
+    "S_cq02_handong": {
+      "file": "pages/S_cq02_handong.html",
+      "sha256": "5c8e8d1455f91477ff5b88b80270b5400dd082d79a1f47b809fb75ad63a6405a",
+      "bytes": 5627
+    },
+    "S_cq03_qihuan": {
+      "file": "pages/S_cq03_qihuan.html",
+      "sha256": "24650097f8c753b8db403c00fedb354d1a5368ec6c8f290c4827ba7db1a1e2e2",
+      "bytes": 5620
+    },
+    "S_cq04_chonger": {
+      "file": "pages/S_cq04_chonger.html",
+      "sha256": "1b25f25632f57de12640dfb0aa0bccbd3a16836f60432e0c74aeeb5374c0c9cf",
+      "bytes": 5620
+    },
+    "S_cq05_hanyuan": {
+      "file": "pages/S_cq05_hanyuan.html",
+      "sha256": "b13286ad5ae3c42b8baff037c4a239b9677c5450b8ca87ecb34136ba00d31f8f",
+      "bytes": 5620
+    },
+    "S_cq06_songxiang": {
+      "file": "pages/S_cq06_songxiang.html",
+      "sha256": "24e26f76d5827dc26aaa4a07bd40837d87f4e7b59ebade79a82c6e2d7b6fc820",
+      "bytes": 5627
+    },
+    "S_cq07_chengpu": {
+      "file": "pages/S_cq07_chengpu.html",
+      "sha256": "a04a53f713ccc2adbd49ee4e3ce5fcf80b2c14b54d0e24ee242e92c63c39f078",
+      "bytes": 5628
+    },
+    "S_cq08_weizheng": {
+      "file": "pages/S_cq08_weizheng.html",
+      "sha256": "50321eb5ed143f7683a3c4166d09461c60e4a23327e1d8e2804aced99e2744d7",
+      "bytes": 5955
+    },
+    "S_cq09_xiao": {
+      "file": "pages/S_cq09_xiao.html",
+      "sha256": "5649f98fda6b40a3a4330d725f7e2b37ad2866665590553f51ed8b97cb482e8f",
+      "bytes": 5627
+    },
+    "S_cq10_wending": {
+      "file": "pages/S_cq10_wending.html",
+      "sha256": "d78b797bebf602cd0596a606ca8669716f9f871ffea73d3af3a1d1362bb03123",
+      "bytes": 5627
+    },
+    "S_cq11_jinba": {
+      "file": "pages/S_cq11_jinba.html",
+      "sha256": "398491ad4179d722efbf3a518d7933bf3411c4ea39d02324b8fcf34df0b0d1a7",
+      "bytes": 5627
+    },
+    "S_cq12_jinchu": {
+      "file": "pages/S_cq12_jinchu.html",
+      "sha256": "c2292c68e86d1635d9a543cdf99a526084719ddc5f3cdebc14f9911934dca491",
+      "bytes": 5627
+    },
+    "S_cq13_zichan": {
+      "file": "pages/S_cq13_zichan.html",
+      "sha256": "570a7db18b447be48f71afd2ca8ed06b8721d1c9833ef022931e8845ca6ed6f0",
+      "bytes": 5846
+    },
+    "S_cq14_wushi": {
+      "file": "pages/S_cq14_wushi.html",
+      "sha256": "539174fcdd19c107ea7d2584ae798228dac3c62362114ce50b981f09cd2215da",
+      "bytes": 5964
+    },
+    "S_cq15_kongzi": {
+      "file": "pages/S_cq15_kongzi.html",
+      "sha256": "7403cfc18f4b1f82aad98c184eb3531b16dfedecabe002c3a35ce1df05f1e048",
+      "bytes": 5627
+    },
+    "S_cq16_datong": {
+      "file": "pages/S_cq16_datong.html",
+      "sha256": "2e480f172a833b6661611d26aaaad9fac24f02931f894d6e9fbb575d18c3136c",
+      "bytes": 5627
+    },
+    "S_cq17_wuyue": {
+      "file": "pages/S_cq17_wuyue.html",
+      "sha256": "e7d475dfac7d2808f49b170e1cea61421e3dd11518447de44b2858b559b100c9",
+      "bytes": 5846
+    },
+    "S_zg01_sanjia": {
+      "file": "pages/S_zg01_sanjia.html",
+      "sha256": "b4548f0e78dd5515efb4db831e938ee8480b4cec91d055216ff39413d28b89d6",
+      "bytes": 5628
+    },
+    "S_zg02_weiwen": {
+      "file": "pages/S_zg02_weiwen.html",
+      "sha256": "a07c6d2bfb16738aaca10999b6ec34b8c9eb97d39ee9f0896fc85f3f98e9cb16",
+      "bytes": 5627
+    },
+    "S_zg03_shangyang": {
+      "file": "pages/S_zg03_shangyang.html",
+      "sha256": "44f5a837aee2e25a51bbaa7e322dad337613244fc7353e5ed4c22be151623973",
+      "bytes": 5627
+    },
+    "S_zg04_jixia": {
+      "file": "pages/S_zg04_jixia.html",
+      "sha256": "9ef72ff38a95a491f6a6eb074e22df056b393d76dc6a10f5d94c24e4c2fcf3f6",
+      "bytes": 5627
+    },
+    "S_zg05_maling": {
+      "file": "pages/S_zg05_maling.html",
+      "sha256": "574443435f0a2e1cf7f343457bfc76beb88862626b1f694f423b7d2c9d8cef9a",
+      "bytes": 5628
+    },
+    "S_zg06_hezong": {
+      "file": "pages/S_zg06_hezong.html",
+      "sha256": "2fe4944049c8543e14cc86d44da3c690b87001a6032e9242f63aa122d09a6fea",
+      "bytes": 5627
+    },
+    "S_zg07_quyuan": {
+      "file": "pages/S_zg07_quyuan.html",
+      "sha256": "c3d08811f1febf6997a25a9c0347d4059e96e51b5267372b4c3e61ae2e941dc6",
+      "bytes": 5627
+    },
+    "S_zg08_hufu": {
+      "file": "pages/S_zg08_hufu.html",
+      "sha256": "a68712b25ac52d0be850513e9e1e2d80347886ec0d5e4d4f7f0eee8226396d4b",
+      "bytes": 5628
+    },
+    "S_zg09_mengchang": {
+      "file": "pages/S_zg09_mengchang.html",
+      "sha256": "0c922694bd05758b364194dc821200cff90f474c68d1e9b6c6f2828ac2feaca0",
+      "bytes": 5627
+    },
+    "S_zg10_changping": {
+      "file": "pages/S_zg10_changping.html",
+      "sha256": "b1c813a5d23d21520846af057649d3ffa4c0976c2c040c89ddadd73a4e702e23",
+      "bytes": 5627
+    },
+    "S_zg11_zhuke": {
+      "file": "pages/S_zg11_zhuke.html",
+      "sha256": "18f86af454e55c720179cb055d1dc23f99e1cd2292384539f0071c617bcaccfd",
+      "bytes": 5627
+    },
+    "S_zg12_handan": {
+      "file": "pages/S_zg12_handan.html",
+      "sha256": "b55cf7adc21f8ff30a0437a66f162337717f7013044c3a10320b1c4d11a63be7",
+      "bytes": 5743
+    },
+    "S_zg13_tongyi": {
+      "file": "pages/S_zg13_tongyi.html",
+      "sha256": "a035fcaa482d59c8466ad3b541df48b6344f2511a28d37a56a5fb3de08abaa08",
+      "bytes": 5627
+    },
+    "S_ch01_shaqiu": {
+      "file": "pages/S_ch01_shaqiu.html",
+      "sha256": "72ae4f217117eb582ee386886b81cadb272f67a05a16a324dc60adde8df5b67d",
+      "bytes": 5614
+    },
+    "S_ch02_dazexiang": {
+      "file": "pages/S_ch02_dazexiang.html",
+      "sha256": "754e8fd21c06730d4e166b4ef1931c945e83d1bf3ebda79ca15bec432e0176f6",
+      "bytes": 5633
+    },
+    "S_ch03_julu": {
+      "file": "pages/S_ch03_julu.html",
+      "sha256": "ea497b34e2e5ad80ecf189ec6b259897ead9449b06a379c8c8ede63f54b5fd1e",
+      "bytes": 5633
+    },
+    "S_ch04_hongmen": {
+      "file": "pages/S_ch04_hongmen.html",
+      "sha256": "7021a5f3785eda7c0d2730adcf8c415d40cea3837a8a47142708f4e24001a6b0",
+      "bytes": 5603
+    },
+    "S_ch05_sanqin": {
+      "file": "pages/S_ch05_sanqin.html",
+      "sha256": "7e89dffb8b80bfc8291b2e0f02749648f8d4bb5fd490b10225b771ba836d68d5",
+      "bytes": 5631
+    },
+    "S_ch06_xingyang": {
+      "file": "pages/S_ch06_xingyang.html",
+      "sha256": "5eafef6b1a7f6ed6a5245b5e0dc2ccbb5779c44ae914608f3183075faa14b33c",
+      "bytes": 5633
+    },
+    "S_ch07_hanxin": {
+      "file": "pages/S_ch07_hanxin.html",
+      "sha256": "186b795a191ece1dfb23a0fbea91cc0d6312e6fe155573092151ec0247930d42",
+      "bytes": 5632
+    },
+    "S_ch08_gaixia": {
+      "file": "pages/S_ch08_gaixia.html",
+      "sha256": "3cf56c14e1a8bafc6bfa371bb48b72cc2fb9800059296e1e7a6637dda06d30c8",
+      "bytes": 5632
+    },
+    "S_ch09_dafeng": {
+      "file": "pages/S_ch09_dafeng.html",
+      "sha256": "0fc571e2253f8d48efc9a57e0b667cf23aa74e3b72435db13452279bdb3d8db4",
+      "bytes": 5631
+    },
+    "S_zz01_laobio": {
+      "file": "pages/S_zz01_laobio.html",
+      "sha256": "856a9299e22d0cc78ac45d000461075befcb710684bfe59134d85deb74a36825",
+      "bytes": 3854
+    },
+    "S_zz02_laoread": {
+      "file": "pages/S_zz02_laoread.html",
+      "sha256": "d9ca24d10e8d6d60e7cf06922106bee8d90376c7905a61654cf8b34ced5e0277",
+      "bytes": 3854
+    },
+    "S_zz03_zhuangbio": {
+      "file": "pages/S_zz03_zhuangbio.html",
+      "sha256": "1d96062b995b2840222f460ba1ad7b66b605ab94a169deab1f0ac61a4f83ff98",
+      "bytes": 3854
+    },
+    "S_zz04_zhuangread": {
+      "file": "pages/S_zz04_zhuangread.html",
+      "sha256": "5ab367cef44e720c10e941b8f4e053e025887fb3af264a6cf911e7672f3bc430",
+      "bytes": 3854
+    },
+    "S_zz05_xunbio": {
+      "file": "pages/S_zz05_xunbio.html",
+      "sha256": "53ada3c2b2802493e3d9a299e166eaf543979301fed4b82053859cbda2a9c5b6",
+      "bytes": 3854
+    },
+    "S_zz06_xunread": {
+      "file": "pages/S_zz06_xunread.html",
+      "sha256": "7619bcc7510816ed9bf9ee5011cf670c00791099ee1f952a419561cb57c2f601",
+      "bytes": 3854
+    },
+    "S_zz07_hanbio": {
+      "file": "pages/S_zz07_hanbio.html",
+      "sha256": "2ce34dfceb7a3178a06a0f8562db87d213f89971771c88685693f3411eb300b5",
+      "bytes": 3854
+    },
+    "S_zz08_hanread": {
+      "file": "pages/S_zz08_hanread.html",
+      "sha256": "a85071ada6aa1bb1ee8e2b1895c499bc8afed6ce74a6ff7c6f20d2d8f17f518a",
+      "bytes": 3854
+    },
+    "S_zz09_mobio": {
+      "file": "pages/S_zz09_mobio.html",
+      "sha256": "f2de064d489545c1233fdacb1a732b50ae29053a4a1f63680ada02e61e5d0d3e",
+      "bytes": 3854
+    },
+    "S_zz10_moread": {
+      "file": "pages/S_zz10_moread.html",
+      "sha256": "e4540a176560a05b3c67b91f110ae5d94824c459042dbebe8653122a04937c9e",
+      "bytes": 3854
+    },
+    "S_zz11_mengbio": {
+      "file": "pages/S_zz11_mengbio.html",
+      "sha256": "9c88cc2f9d71cb3348dd1ed9c2aca99f23c3019aa7710649488e600833ae7a90",
+      "bytes": 3854
+    },
+    "S_zz12_mengread": {
+      "file": "pages/S_zz12_mengread.html",
+      "sha256": "0576256fea99526cb25cc4ac7a5fae7f14aece1daa8a2bcc543276715267dcf0",
+      "bytes": 3854
+    },
+    "S_gw05_chushi": {
+      "file": "pages/S_gw05_chushi.html",
+      "sha256": "b66e06e5c230bd2789d06c7a745143b8d12c4251c50a913fbd2ae183b4664b97",
+      "bytes": 3840
+    },
+    "S_gw06_taoyuan": {
+      "file": "pages/S_gw06_taoyuan.html",
+      "sha256": "b2d281148bff1f891c922bc20cc1ac0459ea663f3efe3f49ab19130e73c5d1ad",
+      "bytes": 3843
+    },
+    "S_gw07_shishuo": {
+      "file": "pages/S_gw07_shishuo.html",
+      "sha256": "bdd9e33358d4f2c06ae74eacceeccdae2ce29f31fcaa1c9ba0635d28462bcd77",
+      "bytes": 3837
+    },
+    "S_gw08_qiuran": {
+      "file": "pages/S_gw08_qiuran.html",
+      "sha256": "c76e653d00d19bb40cb8051a4f8ae39cac889eb5a6b8817fcfa33e8c9d4f5483",
+      "bytes": 3843
+    },
+    "S_gw09_chibi": {
+      "file": "pages/S_gw09_chibi.html",
+      "sha256": "8fc4d909e1477ff65c5a7ba84a20281f5c02623df4109628b5c40586dcaada48",
+      "bytes": 3840
+    },
+    "S_gw10_xiangji": {
+      "file": "pages/S_gw10_xiangji.html",
+      "sha256": "ba63b87be5cd0497b70870a3015a5e5895bed049aab023ce6e3806cc46dc5bc5",
+      "bytes": 3843
+    },
+    "S_gw11_liuqiao": {
+      "file": "pages/S_gw11_liuqiao.html",
+      "sha256": "fc9c525f00c3e78fb9378280ade8b803570f4b33ddeeb79be2fa37e407f7e495",
+      "bytes": 3852
+    },
+    "S_gw12_laoshan": {
+      "file": "pages/S_gw12_laoshan.html",
+      "sha256": "2c27f96a04e5dc579c4f6af947747d2b99c7ab27dd4875fe7c647301b2e4cc0f",
+      "bytes": 3843
+    },
+    "S_gw13_quanhe": {
+      "file": "pages/S_gw13_quanhe.html",
+      "sha256": "7ef7c62b08011317af2fd9a5f5678e55f1d6c49867f2e3bcc4308060a3d19832",
+      "bytes": 3840
+    },
+    "S_gw14_lugang": {
+      "file": "pages/S_gw14_lugang.html",
+      "sha256": "a6a644fc374e42ec5fd37cea1bc2025802a5e38830876baac4b052471ef4c5b2",
+      "bytes": 3846
+    },
+    "S_gw15_huaju": {
+      "file": "pages/S_gw15_huaju.html",
+      "sha256": "8bc1079c52aaeb270e88da63863cb029b8b32bf9b924fcdc50e0df8cefa7a74a",
+      "bytes": 3843
+    },
+    "S_al01_yufu": {
+      "file": "pages/S_al01_yufu.html",
+      "sha256": "f12b06ab4d26f089a6451fa3153b3813693b3d15f9064de4d604d940eeb47e6a",
+      "bytes": 3837
+    },
+    "S_al02_liulao": {
+      "file": "pages/S_al02_liulao.html",
+      "sha256": "cc4483876a0b3f72ba877bea5857b8adb22b67b5a37c3297c3f8a57c1d56893d",
+      "bytes": 3840
+    },
+    "S_al03_paoding": {
+      "file": "pages/S_al03_paoding.html",
+      "sha256": "eaf5b933d332d0da40176f556ed77564cdf99c84fd6db416ce7b49abb643d3ef",
+      "bytes": 3843
+    },
+    "S_al04_wangdao": {
+      "file": "pages/S_al04_wangdao.html",
+      "sha256": "e118daab7b4ac8f1d8c851cbe6da2f2bba5b7fc9e6de9747eab67d2e357fb79e",
+      "bytes": 3867
+    },
+    "S_al05_zhixue": {
+      "file": "pages/S_al05_zhixue.html",
+      "sha256": "c1f211128fe82159cc84c4b193abc83d8a67e44a5d813ca17d4cc8120664f469",
+      "bytes": 3855
+    },
+    "S_al06_ruxiao": {
+      "file": "pages/S_al06_ruxiao.html",
+      "sha256": "e0acc9889d2372acd3b5ddd36397ef0746b11f1334521422fd6f92581250d5b9",
+      "bytes": 3864
+    },
+    "S_al07_xuesi": {
+      "file": "pages/S_al07_xuesi.html",
+      "sha256": "fc535753948390246d1354d24d7f47b51b101827aafb4e5f99d62905b5d79db7",
+      "bytes": 3849
+    },
+    "S_al08_wenren": {
+      "file": "pages/S_al08_wenren.html",
+      "sha256": "a5ce7c1e167baf358e0c22eba775d6bd9df86151b9e0e04c78150f40df352133",
+      "bytes": 3867
+    },
+    "S_al09_kong": {
+      "file": "pages/S_al09_kong.html",
+      "sha256": "903ee02c5dbf9431ef5ff842c9a7521cf0993d2acc4c3dee54c73ab169f2de4f",
+      "bytes": 3840
+    },
+    "S_al10_cheng": {
+      "file": "pages/S_al10_cheng.html",
+      "sha256": "a5ce2df041ea681d15ef6db69d3be883bfe150d3fe24f066836ab4f03fb723c3",
+      "bytes": 3849
+    },
+    "S_al11_sanxi": {
+      "file": "pages/S_al11_sanxi.html",
+      "sha256": "77285276aaaf61662758fef3fa0c2bfc6c3641941e2ee4da328c1ef052eb462f",
+      "bytes": 3837
+    },
+    "S_al12_ji": {
+      "file": "pages/S_al12_ji.html",
+      "sha256": "6d3c8642a555c6918e10774cf5d4da70fb4a62687d56bf0f3074b8bd254d103f",
+      "bytes": 3834
+    },
+    "S_al13_yueyang": {
+      "file": "pages/S_al13_yueyang.html",
+      "sha256": "6af7e8e3f0c95e173d90fa2f1c87612705fd08eb28b07d6109165d6014b2e981",
+      "bytes": 3843
+    },
+    "S_al14_zuiweng": {
+      "file": "pages/S_al14_zuiweng.html",
+      "sha256": "7704e7fd3b1e247502fa5ddcfefa4bbeb1a698b72a858b720924a1f8c52802e4",
+      "bytes": 3843
+    },
+    "S_al15_zuo": {
+      "file": "pages/S_al15_zuo.html",
+      "sha256": "2a2408fe1034c017c8ffa65c8d442a6d085bca49a268033cce2e3c463898b71d",
+      "bytes": 3849
+    },
+    "S_al16_dianlun": {
+      "file": "pages/S_al16_dianlun.html",
+      "sha256": "de54d3725766f01187c84abd139a930f3a478eb2fd1abc504adbf8fe1c537727",
+      "bytes": 3843
+    },
+    "S_al17_shisi": {
+      "file": "pages/S_al17_shisi.html",
+      "sha256": "7f45d9613a1a9ddaa90a4d4e8411367ca28ed5d35c8e6bd873e6f746e3410f49",
+      "bytes": 3849
+    },
+    "S_al18_shihao": {
+      "file": "pages/S_al18_shihao.html",
+      "sha256": "c15fa723ba587aa2f111b2c742e166bedac51286b26b370656f6f2d67de36151",
+      "bytes": 3840
+    },
+    "S_al19_taohua": {
+      "file": "pages/S_al19_taohua.html",
+      "sha256": "18e138cc2deff9a0c4038ba68dc51c06c703ed015bfaa158c7f966c52a7f66f5",
+      "bytes": 3855
+    },
+    "S_al20_linchong": {
+      "file": "pages/S_al20_linchong.html",
+      "sha256": "90a2ebafc01d95af88fa73183ed553d0a561a633f66a861e06979bb1e76e12f9",
+      "bytes": 3843
+    },
+    "S_al21_guoqin": {
+      "file": "pages/S_al21_guoqin.html",
+      "sha256": "0d96c07d79e56bceab49b44a0f14a62863c818121fc137c6522a4ce306ab6759",
+      "bytes": 3840
+    },
+    "S_al22_denglou": {
+      "file": "pages/S_al22_denglou.html",
+      "sha256": "232be65188b8f82f72c119ee3c03dda2d6e10e2b29b5d5c0e3874bba0e4c796e",
+      "bytes": 3840
+    },
+    "S_al23_lanting": {
+      "file": "pages/S_al23_lanting.html",
+      "sha256": "500875fd7a0a2b4481398f3484fe5e087ae7c19abcf2a3af89068fd308871839",
+      "bytes": 3843
+    },
+    "S_al24_xishan": {
+      "file": "pages/S_al24_xishan.html",
+      "sha256": "a5c04e74621231b5553181ca03dec774ed0153af8f425ca5662e40cb74cbc711",
+      "bytes": 3852
+    },
+    "S_al25_maigan": {
+      "file": "pages/S_al25_maigan.html",
+      "sha256": "30355704919de7443b95fcd834f0a5a83bf622a6a3508379a821b3e225dd06fa",
+      "bytes": 3843
+    },
+    "S_al26_zhiyu": {
+      "file": "pages/S_al26_zhiyu.html",
+      "sha256": "f6fca52b6a5857f189a1e6332db52da946226355b2ad29e83cabe0f472d0493a",
+      "bytes": 3837
+    },
+    "S_al27_tongshi": {
+      "file": "pages/S_al27_tongshi.html",
+      "sha256": "ab2fefd03b640aba2e3166903849aae5851709f2a7769461f69c38a6e0d22aa3",
+      "bytes": 3846
+    }
+  }
+}

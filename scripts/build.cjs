@@ -11,6 +11,8 @@ const fingerprints=fs.readdirSync(source).sort().filter(n=>/\.html$|_data\.gs$|^
 for(const dir of ['media','music'])for(const file of fs.readdirSync(path.join(root,'public',dir)).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'public',dir,file))));
 for(const file of fs.readdirSync(path.join(root,'src/academy')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/academy',file))));
 for(const file of fs.readdirSync(path.join(root,'src/character')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character',file))));
+for(const file of fs.readdirSync(path.join(root,'src/character3d')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character3d',file))));
+fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -26,6 +28,13 @@ const gameSource='window.ZH_ACADEMY_ENGINE={};\n'+gameFiles.map(n=>raw(n).replac
 const academyAssets={version:config.version,release,app:academyAsset('academy-app',academyApp),screenshot:academyAsset('academy-screenshot',screenshotApp),css:academyAsset('academy-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/academy/style.css'),'utf8'),{loader:'css',minify:true}).code),games:academyAsset('academy-games',esbuild.transformSync(gameSource,{minify:true,target:'es2020',charset:'utf8',legalComments:'none'}).code),data:''};
 const characterApp=esbuild.buildSync({entryPoints:[path.join(root,'src/character/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
 const characterAssets={version:config.version,app:academyAsset('character-app',characterApp),css:academyAsset('character-style',esbuild.transformSync(['style.css','warring-style.css','spring-style.css','zhuzi-style.css'].map(f=>fs.readFileSync(path.join(root,'src/character',f),'utf8')).join('\n'),{loader:'css',minify:true}).code)};
+// Keep one Three.js module instance for the existing workshop and the GLB pilot.
+const character3dSource=fs.readFileSync(path.join(root,'src/character3d/preview.js'),'utf8').replace(/from 'three\/addons\/([^']+)'/g,(_,file)=>'from '+JSON.stringify(require.resolve('three/addons/'+file)));
+const character3dApp=esbuild.buildSync({stdin:{contents:character3dSource,resolveDir:path.join(root,'src/character3d'),sourcefile:'preview.js'},bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020',external:['three']}).outputFiles[0].text.replace(/from"three"/g,'from"./three-r180.min.js"');
+const character3dModel=fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'));
+const character3dModelFile='models/scholar-pilot-'+hash(character3dModel).slice(0,16)+'.glb';
+fs.mkdirSync(path.join(dist,'models'),{recursive:true});fs.writeFileSync(path.join(dist,character3dModelFile),character3dModel);
+const character3dAssets={version:1,app:academyAsset('character3d-app',character3dApp),model:character3dModelFile};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -37,6 +46,7 @@ for(const m of raw('HubArt').matchAll(/--hub-art-(cq|zg|ch|foreground)\s*:\s*url
 }
 if(Object.keys(home).length!==4)throw Error('首頁四張插畫不完整');
 function read(name){let text=raw(name);
+ if(name==='Character3D_boot')text=text.replace('const ASSETS=null; // CHARACTER3D_ASSETS','const ASSETS='+JSON.stringify(character3dAssets)+';');
  if(name==='Studio3D')text=text.replace("const LIB='https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js';","const LIB=window.ZH_STATIC_URL('assets/three-r180.min.js');");
  if(name==='Core_js'){
   const start=text.indexOf("      const data = await ZH.call('api_musicTrack', key);"),end=text.indexOf("      return { blob: blob, source: 'server' };",start);
@@ -107,16 +117,17 @@ for(const [name,page]of Object.entries(routes)){
  const file='pages/'+name+'.html';fs.writeFileSync(path.join(releaseDir,file),html);
  pages[name]={file,sha256:hash(html),bytes:Buffer.byteLength(html)};
 }
-const result={release,version:config.version,chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
+const result={release,version:config.version,character3d:character3dAssets,chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
 fs.writeFileSync(path.join(releaseDir,'manifest.json'),JSON.stringify(result,null,2));
 fs.writeFileSync(path.join(dist,'release.json'),JSON.stringify({release,manifest:'releases/'+release+'/manifest.json'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
 // 保存已發布的共用檔與空殼；新版本發布期間，既有 GAS 釘選版本仍讀得到。
 fs.cpSync(path.join(dist,'assets'),path.join(root,'public/assets'),{recursive:true});
+fs.cpSync(path.join(dist,'models'),path.join(root,'public/models'),{recursive:true});
 fs.cpSync(releaseDir,path.join(root,'public/releases',release),{recursive:true});
 // 公開入口只提供進入學校遊戲的連結；不接觸學生資料或私密設定。
 fs.writeFileSync(path.join(dist,'index.html'),`<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Re:縱橫鼎業</title><style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:linear-gradient(#111b30aa,#111b30ee),url('home/cq.webp') center/cover;color:#f5e8c6;font:18px/1.8 "PingFang TC",sans-serif}main{max-width:780px;padding:36px}h1{font-size:clamp(32px,6vw,58px)}a{display:inline-block;background:#e4bd5e;color:#202a32;border-radius:10px;padding:12px 28px;text-decoration:none;font-weight:700}p{max-width:640px}.sub{color:#ebce8d}</style><main><h1>Re:縱橫鼎業</h1><p class="sub">〜轉生成 Lv.1 亂世策士的我，只能靠《古文觀止》問鼎天下〜</p><p>春秋、戰國、楚漢四十話，加上先秦諸子初進階冒險，古文十五篇，以及經典著作二十三篇。</p><a href="${config.gasUrl}" target="_self">進入遊戲</a><p>使用學校 Google 帳號保存進度；訪客可遊玩四篇課綱選文。學生資料由原本的 Google 試算表保存。</p></main></html>`);
-const bridge=path.join(root,'gas/GitHubBridge.gs');let bridgeSource=fs.readFileSync(bridge,'utf8');bridgeSource=bridgeSource.replace(/const GH_RELEASE_DEFAULT_ = '[^']*';/,`const GH_RELEASE_DEFAULT_ = '${release}';`);fs.writeFileSync(bridge,bridgeSource);
+if(!process.argv.includes('--no-pin')){const bridge=path.join(root,'gas/GitHubBridge.gs');let bridgeSource=fs.readFileSync(bridge,'utf8');bridgeSource=bridgeSource.replace(/const GH_RELEASE_DEFAULT_ = '[^']*';/,`const GH_RELEASE_DEFAULT_ = '${release}';`);fs.writeFileSync(bridge,bridgeSource);}
 fs.writeFileSync(path.join(root,'qa/build.json'),JSON.stringify({...result,assets:fs.readdirSync(path.join(dist,'assets')).length,generatedAt:new Date().toISOString()},null,2));
 console.log(`已完成 ${chapters.length} 話、${Object.keys(pages).length} 頁、${Object.keys(media).length} 件素材、4 張首頁圖、7 首配樂。版本 ${release}`);
 module.exports={root,dist,config,release,result,environment,read};
