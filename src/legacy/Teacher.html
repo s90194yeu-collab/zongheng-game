@@ -304,6 +304,7 @@
   const T = {
     token: ZH.session.get('tToken', ''),
     data: null,
+    loadEpoch: 0,
     cls: ZH.session.get('tCls', ''),
     tab: ZH.local.get('tTab', 'overview'),
     rosterSort: { key: 'studentId', dir: 1 },
@@ -362,6 +363,7 @@
     if (!T.cls) return '全部學生';
     if (T.cls === T.data.labels.teacher) return '教師帳號';
     if (T.cls === T.data.labels.none) return '未填班級代碼';
+    if (T.cls === '國文增廣') return T.cls;
     return T.cls + ' 班';
   }
 
@@ -436,6 +438,10 @@
 
   /** 下載 CSV（Excel 可直接開啟中文） */
   function downloadCsv(filename, rows) {
+    if(T.data?.dataSource?.includesSynthetic){
+      filename='DEMO_'+filename;
+      rows=rows.map((r,i)=>[i===0?'統計來源':T.data.dataSource.label].concat(r));
+    }
     const cell = v => {
       const s = v === null || v === undefined ? '' : String(v);
       return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
@@ -468,6 +474,7 @@
   /** 呼叫後臺 API：通行證過期時回到登入畫面 */
   function tcall(fnName) {
     const args = Array.prototype.slice.call(arguments, 1);
+    if(['api_teacherStudent','api_teacherReflections'].includes(fnName))args.push(T.data?.dataSource?.mode||'actual');
     return ZH.call.apply(ZH, [fnName, T.token].concat(args)).then(res => {
       if (res && res.expired) {
         showLogin(res.msg);
@@ -488,6 +495,7 @@
 
   function showLogin(msg) {
     T.token = '';
+    T.loadEpoch++;
     T.data = null;
     ZH.session.remove('tToken');
     closeDrawer();
@@ -542,9 +550,12 @@
   // ───────────────────────── 讀取與外框 ─────────────────────────
 
   function loadDashboard() {
+    const epoch=++T.loadEpoch;
+    closeDrawer();
     ZH.loading(true, '彙整資料');
-    return Promise.all([ZH.call('api_teacherDashboard', T.token),ZH.call('api_teacherStudentProfiles',T.token)]).then(([r,p])=>{if(!p||!p.ok)throw Error(p&&p.msg||'學號資料讀取失敗');if(r&&r.ok){const profiles=Object.fromEntries(p.profiles.map(x=>[x.email,x]));r.students.forEach(x=>{const a=profiles[x.email];x.studentId=a?.studentId||'';x.classCode=a?.classCode||'';if(a){x.name=a.nickname||x.name;x.avatarId=a.avatarId;x.nameLocked=a.nameLocked;}if(a&&a.hasStudentProfile!==false&&x.cls!==r.labels.teacher)x.cls=a.classCode||r.labels.none;});const counts={};r.students.forEach(x=>counts[x.cls]=(counts[x.cls]||0)+1);r.classes=Object.entries(counts).map(([key,count])=>({key,count}));}return r;})
+    return Promise.all([ZH.call('api_teacherDashboard', T.token),ZH.call('api_teacherStudentProfiles',T.token)]).then(([r,p])=>{if(epoch!==T.loadEpoch)return null;if(!p||!p.ok)throw Error(p&&p.msg||'學號資料讀取失敗');if(r&&r.ok){const profiles=Object.fromEntries(p.profiles.map(x=>[x.email,x]));r.students.forEach(x=>{const a=profiles[x.email];x.studentId=a?.studentId||x.studentId||'';x.classCode=a?.classCode||x.classCode||'';if(a){x.name=a.nickname||x.name;x.avatarId=a.avatarId;x.nameLocked=a.nameLocked;}if(a&&a.hasStudentProfile!==false&&x.cls!==r.labels.teacher)x.cls=a.classCode||r.labels.none;});const counts={};r.students.forEach(x=>counts[x.cls]=(counts[x.cls]||0)+1);r.classes=Object.entries(counts).map(([key,count])=>({key,count}));}return r;})
       .then(res => {
+        if(epoch!==T.loadEpoch)return;
         ZH.loading(false);
         if (!res || !res.ok) {
           if (!res || res.expired || !T.data) return showLogin((res && res.msg) || '讀取失敗，請重新登入。');
@@ -563,6 +574,7 @@
         renderTab();
       })
       .catch(err => {
+        if(epoch!==T.loadEpoch)return;
         ZH.loading(false);
         if (!T.data) showLogin(err.message);
         else ZH.toast(err.message, 'bad');
@@ -573,7 +585,7 @@
     const d = T.data;
     const total = d.students.filter(s => s.cls !== d.labels.teacher).length;
     const opts = ['<option value="">全部學生（' + total + ' 人）</option>'].concat(d.classes.map(c => {
-      const label = c.key === d.labels.teacher ? '教師帳號' : c.key === d.labels.none ? '未填班級代碼' : c.key + ' 班';
+      const label = c.key === d.labels.teacher ? '教師帳號' : c.key === d.labels.none ? '未填班級代碼' : c.key === '國文增廣' ? c.key : c.key + ' 班';
       return '<option value="' + esc(c.key) + '"' + (c.key === T.cls ? ' selected' : '') + '>' + esc(label) + '（' + c.count + ' 人）</option>';
     }));
     $('t-scope').innerHTML =
@@ -816,7 +828,7 @@
     }));
     $('t-roster-csv').addEventListener('click', () => {
       const req = d.config.required.length;
-      const rows = [['班級', '座號', '班級座號', '暱稱', '帳號'].concat(DIMS.map(([, l]) => l)).concat(['平時成績', '已玩劇本', '必玩完成', '遊玩分鐘', '最後活動'])];
+      const rows = [['分組', '學號／代碼', '班級代碼', '班級座號', '暱稱', '帳號'].concat(DIMS.map(([, l]) => l)).concat(['平時成績', '已玩劇本', '必玩完成', '遊玩分鐘', '最後活動'])];
       rosterList().forEach(s => rows.push([s.cls, s.studentId, s.classCode, s.classSeat, s.name, s.email]
         .concat(DIMS.map(([k]) => (s.dims[k] === null ? '' : s.dims[k])))
         .concat([s.total === null ? '' : s.total, s.played, req ? s.requiredDone + '/' + req : '', s.minutes, s.lastActive])));
@@ -857,6 +869,7 @@
   }
 
   function exportSheet() {
+    if(T.data?.dataSource?.includesSynthetic){ZH.toast('合併示範資料請下載附來源說明的 CSV；正式成績匯出只使用真實資料。','bad');return;}
     ZH.loading(true, '匯出中');
     tcall('api_teacherExportSheet', T.cls)
       .then(res => {
@@ -1167,6 +1180,7 @@
   }
 
   function loadReflections() {
+    const epoch=T.loadEpoch;
     const filter = { cls: T.cls, scenarioId: T.refl.scenarioId, kind: T.refl.kind, q: T.refl.q };
     const key = JSON.stringify(filter);
     const out = $('t-refl-out');
@@ -1174,11 +1188,12 @@
     out.innerHTML = '<p class="t-empty">讀取中……</p>';
     tcall('api_teacherReflections', filter)
       .then(res => {
+        if(epoch!==T.loadEpoch)return;
         if (!res || !res.ok) { out.innerHTML = '<p class="t-empty">' + esc((res && res.msg) || '讀取失敗。') + '</p>'; return; }
         T.reflCache[key] = res;
         if (T.tab === 'reflection') drawReflections(res);
       })
-      .catch(err => { out.innerHTML = '<p class="t-empty">' + esc(err.message) + '</p>'; });
+      .catch(err => { if(epoch!==T.loadEpoch)return;out.innerHTML = '<p class="t-empty">' + esc(err.message) + '</p>'; });
   }
 
   function drawReflections(res) {
@@ -1508,14 +1523,16 @@
     $('t-drawer-close').addEventListener('click', closeDrawer);
     $('t-drawer-close').focus();
 
+    const epoch=T.loadEpoch;
     tcall('api_teacherStudent', email)
       .then(res => {
+        if(epoch!==T.loadEpoch||!wrap.isConnected)return;
         const body = $('t-drawer-body');
         if (!body) return;
         if (!res || !res.ok) { body.innerHTML = '<p class="t-empty">' + esc((res && res.msg) || '讀取失敗。') + '</p>'; return; }
-        res.student.name=s.name;body.innerHTML = '<div id="t-player-admin"></div>'+studentDetail(res);if(ZH.player)ZH.player.teacher(document.getElementById('t-player-admin'),T.token,email);
+        res.student.name=s.name;body.innerHTML = '<div id="t-player-admin"></div>'+studentDetail(res);if(ZH.player&&!res.student.isSimulated)ZH.player.teacher(document.getElementById('t-player-admin'),T.token,email);
       })
-      .catch(err => { const body = $('t-drawer-body'); if (body) body.innerHTML = '<p class="t-empty">' + esc(err.message) + '</p>'; });
+      .catch(err => { if(epoch!==T.loadEpoch||!wrap.isConnected)return;const body = $('t-drawer-body'); if (body) body.innerHTML = '<p class="t-empty">' + esc(err.message) + '</p>'; });
   }
 
   document.addEventListener('zh:player-moderated',e=>{const p=e.detail.profile,s=T.data&&T.data.students.find(x=>x.email===e.detail.email);if(s){s.name=p.nickname;s.nameLocked=p.nameLocked;}const title=document.getElementById('t-drawer-title');if(title&&s)title.textContent=(s.studentId||s.classSeat||'未填')+' '+p.nickname;});
