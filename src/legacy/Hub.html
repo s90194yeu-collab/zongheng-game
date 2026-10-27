@@ -186,6 +186,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
 
     <div class="hub-lobby-head"><div><p id="hub-scene-title">春秋・爭盟之境</p><h2>一篇古文，一局天下。</h2></div><button type="button" class="zh-btn zh-btn--quiet" id="hub-scene-motion" aria-pressed="false">景深動態：開</button></div>
     <section class="hub-welcome" id="hub-welcome" aria-live="polite"></section>
+    <section class="village-entry" aria-label="博物館村入口"><div><h2>走進問鼎書院</h2><p>讓策士沿著小徑，走進史館、學宮與書院，親手挑選下一篇古文。</p><small>3D村莊第一版 · 原有選關清單仍可直接使用</small></div><button type="button" class="zh-btn zh-btn--primary" data-village-open>走進3D博物館村</button></section>
 
     
     
@@ -214,6 +215,7 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
 <?!= include('Data_a_selections') ?>
 <?!= include('Data_codex') ?>
 <?!= include('Codex_js') ?>
+<?!= include('Village_boot') ?>
 <script>
 (function(ZH){
   'use strict';
@@ -461,6 +463,8 @@ body.hub-home{background:#101a27}body.hub-home::before{display:none}.hub-home .z
     if(state.completed[s.id]&&!mode){ZH.modal({title:s.name+'・已完成',body:'<p>已保存通關紀錄。再挑戰會另開一局，完成後比較兩次表現，再選擇取代或都保留。</p>',actions:[{label:'收起',value:'stay',kind:'quiet'},{label:'查看通關紀錄',value:'review',kind:'quiet'},{label:'另開新局',value:'replay',kind:'primary'}]}).then(async v=>{if(v==='review'){ZH.session.remove('result:'+s.id);ZH.go('result',{s:s.id});}if(v==='replay')try{await ZH.runs.restart(s.id,'history');}catch(e){ZH.toast(e.message,'bad');}});return;}
     ZH.go(s.id, mode ? { mode: mode } : null);
   }
+
+  document.addEventListener('zh:village-select',event=>{const s=ZH.findScenario(event.detail&&event.detail.id);if(s&&s.status==='ready'&&!s.legacyOnly)openScenario(s);});
 
   // ───────── 頁尾 ─────────
   function renderFoot() {

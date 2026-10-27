@@ -5,7 +5,10 @@
  * 現有網頁已部署橋接核心時，啟用設定立即生效，不需要再次部署。
  */
 const GH_SITE_DEFAULT_ = 'https://s90194yeu-collab.github.io/zongheng-game/';
-const GH_RELEASE_DEFAULT_ = 'v4-93fc8e00808d34';
+const GH_RELEASE_DEFAULT_ = 'v4-ba33d827d69573';
+// 本次已授權並完整核對的前端發布：既有正式站只遷移一次，後續仍可手動回復舊版。
+const GH_VILLAGE_ROLLOUT_ = 'village-4.17.0';
+const GH_VILLAGE_PREVIOUS_ = ['v4-09e4affc72dda0','v4-bd52dc10ef27fb','v4-93fc8e00808d34'];
 
 /** 手動執行入口：只允許目前的部署教師操作，不能由訪客或學生切換全站設定。 */
 function githubRequireSetupUser_() {
@@ -37,9 +40,16 @@ function disableGitHubFrontend() {
 function githubSettings_() {
   const p = PropertiesService.getScriptProperties();
   const site = String(p.getProperty('GITHUB_SITE_URL') || GH_SITE_DEFAULT_).replace(/\/*$/, '/');
-  const release = String(p.getProperty('GITHUB_RELEASE_ID') || GH_RELEASE_DEFAULT_);
+  let release = String(p.getProperty('GITHUB_RELEASE_ID') || GH_RELEASE_DEFAULT_);
+  const enabled = p.getProperty('GITHUB_FRONTEND_ENABLED') === 'TRUE';
   if (!/^https:\/\/[a-z0-9-]+\.github\.io\/[a-z0-9_/-]*\/$/i.test(site) || !/^[a-zA-Z0-9._-]{1,80}$/.test(release)) throw new Error('GitHub 網址或版本設定不正確。');
-  return { site: site, release: release, enabled: p.getProperty('GITHUB_FRONTEND_ENABLED') === 'TRUE' };
+  // 只從這次核准的既有版本升級；停用、其他站點或未知釘選一律不動。
+  // 每次部署固定目標，不使用訪客參數，也不自動追蹤未來版本。
+  if (enabled && site === GH_SITE_DEFAULT_ && p.getProperty('GITHUB_VILLAGE_ROLLOUT') !== GH_VILLAGE_ROLLOUT_ && GH_VILLAGE_PREVIOUS_.includes(release) && !GH_VILLAGE_PREVIOUS_.includes(GH_RELEASE_DEFAULT_)) {
+    p.setProperties({ GITHUB_RELEASE_ID: GH_RELEASE_DEFAULT_, GITHUB_VILLAGE_ROLLOUT: GH_VILLAGE_ROLLOUT_ });
+    release = GH_RELEASE_DEFAULT_;
+  }
+  return { site: site, release: release, enabled: enabled };
 }
 function githubEnabled_() { try { return githubSettings_().enabled; } catch (e) { return false; } }
 function githubDigest_(text) {

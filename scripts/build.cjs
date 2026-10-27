@@ -13,6 +13,8 @@ for(const file of fs.readdirSync(path.join(root,'src/academy')).sort())fingerpri
 for(const file of fs.readdirSync(path.join(root,'src/character')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character',file))));
 for(const file of fs.readdirSync(path.join(root,'src/character3d')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character3d',file))));
 fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'))));
+for(const file of fs.readdirSync(path.join(root,'src/village')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/village',file))));
+for(const file of ['museum-village.glb','museum-interior.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -35,6 +37,13 @@ const character3dModel=fs.readFileSync(path.join(root,'public/models/scholar-pil
 const character3dModelFile='models/scholar-pilot-'+hash(character3dModel).slice(0,16)+'.glb';
 fs.mkdirSync(path.join(dist,'models'),{recursive:true});fs.writeFileSync(path.join(dist,character3dModelFile),character3dModel);
 const character3dAssets={version:1,app:academyAsset('character3d-app',character3dApp),model:character3dModelFile};
+const villageSource=fs.readFileSync(path.join(root,'src/village/app.js'),'utf8').replace(/from 'three\/addons\/([^']+)'/g,(_,file)=>'from '+JSON.stringify(require.resolve('three/addons/'+file)));
+const villageApp=esbuild.buildSync({stdin:{contents:villageSource,resolveDir:path.join(root,'src/village'),sourcefile:'app.js'},bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020',external:['three']}).outputFiles[0].text.replace(/from"three"/g,'from"./three-r180.min.js"');
+const villageModels={character:character3dModelFile};
+for(const [key,name]of Object.entries({exterior:'museum-village',interior:'museum-interior'})){
+ const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';fs.writeFileSync(path.join(dist,file),bytes);villageModels[key]=file;
+}
+const villageAssets={version:1,app:academyAsset('village-app',villageApp),css:academyAsset('village-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/village/style.css'),'utf8'),{loader:'css',minify:true}).code),assets:villageModels};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -47,6 +56,7 @@ for(const m of raw('HubArt').matchAll(/--hub-art-(cq|zg|ch|foreground)\s*:\s*url
 if(Object.keys(home).length!==4)throw Error('首頁四張插畫不完整');
 function read(name){let text=raw(name);
  if(name==='Character3D_boot')text=text.replace('const ASSETS=null; // CHARACTER3D_ASSETS','const ASSETS='+JSON.stringify(character3dAssets)+';');
+ if(name==='Village_boot')text=text.replace('const ASSETS=null; // VILLAGE_ASSETS','const ASSETS='+JSON.stringify(villageAssets)+';');
  if(name==='Studio3D')text=text.replace("const LIB='https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js';","const LIB=window.ZH_STATIC_URL('assets/three-r180.min.js');");
  if(name==='Core_js'){
   const start=text.indexOf("      const data = await ZH.call('api_musicTrack', key);"),end=text.indexOf("      return { blob: blob, source: 'server' };",start);
@@ -117,7 +127,7 @@ for(const [name,page]of Object.entries(routes)){
  const file='pages/'+name+'.html';fs.writeFileSync(path.join(releaseDir,file),html);
  pages[name]={file,sha256:hash(html),bytes:Buffer.byteLength(html)};
 }
-const result={release,version:config.version,character3d:character3dAssets,chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
+const result={release,version:config.version,character3d:character3dAssets,village:villageAssets,chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
 fs.writeFileSync(path.join(releaseDir,'manifest.json'),JSON.stringify(result,null,2));
 fs.writeFileSync(path.join(dist,'release.json'),JSON.stringify({release,manifest:'releases/'+release+'/manifest.json'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
