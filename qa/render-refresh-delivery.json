@@ -1,0 +1,34 @@
+{
+  "version": "4.19.1-google",
+  "release": "v4-998c49b08ac4d7",
+  "localTests": {
+    "passed": 274,
+    "failed": 0,
+    "skipped": 0
+  },
+  "fpsLimitRemoved": [
+    "village",
+    "artifact viewer",
+    "character 3d preview"
+  ],
+  "renderTimeReplayHz": [
+    60,
+    120,
+    144
+  ],
+  "movementAndAnimationTimeReplayHz": [
+    30,
+    60,
+    120,
+    144
+  ],
+  "measuredHardwareFps": null,
+  "browserManualCheck": "not completed: Chrome currently being used elsewhere; independent preview tab connection unavailable",
+  "artDirection": "five generated options stored locally; choice pending; runtime art unchanged",
+  "schoolRecordsWritten": 0,
+  "pending": [
+    "GitHub publication",
+    "public verification",
+    "GAS frontend pin activation"
+  ]
+}

@@ -54,7 +54,7 @@ function mount(host,model,clips,{color,quality,onState}) {
   const scene=new THREE.Scene(),canvas=document.createElement('canvas');
   canvas.className='c3-canvas';canvas.tabIndex=0;
   canvas.setAttribute('aria-label','古風策士立體試看；拖曳旋轉、雙指或滾輪縮放，方向鍵旋轉，加減鍵縮放，Home回正。');
-  try {renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});}
+  try {renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'default'});}
   catch(error){release(model);throw Error('目前無法開啟立體試看，請返回我的造型，或換個瀏覽器再試。');}
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
@@ -101,8 +101,8 @@ function mount(host,model,clips,{color,quality,onState}) {
     actions[key]=mixer.clipAction(clip);
   }
   actions.bow.setLoop(THREE.LoopOnce,1);actions.bow.clampWhenFinished=true;
-  let disposed=false,paused=false,visible=true,lost=false,frame=0,previous=0,lastRender=0,current='idle',colorId='jade';
-  const media=matchMedia('(prefers-reduced-motion: reduce)');let reduced=media.matches,fps=30,qualityMode='auto';
+  let disposed=false,paused=false,visible=true,lost=false,frame=0,previous=0,current='idle',colorId='jade';
+  const media=matchMedia('(prefers-reduced-motion: reduce)');let reduced=media.matches,qualityMode='auto';
   function notify(){onState({status:lost?'lost':'ready',motion:current,paused,reduced,color:colorId});}
   function draw(){if(!disposed&&!lost)renderer.render(scene,camera);}
   function setColor(value){
@@ -124,7 +124,7 @@ function mount(host,model,clips,{color,quality,onState}) {
   function setQuality(value){
     qualityMode=['auto','low','high'].includes(value)?value:'auto';
     const low=qualityMode==='low'||(qualityMode==='auto'&&innerWidth<700);
-    renderer.setPixelRatio(Math.min(devicePixelRatio||1,low?1:1.5));renderer.shadowMap.enabled=!low;fps=low?24:30;resize();
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,low?1:1.5));renderer.shadowMap.enabled=!low;resize();
   }
   function setPaused(value){if(disposed)return;paused=!!value;previous=performance.now();notify();draw();}
   function changeReduced(){reduced=media.matches;if(reduced){mixer.stopAllAction();actions.idle.reset().play();mixer.update(0);current='idle';}else play('idle');draw();notify();}
@@ -146,8 +146,7 @@ function mount(host,model,clips,{color,quality,onState}) {
   const observer=new ResizeObserver(()=>setQuality(qualityMode)),intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;previous=performance.now();});
   function tick(time){
     if(disposed)return;frame=requestAnimationFrame(tick);
-    if(time-lastRender<1000/fps)return;
-    const dt=Math.min(.08,Math.max(0,(time-previous)/1000));previous=time;lastRender=time;
+    const dt=Math.min(.08,Math.max(0,(time-previous)/1000));previous=time;
     if(document.hidden||!visible||lost)return;
     if(!paused&&!reduced)mixer.update(dt);
     controls.update();draw();

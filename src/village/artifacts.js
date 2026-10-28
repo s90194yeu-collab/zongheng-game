@@ -27,7 +27,7 @@ export function artifactFor(id){return ARTIFACTS[id]||ARTIFACTS.north;}
 export function mountArtifactViewer(host,source,id,{Controls,reduced=false,onStatus=()=>{}}={}){
  const info=artifactFor(id),original=source.getObjectByName(info.node);
  if(!original)throw Error('這件展品暫時無法近看，仍可繼續閱讀導讀與篇章。');
- const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
+ const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'default'});
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
  const canvas=renderer.domElement;canvas.tabIndex=0;canvas.setAttribute('aria-label',info.title+'近看模型，可拖曳旋轉；也可用下方視角與縮放按鈕。');host.replaceChildren(canvas);
@@ -42,11 +42,11 @@ export function mountArtifactViewer(host,source,id,{Controls,reduced=false,onSta
  const controls=new Controls(camera,canvas);controls.enablePan=false;controls.enableDamping=!reduced;controls.dampingFactor=.12;controls.minDistance=2.1;controls.maxDistance=7;controls.maxPolarAngle=Math.PI*.9;
  const home=id==='west'?[2,1.4,3.5]:[1.5,3,3.1];camera.position.set(...home);controls.target.set(0,0,0);controls.update();
  const panels=[];model.traverse(o=>{if(/^BambooPanel_\d+$/.test(o.name))panels.push({object:o,base:o.position.clone(),index:Number(o.name.split('_').at(-1))});});
- let disposed=false,frame=0,rendered=0,last=performance.now(),expanded=true,opening=1,rotate=false,visible=true;
+ let disposed=false,frame=0,last=performance.now(),expanded=true,opening=1,rotate=false,visible=true;
  const observer=new ResizeObserver(()=>{const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();});observer.observe(host);
  const visibility=()=>{visible=!document.hidden;last=performance.now();};document.addEventListener('visibilitychange',visibility);
  const lost=event=>{event.preventDefault();onStatus('近看畫面暫時中斷，請關閉後重新開啟。');};canvas.addEventListener('webglcontextlost',lost);
- function tick(time){if(disposed)return;frame=requestAnimationFrame(tick);if(time-rendered<1000/(innerWidth<700?24:30))return;rendered=time;const dt=Math.min(.1,(time-last)/1000);last=time;if(!visible)return;
+ function tick(time){if(disposed)return;frame=requestAnimationFrame(tick);const dt=Math.min(.1,(time-last)/1000);last=time;if(!visible)return;
   const target=expanded?1:.18;opening=reduced?target:THREE.MathUtils.damp(opening,target,8,dt);
   for(const {object,index,base}of panels){object.position.copy(base);object.position.x=(index-2.5)*.324*(opening-1);object.rotation.z=(index-2.5)*.08*(1-opening);}
   if(rotate&&!reduced)group.rotation.y+=dt*.22;controls.update();renderer.render(scene,camera);

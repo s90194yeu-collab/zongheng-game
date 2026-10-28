@@ -46,7 +46,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
 
  let renderer;
- try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});}
+ try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'default'});}
  catch(error){loaded.forEach(disposeTree);throw Error('這個瀏覽器目前無法開啟3D村莊，請返回原選關頁。');}
  const canvas=renderer.domElement;canvas.tabIndex=0;canvas.className='village-canvas';canvas.setAttribute('aria-label','博物館村遊戲畫面，WASD或方向鍵移動，E互動。');
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -67,7 +67,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  for(const name of ['Idle','Run']){const clip=character.animations.find(c=>c.name===name);if(!clip){disposeTree(scene);renderer.dispose();throw Error('角色動作不完整，請返回原選關頁。');}actions[name]=mixer.clipAction(clip);}
  let action='Idle';actions.Idle.play();
  const camera=new THREE.PerspectiveCamera(42,1,.1,150),cameraTarget=new THREE.Vector3(0,0,0),cameraGoal=new THREE.Vector3();
- const clock={last:performance.now(),rendered:0},keys=new Set(),cleanup=[],media=matchMedia('(prefers-reduced-motion: reduce)');
+ const viewport={width:1,height:1},clock={last:performance.now()},keys=new Set(),cleanup=[],media=matchMedia('(prefers-reduced-motion: reduce)');
  let position={x:0,z:7},place='village',museum=null,path=[],nearest=null,contextKey='',disposed=false,frame=0,overview=false,visible=true,lost=false,moving=false,quality='high',draws=0;
  let artifactViewer=null;
  let guideState=createGuideState(),routeTarget=null,toastUntil=0,selectedCase='north',lastRouteDistance='',hasMoved=false;
@@ -179,17 +179,17 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
   if(nearest&&!museum&&nearest.id!=='guide'&&guideState.stage!=='arrived')updateGuide('arrive',{hallId:nearest.id});
   q('[data-v-context]').hidden=!nearest;if(nearest){q('[data-v-context-name]').textContent=nearest.name;q('[data-v-interact]').textContent=museum?(nearest.id==='exit'?'走出展館 · E':'觀看篇章 · E'):nearest.id==='guide'?'和書僮聊聊 · E':'進入'+nearest.name+' · E';}
  }
- function resize(){const w=stage.clientWidth,h=stage.clientHeight;quality=innerWidth<700?'low':'high';renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality==='high';renderer.setSize(w,h,false);camera.aspect=w/Math.max(1,h);camera.updateProjectionMatrix();}
+ function resize(){const w=stage.clientWidth,h=stage.clientHeight;viewport.width=w;viewport.height=h;quality=innerWidth<700?'low':'high';renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality==='high';renderer.setSize(w,h,false);camera.aspect=w/Math.max(1,h);camera.updateProjectionMatrix();}
  const labelVector=new THREE.Vector3();
- function placeLabel(element,x,y,z){labelVector.set(x,y,z).project(camera);element.hidden=labelVector.z>1||Math.abs(labelVector.x)>1.1||Math.abs(labelVector.y)>1.1;element.style.transform=`translate(-50%,-50%) translate(${Math.max(80,Math.min(stage.clientWidth-80,(labelVector.x*.5+.5)*stage.clientWidth))}px,${Math.max(45,Math.min(stage.clientHeight-45,(-labelVector.y*.5+.5)*stage.clientHeight))}px)`;}
+ function placeLabel(element,x,y,z){labelVector.set(x,y,z).project(camera);element.hidden=labelVector.z>1||Math.abs(labelVector.x)>1.1||Math.abs(labelVector.y)>1.1;element.style.transform=`translate(-50%,-50%) translate(${Math.max(80,Math.min(viewport.width-80,(labelVector.x*.5+.5)*viewport.width))}px,${Math.max(45,Math.min(viewport.height-45,(-labelVector.y*.5+.5)*viewport.height))}px)`;}
  function updateLabels(){
   for(const {hall,element} of labels){if(museum){element.hidden=true;continue;}placeLabel(element,hall.x,6+(hall.id==='zz'?3:0),hall.z);element.classList.toggle('is-near',nearest?.id===hall.id);}
   if(!museum)placeLabel(npcLabel,GUIDE_POINT.x,2.1,GUIDE_POINT.z);
   mapPlayer.style.left=(position.x+26)/52*100+'%';mapPlayer.style.top=(position.z+26)/52*100+'%';
  }
  function tick(time){
-  if(disposed)return;frame=requestAnimationFrame(tick);if(time-clock.rendered<1000/(quality==='low'?24:30))return;
-  const dt=Math.min(.10,Math.max(0,(time-clock.last)/1000));clock.last=time;clock.rendered=time;
+  if(disposed)return;frame=requestAnimationFrame(tick);
+  const dt=Math.min(.10,Math.max(0,(time-clock.last)/1000));clock.last=time;
   if(document.hidden||!visible||lost||artifactDialog.open)return;
   const before={...position};
   if(!modalOpen()&&guide.hidden){
