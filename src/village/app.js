@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {HALLS,EXHIBITS,move,route,chaptersFor,walkable,exhibitApproach} from './world.js';
-import {paintedFrustum,paintedCameraOffset,preparePaintedWorld,createContactShadow} from './scenery.js';
+import {paintedFrustum,preparePaintedWorld,createContactShadow} from './scenery.js';
 import {artifactFor,mountArtifactViewer} from './artifacts.js';
 import {HALL_GUIDES,createGuideState,advanceGuide,guideStep,recommendChapters} from './guidance.js';
+
+import {createOrbit,rotateOrbit,orbitOffset,cameraMovement,installCameraInput,prepareMuseumWalls} from './camera.js';
 
 const robeColors={jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'};
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
@@ -18,6 +20,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  root.innerHTML=`<div class="village-shell">
  <header class="village-top"><div><p class="village-eyebrow">RE：縱橫鼎業 · 博物館村</p><h2 data-v-title>問鼎書院</h2></div><div class="village-top-actions"><button type="button" data-v-help>遊玩指引</button><button type="button" data-v-camera>俯瞰村莊</button><button type="button" data-v-map>展館導覽</button><button type="button" data-v-close>返回選關</button></div></header>
  <div class="village-stage" data-v-stage><div class="village-labels"></div><div class="village-loading" role="status">正在打開村莊的大門……</div>
+ <div class="village-zoom" role="group" aria-label="視角與縮放"><button type="button" data-v-zoom-in aria-label="放大畫面">＋</button><button type="button" data-v-zoom-out aria-label="縮小畫面">－</button><button type="button" data-v-zoom-reset aria-label="恢復預設視角">重設</button><button type="button" data-v-turn-left aria-label="向左旋轉視角">↶</button><button type="button" data-v-turn-right aria-label="向右旋轉視角">↷</button></div>
  <aside class="village-mission" data-v-mission hidden aria-label="探索指引"><span class="village-mission__step" data-v-step></span><h3 data-v-mission-title></h3><p data-v-mission-body></p><div class="village-mission__steps" data-v-steps></div><div><button type="button" data-v-next>選一館帶路</button><button type="button" data-v-dismiss>自由探索</button></div></aside>
  <div class="village-route-info" data-v-route-info hidden><strong data-v-route-name></strong><span data-v-route-distance></span><button type="button" data-v-route-cancel>停止帶路</button></div>
  <aside class="village-guide" data-v-guide hidden aria-label="展館導覽"><h3>今天想探索哪種故事？</h3><p>選場館或地圖上的館名，跟著光點前往。</p><div class="village-guide-list" data-v-halls></div><button type="button" data-v-guide-close>先自由逛逛</button></aside>
@@ -25,10 +28,10 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  <div class="village-pad" role="group" aria-label="角色移動"><button type="button" data-v-dir="up" aria-label="向前走">↑</button><button type="button" data-v-dir="left" aria-label="向左走">←</button><button type="button" data-v-dir="down" aria-label="向後走">↓</button><button type="button" data-v-dir="right" aria-label="向右走">→</button></div>
  <aside class="village-minimap" data-v-minimap aria-label="村莊小地圖"><h3>六館方位</h3><button type="button" data-v-minimap-toggle aria-expanded="true">收起地圖</button><div class="village-minimap__map" data-v-map-surface></div><p>圓點是你的位置 · 點館名可帶路</p></aside>
  <div class="village-legend"><span class="village-dot"></span><span data-v-location>中央鼎廣場</span></div><div class="village-toast" data-v-toast role="status" hidden></div></div>
- <footer class="village-bottom"><p role="status" aria-live="polite" data-v-status>模型載入中。</p><p>WASD／方向鍵移動 · E 互動 · 點地面走動<span class="village-desktop"> · Shift 奔跑</span></p><button type="button" data-v-respawn>回到廣場</button></footer>
+ <footer class="village-bottom"><p role="status" aria-live="polite" data-v-status>模型載入中。</p><p>WASD／方向鍵移動 · E 互動 · 點地面走動 · 拖曳轉視角<span class="village-desktop"> · Shift 奔跑</span></p><button type="button" data-v-respawn>回到廣場</button></footer>
  <dialog class="village-exhibition" data-v-dialog aria-labelledby="village-exhibit-title"><div class="village-exhibit-head"><div><p class="village-eyebrow" data-v-exhibit-sub></p><h3 id="village-exhibit-title"></h3></div><button type="button" data-v-dialog-close>繼續逛展</button></div><div class="village-exhibit-tabs" data-v-case-tabs></div><div class="village-exhibit-intro"><h4 data-v-case-title></h4><p data-v-case-intro></p><strong data-v-case-question></strong></div><button type="button" class="village-artifact-open" data-v-artifact-open hidden>近看文物 · 旋轉與探索</button><p class="village-fine">先帶著一個問題讀原文。下方保留本館完整篇章，進入後沿用原帳號與存檔。</p><div class="village-chapters" data-v-chapters></div></dialog>
  <dialog class="village-artifact-dialog village-exhibition" data-v-artifact-dialog aria-labelledby="village-artifact-title"><div class="village-exhibit-head"><div><p class="village-eyebrow">春秋史館 · 掌中觀物</p><h3 id="village-artifact-title"></h3></div><button type="button" data-v-artifact-close>回到導讀</button></div><p class="village-artifact-sub" data-v-artifact-sub></p><div class="village-artifact-layout"><div><div class="village-artifact-stage" data-v-artifact-stage></div><div class="village-artifact-controls" aria-label="文物視角操作"><button type="button" data-v-artifact-in aria-label="拉近文物">＋</button><button type="button" data-v-artifact-out aria-label="拉遠文物">−</button><button type="button" data-v-artifact-reset>重設視角</button><button type="button" data-v-artifact-unroll hidden>收攏竹簡</button></div><p class="village-fine">拖曳旋轉 · 滾輪或雙指縮放 · 也可點觀察部位按鈕</p></div><div class="village-artifact-reading"><p data-v-artifact-intro></p><div class="village-artifact-details" data-v-artifact-details></div><p role="status" class="village-artifact-note" data-v-artifact-detail>選一個部位，換個角度觀察。</p><p class="village-fine" data-v-artifact-note></p></div></div></dialog>
- <dialog class="village-help-dialog village-exhibition" data-v-help-dialog aria-labelledby="village-help-title"><div class="village-exhibit-head"><div><p class="village-eyebrow">引路書僮 · 探索手札</p><h3 id="village-help-title">先逛一館，再讀一篇</h3></div><button type="button" data-v-help-close>回到探索</button></div><ol><li>點館名、小地圖或「展館導覽」，光點會帶你走到館門。</li><li>到館門後按 E 或「進入展館」，不會自動替你進關。</li><li>靠近展櫃，看情境、人物與原文三種導讀，再選一篇課文。</li><li>課文仍照原來玩法進行；參觀導覽不會計作學習成績。</li></ol><p>也可以直接用方向鍵、畫面方向鈕或點地面移動。遇到牆面時，試著點附近石板路；「停止帶路」可隨時取消目標。</p><div><button type="button" data-v-help-recommend>幫我挑一篇可玩的課</button><button type="button" data-v-help-resume>繼續探索指引</button></div></dialog></div>`;
+ <dialog class="village-help-dialog village-exhibition" data-v-help-dialog aria-labelledby="village-help-title"><div class="village-exhibit-head"><div><p class="village-eyebrow">引路書僮 · 探索手札</p><h3 id="village-help-title">先逛一館，再讀一篇</h3></div><button type="button" data-v-help-close>回到探索</button></div><ol><li>點館名、小地圖或「展館導覽」，光點會帶你走到館門。</li><li>到館門後按 E 或「進入展館」，不會自動替你進關。</li><li>靠近展櫃，看情境、人物與原文三種導讀，再選一篇課文。</li><li>課文仍照原來玩法進行；參觀導覽不會計作學習成績。</li></ol><p>拖曳畫面可360度轉視角，滾輪、雙指捏合或＋／－可縮放。也可以直接用方向鍵、畫面方向鈕或點地面移動。遇到牆面時，試著點附近石板路；「停止帶路」可隨時取消目標。</p><div><button type="button" data-v-help-recommend>幫我挑一篇可玩的課</button><button type="button" data-v-help-resume>繼續探索指引</button></div></dialog></div>`;
  const q=s=>root.querySelector(s),stage=q('[data-v-stage]'),status=q('[data-v-status]'),title=q('[data-v-title]'),locationLabel=q('[data-v-location]'),guide=q('[data-v-guide]'),dialog=q('[data-v-dialog]'),help=q('[data-v-help-dialog]'),mission=q('[data-v-mission]'),minimap=q('[data-v-minimap]'),artifactDialog=q('[data-v-artifact-dialog]');
  q('[data-v-close]').onclick=onClose;
  const aborter=new AbortController(),abort=()=>aborter.abort();signal?.addEventListener('abort',abort,{once:true});
@@ -55,6 +58,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  scene.add(new THREE.HemisphereLight('#fff3d7','#779d8a',1.6));
  const sun=new THREE.DirectionalLight('#fff0cc',2.1);sun.position.set(-20,35,18);sun.castShadow=false;scene.add(sun);
  const fill=new THREE.DirectionalLight('#d5e9f1',.7);fill.position.set(25,15,-20);scene.add(fill);
+ const orbit=createOrbit(),roomWalls=[...prepareMuseumWalls(interior.scene),...prepareMuseumWalls(spring.scene)];
  const paintedStats=preparePaintedWorld(environment.scene);scene.add(environment.scene);interior.scene.visible=false;scene.add(interior.scene);spring.scene.visible=false;scene.add(spring.scene);
  const actor=new THREE.Group();actor.add(character.scene);scene.add(actor);
  scene.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
@@ -71,7 +75,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  let action='Idle';actions.Idle.play();
  const camera=new THREE.OrthographicCamera(-12,12,12,-12,.1,200),cameraTarget=new THREE.Vector3(0,0,0),cameraGoal=new THREE.Vector3();
  const viewport={width:1,height:1},clock={last:performance.now()},keys=new Set(),cleanup=[],media=matchMedia('(prefers-reduced-motion: reduce)');
- let position={x:0,z:7},place='village',museum=null,path=[],nearest=null,contextKey='',disposed=false,frame=0,overview=false,visible=true,lost=false,moving=false,quality='high',draws=0;
+ let position={x:0,z:7},place='village',museum=null,path=[],nearest=null,contextKey='',disposed=false,frame=0,overview=false,visible=true,lost=false,moving=false,quality='high',draws=0,zoomFactor=1.4;
  let artifactViewer=null;
  let guideState=createGuideState(),routeTarget=null,toastUntil=0,selectedCase='north',lastRouteDistance='',hasMoved=false;
  const GUIDE_POINT={id:'guide',name:'引路書僮',x:-3.2,z:5.3};
@@ -127,9 +131,9 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  const list=q('[data-v-halls]');
  for(const h of HALLS){const button=el('button','village-hall-link');button.type='button';button.dataset.hall=h.id;const all=chaptersFor(catalog,h.id),available=all.filter(c=>canPlay(c.id));button.append(el('strong','',h.name),el('small','',h.subtitle),el('span','village-hall-detail',HALL_GUIDES[h.id].reason),el('span','village-hall-count',available.length+'篇可進入 · 共'+all.length+'篇'));button.onclick=()=>goHall(h.id);list.append(button);}
  function resetCamera(instant=false,dt=1/30){
-  const target=overview&&place==='village'?new THREE.Vector3(0,0,0):new THREE.Vector3(position.x,.8,position.z-1.8);
-  const offset=place==='village'?paintedCameraOffset():new THREE.Vector3(10,16,16);
-  const zoom=museum?1.2:overview ? .56 : 1;if(camera.zoom!==zoom){camera.zoom=zoom;camera.updateProjectionMatrix();}
+  const target=overview&&place==='village'?new THREE.Vector3(0,0,0):new THREE.Vector3(position.x,.8,position.z);
+  const offset=orbitOffset(orbit);for(const wall of roomWalls)wall.visible=offset.z>=-2;
+  const zoom=(museum?1.2:overview ? .4 : 1)*zoomFactor;if(camera.zoom!==zoom){camera.zoom=zoom;camera.updateProjectionMatrix();}
   cameraGoal.copy(target).add(offset);
   if(instant){camera.position.copy(cameraGoal);cameraTarget.copy(target);}else{const blend=1-Math.exp(-7*dt);camera.position.lerp(cameraGoal,blend);cameraTarget.lerp(target,blend);}
   camera.lookAt(cameraTarget);
@@ -199,7 +203,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
   if(!modalOpen()&&guide.hidden){
    let x=(keys.has('right')?1:0)-(keys.has('left')?1:0),z=(keys.has('down')?1:0)-(keys.has('up')?1:0);
    const manual=x||z;
-   if(manual)path=[];
+   if(manual){const direction=cameraMovement(x,z,orbit.azimuth);x=direction.x;z=direction.z;path=[];}
    else if(path.length){x=path[0].x-position.x;z=path[0].z-position.z;if(Math.hypot(x,z)<.15){path.shift();x=0;z=0;if(!path.length)arrive();}}
    const length=Math.hypot(x,z);if(length){const speed=keys.has('sprint')?5.8:path.length?4.8:3.5;const stride=Math.min(speed*dt,length);position=move(position,{x:x/length*stride,z:z/length*stride},place);}
   }
@@ -217,14 +221,17 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  });
  listen(window,'keyup',event=>{if(keyMap[event.code])keys.delete(keyMap[event.code]);});
  listen(window,'blur',()=>keys.clear());listen(document,'visibilitychange',()=>{keys.clear();clock.last=performance.now();});
- let press=null;
- listen(canvas,'pointerdown',event=>{press={x:event.clientX,y:event.clientY};canvas.focus({preventScroll:true});});
- listen(canvas,'pointerup',event=>{
-  const start=press;press=null;if(!start||Math.hypot(event.clientX-start.x,event.clientY-start.y)>12||modalOpen()||!guide.hidden)return;
+ function changeZoom(factor){zoomFactor=Math.max(.6,Math.min(2.8,zoomFactor*factor));resetCamera(true);}
+ q('[data-v-zoom-in]').onclick=()=>changeZoom(1.25);
+ q('[data-v-zoom-out]').onclick=()=>changeZoom(1/1.25);
+ q('[data-v-zoom-reset]').onclick=()=>{zoomFactor=1.4;Object.assign(orbit,createOrbit());resetCamera(true);};
+ const turn=(dx,dy=0)=>{rotateOrbit(orbit,dx,dy);resetCamera(true);};
+ q('[data-v-turn-left]').onclick=()=>turn(65);
+ q('[data-v-turn-right]').onclick=()=>turn(-65);
+ cleanup.push(installCameraInput(canvas,{blocked:()=>modalOpen()||!guide.hidden,rotate:turn,zoom:changeZoom,tap(event){
   const bounds=canvas.getBoundingClientRect();pointer.set((event.clientX-bounds.left)/bounds.width*2-1,-(event.clientY-bounds.top)/bounds.height*2+1);ray.setFromCamera(pointer,camera);
   if(ray.ray.intersectPlane(ground,hit)){overview=false;if(walkable({x:hit.x,z:hit.z},place))navigate({x:hit.x,z:hit.z});else{toast('這裡是建物或庭園，請點附近石板路；點館名可直接帶路。');setStatus('無法走到該位置。');}}
- });
- listen(canvas,'pointercancel',()=>{press=null;});
+ }}));
  for(const button of root.querySelectorAll('[data-v-dir]')){
   listen(button,'pointerdown',event=>{event.preventDefault();if(modalOpen()||!guide.hidden)return;if(routeTarget)endRoute('已改為方向鈕移動。');keys.add(button.dataset.vDir);button.setPointerCapture(event.pointerId);});
   const up=()=>keys.delete(button.dataset.vDir);listen(button,'pointerup',up);listen(button,'pointercancel',up);listen(button,'lostpointercapture',up);
@@ -253,5 +260,5 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  observer.observe(stage);intersection.observe(stage);stage.prepend(canvas);q('.village-loading').remove();setPlace(null);resize();resetCamera(true);frame=requestAnimationFrame(tick);canvas.focus({preventScroll:true});
  function dispose(){if(disposed)return;disposed=true;closeArtifact();stop();cancelAnimationFrame(frame);observer.disconnect();intersection.disconnect();cleanup.forEach(fn=>fn());mixer.stopAllAction();mixer.uncacheRoot(character.scene);disposeTree(scene);sun.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();dialog.close();help.close();routeDots.dispose();root.replaceChildren();}
  return {dispose,navigateToHall(id){const h=HALLS.find(h=>h.id===id);if(place!=='village'||!h)return false;return goHall(id);},
-  inspect(){return {place,position:{...position},museum:museum?.id||null,animation:action,animationTime:actions[action].time,moving,pathRemaining:path.length,near:nearest?.id||null,drawCalls:draws,scenery:'watercolor-2.5d',painted:paintedStats,realtimeShadows:renderer.shadowMap.enabled,quality,pixelRatio:renderer.getPixelRatio(),reduced:media.matches,lost,disposed,dialog:dialog.open,help:help.open,artifact:artifactViewer?.inspect()||null,guide:{...guideState},routeTarget:routeTarget?{...routeTarget}:null,routeVisible:routeGroup.visible,chapterCount:museum?chaptersFor(catalog,museum.id).length:0};}};
+  inspect(){return {place,position:{...position},museum:museum?.id||null,animation:action,animationTime:actions[action].time,moving,pathRemaining:path.length,near:nearest?.id||null,drawCalls:draws,scenery:'painted-3d-orbit',camera:{...orbit,zoom:camera.zoom,cutaway:roomWalls.some(w=>!w.visible)},painted:paintedStats,realtimeShadows:renderer.shadowMap.enabled,quality,pixelRatio:renderer.getPixelRatio(),reduced:media.matches,lost,disposed,dialog:dialog.open,help:help.open,artifact:artifactViewer?.inspect()||null,guide:{...guideState},routeTarget:routeTarget?{...routeTarget}:null,routeVisible:routeGroup.visible,chapterCount:museum?chaptersFor(catalog,museum.id).length:0};}};
 }

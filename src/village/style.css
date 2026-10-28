@@ -20,6 +20,8 @@
 .village-top-actions [data-v-help]{border-color:#c3ac76;background:#f5ecd6}
 .village-stage{position:relative;min-height:0;overflow:hidden;background:#d4e2df}
 .village-canvas{width:100%;height:100%;display:block;touch-action:none}
+.village-zoom{position:absolute;z-index:6;right:16px;top:14px;display:flex;gap:4px}
+.village-zoom button{min-width:44px;padding:5px 9px;font-size:15px;background:#fff9eaf0;box-shadow:0 2px 8px #284f3320}
 .village-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 .village-shell .village-hall-label{
  position:absolute;left:0;top:0;display:flex;align-items:center;flex-direction:column;gap:0;
@@ -260,3 +262,8 @@
  .village-artifact-note{font-size:12px;min-height:0;margin:10px 0}
  .village-artifact-controls button{font-size:11px;padding:7px 9px}
 }
+
+.village-shell button,.village-shell button *,.village-artifact-stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.village-shell button{touch-action:manipulation}.village-zoom{max-width:calc(100% - 20px)}
+/* Keep camera controls reachable while the route or introduction is visible. */
+.village-route-info{top:74px}
+@media(max-width:700px){.village-mission{top:74px;max-height:calc(100% - 205px)}}

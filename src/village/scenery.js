@@ -17,7 +17,7 @@ export function preparePaintedWorld(root){
   const convert=old=>{
    if(materials.has(old))return materials.get(old);
    const cutout=old.transparent||old.alphaTest>0||old.name.startsWith('Cutout_');
-   const material=new THREE.MeshBasicMaterial({name:old.name,map:old.map,color:'#ffffff',transparent:cutout,
+   const material=new THREE.MeshBasicMaterial({name:old.name,map:old.map,color:old.map?'#ffffff':old.color,vertexColors:!!object.geometry.attributes.color,transparent:cutout,
     alphaTest:cutout ? .015 : 0,depthWrite:true,side:THREE.DoubleSide,toneMapped:false});
    materials.set(old,material);return material;
   };

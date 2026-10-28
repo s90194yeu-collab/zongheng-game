@@ -1,0 +1,100 @@
+{
+  "tool": "4.5.3 LTS",
+  "style": "warm painted real 3D, all-sided architecture",
+  "halls": [
+    {
+      "id": "cq",
+      "name": "春秋史館",
+      "x": -12,
+      "z": -11,
+      "rotation": 0,
+      "width": 8,
+      "depth": 6,
+      "roof": "Jade",
+      "tier": 1,
+      "entry": [
+        -12,
+        -6.25
+      ]
+    },
+    {
+      "id": "zg",
+      "name": "戰國史館",
+      "x": 0,
+      "z": -16,
+      "rotation": 0,
+      "width": 9,
+      "depth": 6,
+      "roof": "Blue",
+      "tier": 2,
+      "entry": [
+        0.0,
+        -11.25
+      ]
+    },
+    {
+      "id": "ch",
+      "name": "楚漢史館",
+      "x": 12,
+      "z": -11,
+      "rotation": 0,
+      "width": 8,
+      "depth": 6,
+      "roof": "Red",
+      "tier": 1,
+      "entry": [
+        12.0,
+        -6.25
+      ]
+    },
+    {
+      "id": "zz",
+      "name": "諸子學宮",
+      "x": -18,
+      "z": 3,
+      "rotation": 0,
+      "width": 6,
+      "depth": 6,
+      "roof": "Jade",
+      "tier": 2,
+      "entry": [
+        -18.0,
+        7.75
+      ]
+    },
+    {
+      "id": "gw",
+      "name": "古文書院",
+      "x": 18,
+      "z": 3,
+      "rotation": 0,
+      "width": 7,
+      "depth": 6,
+      "roof": "Blue",
+      "tier": 1,
+      "entry": [
+        18.0,
+        7.75
+      ]
+    },
+    {
+      "id": "al",
+      "name": "經典雅集",
+      "x": -12,
+      "z": 17,
+      "rotation": 0,
+      "width": 7,
+      "depth": 5,
+      "roof": "Red",
+      "tier": 1,
+      "entry": [
+        -12.0,
+        21.25
+      ]
+    }
+  ],
+  "meshes": 29,
+  "triangles": 41157,
+  "bytes": 7477352,
+  "bakedLighting": true
+}

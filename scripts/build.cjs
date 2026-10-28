@@ -14,7 +14,7 @@ for(const file of fs.readdirSync(path.join(root,'src/character')).sort())fingerp
 for(const file of fs.readdirSync(path.join(root,'src/character3d')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character3d',file))));
 fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'))));
 for(const file of fs.readdirSync(path.join(root,'src/village')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/village',file))));
-for(const file of ['watercolor-village.glb','museum-interior.glb','spring-interior.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
+for(const file of ['orbit-village.glb','museum-interior.glb','spring-interior.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -40,7 +40,7 @@ const character3dAssets={version:1,app:academyAsset('character3d-app',character3
 const villageSource=fs.readFileSync(path.join(root,'src/village/app.js'),'utf8').replace(/from 'three\/addons\/([^']+)'/g,(_,file)=>'from '+JSON.stringify(require.resolve('three/addons/'+file)));
 const villageApp=esbuild.buildSync({stdin:{contents:villageSource,resolveDir:path.join(root,'src/village'),sourcefile:'app.js'},bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020',external:['three']}).outputFiles[0].text.replace(/from"three"/g,'from"./three-r180.min.js"');
 const villageModels={character:character3dModelFile};
-for(const [key,name]of Object.entries({exterior:'watercolor-village',interior:'museum-interior',springInterior:'spring-interior'})){
+for(const [key,name]of Object.entries({exterior:'orbit-village',interior:'museum-interior',springInterior:'spring-interior'})){
  const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';fs.writeFileSync(path.join(dist,file),bytes);villageModels[key]=file;
 }
 const villageAssets={version:1,app:academyAsset('village-app',villageApp),css:academyAsset('village-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/village/style.css'),'utf8'),{loader:'css',minify:true}).code),assets:villageModels};

@@ -1,0 +1,1 @@
+.zh-choice{display:grid;grid-template-columns:30px minmax(0,1fr)}.sty-choice .zh-choice__text{font-size:19px}.zh-modal__body{min-width:0;overflow-wrap:break-word}button,button *,[role=button],[role=button] *,canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}button,[role=button]{touch-action:manipulation}

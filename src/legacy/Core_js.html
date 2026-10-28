@@ -1635,3 +1635,7 @@ window.ZH.learningTexts=id=>(window.ZH.LEARNING_TEXTS[id]||{}).titles||((window.
 })(window.ZH);
 
 </script>
+
+<script>
+(function(){function protect(e){const target=e.target;if(target?.closest?.('input,textarea,[contenteditable="true"]'))return;if(target?.closest?.('button,[role="button"],canvas'))e.preventDefault();}document.addEventListener('selectstart',protect,true);document.addEventListener('contextmenu',protect,true);})();
+</script>

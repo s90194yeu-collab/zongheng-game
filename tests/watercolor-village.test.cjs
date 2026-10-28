@@ -20,6 +20,6 @@ test('水彩GLB以內嵌貼圖和分層網格呈現六館、庭園、遠山，�
 });
 test('發布入口使用新外景，原3D角色、文物與關卡功能保留，無陰影貼圖或固定FPS',()=>{
  const release=JSON.parse(fs.readFileSync(path.join(root,'dist/release.json'))),m=JSON.parse(fs.readFileSync(path.join(root,'dist',release.manifest)));
- assert.match(m.village.assets.exterior,/watercolor-village-/);assert.match(m.village.assets.character,/\.glb$/);assert.match(m.village.assets.springInterior,/spring-interior-/);
+ assert.match(m.village.assets.exterior,/orbit-village-/);assert.match(m.village.assets.character,/\.glb$/);assert.match(m.village.assets.springInterior,/spring-interior-/);
  const s=fs.readFileSync(path.join(root,'src/village/app.js'),'utf8');assert(s.includes('VillageBronzeDing'));assert(s.includes('mountArtifactViewer'));assert(s.includes('renderer.shadowMap.enabled=false'));assert(!/1000\s*\/\s*(24|30)/.test(s));assert(s.includes('canPlay(chapter.id)'));
 });
