@@ -1,4 +1,235 @@
-.village-shell{--v-ink:#163e3a;--v-paper:#fbf6e9;--v-gold:#b68a46;color:var(--v-ink);font:15px/1.65 "PingFang TC","Noto Sans TC",sans-serif;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#e6e4cf;isolation:isolate}.village-shell *{box-sizing:border-box}.village-shell [hidden]{display:none!important}.village-shell button{font:inherit;cursor:pointer;min-height:44px;border:1px solid #849e8b;border-radius:8px;background:#fffaf0;color:#234b40;padding:8px 14px}.village-shell button:hover{background:#f2e7cb;border-color:#9c7439}.village-shell button:focus-visible,.village-canvas:focus-visible{outline:3px solid #b58537;outline-offset:-3px}.village-shell button:disabled{opacity:.5;cursor:default}.village-top{z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fcf6e8f5;box-shadow:0 2px 16px #324c3430;padding:14px 24px;border-bottom:1px solid #acb6a0}.village-top h2{font:700 25px/1.3 "Songti TC","Noto Serif TC",serif;margin:3px 0 0;letter-spacing:.18em}.village-eyebrow{font-size:10px;letter-spacing:.16em;color:#7b6b49;margin:0}.village-top-actions{display:flex;gap:8px;flex-wrap:wrap}.village-top-actions button{font-size:13px}.village-stage{position:relative;min-height:0;overflow:hidden;background:#d4e2df}.village-canvas{width:100%;height:100%;display:block;touch-action:none}.village-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}.village-hall-label{position:absolute;left:0;top:0;display:flex;align-items:center;flex-direction:column;gap:0;white-space:nowrap;text-shadow:0 1px 6px #ffffe0}.village-hall-label span{background:#fcf8e5f2;border:1px solid #bb9f61;border-radius:4px;padding:3px 12px;font:700 17px "Songti TC",serif;box-shadow:0 3px 10px #183e2825}.village-hall-label small{color:#284e40;font-size:10px;background:#fbf6dfdc;padding:1px 7px;border-radius:0 0 5px 5px}.village-loading{position:absolute;inset:0;display:grid;place-items:center;background:#edf0e4;color:#355d4b;font-size:20px}.village-guide{position:absolute;left:20px;top:20px;max-height:calc(100% - 40px);overflow:auto;width:260px;background:#fff9ebf5;border:1px solid #a5ad8b;border-radius:12px;padding:18px;box-shadow:0 10px 35px #244e2f30}.village-guide h3{font-size:18px;margin:0 0 4px}.village-guide p{font-size:12px;margin:7px 0 12px}.village-hall-link{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;margin:6px 0;text-align:left}.village-hall-link strong{font-size:14px}.village-hall-link small{font-size:11px;color:#6c7b5e}.village-context{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;max-width:calc(100% - 24px);padding:9px 12px 9px 20px;border:1px solid #d7bd79;border-radius:12px;background:#fbf7e7f5;box-shadow:0 5px 20px #35452f38}.village-context p{font-weight:600;margin:0;white-space:nowrap}.village-context button{background:#275948;color:#fff9de;border:0;white-space:nowrap}.village-pad{position:absolute;left:20px;bottom:20px;display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:5px;touch-action:none}.village-pad button{width:44px;height:44px;min-height:44px;padding:0;font-size:21px;opacity:.88;user-select:none;touch-action:none;background:#fff8e7de;border-color:#8fa087}.village-pad button[data-v-dir=up]{grid-column:2}.village-pad button[data-v-dir=left]{grid-column:1;grid-row:2}.village-pad button[data-v-dir=down]{grid-column:2;grid-row:2}.village-pad button[data-v-dir=right]{grid-column:3;grid-row:2}.village-legend{position:absolute;right:20px;bottom:20px;font-size:12px;display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;background:#fff8e8dc;border:1px solid #9baf90}.village-dot{width:7px;height:7px;border-radius:50%;background:#6c8e60}.village-bottom{background:#fbf6e8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 24px;border-top:1px solid #acb6a0;font-size:11px}.village-bottom p{margin:0}.village-bottom [role=status]{color:#3d634a;max-width:45%;font-size:12px}.village-bottom button{font-size:12px;white-space:nowrap}.village-exhibition{width:min(800px,calc(100% - 32px));max-height:85dvh;border:1px solid #b39c68;border-radius:16px;background:#fbf6e8;color:#234b40;padding:24px;box-shadow:0 20px 80px #123c3860}.village-exhibition::backdrop{background:#183b38a8;backdrop-filter:blur(4px)}.village-exhibit-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.village-exhibit-head h3{font-family:"Songti TC",serif;font-size:25px;margin:6px 0}.village-fine{font-size:12px;color:#6f7b61}.village-chapters{display:grid;gap:8px;margin-top:16px}.village-chapter{display:grid;grid-template-columns:32px 1fr auto;text-align:left;gap:3px 12px;align-items:center}.village-chapter-no{grid-row:1/3;color:#9a7c3f;font:20px "Songti TC",serif}.village-chapter strong{font-size:16px}.village-chapter small{grid-column:2;color:#77816a;font-size:12px}.village-chapter-state{grid-column:3;grid-row:1/3;font-size:12px}.village-shell p{padding:0}.village-host{height:100dvh;min-height:0}
-@media(max-width:700px){.village-top{padding:10px 12px;align-items:flex-start;gap:8px}.village-top h2{font-size:20px;letter-spacing:.08em}.village-eyebrow{font-size:8px;letter-spacing:.06em}.village-top-actions{gap:5px;justify-content:flex-end;max-width:195px}.village-top-actions button{font-size:11px;padding:6px 8px}.village-top-actions [data-v-camera]{display:none}.village-bottom{padding:8px 12px;flex-wrap:wrap;gap:4px 10px}.village-bottom [role=status]{max-width:calc(100% - 90px);font-size:11px}.village-bottom>p:nth-child(2){order:3;flex-basis:100%;font-size:9px}.village-bottom button{margin-left:auto;min-height:38px}.village-desktop{display:none}.village-pad{left:10px;bottom:10px}.village-legend{right:10px;bottom:12px;font-size:10px;padding:5px 9px}.village-context{bottom:122px;padding:7px 9px 7px 12px;gap:8px;font-size:12px}.village-context button{font-size:12px;padding:7px 11px}.village-guide{left:10px;top:10px;width:min(275px,calc(100% - 20px));padding:14px}.village-hall-label span{font-size:12px;padding:3px 7px}.village-hall-label small{display:none}.village-exhibition{padding:16px}.village-exhibit-head h3{font-size:20px}.village-chapter{grid-template-columns:24px 1fr;gap:1px 8px}.village-chapter-state{grid-row:3;grid-column:2;font-size:11px}.village-host{min-height:0}}
-@media(prefers-reduced-motion:reduce){.village-shell *{scroll-behavior:auto}}
+/* Paper, ink and brass: overlays stay at the edges so the scholar remains visible. */
+.village-shell{
+ --v-ink:#163e3a;--v-paper:#fbf6e9;--v-gold:#b68a46;--v-muted:#607461;
+ color:var(--v-ink);font:15px/1.65 "PingFang TC","Noto Sans TC",sans-serif;
+ height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#e6e4cf;isolation:isolate;
+}
+.village-shell *{box-sizing:border-box}
+.village-shell [hidden]{display:none!important}
+.village-shell button{font:inherit;cursor:pointer;min-height:44px;border:1px solid #849e8b;border-radius:8px;background:#fffaf0;color:#234b40;padding:8px 14px;transition:background-color .15s,border-color .15s,box-shadow .15s}
+.village-shell button:hover{background:#f2e7cb;border-color:#9c7439}
+.village-shell button:focus-visible,.village-canvas:focus-visible{outline:3px solid #b58537;outline-offset:2px}
+.village-canvas:focus-visible{outline-offset:-3px}
+.village-shell button:disabled{opacity:.58;cursor:default}
+.village-shell p{padding:0}
+.village-top{z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fcf6e8f7;box-shadow:0 2px 16px #324c3420;padding:14px 24px;border-bottom:1px solid #acb6a0}
+.village-top h2{font:700 25px/1.3 "Songti TC","Noto Serif TC",serif;margin:3px 0 0;letter-spacing:.18em}
+.village-eyebrow{font-size:10px;letter-spacing:.16em;color:#7b6b49;margin:0}
+.village-top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.village-top-actions button{font-size:13px}
+.village-top-actions [data-v-help]{border-color:#c3ac76;background:#f5ecd6}
+.village-stage{position:relative;min-height:0;overflow:hidden;background:#d4e2df}
+.village-canvas{width:100%;height:100%;display:block;touch-action:none}
+.village-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.village-shell .village-hall-label{
+ position:absolute;left:0;top:0;display:flex;align-items:center;flex-direction:column;gap:0;
+ min-height:44px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
+ white-space:nowrap;text-shadow:0 1px 6px #ffffe0;pointer-events:auto;
+}
+.village-shell .village-hall-label:hover{background:transparent;border:0}
+.village-hall-label span{background:#fcf8e5f2;border:1px solid #bb9f61;border-radius:5px;padding:5px 13px;font:700 17px/1.4 "Songti TC",serif;box-shadow:0 3px 10px #183e2825;transition:background-color .15s,box-shadow .15s}
+.village-hall-label small{color:#284e40;font-size:10px;background:#fbf6dfed;padding:2px 8px;border-radius:0 0 5px 5px}
+.village-hall-label:hover span,.village-hall-label:focus-visible span{background:#fff9de;box-shadow:0 0 0 3px #d7b66e66,0 4px 12px #183e2835}
+.village-hall-label.is-target span{border:2px solid #9c7336;background:#fff1c9;color:#694a20}
+.village-hall-label.is-near span{border-color:#32634d;background:#eaf3dc;color:#234b36;box-shadow:0 0 0 3px #95b17c55}
+.village-hall-label::after{content:'點選帶路';font-size:10px;line-height:1.5;color:#fff8e5;background:#2e5749e8;border-radius:4px;padding:1px 7px;margin-top:3px;opacity:0;transition:opacity .15s;pointer-events:none;text-shadow:none}
+.village-hall-label:hover::after,.village-hall-label:focus-visible::after{opacity:1}
+.village-hall-label.is-target::after{content:'目的地';opacity:1;background:#856328ee}
+.village-hall-label.is-near::after{content:'已到館門';opacity:1;background:#32634de8}
+.village-loading{position:absolute;inset:0;display:grid;place-items:center;background:#edf0e4;color:#355d4b;font-size:20px;z-index:18}
+
+/* A compact, dismissible first journey. Four chips show the next meaningful action. */
+.village-mission{position:absolute;z-index:6;left:20px;top:20px;width:292px;max-width:calc(100% - 40px);max-height:calc(100% - 145px);overflow:auto;padding:17px 18px 14px;background:#fff9ebf5;border:1px solid #b8a572;border-radius:14px;box-shadow:0 8px 28px #244e2f26}
+.village-mission__step{display:inline-flex;align-items:center;gap:6px;color:#7a5b28;font-size:10px;letter-spacing:.1em;font-weight:700;background:#efe4c8;border-radius:20px;padding:3px 9px}
+.village-mission h3{font:700 19px/1.5 "Songti TC","Noto Serif TC",serif;margin:9px 0 7px;color:#234b3d}
+.village-mission p{font-size:12px;line-height:1.8;color:#526a58;margin:6px 0 12px}
+.village-mission [data-v-next]{background:#2e5a47;border-color:#2e5a47;color:#fff5dc;font-weight:600;font-size:12px;padding:8px 12px}
+.village-mission [data-v-next]:hover{background:#3d6c55}
+.village-mission [data-v-dismiss]{background:transparent;border-color:transparent;font-size:12px;padding:8px;color:#637361}
+.village-mission__steps{display:flex;gap:5px;flex-wrap:wrap;list-style:none;padding:0;margin:13px 0 10px}
+.village-mission__steps>*{flex:1;min-width:40px;text-align:center;font-size:10px;line-height:1.7;padding:3px 5px;border:1px solid #d5d8c5;background:#f3f1e5;border-radius:5px;color:#6c7868}
+.village-mission__steps>.is-current,.village-mission__steps>[aria-current=step]{border-color:#b58b43;color:#78561d;background:#fae9bb;font-weight:700}
+.village-mission__steps>.is-done{background:#e8f0dd;border-color:#a3b58e;color:#3d6543}
+.village-mission.is-complete{border-color:#7f9b6e}
+.village-mission.is-collapsed{width:auto;max-width:260px;padding:9px 12px}
+.village-mission.is-collapsed p,.village-mission.is-collapsed .village-mission__steps{display:none}
+.village-stage:has(.village-guide:not([hidden])) .village-mission{visibility:hidden;pointer-events:none}
+
+/* Navigation feedback is distinct from the close-range interaction button. */
+.village-route-info{position:absolute;z-index:7;left:50%;top:16px;transform:translateX(-50%);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;width:340px;max-width:calc(100% - 40px);padding:9px 12px 9px 16px;background:#fff9eaf5;border:1px solid #c4a45c;border-radius:12px;box-shadow:0 5px 20px #35533126}
+.village-route-info [data-v-route-name]{font-weight:700;font-size:13px;letter-spacing:.03em}
+.village-route-info [data-v-route-distance]{font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;color:#7f5c29;margin-left:8px}
+.village-route-info p{flex-basis:100%;font-size:11px;color:#60715e;margin:2px 0 0;line-height:1.5}
+.village-route-info button{font-size:11px;padding:6px 10px;min-height:40px;background:#f1ecd9;border-color:#c6bea0}
+.village-toast{position:absolute;z-index:10;left:50%;bottom:112px;transform:translateX(-50%);width:max-content;max-width:min(430px,calc(100% - 32px));border:1px solid #b99c63;border-radius:9px;background:#234c40f2;color:#fff5dc;box-shadow:0 5px 18px #143a3528;padding:10px 16px;font-size:12px;text-align:center;pointer-events:none}
+
+/* The six-hall guide doubles as an accessible alternative to 3D labels and map pins. */
+.village-guide{position:absolute;z-index:12;left:20px;top:20px;max-height:calc(100% - 40px);overflow:auto;overscroll-behavior:contain;width:320px;max-width:calc(100% - 40px);background:#fff9ebfa;border:1px solid #a5ad8b;border-radius:14px;padding:18px;box-shadow:0 10px 35px #244e2f30;scrollbar-width:thin;scrollbar-color:#aab79b #f5efdf}
+.village-guide h3{font:700 20px/1.4 "Songti TC",serif;margin:0 0 4px}
+.village-guide p{font-size:12px;margin:7px 0 12px;color:#61715c}
+.village-guide-list{display:grid;gap:8px}
+.village-hall-link{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 8px;width:100%;margin:7px 0;text-align:left;padding:11px 12px!important;min-height:76px!important;border-color:#b7c1a9!important;background:#fffdf4!important}
+.village-hall-link:hover,.village-hall-link:focus-visible{background:#f5edda!important;border-color:#b68c4b!important;box-shadow:0 3px 10px #47623b15}
+.village-hall-link strong{font:700 16px/1.5 "Songti TC",serif;color:#2a5140}
+.village-hall-link small{font-size:10px;color:#746747;text-align:right}
+.village-hall-detail{grid-column:1/-1;font-size:11px;line-height:1.75;color:#60725b}
+.village-hall-count{grid-column:1/-1;font-size:10px;line-height:1.6;color:#7c5f2e;border-top:1px dashed #dfd5b8;padding-top:5px;margin-top:3px}
+
+.village-context{position:absolute;z-index:8;bottom:26px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;max-width:calc(100% - 24px);padding:9px 12px 9px 20px;border:1px solid #d7bd79;border-radius:12px;background:#fbf7e7fa;box-shadow:0 5px 20px #35452f38}
+.village-context p{font-weight:600;margin:0;white-space:nowrap}
+.village-context button{background:#275948;color:#fff9de;border:0;white-space:nowrap}
 .village-context button:hover{background:#356c54;color:#fff9de}
+.village-pad{position:absolute;z-index:5;left:20px;bottom:20px;display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:5px;touch-action:none}
+.village-pad button{width:44px;height:44px;min-height:44px;padding:0;font-size:21px;opacity:.92;user-select:none;touch-action:none;background:#fff8e7ec;border-color:#8fa087}
+.village-pad button[data-v-dir=up]{grid-column:2}
+.village-pad button[data-v-dir=left]{grid-column:1;grid-row:2}
+.village-pad button[data-v-dir=down]{grid-column:2;grid-row:2}
+.village-pad button[data-v-dir=right]{grid-column:3;grid-row:2}
+.village-legend{position:absolute;z-index:3;right:20px;bottom:20px;font-size:12px;display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;background:#fff8e8e8;border:1px solid #9baf90}
+.village-dot{width:7px;height:7px;border-radius:50%;background:#6c8e60}
+
+/* A parchment map; collapsing it leaves its explicit toggle available. */
+.village-minimap{position:absolute;z-index:5;right:20px;bottom:20px;width:220px;padding:10px 12px 9px;border:1px solid #acae87;border-radius:12px;background:#fff9e9f2;box-shadow:0 5px 20px #3b593b20}
+.village-minimap h3{font:700 14px/1.5 "Songti TC",serif;margin:0;color:#3b5a40;letter-spacing:.08em}
+.village-minimap>[data-v-minimap-toggle]{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;font-size:12px;padding:1px 0;border:0;background:transparent;min-height:32px}
+.village-minimap__map{position:relative;height:166px;margin:9px 12px 12px;border:1px solid #cbd3b5;border-radius:8px;background:linear-gradient(90deg,transparent 46%,#e3d5ac 46%,#e3d5ac 54%,transparent 54%),linear-gradient(0deg,transparent 44%,#e3d5ac 44%,#e3d5ac 53%,transparent 53%),radial-gradient(circle at 49% 54%,#efdbaa 0 13%,transparent 14%),#d9e2c8;box-shadow:inset 0 0 14px #becaa633}
+.village-minimap__map::after{content:'鼎';position:absolute;left:49%;top:54%;transform:translate(-50%,-50%);color:#8b7440;font:12px "Songti TC",serif;pointer-events:none}
+.village-minimap__map [data-map-hall]{position:absolute;transform:translate(-50%,-50%);z-index:2;min-height:40px;width:46px;padding:4px 3px;font-size:9px;line-height:1.3;letter-spacing:0;border-radius:5px;background:#fffbef;border-color:#9aaf8f;box-shadow:0 2px 6px #284f3320}
+.village-minimap__map [data-map-hall]:hover,.village-minimap__map [data-map-hall].is-target,.village-minimap__map [data-map-hall][aria-current=true]{background:#f8e2aa;border-color:#aa7e37;color:#5b481f;box-shadow:0 0 0 2px #d7b26555}
+.village-minimap__map [data-map-hall].is-near{background:#e0edce;border-color:#6b8e56}
+.village-minimap__map [data-v-map-player]{position:absolute;z-index:6;width:10px;height:10px;border:2px solid #fff9d9;box-shadow:0 0 0 2px #34614b;background:#34614b;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.village-minimap caption,.village-minimap figcaption,.village-minimap>p{display:block;font-size:10px;line-height:1.6;color:#68785c;margin:3px 0 0}
+.village-minimap.is-collapsed{width:145px;padding:6px 12px}
+.village-minimap.is-collapsed .village-minimap__map,.village-minimap.is-collapsed caption,.village-minimap.is-collapsed figcaption,.village-minimap.is-collapsed>p{display:none}
+.village-stage:has(.village-minimap:not([hidden]):not(.is-collapsed)) .village-legend{bottom:326px}
+.village-stage:has(.village-minimap.is-collapsed) .village-legend{bottom:84px}
+
+.village-bottom{background:#fbf6e8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 24px;border-top:1px solid #acb6a0;font-size:11px;z-index:14}
+.village-bottom p{margin:0}
+.village-bottom [role=status]{color:#3d634a;max-width:45%;font-size:12px}
+.village-bottom button{font-size:12px;white-space:nowrap}
+.village-exhibition,.village-help-dialog{width:min(800px,calc(100% - 32px));max-height:85dvh;border:1px solid #b39c68;border-radius:16px;background:#fbf6e8;color:#234b40;padding:24px;box-shadow:0 20px 80px #123c3860;overscroll-behavior:contain}
+.village-exhibition::backdrop,.village-help-dialog::backdrop{background:#183b38a8;backdrop-filter:blur(4px)}
+.village-exhibit-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.village-exhibit-head h3,.village-help-dialog h3{font:700 25px/1.5 "Songti TC",serif;margin:6px 0}
+.village-fine{font-size:12px;color:#6f7b61}
+.village-exhibit-intro{margin:14px 0;padding:12px 16px;border-left:3px solid #b3904c;border-radius:0 8px 8px 0;background:#f1ead6;font-size:13px;line-height:1.85;color:#496149}
+.village-exhibit-intro p{margin:4px 0}
+.village-exhibit-intro strong{font-weight:700;color:#2e5442}
+.village-exhibit-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+.village-exhibit-tabs button{font-size:12px;min-height:44px;padding:8px 10px;text-align:center;background:#fffbed;border-color:#c9c5a5}
+.village-exhibit-tabs button[aria-pressed=true],.village-exhibit-tabs button.is-active{background:#365e49;border-color:#365e49;color:#fff6d9;font-weight:600}
+.village-chapters{display:grid;gap:9px;margin-top:16px}
+.village-chapter{display:grid;grid-template-columns:32px minmax(0,1fr) auto;text-align:left;gap:3px 12px;align-items:center;padding:12px 14px!important}
+.village-chapter-no{grid-row:1/span 3;color:#9a7c3f;font:20px "Songti TC",serif}
+.village-chapter strong{font-size:16px}
+.village-chapter small{grid-column:2;color:#77816a;font-size:12px;line-height:1.7}
+.village-chapter em{grid-column:2;font-style:normal;font-size:12px;line-height:1.75;color:#526f5e}
+.village-chapter-state{grid-column:3;grid-row:1/span 3;font-size:12px;white-space:nowrap}
+.village-help-dialog{width:min(650px,calc(100% - 32px))}
+.village-help-dialog>p,.village-help-dialog li{font-size:13px;line-height:1.85;color:#516a55}
+.village-help-dialog ol,.village-help-dialog ul{padding-left:24px}
+.village-help-dialog li{padding:8px 4px;border-bottom:1px solid #e1d8bb}
+.village-help-dialog li strong{color:#2b503b}
+.village-help-dialog kbd{font:12px "PingFang TC",sans-serif;border:1px solid #c4c6a6;border-bottom-width:2px;background:#fffbed;padding:2px 6px;border-radius:4px;color:#3c5c47}
+.village-help-dialog [data-v-help-start]{background:#315e47;border-color:#315e47;color:#fff5d7}
+.village-help-dialog [data-v-help-close]{margin-right:8px}
+.village-host{height:100dvh;min-height:0}
+
+@media(max-width:1100px) and (min-width:701px){
+ .village-mission{width:250px;padding:14px}
+ .village-route-info{left:auto;right:20px;transform:none;width:300px}
+ .village-minimap{width:200px}
+ .village-minimap__map{height:152px}
+ .village-stage:has(.village-minimap:not([hidden]):not(.is-collapsed)) .village-legend{bottom:300px}
+}
+@media(max-width:700px){
+ .village-top{padding:9px 12px;align-items:flex-start;gap:8px}
+ .village-top h2{font-size:19px;letter-spacing:.06em;max-width:150px}
+ .village-eyebrow{font-size:8px;letter-spacing:.04em;max-width:155px}
+ .village-top-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;flex:0 0 auto;max-width:192px}
+ .village-top-actions button{font-size:10px;line-height:1.3;min-height:36px;padding:6px 7px;white-space:nowrap}
+ .village-top-actions [data-v-camera]{display:none}
+ .village-top-actions [data-v-close]{grid-column:1/-1;min-height:30px;padding-top:4px;padding-bottom:4px}
+ .village-mission{left:10px;top:10px;width:280px;max-width:calc(100% - 20px);max-height:calc(100% - 140px);padding:12px 13px 10px;border-radius:10px}
+ .village-mission__step{font-size:9px;padding:2px 8px}
+ .village-mission h3{font-size:17px;margin:6px 0 4px}
+ .village-mission p{font-size:11px;line-height:1.7;margin:5px 0 7px}
+ .village-mission [data-v-next],.village-mission [data-v-dismiss]{font-size:11px;min-height:38px;padding:6px 9px}
+ .village-mission__steps{gap:4px;margin-top:8px}
+ .village-mission__steps>*{font-size:9px;padding:2px 3px}
+ .village-stage:has(.village-route-info:not([hidden])) .village-mission{visibility:hidden;pointer-events:none}
+ .village-route-info{top:10px;width:calc(100% - 20px);max-width:none;gap:3px 8px;padding:8px 10px;border-radius:9px}
+ .village-route-info [data-v-route-name]{font-size:12px}
+ .village-route-info [data-v-route-distance]{font-size:11px;margin-left:5px}
+ .village-route-info button{font-size:10px;min-height:36px;padding:5px 8px}
+ .village-route-info p{font-size:10px}
+ .village-guide{left:10px;top:10px;width:min(330px,calc(100% - 20px));max-width:none;max-height:calc(100% - 20px);padding:14px}
+ .village-guide h3{font-size:18px}
+ .village-guide p{font-size:11px;margin-bottom:9px}
+ .village-hall-link{padding:9px 11px!important;min-height:68px!important;margin:6px 0}
+ .village-hall-link strong{font-size:15px}
+ .village-hall-link small,.village-hall-count{font-size:9px}
+ .village-hall-detail{font-size:10px;line-height:1.65}
+ .village-pad{left:10px;bottom:10px}
+ .village-legend{right:10px;bottom:64px;font-size:10px;padding:5px 9px}
+ .village-context{bottom:118px;padding:7px 9px 7px 12px;gap:8px;font-size:11px;border-radius:10px}
+ .village-context button{font-size:11px;padding:7px 10px;min-height:42px}
+ .village-toast{bottom:190px;font-size:11px;padding:8px 12px;max-width:calc(100% - 24px)}
+ .village-minimap{right:10px;bottom:10px;width:185px;padding:8px 10px;border-radius:10px}
+ .village-minimap h3{font-size:12px}
+ .village-minimap>[data-v-minimap-toggle]{font-size:11px;min-height:34px}
+ .village-minimap__map{height:160px;margin:9px 12px 11px}
+ .village-minimap__map [data-map-hall]{width:46px;min-height:44px;font-size:8px;padding:4px 2px}
+ .village-minimap.is-collapsed{width:130px;padding:5px 10px}
+ .village-stage:has(.village-minimap:not([hidden]):not(.is-collapsed)) .village-legend{bottom:300px}
+ .village-stage:has(.village-minimap.is-collapsed) .village-legend{bottom:90px}
+ /* Open map occupies the right-hand interaction area: raise the action above it. */
+ .village-stage:has(.village-minimap:not([hidden]):not(.is-collapsed)) .village-context{bottom:344px}
+ .village-shell .village-hall-label{min-height:40px}
+ .village-hall-label span{font-size:12px;padding:4px 8px}
+ .village-hall-label small{display:none}
+ .village-hall-label::after{font-size:8px;padding:1px 5px;margin-top:2px}
+ .village-bottom{padding:7px 12px;flex-wrap:wrap;gap:4px 10px}
+ .village-bottom [role=status]{max-width:calc(100% - 90px);font-size:11px;line-height:1.55}
+ .village-bottom>p:nth-child(2){order:3;flex-basis:100%;font-size:9px;line-height:1.5}
+ .village-bottom button{margin-left:auto;min-height:36px;font-size:11px;padding:5px 10px}
+ .village-desktop{display:none}
+ .village-exhibition,.village-help-dialog{width:calc(100% - 20px);max-height:88dvh;padding:15px;border-radius:12px}
+ .village-exhibit-head{align-items:flex-start;gap:8px}
+ .village-exhibit-head h3,.village-help-dialog h3{font-size:20px;line-height:1.5;margin-top:5px}
+ .village-exhibit-head>button{font-size:11px;min-height:40px;padding:7px 10px;white-space:nowrap}
+ .village-exhibit-intro{padding:10px 12px;margin:12px 0;font-size:12px;line-height:1.8}
+ .village-exhibit-tabs{gap:5px;margin:12px 0}
+ .village-exhibit-tabs button{font-size:10px;padding:7px 5px}
+ .village-chapters{gap:7px;margin-top:12px}
+ .village-chapter{grid-template-columns:24px minmax(0,1fr);gap:2px 8px;padding:10px 11px!important}
+ .village-chapter strong{font-size:15px}
+ .village-chapter small,.village-chapter em{font-size:11px}
+ .village-chapter-no{font-size:18px}
+ .village-chapter-state{grid-row:4;grid-column:2;font-size:10px;white-space:normal;padding-top:3px;color:#6a744e}
+ .village-help-dialog>p,.village-help-dialog li{font-size:12px}
+ .village-help-dialog li{padding:7px 2px}
+ .village-host{min-height:0}
+}
+@media(max-height:570px) and (orientation:landscape){
+ .village-top{padding-top:6px;padding-bottom:6px}
+ .village-top h2{font-size:18px}
+ .village-top-actions button{min-height:32px;padding:4px 9px;font-size:11px}
+ .village-eyebrow{font-size:8px}
+ .village-mission{max-height:calc(100% - 25px);padding:10px 12px;width:246px}
+ .village-mission h3{font-size:16px;margin:4px 0}
+ .village-mission p{font-size:11px;margin:4px 0}
+ .village-mission__steps{margin-top:7px}
+ .village-minimap{width:175px;padding:5px 9px}
+ .village-minimap__map{height:110px}
+ .village-minimap h3{font-size:12px}
+ .village-bottom{padding-top:5px;padding-bottom:5px}
+ .village-bottom>p:nth-child(2){display:none}
+ .village-context{bottom:16px}
+ .village-stage:has(.village-minimap:not([hidden]):not(.is-collapsed)) .village-context{bottom:16px}
+ .village-toast{bottom:86px}
+}
+@media(prefers-reduced-motion:reduce){
+ .village-shell *{scroll-behavior:auto;animation:none!important;transition:none!important}
+}
