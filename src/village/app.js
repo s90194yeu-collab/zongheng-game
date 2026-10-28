@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {HALLS,EXHIBITS,move,route,chaptersFor,walkable,exhibitApproach} from './world.js';
+import {paintedFrustum,paintedCameraOffset,preparePaintedWorld,createContactShadow} from './scenery.js';
 import {artifactFor,mountArtifactViewer} from './artifacts.js';
 import {HALL_GUIDES,createGuideState,advanceGuide,guideStep,recommendChapters} from './guidance.js';
 
@@ -50,14 +51,16 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  catch(error){loaded.forEach(disposeTree);throw Error('這個瀏覽器目前無法開啟3D村莊，請返回原選關頁。');}
  const canvas=renderer.domElement;canvas.tabIndex=0;canvas.className='village-canvas';canvas.setAttribute('aria-label','博物館村遊戲畫面，WASD或方向鍵移動，E互動。');
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
- const scene=new THREE.Scene();scene.background=new THREE.Color('#d6ddcc');scene.fog=new THREE.Fog('#d6ddcc',48,125);
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#f7f0e3');scene.fog=new THREE.Fog('#f7f0e3',65,145);
  scene.add(new THREE.HemisphereLight('#fff3d7','#779d8a',1.6));
- const sun=new THREE.DirectionalLight('#fff0cc',2.1);sun.position.set(-20,35,18);sun.castShadow=true;
- sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-29,right:29,top:29,bottom:-29,near:.5,far:85});sun.shadow.normalBias=.07;sun.shadow.bias=-.0001;scene.add(sun);
+ const sun=new THREE.DirectionalLight('#fff0cc',2.1);sun.position.set(-20,35,18);sun.castShadow=false;scene.add(sun);
  const fill=new THREE.DirectionalLight('#d5e9f1',.7);fill.position.set(25,15,-20);scene.add(fill);
- scene.add(environment.scene);interior.scene.visible=false;scene.add(interior.scene);spring.scene.visible=false;scene.add(spring.scene);
+ const paintedStats=preparePaintedWorld(environment.scene);scene.add(environment.scene);interior.scene.visible=false;scene.add(interior.scene);spring.scene.visible=false;scene.add(spring.scene);
  const actor=new THREE.Group();actor.add(character.scene);scene.add(actor);
- scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+ scene.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
+ const actorShadow=createContactShadow();scene.add(actorShadow);
+ const plazaShadow=actorShadow.clone();plazaShadow.scale.set(2.8,2.8,1);plazaShadow.position.set(3.6,.055,3);environment.scene.add(plazaShadow);
+ const plazaDing=spring.scene.getObjectByName('Artifact_Ding')?.clone(true);if(plazaDing){plazaDing.name='VillageBronzeDing';plazaDing.position.set(3.6,.30,3);plazaDing.scale.setScalar(1.28);environment.scene.add(plazaDing);}
  character.scene.traverse(o=>{
   if(!o.isMesh)return;o.receiveShadow=false;
   const convert=m=>{const n=new THREE.MeshToonMaterial({name:m.name,color:m.color.clone(),map:m.map||null,normalMap:m.normalMap||null,alphaMap:m.alphaMap||null,transparent:m.transparent,opacity:m.opacity,alphaTest:m.alphaTest,side:m.side});if(/^Robe_(Main|Shade)$/.test(m.name)){n.color.set(robeColors[color]||robeColors.jade);if(m.name==='Robe_Shade')n.color.multiplyScalar(.72);}m.dispose();return n;};
@@ -66,7 +69,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  const mixer=new THREE.AnimationMixer(character.scene),actions={};
  for(const name of ['Idle','Run']){const clip=character.animations.find(c=>c.name===name);if(!clip){disposeTree(scene);renderer.dispose();throw Error('角色動作不完整，請返回原選關頁。');}actions[name]=mixer.clipAction(clip);}
  let action='Idle';actions.Idle.play();
- const camera=new THREE.PerspectiveCamera(42,1,.1,150),cameraTarget=new THREE.Vector3(0,0,0),cameraGoal=new THREE.Vector3();
+ const camera=new THREE.OrthographicCamera(-12,12,12,-12,.1,200),cameraTarget=new THREE.Vector3(0,0,0),cameraGoal=new THREE.Vector3();
  const viewport={width:1,height:1},clock={last:performance.now()},keys=new Set(),cleanup=[],media=matchMedia('(prefers-reduced-motion: reduce)');
  let position={x:0,z:7},place='village',museum=null,path=[],nearest=null,contextKey='',disposed=false,frame=0,overview=false,visible=true,lost=false,moving=false,quality='high',draws=0;
  let artifactViewer=null;
@@ -125,7 +128,8 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  for(const h of HALLS){const button=el('button','village-hall-link');button.type='button';button.dataset.hall=h.id;const all=chaptersFor(catalog,h.id),available=all.filter(c=>canPlay(c.id));button.append(el('strong','',h.name),el('small','',h.subtitle),el('span','village-hall-detail',HALL_GUIDES[h.id].reason),el('span','village-hall-count',available.length+'篇可進入 · 共'+all.length+'篇'));button.onclick=()=>goHall(h.id);list.append(button);}
  function resetCamera(instant=false,dt=1/30){
   const target=overview&&place==='village'?new THREE.Vector3(0,0,0):new THREE.Vector3(position.x,.8,position.z-1.8);
-  const offset=place==='village'?(overview?new THREE.Vector3(34,43,48):new THREE.Vector3(13,19,22)):new THREE.Vector3(10,16,16);
+  const offset=place==='village'?paintedCameraOffset():new THREE.Vector3(10,16,16);
+  const zoom=museum?1.2:overview ? .56 : 1;if(camera.zoom!==zoom){camera.zoom=zoom;camera.updateProjectionMatrix();}
   cameraGoal.copy(target).add(offset);
   if(instant){camera.position.copy(cameraGoal);cameraTarget.copy(target);}else{const blend=1-Math.exp(-7*dt);camera.position.lerp(cameraGoal,blend);cameraTarget.lerp(target,blend);}
   camera.lookAt(cameraTarget);
@@ -179,7 +183,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
   if(nearest&&!museum&&nearest.id!=='guide'&&guideState.stage!=='arrived')updateGuide('arrive',{hallId:nearest.id});
   q('[data-v-context]').hidden=!nearest;if(nearest){q('[data-v-context-name]').textContent=nearest.name;q('[data-v-interact]').textContent=museum?(nearest.id==='exit'?'走出展館 · E':'觀看篇章 · E'):nearest.id==='guide'?'和書僮聊聊 · E':'進入'+nearest.name+' · E';}
  }
- function resize(){const w=stage.clientWidth,h=stage.clientHeight;viewport.width=w;viewport.height=h;quality=innerWidth<700?'low':'high';renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality==='high';renderer.setSize(w,h,false);camera.aspect=w/Math.max(1,h);camera.updateProjectionMatrix();}
+ function resize(){const w=stage.clientWidth,h=stage.clientHeight;viewport.width=w;viewport.height=h;quality=innerWidth<700?'low':'high';renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=false;renderer.setSize(w,h,false);Object.assign(camera,paintedFrustum(w,h));camera.updateProjectionMatrix();}
  const labelVector=new THREE.Vector3();
  function placeLabel(element,x,y,z){labelVector.set(x,y,z).project(camera);element.hidden=labelVector.z>1||Math.abs(labelVector.x)>1.1||Math.abs(labelVector.y)>1.1;element.style.transform=`translate(-50%,-50%) translate(${Math.max(80,Math.min(viewport.width-80,(labelVector.x*.5+.5)*viewport.width))}px,${Math.max(45,Math.min(viewport.height-45,(-labelVector.y*.5+.5)*viewport.height))}px)`;}
  function updateLabels(){
@@ -204,7 +208,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
   if(toastUntil&&time>toastUntil){q('[data-v-toast]').hidden=true;toastUntil=0;}
   if(!museum){const look=Math.atan2(position.x-GUIDE_POINT.x,position.z-GUIDE_POINT.z);npc.rotation.y=look;if(!media.matches)head.rotation.x=nearest?.id==='guide'?Math.sin(time*.003)*.08:0;}
   if(moving){const desired=Math.atan2(position.x-before.x,position.z-before.z);let d=desired-actor.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));actor.rotation.y+=d*Math.min(1,dt*13);}
-  actor.position.set(position.x,.12,position.z);if(!media.matches)mixer.update(dt);resetCamera(false,dt);proximity();updateLabels();renderer.render(scene,camera);draws=renderer.info.render.calls;
+  actor.position.set(position.x,.12,position.z);actorShadow.position.set(position.x,.05,position.z);if(!media.matches)mixer.update(dt);resetCamera(false,dt);proximity();updateLabels();renderer.render(scene,camera);draws=renderer.info.render.calls;
  }
  const keyMap={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',ShiftLeft:'sprint',ShiftRight:'sprint'};
  listen(root,'keydown',event=>{if(event.code==='Escape'&&!guide.hidden){event.preventDefault();event.stopPropagation();guide.hidden=true;renderMission();canvas.focus({preventScroll:true});return;}if(modalOpen()||!guide.hidden||!(event.target===canvas||event.target.closest?.('[data-v-dir]')))return;
@@ -249,5 +253,5 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  observer.observe(stage);intersection.observe(stage);stage.prepend(canvas);q('.village-loading').remove();setPlace(null);resize();resetCamera(true);frame=requestAnimationFrame(tick);canvas.focus({preventScroll:true});
  function dispose(){if(disposed)return;disposed=true;closeArtifact();stop();cancelAnimationFrame(frame);observer.disconnect();intersection.disconnect();cleanup.forEach(fn=>fn());mixer.stopAllAction();mixer.uncacheRoot(character.scene);disposeTree(scene);sun.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();dialog.close();help.close();routeDots.dispose();root.replaceChildren();}
  return {dispose,navigateToHall(id){const h=HALLS.find(h=>h.id===id);if(place!=='village'||!h)return false;return goHall(id);},
-  inspect(){return {place,position:{...position},museum:museum?.id||null,animation:action,animationTime:actions[action].time,moving,pathRemaining:path.length,near:nearest?.id||null,drawCalls:draws,quality,pixelRatio:renderer.getPixelRatio(),reduced:media.matches,lost,disposed,dialog:dialog.open,help:help.open,artifact:artifactViewer?.inspect()||null,guide:{...guideState},routeTarget:routeTarget?{...routeTarget}:null,routeVisible:routeGroup.visible,chapterCount:museum?chaptersFor(catalog,museum.id).length:0};}};
+  inspect(){return {place,position:{...position},museum:museum?.id||null,animation:action,animationTime:actions[action].time,moving,pathRemaining:path.length,near:nearest?.id||null,drawCalls:draws,scenery:'watercolor-2.5d',painted:paintedStats,realtimeShadows:renderer.shadowMap.enabled,quality,pixelRatio:renderer.getPixelRatio(),reduced:media.matches,lost,disposed,dialog:dialog.open,help:help.open,artifact:artifactViewer?.inspect()||null,guide:{...guideState},routeTarget:routeTarget?{...routeTarget}:null,routeVisible:routeGroup.visible,chapterCount:museum?chaptersFor(catalog,museum.id).length:0};}};
 }

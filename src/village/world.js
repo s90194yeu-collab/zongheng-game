@@ -2,9 +2,9 @@ export const HALLS=Object.freeze([
   {id:'cq',name:'春秋史館',subtitle:'盟誓與抉擇',x:-12,z:-11,rotation:0,width:8,depth:6,color:'#709d86'},
   {id:'zg',name:'戰國史館',subtitle:'策士與天下',x:0,z:-16,rotation:0,width:9,depth:6,color:'#638fa0'},
   {id:'ch',name:'楚漢史館',subtitle:'英雄與山河',x:12,z:-11,rotation:0,width:8,depth:6,color:'#b46e58'},
-  {id:'zz',name:'諸子學宮',subtitle:'百家思想',x:-18,z:3,rotation:Math.PI/2,width:6,depth:6,color:'#819768'},
-  {id:'gw',name:'古文書院',subtitle:'千年文章',x:18,z:3,rotation:-Math.PI/2,width:7,depth:6,color:'#6a9296'},
-  {id:'al',name:'選文雅集',subtitle:'課綱選讀',x:-12,z:17,rotation:Math.PI,width:7,depth:5,color:'#ad8060'},
+  {id:'zz',name:'諸子學宮',subtitle:'百家思想',x:-18,z:3,rotation:0,width:6,depth:6,color:'#819768'},
+  {id:'gw',name:'古文書院',subtitle:'千年文章',x:18,z:3,rotation:0,width:7,depth:6,color:'#6a9296'},
+  {id:'al',name:'經典雅集',subtitle:'經典著作',x:-12,z:17,rotation:0,width:7,depth:5,color:'#ad8060'},
 ].map(h=>Object.freeze({...h,entry:{x:h.x+Math.sin(h.rotation)*(h.depth/2+1.75),z:h.z+Math.cos(h.rotation)*(h.depth/2+1.75)}})));
 export const EXHIBITS=Object.freeze([{id:'west',x:-5,z:-1,name:'左廊展櫃'},{id:'north',x:0,z:-5,name:'主展櫃'},{id:'east',x:5,z:-1,name:'右廊展櫃'}]);
 export function obstacles(place='village'){
