@@ -28,3 +28,6 @@ test('新版外景是含四面牆與屋頂的立體網格，烘焙色彩保留�
  for(const h of HALLS){const near=points.filter(p=>Math.abs(p.x-h.x)<h.width/2+.1&&Math.abs(p.z-h.z)<h.depth/2+.1&&p.y>.3&&p.y<3.8);assert(near.length>12,h.id);assert(Math.max(...near.map(p=>p.z))-Math.min(...near.map(p=>p.z))>h.depth*.8,h.id+' true depth');}
  const stats=preparePaintedWorld(model.scene);assert(stats.triangles<50000);assert(stats.materials<35);model.scene.traverse(o=>{if(o.isMesh&&o.userData.bakedLighting){assert(o.material.vertexColors);assert.equal(o.material.type,'MeshBasicMaterial');}});
 });
+test('遠景紙底不重複放大貼圖，近景水彩草地仍保留貼圖',async()=>{
+ const T=await import('three'),{preparePaintedWorld}=await import('../src/village/scenery.js'),root=new T.Group(),texture=new T.Texture();const far=new T.Mesh(new T.PlaneGeometry(10,10),new T.MeshBasicMaterial({name:'Ivory',map:texture}));far.name='Batched_Ivory';const near=new T.Mesh(new T.PlaneGeometry(2,2),new T.MeshBasicMaterial({name:'Ground_grass',map:texture}));root.add(far,near);preparePaintedWorld(root);assert.equal(far.material.map,null);assert.equal(far.material.color.getHexString(),'f7f0e3');assert.equal(near.material.map,texture);
+});
