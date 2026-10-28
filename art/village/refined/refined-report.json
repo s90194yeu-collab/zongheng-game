@@ -1,0 +1,17 @@
+{
+  "tool": "4.5.3 LTS",
+  "source": "original Blender geometry and original procedural painted textures",
+  "historicalStatus": "teaching reconstruction, not artifact scans",
+  "exterior": {
+    "meshes": 26,
+    "triangles": 99676,
+    "bytes": 7822588,
+    "embeddedPaintedTextures": 14
+  },
+  "springInterior": {
+    "meshes": 40,
+    "triangles": 20877,
+    "bytes": 2489680,
+    "embeddedPaintedTextures": 16
+  }
+}

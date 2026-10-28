@@ -8,7 +8,7 @@ test('村莊與室內碰撞不因大dt穿牆，舊路由與未開放篇章不進
  assert.deepEqual(W.chaptersFor([{id:'a',vol:'cq',status:'ready',legacyOnly:true},{id:'b',vol:'cq',status:'planned'}],'cq'),[]);
 });
 test('村莊GLB使用真正網格、無外部URI，材質合併且單一模型小於8MiB',async()=>{
- const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');for(const name of ['museum-village','museum-interior']){const b=fs.readFileSync(path.join(root,'public/models',name+'.glb'));assert(b.length<8*1024*1024);const model=await new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.length),'');let meshes=0;model.scene.traverse(o=>{if(o.isMesh)meshes++;});assert(meshes>10&&meshes<25);const json=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)));assert(!JSON.stringify(json).includes('"uri"'));}
+ global.self=globalThis;global.createImageBitmap||=async()=>({width:256,height:256,close(){}});const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');for(const name of ['museum-village','museum-interior','spring-interior']){const b=fs.readFileSync(path.join(root,'public/models',name+'.glb'));assert(b.length<8*1024*1024);const model=await new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.length),'');let meshes=0;model.scene.traverse(o=>{if(o.isMesh)meshes++;});assert(meshes>10&&meshes<(name==='spring-interior'?65:30));const json=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)));assert(!JSON.stringify(json).includes('"uri"'));}
 });
 test('村莊只在首頁開啟後載入，共用Three.js且模型與模組以內容雜湊保存',()=>{
  const release=JSON.parse(fs.readFileSync(path.join(root,'dist/release.json'))),m=JSON.parse(fs.readFileSync(path.join(root,'dist',release.manifest))),v=m.village;assert(v);

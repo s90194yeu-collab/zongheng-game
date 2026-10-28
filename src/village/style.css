@@ -233,3 +233,30 @@
 @media(prefers-reduced-motion:reduce){
  .village-shell *{scroll-behavior:auto;animation:none!important;transition:none!important}
 }
+
+/* Spring hall: the model stays large, with optional observation prompts beside it. */
+.village-artifact-open{width:100%;display:flex;justify-content:center;align-items:center;gap:8px;background:#e5ead9!important;border-color:#a6b18a!important;color:#35533d!important;font-weight:600}
+.village-artifact-dialog{width:min(1100px,calc(100% - 32px));max-height:92dvh;padding:22px;background:#f7f0de}
+.village-artifact-sub{font:18px/1.6 "Songti TC",serif;color:#806335;margin:2px 0 16px}
+.village-artifact-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(240px,1fr);gap:22px}
+.village-artifact-stage{height:min(48dvh,480px);min-height:220px;position:relative;overflow:hidden;border:1px solid #b5b69a;border-radius:14px;background:#dedac9;box-shadow:inset 0 0 50px #344f3b1a}
+.village-artifact-stage canvas{display:block;width:100%;height:100%;touch-action:none;outline-offset:-3px}
+.village-artifact-stage canvas:focus-visible{outline:3px solid #9d773a}
+.village-artifact-stage>p{padding:24px;color:#755b38}
+.village-artifact-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.village-artifact-controls button{min-width:44px;font-size:12px}
+.village-artifact-reading>p:first-child{font-size:14px;line-height:1.95;margin:0 0 16px;color:#4a604b}
+.village-artifact-details{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.village-artifact-details button{font-size:12px;padding:8px 6px}
+.village-artifact-details button[aria-pressed=true]{background:#365e49;color:#fff5dd;border-color:#365e49}
+.village-artifact-note{border-left:3px solid #b89a61;background:#eee4ca;padding:14px 16px;font-size:13px;line-height:1.9;min-height:110px}
+.village-artifact-reading>.village-fine{border-top:1px solid #d5caae;padding-top:12px;font-size:11px;line-height:1.8}
+@media(max-width:700px){
+ .village-artifact-dialog{width:calc(100% - 16px);padding:14px;max-height:94dvh}
+ .village-artifact-layout{grid-template-columns:1fr;gap:12px}
+ .village-artifact-stage{height:31dvh;min-height:200px}
+ .village-artifact-sub{font-size:15px;margin:0 0 10px}
+ .village-artifact-reading>p:first-child{font-size:12px;margin-bottom:10px}
+ .village-artifact-note{font-size:12px;min-height:0;margin:10px 0}
+ .village-artifact-controls button{font-size:11px;padding:7px 9px}
+}

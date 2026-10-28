@@ -11,7 +11,7 @@ function fakeElement(){const classes=new Set(['is-target']);return{hidden:false,
 function harness(extra={}){
  const elements=new Map(),element=selector=>{if(!elements.has(selector))elements.set(selector,fakeElement());return elements.get(selector);};
  const status=element('[data-v-status]');status.textContent='正在前往春秋史館。跟著光點走。';
- const ctx={path:[{x:0,z:1},{x:0,z:2}],routeTarget:{kind:'hall',id:'cq',name:'春秋史館',x:0,z:2},routeGroup:{visible:true},routeDots:{count:12},lastRouteDistance:'尚餘約 8 步',labels:[{hall:{id:'cq'},element:fakeElement()},{hall:{id:'zg'},element:fakeElement()}],keys:new Set(['up']),status,q:element,canvas:fakeElement(),dialog:{open:false},help:{open:false},guide:{hidden:true},...extra};
+ const ctx={path:[{x:0,z:1},{x:0,z:2}],routeTarget:{kind:'hall',id:'cq',name:'春秋史館',x:0,z:2},routeGroup:{visible:true},routeDots:{count:12},lastRouteDistance:'尚餘約 8 步',labels:[{hall:{id:'cq'},element:fakeElement()},{hall:{id:'zg'},element:fakeElement()}],keys:new Set(['up']),status,q:element,canvas:fakeElement(),dialog:{open:false},help:{open:false},artifactDialog:{open:false},closeArtifact(){},guide:{hidden:true},...extra};
  install(ctx,'setStatus','endRoute','stop','modalOpen');return{ctx,element,elements};
 }
 function keyEvent(code,target){return{code,target,repeat:false,prevented:false,preventDefault(){this.prevented=true;}};}
@@ -31,7 +31,7 @@ test('取消帶路與鍵盤接管都取消視覺目標，且不留下「前往�
  const k=harness(),c=k.ctx;c.keyMap={KeyW:'up'};c.interact=()=>{};const event=keyEvent('KeyW',c.canvas);invoke(c,listener('root','keydown'),event);assert(event.prevented);assert(c.keys.has('up'));assert.equal(c.routeTarget,null);assert.equal(c.path.length,0);assert.equal(c.routeGroup.visible,false);assert(c.status.textContent.includes('自行移動'));
 });
 test('說明、展櫃與展館導覽開啟時，世界方向鍵和 E 不消耗按鍵也不移動或互動',()=>{
- for(const state of ['help','dialog','guide']){
+ for(const state of ['help','dialog','guide','artifactDialog']){
   const h=harness(),{ctx}=h;ctx.keys.clear();if(state==='guide')ctx.guide.hidden=false;else ctx[state].open=true;ctx.keyMap={KeyW:'up'};let interactions=0;ctx.interact=()=>interactions++;
   for(const code of ['KeyW','KeyE']){const event=keyEvent(code,ctx.canvas);invoke(ctx,listener('root','keydown'),event);assert.equal(event.prevented,false,state+':'+code);}
   assert.equal(ctx.keys.size,0,state);assert.equal(interactions,0,state);assert(ctx.routeTarget,state+' 不應由被攔截按鍵改變目標');
@@ -39,10 +39,10 @@ test('說明、展櫃與展館導覽開啟時，世界方向鍵和 E 不消耗�
  const h=harness(),ctx=h.ctx;ctx.keys.clear();ctx.keyMap={ArrowDown:'down'};ctx.interact=()=>{};const uiButton={closest:()=>null};const event=keyEvent('ArrowDown',uiButton);invoke(ctx,listener('root','keydown'),event);assert.equal(ctx.keys.size,0);assert.equal(event.prevented,false,'普通按鈕的方向鍵交由瀏覽器處理');
 });
 function tickHarness(block){
- const h=harness(),c=h.ctx;c.routeTarget=null;c.keys=new Set(['right']);c.path=[];c.position={x:0,z:0};c.place='village';c.clock={last:0,rendered:0};c.quality='high';c.document={hidden:false};c.visible=true;c.lost=false;c.disposed=false;c.hasMoved=true;c.toastUntil=0;c.media={matches:true};c.mixer={update(){}};c.actor={position:{set(){}},rotation:{y:0}};c.scene={};c.camera={};c.renderer={render(){},info:{render:{calls:3}}};c.frame=0;c.requestAnimationFrame=()=>1;c.animateMotion=()=>{};c.resetCamera=()=>{};c.proximity=()=>{};c.updateLabels=()=>{};c.updateGuide=()=>{};let moved=0;c.move=(p,d)=>{moved++;return{x:p.x+d.x,z:p.z+d.z};};if(block==='guide')c.guide.hidden=false;else if(block)c[block].open=true;install(c,'tick');return{...h,moved:()=>moved};
+ const h=harness(),c=h.ctx;c.routeTarget=null;c.keys=new Set(['right']);c.path=[];c.position={x:0,z:0};c.place='village';c.museum=null;c.npc={rotation:{y:0}};c.head={rotation:{x:0}};c.GUIDE_POINT={x:0,z:0};c.nearest=null;c.clock={last:0,rendered:0};c.quality='high';c.document={hidden:false};c.visible=true;c.lost=false;c.disposed=false;c.hasMoved=true;c.toastUntil=0;c.media={matches:true};c.mixer={update(){}};c.actor={position:{set(){}},rotation:{y:0}};c.scene={};c.camera={};c.renderer={render(){},info:{render:{calls:3}}};c.frame=0;c.requestAnimationFrame=()=>1;c.animateMotion=()=>{};c.resetCamera=()=>{};c.proximity=()=>{};c.updateLabels=()=>{};c.updateGuide=()=>{};let moved=0;c.move=(p,d)=>{moved++;return{x:p.x+d.x,z:p.z+d.z};};if(block==='guide')c.guide.hidden=false;else if(block)c[block].open=true;install(c,'tick');return{...h,moved:()=>moved};
 }
 test('動畫迴圈在各種導覽遮罩開啟時不推進角色；關閉遮罩後相同輸入能移動',()=>{
- for(const state of ['help','dialog','guide'])for(const mode of ['manual','route']){const h=tickHarness(state);if(mode==='route'){h.ctx.keys.clear();h.ctx.path=[{x:4,z:0}];}h.ctx.tick(100);assert.equal(h.ctx.position.x,0,state+':'+mode);assert.equal(h.ctx.position.z,0,state+':'+mode);assert.equal(h.moved(),0,state+':'+mode);}
+ for(const state of ['help','dialog','guide','artifactDialog'])for(const mode of ['manual','route']){const h=tickHarness(state);if(mode==='route'){h.ctx.keys.clear();h.ctx.path=[{x:4,z:0}];}h.ctx.tick(100);assert.equal(h.ctx.position.x,0,state+':'+mode);assert.equal(h.ctx.position.z,0,state+':'+mode);assert.equal(h.moved(),0,state+':'+mode);}
  const active=tickHarness();active.ctx.tick(100);assert(active.ctx.position.x>0);assert.equal(active.moved(),1);
 });
 test('抵達館門清理帶路後改成入館提示，不自動進館或觸發選課',()=>{

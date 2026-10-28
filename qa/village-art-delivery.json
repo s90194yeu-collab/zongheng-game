@@ -1,0 +1,43 @@
+{
+  "version": "4.19.0-google",
+  "release": "v4-99e47d224aeed8",
+  "localTests": {
+    "passed": 270,
+    "failed": 0,
+    "skipped": 0
+  },
+  "manualLocalChecks": [
+    "廣場貼圖與春秋館外觀載入",
+    "春秋館獨立展廳進館與碰撞",
+    "竹簡收攏／展開",
+    "三件展品均可近看",
+    "部位切換與拉近",
+    "近看回到原清單並進入燭之武原遊戲入口",
+    "iPhone16 393x852版面目視檢查"
+  ],
+  "physicalPhone": false,
+  "schoolAuthenticatedTest": false,
+  "consoleObservation": "local favicon 404 only; no script exception observed",
+  "models": {
+    "tool": "4.5.3 LTS",
+    "source": "original Blender geometry and original procedural painted textures",
+    "historicalStatus": "teaching reconstruction, not artifact scans",
+    "exterior": {
+      "meshes": 26,
+      "triangles": 99676,
+      "bytes": 7822588,
+      "embeddedPaintedTextures": 14
+    },
+    "springInterior": {
+      "meshes": 40,
+      "triangles": 20877,
+      "bytes": 2489680,
+      "embeddedPaintedTextures": 16
+    }
+  },
+  "pending": [
+    "GitHub release",
+    "public resource verification",
+    "formal GAS activation"
+  ]
+}

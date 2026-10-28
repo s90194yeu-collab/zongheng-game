@@ -5,10 +5,10 @@
  * 現有網頁已部署橋接核心時，啟用設定立即生效，不需要再次部署。
  */
 const GH_SITE_DEFAULT_ = 'https://s90194yeu-collab.github.io/zongheng-game/';
-const GH_RELEASE_DEFAULT_ = 'v4-d1c0e6daacd2c9';
+const GH_RELEASE_DEFAULT_ = 'v4-99e47d224aeed8';
 // 本次已授權並完整核對的前端發布：既有正式站只遷移一次，後續仍可手動回復舊版。
-const GH_VILLAGE_ROLLOUT_ = 'village-4.18.1';
-const GH_VILLAGE_PREVIOUS_ = ['v4-9c2651dfe99729','v4-ba33d827d69573','v4-09e4affc72dda0','v4-bd52dc10ef27fb','v4-93fc8e00808d34'];
+const GH_VILLAGE_ROLLOUT_ = 'village-4.19.0';
+const GH_VILLAGE_PREVIOUS_ = ['v4-d1c0e6daacd2c9','v4-9c2651dfe99729','v4-ba33d827d69573','v4-09e4affc72dda0','v4-bd52dc10ef27fb','v4-93fc8e00808d34'];
 
 /** 手動執行入口：只允許目前的部署教師操作，不能由訪客或學生切換全站設定。 */
 function githubRequireSetupUser_() {
