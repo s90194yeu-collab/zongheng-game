@@ -46,3 +46,6 @@ export function route(start,end,place='village'){
  return result.slice(1);
 }
 export function chaptersFor(catalog,id){return catalog.filter(c=>c.vol===id&&c.status==='ready'&&!c.legacyOnly);}
+
+// Keep the entire arrival tolerance inside the 2.05-unit interaction radius.
+export function exhibitApproach(id){const e=EXHIBITS.find(e=>e.id===id);if(!e)return null;return id==='north'?{x:e.x,z:e.z+1.8}:{x:e.x+(id==='west'?1.8:-1.8),z:e.z};}

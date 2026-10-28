@@ -39,3 +39,11 @@ test('離館清除當前館與選課脈絡，保留逛展足跡和略過偏好',
 test('自由探索時點館名開始帶路不重新開啟小卡，只有說明按鈕明確重開',async()=>{
  const {createGuideState,advanceGuide,guideStep}=await load();let s=advanceGuide(createGuideState(),'skip');s=advanceGuide(s,'start',{hallId:'zg'});assert.equal(s.stage,'walking');assert.equal(s.hallId,'zg');assert.equal(s.muted,true);assert.equal(guideStep(s).visible,false);s=advanceGuide(s,'reopen');assert.equal(guideStep(s).visible,true);assert.equal(s.stage,'walking');assert.equal(s.hallId,'zg');
 });
+
+test('展櫃帶路在24／30／60幀及抵達容差下都停在可互動範圍內',async()=>{
+ const W=await import('../src/village/world.js');for(const exhibit of W.EXHIBITS)for(const fps of [24,30,60]){
+  let position={x:0,z:4.2},points=W.route(position,W.exhibitApproach(exhibit.id),'cq'),steps=0;assert(points.length);
+  while(points.length&&steps++<2000){const x=points[0].x-position.x,z=points[0].z-position.z,len=Math.hypot(x,z);if(len<.15){points.shift();continue;}const stride=Math.min(4.8/fps,len);position=W.move(position,{x:x/len*stride,z:z/len*stride},'cq');}
+  assert.equal(points.length,0,exhibit.id+' '+fps);assert(Math.hypot(position.x-exhibit.x,position.z-exhibit.z)<2.05,exhibit.id+' '+fps+' 必須顯示互動按鈕');
+ }assert.equal(W.exhibitApproach('unknown'),null);
+});

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {HALLS,EXHIBITS,move,route,chaptersFor,walkable} from './world.js';
+import {HALLS,EXHIBITS,move,route,chaptersFor,walkable,exhibitApproach} from './world.js';
 import {HALL_GUIDES,createGuideState,advanceGuide,guideStep,recommendChapters} from './guidance.js';
 
 const robeColors={jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'};
@@ -216,7 +216,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  q('[data-v-help-resume]').onclick=()=>{help.close();updateGuide('reopen');canvas.focus({preventScroll:true});};
  q('[data-v-help-recommend]').onclick=()=>{help.close();updateGuide('reopen');const first=recommendChapters(catalog,canPlay,{limit:1})[0];if(!first){toast('目前沒有可進入的課文，仍可自由參觀六館。');renderMission();return;}if(museum&&museum.id===first.vol)exhibit();else{if(museum)leaveMuseum();goHall(first.vol);}};
  q('[data-v-dismiss]').onclick=()=>{updateGuide('skip');canvas.focus({preventScroll:true});};
- q('[data-v-next]').onclick=()=>{const step=guideStep(guideState);if(step.action==='enter'&&nearest&&nearest.id!=='guide'){interact();return;}if(step.action==='view'&&museum){if(nearest&&nearest.id!=='exit')exhibit();else navigate({x:0,z:-3},{kind:'case',id:'north',name:'主展櫃'});return;}if(step.action==='select'&&museum){exhibit();return;}if(step.action==='walk'&&guideState.hallId){goHall(guideState.hallId);return;}guide.hidden=false;stop();renderMission();};
+ q('[data-v-next]').onclick=()=>{const step=guideStep(guideState);if(step.action==='enter'&&nearest&&nearest.id!=='guide'){interact();return;}if(step.action==='view'&&museum){if(nearest&&nearest.id!=='exit')exhibit();else navigate(exhibitApproach('north'),{kind:'case',id:'north',name:'主展櫃'});return;}if(step.action==='select'&&museum){exhibit();return;}if(step.action==='walk'&&guideState.hallId){goHall(guideState.hallId);return;}guide.hidden=false;stop();renderMission();};
  q('[data-v-route-cancel]').onclick=()=>{keys.clear();endRoute('已停止帶路。點館名可重新出發，也可以自由移動。');toast('已停止帶路');canvas.focus({preventScroll:true});};
  const toggleMap=()=>{const collapsed=minimap.classList.toggle('is-collapsed');q('[data-v-minimap-toggle]').textContent=collapsed?'展開地圖':'收起地圖';q('[data-v-minimap-toggle]').setAttribute('aria-expanded',String(!collapsed));};q('[data-v-minimap-toggle]').onclick=toggleMap;const collapsed=minimap.classList.contains('is-collapsed');q('[data-v-minimap-toggle]').textContent=collapsed?'展開地圖':'收起地圖';q('[data-v-minimap-toggle]').setAttribute('aria-expanded',String(!collapsed));
  listen(dialog,'cancel',event=>{event.preventDefault();event.stopPropagation();dialog.close();stop();renderMission();canvas.focus({preventScroll:true});});listen(help,'cancel',event=>{event.preventDefault();event.stopPropagation();help.close();stop();renderMission();canvas.focus({preventScroll:true});});
