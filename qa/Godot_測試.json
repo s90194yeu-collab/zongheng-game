@@ -1,9 +1,9 @@
 {
-  "version": "4.24.0-google",
-  "release": "v4-e94d8b5267812c",
+  "version": "4.24.1-google",
+  "release": "v4-508ca2599fd75c",
   "engine": "4.7.2.stable.official.ed1daf0bf",
   "tests": {
-    "nodePassed": 301,
+    "nodePassed": 302,
     "godotScenePassed": true
   },
   "browser": {
@@ -26,5 +26,7 @@
   },
   "studentRecordsWritten": 0,
   "fpsCap": false,
-  "physicalPhoneTest": false
+  "physicalPhoneTest": false,
+  "estimatedTransferBytes": 18803923,
+  "compressionValidated": true
 }

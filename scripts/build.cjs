@@ -139,7 +139,7 @@ for(const [name,page]of Object.entries(routes)){
  const file='pages/'+name+'.html';fs.writeFileSync(path.join(releaseDir,file),html);
  pages[name]={file,sha256:hash(html),bytes:Buffer.byteLength(html)};
 }
-const result={release,version:config.version,character3d:character3dAssets,village:villageAssets,godotVillage:{...godotAssets,engine:godotBundle.engine,files:godotBundle.files},chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
+const result={release,version:config.version,character3d:character3dAssets,village:villageAssets,godotVillage:{...godotAssets,engine:godotBundle.engine,estimatedTransferBytes:godotBundle.estimatedTransferBytes,files:godotBundle.files},chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
 fs.writeFileSync(path.join(releaseDir,'manifest.json'),JSON.stringify(result,null,2));
 fs.writeFileSync(path.join(dist,'release.json'),JSON.stringify({release,manifest:'releases/'+release+'/manifest.json'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
