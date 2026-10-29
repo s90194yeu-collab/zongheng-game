@@ -15,8 +15,9 @@ const check=(name)=>report.checks.push(name);
  const close=async()=>{await page.getByRole('button',{name:'返回我的造型',exact:true}).click();assert(await page.locator('#profile-player').isVisible());assert.equal(await page.locator('.c3-canvas').count(),0);};
  try{
   await page.goto(base+'/__preview__/Profile.html');await page.waitForFunction(()=>ZH.character3d&&document.querySelector('#profile-player canvas'));
-  assert.equal(await page.locator('.c3-canvas').count(),0);assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').filter(r=>/character3d-app|scholar-pilot.*\.glb/.test(r.name)).length),0);check('初始頁保留原換裝，模型與新模組均延後下載');
-  await open();const initial=await inspect();assert.equal(initial.revision,'180');assert.equal(initial.bones,14);assert.equal(initial.triangles,18688);assert(Math.abs(initial.height-1.8)<.01);assert(initial.clothMaterials>0);report.asset=initial;
+  assert.equal(await page.locator('.c3-canvas').count(),0);assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').filter(r=>/character3d-app|(?:scholar-pilot|hero-scholar).*\.glb/.test(r.name)).length),0);check('初始頁保留原換裝，模型與新模組均延後下載');
+  await open();const initial=await inspect();assert.equal(initial.revision,'180');assert.equal(initial.bones,53);assert(initial.triangles<70000);assert(initial.height>1.8&&initial.height<2);assert(initial.appearance.visibleTriangles<45000);report.asset=initial;
+  await page.getByRole('button',{name:'行旅服',exact:true}).click();assert.equal((await inspect()).appearance.outfit,'traveler');await page.getByRole('button',{name:'輕甲',exact:true}).click();assert.equal((await inspect()).appearance.outfit,'armor');await page.getByRole('button',{name:'書院服',exact:true}).click();check('三套服裝只顯示被選取衣裝');
   await page.locator('#character3d-pilot').screenshot({path:path.join(qa,'策士3D_桌面.png')});check('桌面WebGL成功載入與畫面截圖');
   const callIndex=await page.evaluate(()=>ZH_LOCAL_PREVIEW_CALLS.length);
   await page.getByRole('button',{name:'跑步',exact:true}).click();await page.waitForFunction(()=>ZH.character3d.inspect().motion==='run'&&ZH.character3d.inspect().time>.15);check('跑步片段持續推進');

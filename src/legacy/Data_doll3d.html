@@ -1,9 +1,19 @@
-<!-- 紙娃娃外觀、環境、動作、材質與套裝集中設定 v0.7.0（2026-10-15）。 -->
+<!-- 紙娃娃外觀、環境、動作、材質與套裝集中設定 v0.8.0（2026-10-29）。 -->
 <script>
 window.ZH_DOLL3D = /* DOLL_MANIFEST_START */
 {
-  "version": "0.7.0",
+  "version": "0.8.0",
   "look": {
+    "characterStyle": [
+      [
+        "classic",
+        "經典紙娃娃"
+      ],
+      [
+        "hero",
+        "古風半寫實・男策士"
+      ]
+    ],
     "body": [
       [
         "male",
@@ -418,7 +428,8 @@ window.ZH_DOLL3D = /* DOLL_MANIFEST_START */
     "eyeColor": "眼睛顏色",
     "pattern": "衣料花紋",
     "earrings": "耳飾",
-    "environment": "3D環境"
+    "environment": "3D環境",
+    "characterStyle": "立體角色樣式"
   },
   "groups": {
     "body": "look",
@@ -437,13 +448,15 @@ window.ZH_DOLL3D = /* DOLL_MANIFEST_START */
     "eyeColor": "look",
     "pattern": "dress",
     "earrings": "decor",
-    "environment": "scene"
+    "environment": "scene",
+    "characterStyle": "look"
   },
   "defaults": {
     "eyeColor": "dark",
     "pattern": "plain",
     "earrings": "none",
-    "environment": "room"
+    "environment": "room",
+    "characterStyle": "classic"
   },
   "motions": [
     [

@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import {isHero,applyHeroAppearance} from './appearance.js';
 
 const CLIPS = Object.freeze({idle:'Idle',run:'Run',bow:'Bow'});
-const COLORS = Object.freeze({jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d'});
+const COLORS = Object.freeze({jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'});
 export { CLIPS, COLORS };
 
 function release(root) {
@@ -22,7 +23,7 @@ function release(root) {
   root.clear();
 }
 
-export async function createPreview(host, {modelUrl,color='jade',quality='auto',signal,onState=()=>{}}={}) {
+export async function createPreview(host, {modelUrl,color='jade',appearance={},quality='auto',signal,isCurrent=()=>true,onState=()=>{}}={}) {
   if(!host?.isConnected)throw Error('試看已關閉。');
   const request=new AbortController(),abort=()=>request.abort();
   if(signal?.aborted)throw new DOMException('Cancelled','AbortError');
@@ -38,8 +39,8 @@ export async function createPreview(host, {modelUrl,color='jade',quality='auto',
     try{asset=await new GLTFLoader().parseAsync(bytes,new URL('.',new URL(modelUrl,location.href)).href);}
     catch(error){throw Error('角色檔案無法開啟，請重新載入。');}
     model=asset.scene;
-    if(request.signal.aborted||signal?.aborted||!host.isConnected){release(model);throw new DOMException('Cancelled','AbortError');}
-    return mount(host,model,asset.animations,{color,quality,onState});
+    if(request.signal.aborted||signal?.aborted||!host.isConnected||!isCurrent()){release(model);throw new DOMException('Cancelled','AbortError');}
+    return mount(host,model,asset.animations,{color,appearance,quality,onState});
   } catch(error) {
     if(error.name==='AbortError'&&!signal?.aborted)throw Error('角色載入逾時，請重新載入。');
     if(error instanceof TypeError)throw Error('目前無法連線讀取角色，請稍後重試。');
@@ -49,7 +50,7 @@ export async function createPreview(host, {modelUrl,color='jade',quality='auto',
   }
 }
 
-function mount(host,model,clips,{color,quality,onState}) {
+function mount(host,model,clips,{color,appearance,quality,onState}) {
   let renderer;
   const scene=new THREE.Scene(),canvas=document.createElement('canvas');
   canvas.className='c3-canvas';canvas.tabIndex=0;
@@ -71,12 +72,13 @@ function mount(host,model,clips,{color,quality,onState}) {
   const edge=new THREE.Mesh(new THREE.TorusGeometry(1.12,.014,8,64),new THREE.MeshBasicMaterial({color:'#c7a76f'}));
   edge.rotation.x=Math.PI/2;edge.position.y=-.008;scene.add(edge);
   const actor=new THREE.Group();actor.add(model);scene.add(actor);
-  const cloth=[];let bones=0,triangles=0;
+  const cloth=[],hero=isHero(model);let look={...appearance,color:appearance.color||color},lookStats=null,bones=0,triangles=0;
   model.traverse(object=>{
     if(object.isBone)bones++;
     if(!object.isMesh)return;
     object.castShadow=true;object.receiveShadow=false;
     triangles+=(object.geometry.index?.count||object.geometry.attributes.position.count)/3;
+    if(hero)return;
     const convert=material=>{
       const replacement=new THREE.MeshToonMaterial({name:material.name,color:material.color.clone(),map:material.map||null,side:material.side});
       if(/^Robe_(Main|Shade)$/.test(material.name))cloth.push({material:replacement,shade:material.name==='Robe_Shade'});
@@ -84,15 +86,16 @@ function mount(host,model,clips,{color,quality,onState}) {
     };
     object.material=Array.isArray(object.material)?object.material.map(convert):convert(object.material);
   });
+  if(hero)lookStats=applyHeroAppearance(model,look);
   model.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(model,true),size=bounds.getSize(new THREE.Vector3());
   if(!Number.isFinite(size.y)||size.y<.01){release(scene);renderer.dispose();throw Error('角色尺寸無法辨識。');}
   // Wrapper alignment does not overwrite the skeleton's animation tracks.
   actor.position.set(-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,-(bounds.min.z+bounds.max.z)/2);
-  const camera=new THREE.PerspectiveCamera(35,1,.05,30);camera.position.set(2.4,1.8,3.8);
+  const camera=new THREE.PerspectiveCamera(35,1,.05,30);camera.position.set(hero?1.5:2.4,hero?1.5:1.8,hero?2.6:3.8);
   const controls=new OrbitControls(camera,canvas);
   controls.target.set(0,.93,0);controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.12;
-  controls.minDistance=2.4;controls.maxDistance=6.5;controls.minPolarAngle=.4;controls.maxPolarAngle=Math.PI*.52;
+  controls.minDistance=hero?1.2:2.4;controls.maxDistance=6.5;controls.minPolarAngle=.4;controls.maxPolarAngle=Math.PI*.52;
   controls.update();controls.saveState();
   const mixer=new THREE.AnimationMixer(model),actions={};
   for(const [key,name]of Object.entries(CLIPS)){
@@ -100,16 +103,19 @@ function mount(host,model,clips,{color,quality,onState}) {
     if(!clip){controls.dispose();release(scene);renderer.dispose();throw Error('角色缺少必要動作：'+name);}
     actions[key]=mixer.clipAction(clip);
   }
+  const walk=clips.find(c=>c.name==='Walk');if(walk)actions.walk=mixer.clipAction(walk);
   actions.bow.setLoop(THREE.LoopOnce,1);actions.bow.clampWhenFinished=true;
   let disposed=false,paused=false,visible=true,lost=false,frame=0,previous=0,current='idle',colorId='jade';
   const media=matchMedia('(prefers-reduced-motion: reduce)');let reduced=media.matches,qualityMode='auto';
-  function notify(){onState({status:lost?'lost':'ready',motion:current,paused,reduced,color:colorId});}
+  function notify(){onState({status:lost?'lost':'ready',motion:current,paused,reduced,color:colorId,hero,appearance:lookStats});}
   function draw(){if(!disposed&&!lost)renderer.render(scene,camera);}
   function setColor(value){
     if(disposed||!Object.hasOwn(COLORS,value))return false;
     colorId=value;for(const entry of cloth){entry.material.color.set(COLORS[value]);if(entry.shade)entry.material.color.multiplyScalar(.72);}
+    if(hero){look.color=value;lookStats=applyHeroAppearance(model,look);}
     draw();notify();return true;
   }
+  function setAppearance(value){if(disposed||!hero)return false;look={...look,...value};lookStats=applyHeroAppearance(model,look);colorId=lookStats.color;draw();notify();return true;}
   function play(key){
     if(disposed||lost||!Object.hasOwn(actions,key))return false;
     if(reduced){notify();return false;}
@@ -136,7 +142,7 @@ function mount(host,model,clips,{color,quality,onState}) {
     if(event.key==='ArrowLeft')spherical.theta-=.12;if(event.key==='ArrowRight')spherical.theta+=.12;
     if(event.key==='ArrowUp')spherical.phi=Math.max(.4,spherical.phi-.1);
     if(event.key==='ArrowDown')spherical.phi=Math.min(Math.PI*.52,spherical.phi+.1);
-    if(['+','='].includes(event.key))spherical.radius=Math.max(2.4,spherical.radius*.9);
+    if(['+','='].includes(event.key))spherical.radius=Math.max(controls.minDistance,spherical.radius*.9);
     if(event.key==='-')spherical.radius=Math.min(6.5,spherical.radius/0.9);
     camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(spherical));controls.update();draw();
   }
@@ -158,9 +164,14 @@ function mount(host,model,clips,{color,quality,onState}) {
     controls.dispose();mixer.removeEventListener('finished',finished);mixer.stopAllAction();mixer.uncacheRoot(model);
     release(scene);sun.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
   }
-  const controller={play,setColor,setQuality,setPaused,dispose,reset(){controls.reset();draw();},
+  const controller={play,setColor,setAppearance,setQuality,setPaused,dispose,reset(){actor.position.x=-(bounds.min.x+bounds.max.x)/2;actor.position.z=-(bounds.min.z+bounds.max.z)/2;controls.reset();draw();},
+    stop(){play('idle');setPaused(true);},home(){actor.position.x=0;actor.position.z=0;draw();},
+    wide(){camera.position.set(2.4,1.8,3.8);controls.target.set(0,.93,0);controls.update();draw();},
+    rotate(delta){const offset=camera.position.clone().sub(controls.target).applyAxisAngle(new THREE.Vector3(0,1,0),delta);camera.position.copy(controls.target).add(offset);controls.update();draw();},
+    zoom(delta){const offset=camera.position.clone().sub(controls.target),length=THREE.MathUtils.clamp(offset.length()+delta,controls.minDistance,controls.maxDistance);camera.position.copy(controls.target).add(offset.setLength(length));controls.update();draw();},
+    move(x,z){const nx=actor.position.x+x,nz=actor.position.z+z;if(Math.hypot(nx,nz)>.7)return false;actor.position.x=nx;actor.position.z=nz;play('walk');draw();return true;},
     snapshot(){if(disposed||lost)throw Error('畫面暫時無法拍照。');draw();return canvas.toDataURL('image/png');},
-    inspect(){return {engine:'three',revision:THREE.REVISION,asset:'scholar-pilot-v1',clips:clips.map(item=>item.name),bones,triangles,
+    inspect(){return {engine:'three',revision:THREE.REVISION,asset:hero?'zongheng-hero-v1':'scholar-pilot-v1',clips:clips.map(item=>item.name),bones,triangles,hero,appearance:lookStats,contextLost:lost,
       height:size.y,footY:bounds.min.y+actor.position.y,motion:current,time:actions[current]?.time,
       clothColor:COLORS[colorId],clothMaterials:cloth.length,colorId,reduced,paused,disposed,lost,
       quality:qualityMode,pixelRatio:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,

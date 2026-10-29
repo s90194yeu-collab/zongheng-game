@@ -13,6 +13,7 @@ for(const file of fs.readdirSync(path.join(root,'src/academy')).sort())fingerpri
 for(const file of fs.readdirSync(path.join(root,'src/character')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character',file))));
 for(const file of fs.readdirSync(path.join(root,'src/character3d')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/character3d',file))));
 fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'))));
+for(const file of ['hero-scholar.glb','hero-scholar-mobile.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 for(const file of fs.readdirSync(path.join(root,'src/village')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/village',file))));
 for(const file of ['orbit-village.glb','museum-interior.glb','spring-interior.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
@@ -37,9 +38,13 @@ const character3dModel=fs.readFileSync(path.join(root,'public/models/scholar-pil
 const character3dModelFile='models/scholar-pilot-'+hash(character3dModel).slice(0,16)+'.glb';
 fs.mkdirSync(path.join(dist,'models'),{recursive:true});fs.writeFileSync(path.join(dist,character3dModelFile),character3dModel);
 const character3dAssets={version:1,app:academyAsset('character3d-app',character3dApp),model:character3dModelFile};
+for(const [key,name] of Object.entries({hero:'hero-scholar',heroMobile:'hero-scholar-mobile'})){
+ const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';
+ fs.writeFileSync(path.join(dist,file),bytes);character3dAssets[key]=file;
+}
 const villageSource=fs.readFileSync(path.join(root,'src/village/app.js'),'utf8').replace(/from 'three\/addons\/([^']+)'/g,(_,file)=>'from '+JSON.stringify(require.resolve('three/addons/'+file)));
 const villageApp=esbuild.buildSync({stdin:{contents:villageSource,resolveDir:path.join(root,'src/village'),sourcefile:'app.js'},bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020',external:['three']}).outputFiles[0].text.replace(/from"three"/g,'from"./three-r180.min.js"');
-const villageModels={character:character3dModelFile};
+const villageModels={character:character3dModelFile,hero:character3dAssets.heroMobile};
 for(const [key,name]of Object.entries({exterior:'orbit-village',interior:'museum-interior',springInterior:'spring-interior'})){
  const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';fs.writeFileSync(path.join(dist,file),bytes);villageModels[key]=file;
 }

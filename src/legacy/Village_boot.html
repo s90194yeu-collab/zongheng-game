@@ -16,7 +16,8 @@
    try{
     app=app||import(ZH_STATIC_URL(ASSETS.app)).catch(error=>{app=null;throw error;});
     const [module]=await Promise.all([app,loadStyle()]);if(token!==epoch)return;
-    const controller=await module.mountVillage(host,{assets:Object.fromEntries(Object.entries(ASSETS.assets).map(([k,v])=>[k,ZH_STATIC_URL(v)])),catalog:ZH.CATALOG,canPlay:id=>ZH.canPlay(id),color:ZH.player?.profile?.appearance?.color||'jade',signal:request.signal,onClose:close,onSelect:id=>{const chapter=ZH.findScenario(id);if(chapter?.status!=='ready'||chapter.legacyOnly||!ZH.canPlay(id))return;close();document.dispatchEvent(new CustomEvent('zh:village-select',{detail:{id}}));}});
+    await ZH.player?.load();if(token!==epoch)return;
+    const controller=await module.mountVillage(host,{assets:Object.fromEntries(Object.entries(ASSETS.assets).map(([k,v])=>[k,ZH_STATIC_URL(v)])),catalog:ZH.CATALOG,canPlay:id=>ZH.canPlay(id),color:ZH.player?.profile?.appearance?.color||'jade',appearance:ZH.player?.profile?.appearance||{},signal:request.signal,onClose:close,onSelect:id=>{const chapter=ZH.findScenario(id);if(chapter?.status!=='ready'||chapter.legacyOnly||!ZH.canPlay(id))return;close();document.dispatchEvent(new CustomEvent('zh:village-select',{detail:{id}}));}});
     if(token!==epoch){controller.dispose();return;}view=controller;
    }catch(error){if(token!==epoch)return;host.replaceChildren();const box=document.createElement('div');box.className='village-wait';const text=document.createElement('p');text.setAttribute('role','status');text.textContent=error.message||'村莊暫時無法開啟。';const retry=document.createElement('button');retry.textContent='重新載入村莊';retry.onclick=open;const back=document.createElement('button');back.textContent='返回原選關頁';back.onclick=close;box.append(text,retry,back);host.append(box);}
   }

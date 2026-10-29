@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "release": "v4-bfd453313545f6",
+  "localTests": {
+    "pass": 290,
+    "fail": 0,
+    "skip": 0
+  },
+  "checks": [
+    "新舊人物樣式切換",
+    "三套衣裝與四段動作",
+    "暫停時換裝與鏡頭操作",
+    "訪客命名規則確認與造型儲存",
+    "重新載入維持已存樣式",
+    "390px手機畫面無橫向溢出",
+    "手機長按操作後沒有選取文字",
+    "村莊沿路線移動與進入春秋史館"
+  ],
+  "mobile": {
+    "viewport": 390,
+    "documentWidth": 390,
+    "selection": ""
+  },
+  "browserConsoleErrors": [],
+  "studentRecordsWritten": 0,
+  "note": "手機操作以瀏覽器尺寸測試，非實體手機的性能測量。"
+}

@@ -7,6 +7,7 @@ import {artifactFor,mountArtifactViewer} from './artifacts.js';
 import {HALL_GUIDES,createGuideState,advanceGuide,guideStep,recommendChapters} from './guidance.js';
 
 import {createOrbit,rotateOrbit,orbitOffset,cameraMovement,installCameraInput,prepareMuseumWalls} from './camera.js';
+import {isHero,applyHeroAppearance} from '../character3d/appearance.js';
 
 const robeColors={jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'};
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
@@ -16,7 +17,7 @@ function disposeTree(root){
  geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skeletons.forEach(s=>s.dispose());
 }
 
-export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onSelect=()=>{},onClose=()=>{},color='jade',signal}={}){
+export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onSelect=()=>{},onClose=()=>{},color='jade',appearance={},signal}={}){
  root.innerHTML=`<div class="village-shell">
  <header class="village-top"><div><p class="village-eyebrow">RE：縱橫鼎業 · 博物館村</p><h2 data-v-title>問鼎書院</h2></div><div class="village-top-actions"><button type="button" data-v-help>遊玩指引</button><button type="button" data-v-camera>俯瞰村莊</button><button type="button" data-v-map>展館導覽</button><button type="button" data-v-close>返回選關</button></div></header>
  <div class="village-stage" data-v-stage><div class="village-labels"></div><div class="village-loading" role="status">正在打開村莊的大門……</div>
@@ -44,7 +45,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  }
  try{
   if(signal?.aborted)throw new DOMException('Cancelled','AbortError');
-  [environment,interior,character,spring]=await Promise.all([load(assets.exterior),load(assets.interior),load(assets.character),load(assets.springInterior)]);
+  [environment,interior,character,spring]=await Promise.all([load(assets.exterior),load(assets.interior),load(appearance.characterStyle==='hero'&&assets.hero?assets.hero:assets.character),load(assets.springInterior)]);
   if(aborter.signal.aborted||!root.isConnected)throw new DOMException('Cancelled','AbortError');
  }catch(error){abort();for(const model of loaded)disposeTree(model);throw Error(signal?.aborted?'已停止載入。':'村莊暫時無法開啟，請重試或返回原選關頁。');}
  finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
@@ -65,13 +66,16 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  const actorShadow=createContactShadow();scene.add(actorShadow);
  const plazaShadow=actorShadow.clone();plazaShadow.scale.set(2.8,2.8,1);plazaShadow.position.set(3.6,.055,3);environment.scene.add(plazaShadow);
  const plazaDing=spring.scene.getObjectByName('Artifact_Ding')?.clone(true);if(plazaDing){plazaDing.name='VillageBronzeDing';plazaDing.position.set(3.6,.30,3);plazaDing.scale.setScalar(1.28);environment.scene.add(plazaDing);}
+ const hero=isHero(character.scene),heroLook=hero?applyHeroAppearance(character.scene,appearance):null;
  character.scene.traverse(o=>{
   if(!o.isMesh)return;o.receiveShadow=false;
+  if(hero)return;
   const convert=m=>{const n=new THREE.MeshToonMaterial({name:m.name,color:m.color.clone(),map:m.map||null,normalMap:m.normalMap||null,alphaMap:m.alphaMap||null,transparent:m.transparent,opacity:m.opacity,alphaTest:m.alphaTest,side:m.side});if(/^Robe_(Main|Shade)$/.test(m.name)){n.color.set(robeColors[color]||robeColors.jade);if(m.name==='Robe_Shade')n.color.multiplyScalar(.72);}m.dispose();return n;};
   o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
  });
  const mixer=new THREE.AnimationMixer(character.scene),actions={};
  for(const name of ['Idle','Run']){const clip=character.animations.find(c=>c.name===name);if(!clip){disposeTree(scene);renderer.dispose();throw Error('角色動作不完整，請返回原選關頁。');}actions[name]=mixer.clipAction(clip);}
+ if(hero){const clip=character.animations.find(c=>c.name==='Walk');if(clip)actions.Walk=mixer.clipAction(clip);}
  let action='Idle';actions.Idle.play();
  const camera=new THREE.OrthographicCamera(-12,12,12,-12,.1,200),cameraTarget=new THREE.Vector3(0,0,0),cameraGoal=new THREE.Vector3();
  const viewport={width:1,height:1},clock={last:performance.now()},keys=new Set(),cleanup=[],media=matchMedia('(prefers-reduced-motion: reduce)');
@@ -95,7 +99,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  function listen(target,name,fn,options){target.addEventListener(name,fn,options);cleanup.push(()=>target.removeEventListener(name,fn,options));}
  function stop(){keys.clear();endRoute();}
  function modalOpen(){return dialog.open||help.open||artifactDialog.open;}
- function animateMotion(running){const next=running&&!media.matches?'Run':'Idle';if(next===action)return;actions[next].reset().setEffectiveWeight(1).play().crossFadeFrom(actions[action],.18,false);action=next;}
+ function animateMotion(running){const next=running&&!media.matches?(hero&&actions.Walk&&!keys.has('sprint')?'Walk':'Run'):'Idle';if(next===action)return;actions[next].reset().setEffectiveWeight(1).play().crossFadeFrom(actions[action],.18,false);action=next;}
  function setStatus(text){if(status.textContent!==text)status.textContent=text;}
  function toast(text){const box=q('[data-v-toast]');box.textContent=text;box.hidden=false;toastUntil=performance.now()+3600;}
  function updateGuide(event,payload={}){guideState=advanceGuide(guideState,event,payload);renderMission();}
@@ -260,5 +264,5 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  observer.observe(stage);intersection.observe(stage);stage.prepend(canvas);q('.village-loading').remove();setPlace(null);resize();resetCamera(true);frame=requestAnimationFrame(tick);canvas.focus({preventScroll:true});
  function dispose(){if(disposed)return;disposed=true;closeArtifact();stop();cancelAnimationFrame(frame);observer.disconnect();intersection.disconnect();cleanup.forEach(fn=>fn());mixer.stopAllAction();mixer.uncacheRoot(character.scene);disposeTree(scene);sun.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();dialog.close();help.close();routeDots.dispose();root.replaceChildren();}
  return {dispose,navigateToHall(id){const h=HALLS.find(h=>h.id===id);if(place!=='village'||!h)return false;return goHall(id);},
-  inspect(){return {place,position:{...position},museum:museum?.id||null,animation:action,animationTime:actions[action].time,moving,pathRemaining:path.length,near:nearest?.id||null,drawCalls:draws,scenery:'painted-3d-orbit',camera:{...orbit,zoom:camera.zoom,cutaway:roomWalls.some(w=>!w.visible)},painted:paintedStats,realtimeShadows:renderer.shadowMap.enabled,quality,pixelRatio:renderer.getPixelRatio(),reduced:media.matches,lost,disposed,dialog:dialog.open,help:help.open,artifact:artifactViewer?.inspect()||null,guide:{...guideState},routeTarget:routeTarget?{...routeTarget}:null,routeVisible:routeGroup.visible,chapterCount:museum?chaptersFor(catalog,museum.id).length:0};}};
+  inspect(){return {hero,heroAppearance:heroLook,place,position:{...position},museum:museum?.id||null,animation:action,animationTime:actions[action].time,moving,pathRemaining:path.length,near:nearest?.id||null,drawCalls:draws,scenery:'painted-3d-orbit',camera:{...orbit,zoom:camera.zoom,cutaway:roomWalls.some(w=>!w.visible)},painted:paintedStats,realtimeShadows:renderer.shadowMap.enabled,quality,pixelRatio:renderer.getPixelRatio(),reduced:media.matches,lost,disposed,dialog:dialog.open,help:help.open,artifact:artifactViewer?.inspect()||null,guide:{...guideState},routeTarget:routeTarget?{...routeTarget}:null,routeVisible:routeGroup.visible,chapterCount:museum?chaptersFor(catalog,museum.id).length:0};}};
 }

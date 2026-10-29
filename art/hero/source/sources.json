@@ -1,0 +1,32 @@
+[
+  {
+    "source": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/6ff1eb358f6c1959ced77e79e6dd2406d9a71f49/LICENSE.ASSETS.md",
+    "file": "LICENSE.ASSETS.md",
+    "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+  },
+  {
+    "source": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/6ff1eb358f6c1959ced77e79e6dd2406d9a71f49/src/mpfb/data/3dobjs/base.obj",
+    "file": "base.obj",
+    "sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c"
+  },
+  {
+    "source": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/6ff1eb358f6c1959ced77e79e6dd2406d9a71f49/src/mpfb/data/rigs/standard/rig.game_engine.json",
+    "file": "rig.game_engine.json",
+    "sha256": "b324ddb4b707721c19630bfadb87c3e3b38eed3b6e4590bb3cead43ea918f799"
+  },
+  {
+    "source": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/6ff1eb358f6c1959ced77e79e6dd2406d9a71f49/src/mpfb/data/rigs/standard/weights.game_engine.json",
+    "file": "weights.game_engine.json",
+    "sha256": "9f4a773e74ce5ba08415b4f30070338e9f75bae5971b5075b10cd6b9caa58473"
+  },
+  {
+    "source": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/6ff1eb358f6c1959ced77e79e6dd2406d9a71f49/src/mpfb/data/targets/macrodetails/asian-male-young.target.gz",
+    "file": "asian-male-young.target.gz",
+    "sha256": "0928ed8b9f08f60afb9884cf9e9f33a939ed3a85d7f136de9ccc88a76981d6d7"
+  },
+  {
+    "source": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/6ff1eb358f6c1959ced77e79e6dd2406d9a71f49/src/mpfb/data/mesh_metadata/basemesh_vertex_groups.json",
+    "file": "basemesh_vertex_groups.json",
+    "sha256": "8cb1417bc55ae5ec8aa99f90734e81ed5fbb556511ff6a2c00e0534b70911444"
+  }
+]

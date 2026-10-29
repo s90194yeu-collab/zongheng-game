@@ -1,0 +1,31 @@
+{
+  "asset": "zongheng-hero-v1",
+  "bones": 53,
+  "outfits": [
+    "scholar",
+    "traveler",
+    "armor"
+  ],
+  "animations": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Bow"
+  ],
+  "meshes": 27,
+  "triangles": 59614,
+  "source": "MakeHuman CC0 core anatomy and rig; original garments/hair/animation",
+  "aiMode": "built-in imagegen design and texture references",
+  "bytes": 6553948,
+  "visibleTriangles": {
+    "scholar": 36940,
+    "traveler": 38210,
+    "armor": 44080
+  },
+  "mobileBytes": 1985740,
+  "mobileVisibleTriangles": {
+    "scholar": 22544,
+    "traveler": 23091,
+    "armor": 26588
+  }
+}
