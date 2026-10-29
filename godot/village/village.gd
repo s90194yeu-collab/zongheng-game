@@ -351,6 +351,9 @@ func receive(args):
  if args.size()!=1:return
  var msg = JSON.parse_string(str(args[0]))
  if not msg is Dictionary:return
+ if msg.get("type")=="init" and msg.get("mode")=="myth":
+  get_tree().call_deferred("change_scene_to_file","res://myth.tscn")
+  return
  match msg.get("type",""):
   "init","appearance":
    var value = msg.get("appearance",{})

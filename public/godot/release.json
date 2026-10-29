@@ -2,43 +2,43 @@
   "version": 1,
   "engine": "4.7.2.stable.official.ed1daf0bf",
   "threadSupport": false,
-  "entry": "godot/village-95c9554dd6e4f8c4/index.html",
+  "entry": "godot/village-fc1506f08773daa6/index.html",
   "files": [
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.audio.position.worklet.js",
+      "path": "godot/village-fc1506f08773daa6/index.audio.position.worklet.js",
       "bytes": 2973,
       "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
     },
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.audio.worklet.js",
+      "path": "godot/village-fc1506f08773daa6/index.audio.worklet.js",
       "bytes": 7298,
       "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
     },
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.html",
+      "path": "godot/village-fc1506f08773daa6/index.html",
       "bytes": 4743,
-      "sha256": "901445d79539cea1e34aefb38f279af7ec8c7a461e8ccc2f8cf5f7452a6ee0fb"
+      "sha256": "b5a8bdcae520b0b254d120f387e993a43a110a93f6a7edaa40290084896bf650"
     },
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.js",
+      "path": "godot/village-fc1506f08773daa6/index.js",
       "bytes": 279815,
       "sha256": "33c94cb3175f3333b82e2a3be5e8e86f77986f0aa2042b1631f6367a4e5bb6ba"
     },
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.pck",
-      "bytes": 8454336,
-      "sha256": "c820dfa24902f099ac603e52a356ca2bfb5f23d592c5e1df040591d0af8a5f81"
+      "path": "godot/village-fc1506f08773daa6/index.pck",
+      "bytes": 8841452,
+      "sha256": "a5a19a43749a3b482659c72b92cd33138fa4cd95057a3c43ba7b95747c359b33"
     },
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.wasm",
+      "path": "godot/village-fc1506f08773daa6/index.wasm",
       "bytes": 39514754,
       "sha256": "fc74679e3b97f76878947fcd4fbe1268cbfa6188182a2e33bbc3f5dc9bfa57d0"
     },
     {
-      "path": "godot/village-95c9554dd6e4f8c4/index.wasm.gz",
+      "path": "godot/village-fc1506f08773daa6/index.wasm.gz",
       "bytes": 10054758,
       "sha256": "2862a06f11ad1579c4ceb764f724013c1e62f8916d5d8d237fe5ee209c76f56e"
     }
   ],
-  "estimatedTransferBytes": 18803923
+  "estimatedTransferBytes": 19191039
 }

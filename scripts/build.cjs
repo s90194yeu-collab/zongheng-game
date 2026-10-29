@@ -5,6 +5,7 @@ require('./generate-zhuzi.cjs');
 require('./generate-classics.cjs');
 require('./generate-a-selections.cjs');
 require('./generate-character.cjs');
+require('./generate-myth.cjs');
 const raw=name=>fs.readFileSync(path.join(source,name+'.html'),'utf8');
 const manifest=JSON.parse(raw('Data_assets').split('/* ASSET_MANIFEST_START */')[1].split('/* ASSET_MANIFEST_END */')[0]);
 const fingerprints=fs.readdirSync(source).sort().filter(n=>/\.html$|_data\.gs$|^code\.gs$/.test(n)).map(n=>hash(fs.readFileSync(path.join(source,n))));
@@ -20,6 +21,7 @@ for(const file of ['orbit-village.glb','museum-interior.glb','spring-interior.gl
 const godotBundle=JSON.parse(fs.readFileSync(path.join(root,'public/godot/release.json'),'utf8'));
 fingerprints.push(hash(JSON.stringify(godotBundle)));
 for(const file of fs.readdirSync(path.join(root,'src/godot')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/godot',file))));
+for(const file of fs.readdirSync(path.join(root,'src/myth')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/myth',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -55,6 +57,8 @@ for(const [key,name]of Object.entries({exterior:'orbit-village',interior:'museum
 const villageAssets={version:1,app:academyAsset('village-app',villageApp),css:academyAsset('village-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/village/style.css'),'utf8'),{loader:'css',minify:true}).code),assets:villageModels};
 const godotApp=esbuild.buildSync({entryPoints:[path.join(root,'src/godot/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
 const godotAssets={version:1,entry:godotBundle.entry,app:academyAsset('godot-app',godotApp),css:academyAsset('godot-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/godot/style.css'),'utf8'),{loader:'css',minify:true}).code)};
+const mythApp=esbuild.buildSync({entryPoints:[path.join(root,'src/myth/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
+const mythAssets={version:1,entry:godotBundle.entry,app:academyAsset('myth-app',mythApp),css:academyAsset('myth-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/myth/style.css'),'utf8'),{loader:'css',minify:true}).code)};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -68,6 +72,7 @@ if(Object.keys(home).length!==4)throw Error('首頁四張插畫不完整');
 function read(name){let text=raw(name);
  if(name==='Character3D_boot')text=text.replace('const ASSETS=null; // CHARACTER3D_ASSETS','const ASSETS='+JSON.stringify(character3dAssets)+';');
  if(name==='Village_boot')text=text.replace('const ASSETS=null; // VILLAGE_ASSETS','const ASSETS='+JSON.stringify(villageAssets)+';');
+ if(name==='Myth_boot')text=text.replace('const ASSETS=null; // MYTH_ASSETS','const ASSETS='+JSON.stringify(mythAssets)+';');
  if(name==='Godot_boot')text=text.replace('const ASSETS=null; // GODOT_ASSETS','const ASSETS='+JSON.stringify(godotAssets)+';');
  if(name==='Studio3D')text=text.replace("const LIB='https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js';","const LIB=window.ZH_STATIC_URL('assets/three-r180.min.js');");
  if(name==='Core_js'){
@@ -139,7 +144,7 @@ for(const [name,page]of Object.entries(routes)){
  const file='pages/'+name+'.html';fs.writeFileSync(path.join(releaseDir,file),html);
  pages[name]={file,sha256:hash(html),bytes:Buffer.byteLength(html)};
 }
-const result={release,version:config.version,character3d:character3dAssets,village:villageAssets,godotVillage:{...godotAssets,engine:godotBundle.engine,estimatedTransferBytes:godotBundle.estimatedTransferBytes,files:godotBundle.files},chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
+const result={release,version:config.version,myth:mythAssets,character3d:character3dAssets,village:villageAssets,godotVillage:{...godotAssets,engine:godotBundle.engine,estimatedTransferBytes:godotBundle.estimatedTransferBytes,files:godotBundle.files},chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
 fs.writeFileSync(path.join(releaseDir,'manifest.json'),JSON.stringify(result,null,2));
 fs.writeFileSync(path.join(dist,'release.json'),JSON.stringify({release,manifest:'releases/'+release+'/manifest.json'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
