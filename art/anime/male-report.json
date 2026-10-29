@@ -1,0 +1,29 @@
+{
+  "assetId": "zongheng-anime-v1",
+  "body": "male",
+  "bones": 107,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Bow"
+  ],
+  "outfits": [
+    "scholar",
+    "traveler",
+    "armor"
+  ],
+  "blinkMorph": true,
+  "visibleTriangles": {
+    "scholar": 30717,
+    "traveler": 31927,
+    "armor": 36683
+  },
+  "bytes": 3893868,
+  "mobileBytes": 2360420,
+  "mobileVisibleTriangles": {
+    "scholar": 20373,
+    "traveler": 21178,
+    "armor": 24701
+  }
+}

@@ -57,7 +57,7 @@ test('GAS外觀驗證接受新增樣式，舊造型自動保留經典樣式且�
 });
 test('建置使用內容雜湊角色；原始模型仍保留，個人頁和村莊延後載入新樣式',()=>{
  const release=JSON.parse(fs.readFileSync(path.join(root,'dist/release.json'))),manifest=JSON.parse(fs.readFileSync(path.join(root,'dist',release.manifest))),a=manifest.character3d;
- assert(/hero-scholar-[a-f0-9]{16}\.glb$/.test(a.hero));assert(/hero-scholar-mobile-[a-f0-9]{16}\.glb$/.test(a.heroMobile));assert.equal(manifest.village.assets.hero,a.heroMobile);
+ assert(/anime-male-[a-f0-9]{16}\.glb$/.test(a.hero));assert(/anime-male-mobile-[a-f0-9]{16}\.glb$/.test(a.heroMobile));assert.equal(manifest.village.assets.hero,a.heroMobile);
  for(const key of ['hero','heroMobile'])assert(fs.existsSync(path.join(root,'dist',a[key])));assert(/scholar-pilot/.test(a.model));
  const profile=fs.readFileSync(path.join(root,'dist/releases',release.release,manifest.pages.Profile.file),'utf8');assert(profile.includes('character3d-pilot'));assert(!/<script[^>]*src="[^"]*character3d-app/.test(profile));
 });

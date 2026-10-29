@@ -1,0 +1,54 @@
+{
+  "version": "4.23.0-google",
+  "release": "v4-6ca8fefe7a9197",
+  "tests": {
+    "total": 296,
+    "passed": 296,
+    "failed": 0
+  },
+  "browser": {
+    "bodies": [
+      "male",
+      "female"
+    ],
+    "outfits": [
+      "scholar",
+      "traveler",
+      "armor"
+    ],
+    "motion": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Bow"
+    ],
+    "rotateZoom": true,
+    "guestSaveReload": {
+      "style": "hero",
+      "body": "female",
+      "outfit": "traveler",
+      "color": "plum"
+    },
+    "mobile": {
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "canvasSelection": "none",
+      "touchAction": "none"
+    },
+    "village": {
+      "body": "female",
+      "outfit": "traveler",
+      "color": "plum"
+    },
+    "photo": {
+      "uiStatus": "已準備角色照片",
+      "downloadEvent": "not observed by automation"
+    },
+    "consoleErrors": []
+  },
+  "studentRecordsWritten": 0,
+  "fpsCap": false
+}

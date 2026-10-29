@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {isHero,applyHeroAppearance} from './appearance.js';
+import {isAnime,prepareAnime,animeClips} from './anime.js';
 
 const CLIPS = Object.freeze({idle:'Idle',run:'Run',bow:'Bow'});
 const COLORS = Object.freeze({jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'});
@@ -51,10 +52,11 @@ export async function createPreview(host, {modelUrl,color='jade',appearance={},q
 }
 
 function mount(host,model,clips,{color,appearance,quality,onState}) {
+  const anime=isAnime(model);if(anime){prepareAnime(model);clips=animeClips(model,clips);}
   let renderer;
   const scene=new THREE.Scene(),canvas=document.createElement('canvas');
   canvas.className='c3-canvas';canvas.tabIndex=0;
-  canvas.setAttribute('aria-label','古風策士立體試看；拖曳旋轉、雙指或滾輪縮放，方向鍵旋轉，加減鍵縮放，Home回正。');
+  canvas.setAttribute('aria-label',(anime?'動漫角色':'古風策士')+'立體試看；拖曳旋轉、雙指或滾輪縮放，方向鍵旋轉，加減鍵縮放，Home回正。');
   try {renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'default'});}
   catch(error){release(model);throw Error('目前無法開啟立體試看，請返回我的造型，或換個瀏覽器再試。');}
   renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -76,7 +78,7 @@ function mount(host,model,clips,{color,appearance,quality,onState}) {
   model.traverse(object=>{
     if(object.isBone)bones++;
     if(!object.isMesh)return;
-    object.castShadow=true;object.receiveShadow=false;
+    object.castShadow=!object.userData.animeOutline;object.receiveShadow=false;
     triangles+=(object.geometry.index?.count||object.geometry.attributes.position.count)/3;
     if(hero)return;
     const convert=material=>{
@@ -171,7 +173,7 @@ function mount(host,model,clips,{color,appearance,quality,onState}) {
     zoom(delta){const offset=camera.position.clone().sub(controls.target),length=THREE.MathUtils.clamp(offset.length()+delta,controls.minDistance,controls.maxDistance);camera.position.copy(controls.target).add(offset.setLength(length));controls.update();draw();},
     move(x,z){const nx=actor.position.x+x,nz=actor.position.z+z;if(Math.hypot(nx,nz)>.7)return false;actor.position.x=nx;actor.position.z=nz;play('walk');draw();return true;},
     snapshot(){if(disposed||lost)throw Error('畫面暫時無法拍照。');draw();return canvas.toDataURL('image/png');},
-    inspect(){return {engine:'three',revision:THREE.REVISION,asset:hero?'zongheng-hero-v1':'scholar-pilot-v1',clips:clips.map(item=>item.name),bones,triangles,hero,appearance:lookStats,contextLost:lost,
+    inspect(){return {engine:'three',revision:THREE.REVISION,asset:anime?'zongheng-anime-v1':hero?'zongheng-hero-v1':'scholar-pilot-v1',clips:clips.map(item=>item.name),bones,triangles,hero,anime,appearance:lookStats,contextLost:lost,
       height:size.y,footY:bounds.min.y+actor.position.y,motion:current,time:actions[current]?.time,
       clothColor:COLORS[colorId],clothMaterials:cloth.length,colorId,reduced,paused,disposed,lost,
       quality:qualityMode,pixelRatio:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,

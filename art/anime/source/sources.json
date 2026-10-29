@@ -1,0 +1,95 @@
+{
+  "mirrorCommit": "e16eb187100149a315ad92c3c9968f1d5baa6c7d",
+  "models": [
+    {
+      "gender": "male",
+      "name": "Sakurada_Fumiriya",
+      "url": "https://raw.githubusercontent.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/Sakurada_Fumiriya.vrm",
+      "sha256": "d8fb05f33e377df028cb6b9d58c441ce68326c41fa23f6c735d40c65ae3dc710",
+      "gitSha": "99839f8daf465bab05ac0ca7959373468bb9ce35",
+      "bytes": 19342280,
+      "meta": {
+        "version": "",
+        "author": "",
+        "contactInformation": "",
+        "reference": "",
+        "title": "Sakurada Fumiriya",
+        "texture": 29,
+        "allowedUserName": "Everyone",
+        "violentUssageName": "Allow",
+        "sexualUssageName": "Allow",
+        "commercialUssageName": "Allow",
+        "otherPermissionUrl": "",
+        "licenseName": "CC0",
+        "otherLicenseUrl": ""
+      },
+      "meshCount": 3,
+      "materials": [
+        "M00_000_00_FaceBrow_00_FACE",
+        "M00_000_00_FaceMouth_00_FACE",
+        "M00_000_00_EyeIris_00_EYE",
+        "M00_000_00_EyeHighlight_00_EYE",
+        "M00_000_00_EyeWhite_00_EYE",
+        "M00_000_00_Face_00_SKIN",
+        "M00_000_00_FaceEyelash_00_FACE",
+        "M00_000_00_FaceEyeline_00_FACE",
+        "M00_000_00_EyeExtra_01_EYE",
+        "M00_001_01_Body_00_SKIN",
+        "M00_001_01_Tops_01_CLOTH",
+        "M00_001_01_AccessoryNeck_01_CLOTH",
+        "M00_001_01_Bottoms_01_CLOTH",
+        "M00_001_01_Shoes_01_CLOTH",
+        "M00_000_HairBack_00_HAIR",
+        "F00_000_Hair_00_HAIR_01",
+        "F00_000_Hair_00_HAIR_02"
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Sendagaya_Shino",
+      "url": "https://raw.githubusercontent.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/Sendagaya_Shino.vrm",
+      "sha256": "1e177c1a7b14f783a9c48395831db8616260d3bddd4154cb2784b779adca49b5",
+      "gitSha": "91f7c9e9ec990efb9de305e4c1d0e32a46498830",
+      "bytes": 15074328,
+      "meta": {
+        "version": "",
+        "author": "",
+        "contactInformation": "",
+        "reference": "",
+        "title": "Sendagaya Shino",
+        "texture": 29,
+        "allowedUserName": "Everyone",
+        "violentUssageName": "Allow",
+        "sexualUssageName": "Allow",
+        "commercialUssageName": "Allow",
+        "otherPermissionUrl": "",
+        "licenseName": "CC0",
+        "otherLicenseUrl": ""
+      },
+      "meshCount": 3,
+      "materials": [
+        "F00_000_00_FaceMouth_00_FACE",
+        "F00_000_00_EyeWhite_00_EYE",
+        "F00_000_00_FaceEyeline_00_FACE",
+        "F00_000_00_FaceEyelash_00_FACE",
+        "F00_000_00_FaceBrow_00_FACE",
+        "F00_000_00_EyeIris_00_EYE",
+        "F00_000_00_EyeHighlight_00_EYE",
+        "F00_000_00_Face_00_SKIN",
+        "F00_000_00_EyeExtra_01_EYE",
+        "F00_001_01_Body_00_SKIN",
+        "F00_001_01_Tops_01_CLOTH",
+        "F00_001_01_AccessoryNeck_01_CLOTH",
+        "F00_001_01_Bottoms_01_CLOTH",
+        "F00_001_01_Shoes_01_CLOTH",
+        "F00_000_HairBack_00_HAIR",
+        "F00_000_Hair_00_HAIR_01",
+        "F00_000_Hair_00_HAIR_02"
+      ]
+    }
+  ],
+  "officialLicenses": [
+    "https://vroid.pixiv.help/hc/en-us/articles/360014788554-Sakurada-Fumiriya",
+    "https://vroid.pixiv.help/hc/en-us/articles/360013482714-Sendagaya-Shino"
+  ]
+}

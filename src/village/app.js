@@ -8,6 +8,7 @@ import {HALL_GUIDES,createGuideState,advanceGuide,guideStep,recommendChapters} f
 
 import {createOrbit,rotateOrbit,orbitOffset,cameraMovement,installCameraInput,prepareMuseumWalls} from './camera.js';
 import {isHero,applyHeroAppearance} from '../character3d/appearance.js';
+import {prepareAnime,animeClips} from '../character3d/anime.js';
 
 const robeColors={jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'};
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
@@ -45,7 +46,8 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  }
  try{
   if(signal?.aborted)throw new DOMException('Cancelled','AbortError');
-  [environment,interior,character,spring]=await Promise.all([load(assets.exterior),load(assets.interior),load(appearance.characterStyle==='hero'&&assets.hero?assets.hero:assets.character),load(assets.springInterior)]);
+  const actorAsset=appearance.characterStyle==='hero'&&assets.hero?(appearance.body==='female'&&assets.heroFemale?assets.heroFemale:assets.hero):assets.character;
+  [environment,interior,character,spring]=await Promise.all([load(assets.exterior),load(assets.interior),load(actorAsset),load(assets.springInterior)]);
   if(aborter.signal.aborted||!root.isConnected)throw new DOMException('Cancelled','AbortError');
  }catch(error){abort();for(const model of loaded)disposeTree(model);throw Error(signal?.aborted?'已停止載入。':'村莊暫時無法開啟，請重試或返回原選關頁。');}
  finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
@@ -66,6 +68,7 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  const actorShadow=createContactShadow();scene.add(actorShadow);
  const plazaShadow=actorShadow.clone();plazaShadow.scale.set(2.8,2.8,1);plazaShadow.position.set(3.6,.055,3);environment.scene.add(plazaShadow);
  const plazaDing=spring.scene.getObjectByName('Artifact_Ding')?.clone(true);if(plazaDing){plazaDing.name='VillageBronzeDing';plazaDing.position.set(3.6,.30,3);plazaDing.scale.setScalar(1.28);environment.scene.add(plazaDing);}
+ prepareAnime(character.scene);character.animations=animeClips(character.scene,character.animations);
  const hero=isHero(character.scene),heroLook=hero?applyHeroAppearance(character.scene,appearance):null;
  character.scene.traverse(o=>{
   if(!o.isMesh)return;o.receiveShadow=false;
