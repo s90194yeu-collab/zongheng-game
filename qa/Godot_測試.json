@@ -1,0 +1,30 @@
+{
+  "version": "4.24.0-google",
+  "release": "v4-e94d8b5267812c",
+  "engine": "4.7.2.stable.official.ed1daf0bf",
+  "tests": {
+    "nodePassed": 301,
+    "godotScenePassed": true
+  },
+  "browser": {
+    "actualWasmGameplay": true,
+    "femaleOutfitSaveReload": [
+      "female",
+      "traveler",
+      "plum"
+    ],
+    "hallAndExhibitArrival": true,
+    "chapterOpened": "cq08_weizheng",
+    "cameraRotateZoom": true,
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "horizontalOverflow": false,
+    "longPressSelection": "",
+    "consoleErrors": []
+  },
+  "studentRecordsWritten": 0,
+  "fpsCap": false,
+  "physicalPhoneTest": false
+}

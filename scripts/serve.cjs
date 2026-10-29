@@ -1,6 +1,6 @@
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path');
 const root = path.resolve(__dirname, '../dist'), port = Number(process.env.PORT || 4173);
-const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2','.m4a':'audio/mp4','.glb':'model/gltf-binary'};
+const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2','.m4a':'audio/mp4','.glb':'model/gltf-binary','.wasm':'application/wasm','.pck':'application/octet-stream'};
 http.createServer((req,res)=>{
   const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   if(pathname.startsWith('/__preview__/')){

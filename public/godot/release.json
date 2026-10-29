@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "engine": "4.7.2.stable.official.ed1daf0bf",
+  "threadSupport": false,
+  "entry": "godot/village-5af4944e62deb937/index.html",
+  "files": [
+    {
+      "path": "godot/village-5af4944e62deb937/index.audio.position.worklet.js",
+      "bytes": 2973,
+      "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
+    },
+    {
+      "path": "godot/village-5af4944e62deb937/index.audio.worklet.js",
+      "bytes": 7298,
+      "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
+    },
+    {
+      "path": "godot/village-5af4944e62deb937/index.html",
+      "bytes": 3515,
+      "sha256": "eb45b3702b2e3b78d2dac370ca20fe98d52476d46b8cd51367153b8f879d358e"
+    },
+    {
+      "path": "godot/village-5af4944e62deb937/index.js",
+      "bytes": 279815,
+      "sha256": "33c94cb3175f3333b82e2a3be5e8e86f77986f0aa2042b1631f6367a4e5bb6ba"
+    },
+    {
+      "path": "godot/village-5af4944e62deb937/index.pck",
+      "bytes": 8454336,
+      "sha256": "c820dfa24902f099ac603e52a356ca2bfb5f23d592c5e1df040591d0af8a5f81"
+    },
+    {
+      "path": "godot/village-5af4944e62deb937/index.wasm",
+      "bytes": 39514754,
+      "sha256": "fc74679e3b97f76878947fcd4fbe1268cbfa6188182a2e33bbc3f5dc9bfa57d0"
+    }
+  ]
+}

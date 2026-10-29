@@ -17,6 +17,9 @@ for(const file of ['hero-scholar.glb','hero-scholar-mobile.glb'])fingerprints.pu
 for(const file of ['anime-male.glb','anime-male-mobile.glb','anime-female.glb','anime-female-mobile.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 for(const file of fs.readdirSync(path.join(root,'src/village')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/village',file))));
 for(const file of ['orbit-village.glb','museum-interior.glb','spring-interior.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
+const godotBundle=JSON.parse(fs.readFileSync(path.join(root,'public/godot/release.json'),'utf8'));
+fingerprints.push(hash(JSON.stringify(godotBundle)));
+for(const file of fs.readdirSync(path.join(root,'src/godot')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/godot',file))));
 const revision=hash(fingerprints.concat(hash(fs.readFileSync(__filename)),hash(fs.readFileSync(path.join(root,'package-lock.json'))),JSON.stringify(config)).join('\n')).slice(0,14);
 const release='v4-'+revision,releaseDir=path.join(dist,'releases',release);
 fs.mkdirSync(path.join(root,'qa'),{recursive:true});
@@ -50,6 +53,8 @@ for(const [key,name]of Object.entries({exterior:'orbit-village',interior:'museum
  const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';fs.writeFileSync(path.join(dist,file),bytes);villageModels[key]=file;
 }
 const villageAssets={version:1,app:academyAsset('village-app',villageApp),css:academyAsset('village-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/village/style.css'),'utf8'),{loader:'css',minify:true}).code),assets:villageModels};
+const godotApp=esbuild.buildSync({entryPoints:[path.join(root,'src/godot/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
+const godotAssets={version:1,entry:godotBundle.entry,app:academyAsset('godot-app',godotApp),css:academyAsset('godot-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/godot/style.css'),'utf8'),{loader:'css',minify:true}).code)};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -63,6 +68,7 @@ if(Object.keys(home).length!==4)throw Error('首頁四張插畫不完整');
 function read(name){let text=raw(name);
  if(name==='Character3D_boot')text=text.replace('const ASSETS=null; // CHARACTER3D_ASSETS','const ASSETS='+JSON.stringify(character3dAssets)+';');
  if(name==='Village_boot')text=text.replace('const ASSETS=null; // VILLAGE_ASSETS','const ASSETS='+JSON.stringify(villageAssets)+';');
+ if(name==='Godot_boot')text=text.replace('const ASSETS=null; // GODOT_ASSETS','const ASSETS='+JSON.stringify(godotAssets)+';');
  if(name==='Studio3D')text=text.replace("const LIB='https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js';","const LIB=window.ZH_STATIC_URL('assets/three-r180.min.js');");
  if(name==='Core_js'){
   const start=text.indexOf("      const data = await ZH.call('api_musicTrack', key);"),end=text.indexOf("      return { blob: blob, source: 'server' };",start);
@@ -133,7 +139,7 @@ for(const [name,page]of Object.entries(routes)){
  const file='pages/'+name+'.html';fs.writeFileSync(path.join(releaseDir,file),html);
  pages[name]={file,sha256:hash(html),bytes:Buffer.byteLength(html)};
 }
-const result={release,version:config.version,character3d:character3dAssets,village:villageAssets,chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
+const result={release,version:config.version,character3d:character3dAssets,village:villageAssets,godotVillage:{...godotAssets,engine:godotBundle.engine,files:godotBundle.files},chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
 fs.writeFileSync(path.join(releaseDir,'manifest.json'),JSON.stringify(result,null,2));
 fs.writeFileSync(path.join(dist,'release.json'),JSON.stringify({release,manifest:'releases/'+release+'/manifest.json'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
