@@ -92,5 +92,52 @@
       720
     ]
   },
-  "studentRecordsWritten": 0
+  "studentRecordsWritten": 0,
+  "browser": {
+    "currentBundle": "village-de06471410a19ed7",
+    "loaded": true,
+    "movementAttackDodge": true,
+    "casterImpactObserved": true,
+    "maleFemalePreview": true,
+    "sampledCameraAngles": true,
+    "portrait": [
+      390,
+      844
+    ],
+    "touchTargetsMinPixels": 44,
+    "longPressTextSelection": "",
+    "consoleErrors": 0,
+    "realPhoneHardwareTested": false
+  },
+  "formalGas": {
+    "ok": true,
+    "version": 76,
+    "previousVersion": 75,
+    "release": "v4-75fbd2a422e140",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 231,
+    "files": 232,
+    "sourceHash": "01919176692161bffb3a53241323fbf5b188cbab43ace076511a1454cd5ee6e7",
+    "studentRecordsWritten": 0
+  },
+  "github": {
+    "commit": "23dd9f1daaa009c1d43573f57706f73b00d56eb9",
+    "workflow": 41171930741,
+    "conclusion": "success"
+  },
+  "public": {
+    "pages": 96,
+    "resources": 531,
+    "sha256Readback": true
+  },
+  "formalBrowser": {
+    "originalUrl": true,
+    "bundle": "village-de06471410a19ed7",
+    "guestMovementAttackDodgeAndOrbit": true,
+    "museumEntryExit": true,
+    "consoleErrors": 0,
+    "studentRecordsWritten": 0
+  }
 }
