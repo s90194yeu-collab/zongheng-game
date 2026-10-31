@@ -28,5 +28,28 @@
     "realMobileHardwareTested": false
   },
   "studentRecordsWritten": 0,
-  "fpsCap": 0
+  "fpsCap": 0,
+  "formalGas": {
+    "ok": true,
+    "version": 75,
+    "previousVersion": 74,
+    "release": "v4-51ea7d5d91385d",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 231,
+    "files": 232,
+    "sourceHash": "0ce763d83da1a290c501bc437c986fe11099db82ca5df3eed6ce7931514b63a4",
+    "studentRecordsWritten": 0
+  },
+  "github": {
+    "commit": "ed5f2f7fd48efaf40f8515b7cc24fb9169d1ff31",
+    "workflow": 41162854031,
+    "conclusion": "success"
+  },
+  "public": {
+    "pages": 96,
+    "resources": 531,
+    "sha256Readback": true
+  }
 }
