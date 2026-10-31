@@ -51,5 +51,15 @@
     "pages": 96,
     "resources": 531,
     "sha256Readback": true
+  },
+  "formalBrowser": {
+    "originalUrlVerified": true,
+    "bundle": "village-4cce94a46a23820a",
+    "battleMovementAttackDodge": true,
+    "cameraZoomRotate": true,
+    "museumEntryExit": true,
+    "consoleErrors": 0,
+    "mode": "guest",
+    "studentRecordsWritten": 0
   }
 }
