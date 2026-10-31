@@ -1,0 +1,96 @@
+{
+  "version": "4.26.1-google",
+  "release": "v4-75fbd2a422e140",
+  "node": {
+    "total": 315,
+    "pass": 308,
+    "skip": 7,
+    "fail": 0,
+    "reason": "Private GAS source fixtures omitted"
+  },
+  "native": {
+    "motion": 24,
+    "combat": 27,
+    "originalVillage": true,
+    "fpsCap": 0
+  },
+  "animation": {
+    "directions": 8,
+    "maleFrames": 96,
+    "femaleFrames": 96,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "cameraPhasePreserved": true,
+    "directionHysteresis": true,
+    "interpolatedPhysics": true
+  },
+  "before": {
+    "cases": [
+      {
+        "cpuP95Ms": 78.119,
+        "drawCallsMedian": 118.0,
+        "frameMaxMs": 78.766,
+        "frameMedianMs": 6.974,
+        "frameP95Ms": 13.092,
+        "label": "forest_walk_orbit",
+        "over33ms": 1,
+        "primitivesMedian": 47530.0,
+        "samples": 240
+      },
+      {
+        "cpuP95Ms": 63.422,
+        "drawCallsMedian": 118.0,
+        "frameMaxMs": 8.245,
+        "frameMedianMs": 6.944,
+        "frameP95Ms": 7.598,
+        "label": "fox_orbit",
+        "over33ms": 0,
+        "primitivesMedian": 47530.0,
+        "samples": 240
+      }
+    ],
+    "fpsCap": 0,
+    "renderer": "Compatibility",
+    "staticMeshes": 342,
+    "version": 1,
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  "after": {
+    "cases": [
+      {
+        "cpuP95Ms": 82.115,
+        "drawCallsMedian": 85.0,
+        "frameMaxMs": 75.44,
+        "frameMedianMs": 6.977,
+        "frameP95Ms": 13.995,
+        "label": "forest_walk_orbit",
+        "over33ms": 1,
+        "primitivesMedian": 10012.0,
+        "samples": 240
+      },
+      {
+        "cpuP95Ms": 74.926,
+        "drawCallsMedian": 85.0,
+        "frameMaxMs": 8.135,
+        "frameMedianMs": 6.972,
+        "frameP95Ms": 7.798,
+        "label": "fox_orbit",
+        "over33ms": 0,
+        "primitivesMedian": 10082.0,
+        "samples": 240
+      }
+    ],
+    "fpsCap": 0,
+    "renderer": "Compatibility",
+    "staticMeshes": 208,
+    "version": 1,
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  "studentRecordsWritten": 0
+}

@@ -3,6 +3,14 @@ extends "res://village.gd"
 # Actual single-player combat. No student identity or cloud credentials enter this scene.
 const PaintedActor = preload("res://hd2d_actor.gd")
 var hd_motion = "Idle"
+var render_yaw = .3
+var render_elevation = .72
+var pending_strike = {}
+var landscape = ""
+var quality_slow = 0.0
+var quality_fast = 0.0
+var quality_scale = 1.0
+var quality_ceiling = 1.0
 var mode = "lobby"
 var level_root: Node3D
 var decor: Node3D
@@ -63,6 +71,7 @@ var rng = RandomNumberGenerator.new()
 
 func _ready():
  Engine.max_fps = 0
+ get_tree().physics_interpolation=true
  var environment = WorldEnvironment.new()
  environment.environment = Environment.new()
  environment.environment.background_mode = Environment.BG_COLOR
@@ -82,6 +91,7 @@ func _ready():
  add_child(level_root)
  player = CharacterBody3D.new()
  player.name = "Player"
+ player.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_ON
  player.floor_snap_length = .3
  var capsule = CollisionShape3D.new()
  capsule.shape = CapsuleShape3D.new()
@@ -93,6 +103,7 @@ func _ready():
  camera = Camera3D.new()
  camera.projection = Camera3D.PROJECTION_ORTHOGONAL
  camera.current = true
+ camera.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_OFF
  camera.far = 180
  add_child(camera)
  zoom_size = 11.6
@@ -101,7 +112,7 @@ func _ready():
  update_character()
  equip_weapon()
  build_forest()
- player.position = Vector3(0,.15,25)
+ place_player(Vector3(0,.15,25))
  if OS.has_feature("web"):
   bridge = JavaScriptBridge.get_interface("ZH_GODOT")
   callback_ref = JavaScriptBridge.create_callback(receive)
@@ -122,13 +133,15 @@ func material(color:String,alpha=1.0):
  return m
 
 func painted_ground(low:String,high:String,density:float):
+ var key="ground:"+low
+ if mats.has(key):return mats[key]
  var shader=Shader.new()
  shader.code="shader_type spatial;render_mode unshaded;varying vec3 world;uniform sampler2D atlas:source_color,filter_linear_mipmap,repeat_disable;uniform vec2 tile;uniform float density;void vertex(){world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){vec2 p=fract(world.xz*density);vec2 uv=(tile+mix(vec2(.008),vec2(.992),p))*.5;vec3 c=texture(atlas,uv).rgb;float light=.94+.06*sin(world.x*.47+world.z*.31);ALBEDO=c*light;ROUGHNESS=1.0;}"
  var m=ShaderMaterial.new();m.shader=shader
  m.set_shader_parameter("atlas",load("res://assets/hd2d/terrain.png"))
  m.set_shader_parameter("tile",Vector2(1,0) if low=="#b9a77b" else Vector2(0,0))
  m.set_shader_parameter("density",.20 if low=="#b9a77b" else .15)
- return m
+ mats[key]=m;return m
 
 func install_hd2d_finish():
  var layer=CanvasLayer.new();layer.layer=1;add_child(layer)
@@ -140,7 +153,7 @@ func update_character():
  if actor:
   player.remove_child(actor);actor.queue_free()
  actor=PaintedActor.new();player.add_child(actor)
- actor.setup("res://assets/hd2d/"+("female" if look.get("body")=="female" else "male")+".png",2.15)
+ actor.setup("res://assets/hd2d-motion/"+("female" if look.get("body")=="female" else "male")+".json",2.15)
  actor.set_appearance(look);animation=null;hd_motion="Idle"
  disc(Vector3(0,.04,0),.42,"#203c38",.22,actor)
 
@@ -148,20 +161,28 @@ func set_motion(next):
  hd_motion=next
 
 func hd_surface(tile:Vector2,tint:Color=Color.WHITE):
- var shader=Shader.new()
- shader.code="shader_type spatial;render_mode unshaded;varying vec3 world;varying vec3 wn;varying vec4 baked;uniform sampler2D atlas:source_color,filter_linear_mipmap;uniform vec2 tile;uniform vec4 tint:source_color;void vertex(){world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;wn=normalize(mat3(MODEL_MATRIX)*NORMAL);baked=COLOR;}void fragment(){vec3 n=abs(wn);vec2 p=n.y>max(n.x,n.z)?world.xz:n.x>n.z?world.zy:world.xy;vec2 uv=(tile+mix(vec2(.015),vec2(.985),fract(p*.38)))*.5;vec3 c=texture(atlas,uv).rgb;ALBEDO=c*tint.rgb*baked.rgb;ROUGHNESS=1.0;}"
- var m=ShaderMaterial.new();m.shader=shader;m.set_shader_parameter("atlas",load("res://assets/hd2d/terrain.png"));m.set_shader_parameter("tile",tile);m.set_shader_parameter("tint",tint);return m
+ var key="painted:"+str(tile)+tint.to_html()
+ if mats.has(key):return mats[key]
+ var m=ShaderMaterial.new();m.shader=preload("res://hd2d_surface.gdshader")
+ m.set_shader_parameter("atlas",load("res://assets/hd2d/terrain.png"));m.set_shader_parameter("tile",tile);m.set_shader_parameter("tint",tint)
+ mats[key]=m;return m
 
 func paint_world(root):
- super.paint_world(root)
  for part in root.find_children("*","MeshInstance3D",true,false):
   for i in part.mesh.get_surface_count():
-   var m=part.get_active_material(i)
-   if m is StandardMaterial3D:
-    var label=str(m.resource_name)
-    if label in ["HD_Stone","Rock","RockLight"]:part.set_surface_override_material(i,hd_surface(Vector2(1,0)))
-    elif label in ["HD_Jade","HD_Roof"]:part.set_surface_override_material(i,hd_surface(Vector2(1,1),Color("#bdd5c5")))
-    elif label=="HD_Leaf":part.set_surface_override_material(i,hd_surface(Vector2(0,1),Color("#b9c49f")))
+   var old=part.get_active_material(i)
+   if not old is StandardMaterial3D:continue
+   var label=str(old.resource_name).get_slice(".",0)
+   var material_value
+   if label in ["HD_Stone","Rock","RockLight"]:material_value=hd_surface(Vector2(1,0))
+   elif label in ["HD_Jade","HD_Roof"]:material_value=hd_surface(Vector2(1,1),Color("#bdd5c5"))
+   elif label=="HD_Leaf":material_value=hd_surface(Vector2(0,1),Color("#b9c49f"))
+   else:
+    var key="legacy:"+str(old.get_instance_id())
+    if not mats.has(key):
+     var shared=old.duplicate();shared.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;shared.cull_mode=BaseMaterial3D.CULL_DISABLED;mats[key]=shared
+    material_value=mats[key]
+   part.set_surface_override_material(i,material_value)
 
 func water_surface():
  var shader=Shader.new();shader.code="shader_type spatial;render_mode unshaded;varying vec3 p;void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){float flow=sin(p.x*2.7+p.z*9.0+TIME*1.6)*.5+.5;float glint=pow(flow,18.0)*.15;float bank=smoothstep(1.2,1.65,abs(p.z-5.5));ALBEDO=mix(vec3(.16,.43,.42),vec3(.45,.65,.56),bank)+vec3(glint);ROUGHNESS=.5;}"
@@ -239,6 +260,7 @@ func stop_route():
  route_goal=""
 
 func build_forest():
+ landscape="forest"
  clear_level()
  var ground=box(Vector3(0,-.15,-8),Vector3(50,.3,90),"#719b70",true)
  ground.material_override=painted_ground("#698e65","#92aa77",.8)
@@ -246,11 +268,6 @@ func build_forest():
  path.material_override=painted_ground("#b9a77b","#ded0a3",1.6)
  var stream=box(Vector3(0,.005,5.5),Vector3(37,.035,3.5),"#6eb5b5")
  stream.material_override=water_surface()
- box(Vector3(0,.055,5.5),Vector3(7,.1,4.1),"#b8a37c")
- for plank in range(12):box(Vector3(0,.12,3.55+plank*.35),Vector3(7,.05,.29),"#b3a17a")
- for x in [-3.4,3.4]:
-  box(Vector3(x,.65,5.5),Vector3(.12,.12,4.3),"#796b4f")
-  for z in [3.7,5.5,7.3]:box(Vector3(x,.35,z),Vector3(.18,.70,.18),"#8c7c58")
  for i in range(12):
   var z = 26-i*5.5
   for x in [-4.0,4.0]:
@@ -303,6 +320,7 @@ func build_forest():
  rebuild_myth_navigation()
 
 func build_museum():
+ landscape="museum"
  clear_level()
  box(Vector3(0,-.15,0),Vector3(23,.3,22),"#dbd2b5",true)
  for x in [-10.5,10.5]:box(Vector3(x,1.8,0),Vector3(.35,3.6,20),"#aebf9e",true)
@@ -317,7 +335,7 @@ func build_museum():
   holder.position = p+Vector3(0,1.25,0)
   level_root.add_child(holder)
   display_models.append(holder)
- player.position=Vector3(0,.15,7)
+ place_player(Vector3(0,.15,7))
  zoom_size=15
  nearest_object=""
  update_displays()
@@ -349,6 +367,7 @@ func equip_weapon():
  if weapon_node and is_instance_valid(weapon_node):weapon_node.queue_free()
  weapon_node=Node3D.new()
  actor.add_child(weapon_node)
+ weapon_node.top_level=true;weapon_node.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_OFF
  weapon_node.position=Vector3(.45,.95,.15)
  if weapon=="sword":
   var blade=CylinderMesh.new();blade.top_radius=.012;blade.bottom_radius=.055;blade.height=1.12;blade.radial_segments=4
@@ -365,23 +384,56 @@ func equip_weapon():
    var n=skeleton.get_bone_name(i).to_lower()
    if "upperarm" in n or "upper_arm" in n or "j_bip_r_upperarm" in n:arm_bones.append(i)
 
+func reset_forest_run():
+ for e in enemies:
+  if is_instance_valid(e.node):e.node.queue_free()
+ for list_value in [hazards,projectiles,transient]:
+  for entry in list_value:
+   if is_instance_valid(entry.node):entry.node.queue_free()
+ enemies.clear();hazards.clear();projectiles.clear();transient.clear();selected={};stop_route();remote_keys.clear()
+ for pickup in pickups:pickup.taken=false;pickup.node.visible=true
+
+func warm_character():
+ # Force each already-loaded atlas onto the GPU under the HTML loading cover.
+ var preloaders=[]
+ for texture in actor.data.textures:
+  var item=Sprite3D.new();item.texture=texture;item.pixel_size=.00015;item.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+  item.shaded=false;item.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD;item.position=player.position+Vector3(0,1,0);add_child(item);preloaders.append(item)
+ await RenderingServer.frame_post_draw
+ for item in preloaders:item.queue_free()
+
+func update_render_quality(delta:float):
+ var dimensions=get_viewport().get_texture().get_size()
+ quality_ceiling=clampf(sqrt(1500000.0/maxf(1.0,float(dimensions.x)*dimensions.y)),.65,1.0)
+ if quality_scale>quality_ceiling:quality_scale=quality_ceiling
+ if not paused and status=="playing" and delta>.0 and delta<.1:
+  quality_slow=quality_slow+delta if delta>.024 else maxf(0.0,quality_slow-delta*.5)
+  quality_fast=quality_fast+delta if delta<.014 else 0.0
+  if quality_slow>2.5:quality_scale=maxf(quality_ceiling*.70,quality_scale-.10);quality_slow=0;quality_fast=0
+  if quality_fast>8.0:quality_scale=minf(quality_ceiling,quality_scale+.05);quality_fast=0
+ if absf(get_viewport().scaling_3d_scale-quality_scale)>.01:get_viewport().scaling_3d_scale=quality_scale
+
 func begin_run(data:Dictionary):
  run_data=data.duplicate(true)
  weapon=str(data.get("weapon","sword"));difficulty=str(data.get("difficulty","guided"));abilities=data.get("abilities",[]);stats=data.get("stats",{})
  weapon_level=int(data.get("level",1));checkpoint=int(data.get("checkpoint",0));stage=checkpoint
  health=600;max_health=600;max_energy=80 if "light" in abilities else 100;energy=max_energy;shield=0;hits_taken=0;kills=0;lamp_count=0;phase=1
+ pending_strike={};attack_pose=0;attack_cd=0;combo=0;dash_time=0;regen_delay=0;invulnerable=0;combat_pressed=false;hd_motion="Idle"
+ actor.walk_phase=0;actor.was_attacking=false
  active_time=0;cooldowns=[0.0,0.0,0.0];status="playing";mode="field";paused=false;auto_attack=false;combat_pressed=false;anchor=null
  optional=data.get("optional",{"creek":false,"cores":[]}).duplicate(true)
  rng.seed=int(data.get("seed",1))
- build_forest();equip_weapon()
+ if landscape=="forest":reset_forest_run()
+ else:build_forest()
+ equip_weapon()
  for p in pickups:
   if p.id in optional.cores or (p.id=="creek" and optional.creek):p.taken=true;p.node.visible=false
- player.position=Vector3(0,.15,[25,10,-8,-28.5][mini(stage,3)])
+ place_player(Vector3(0,.15,[25,10,-8,-28.5][mini(stage,3)]))
  spawn_stage()
  send({"type":"notice","message":"青丘林地：先清理林口墨靈。點地面移動，點怪物攻擊；空白鍵閃避。" if stage==0 else "已從確認的區段接續冒險。"})
 
 func spawn_enemy(kind:String,at:Vector3,small=false):
- var root=Node3D.new();level_root.add_child(root);root.position=at
+ var root=Node3D.new();root.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_ON;level_root.add_child(root);root.position=at;root.reset_physics_interpolation()
  var asset="fox" if kind in ["fox","ghost"] else kind
  var scale_value=.75 if kind=="ink" else 1.0
  if kind=="fox" or kind=="ghost":scale_value=1.18
@@ -463,14 +515,21 @@ func attack():
  attack_cd=.42*(1-.025*(int(stats.get("dexterity",2))-2));attack_pose=.34;attack_total=.34;combo=(combo+1)%3
  var direction=target.node.position-player.position;direction.y=0
  actor.rotation.y=atan2(direction.x,direction.z)
- if weapon=="sword":
-  var heavy=combo==0
+ pending_strike={"timer":attack_total*.45,"direction":direction.normalized(),"heavy":combo==0,"weapon":weapon}
+
+func resolve_strike():
+ if pending_strike.is_empty():return
+ var strike=pending_strike;pending_strike={}
+ var direction=strike.direction
+ if strike.weapon=="sword":
   swing_effect(player.position,direction,2.1,"#f5e0a8")
   for e in enemies.duplicate():
    if e.dead:continue
    var offset=e.node.position-player.position;offset.y=0
-   if offset.length()<2.4 and offset.normalized().dot(direction.normalized())>-.15:damage_enemy(e,42 if heavy else 28,heavy)
- else:projectile(player.position+Vector3(0,.9,0),target.node.position+Vector3(0,.8,0),"hero",38)
+   if offset.length()<2.4 and offset.normalized().dot(direction)>-.15:damage_enemy(e,42 if strike.heavy else 28,strike.heavy)
+ else:
+  var target=target_enemy()
+  if not target.is_empty() and player.position.distance_to(target.node.position)<=11.0:projectile(player.position+Vector3(0,.9,0),target.node.position+Vector3(0,.8,0),"hero",38)
 
 func target_enemy():
  if not selected.is_empty() and not selected.dead:return selected
@@ -492,7 +551,7 @@ func skill(index:int):
  if index==1 and "trace" in abilities:
   if anchor==null:anchor=player.position;cooldowns[index]=1.0;send({"type":"notice","message":"已留下撤退標記，再按此招回到標記旁。"})
   else:
-   if player.position.distance_to(anchor)<12:player.position=anchor;invulnerable=.35
+   if player.position.distance_to(anchor)<12:place_player(anchor);invulnerable=.35
    anchor=null
   return
  if index==2 and "plan" in abilities:
@@ -522,6 +581,7 @@ func dodge():
  if status!="playing" or paused or dash_time>0:return
  var cost=30 if "swift" in abilities else 24
  if energy<cost:return
+ pending_strike={};attack_pose=0
  energy-=cost;regen_delay=.85;dash_time=.38;invulnerable=.24
  var direction=movement_direction()
  if direction.length()<.1:direction=Vector3(sin(actor.rotation.y),0,cos(actor.rotation.y))
@@ -715,11 +775,17 @@ func _physics_process(delta):
  if dash_time>0:speed=11.0*(1.16 if "swift" in abilities else 1.0)
  if mode=="field" and status!="playing":direction=Vector3.ZERO
  player.velocity.x=direction.x*speed;player.velocity.z=direction.z*speed;player.velocity.y=-2
+ var old_position=player.position
  player.move_and_slide()
  player.position.x=clampf(player.position.x,-9,9) if mode=="museum" else clampf(player.position.x,-18,18)
  player.position.z=clampf(player.position.z,-7,9) if mode=="museum" else clampf(player.position.z,[-1, -9, -27,-50][mini(stage,3)],32)
  if direction.length()>.1 and attack_pose<=0:actor.rotation.y=lerp_angle(actor.rotation.y,atan2(direction.x,direction.z),minf(1,delta*14));set_motion("Run")
  elif attack_pose<=0:set_motion("Idle")
+ actor.advance_walk(player.position.distance_to(old_position))
+ if not pending_strike.is_empty():
+  pending_strike.timer-=delta
+  if pending_strike.timer<=0 and status=="playing":resolve_strike()
+ attack_pose=maxf(0,attack_pose-delta)
  update_near()
 
 func update_near():
@@ -749,39 +815,54 @@ func interact():
    optional.cores.append(p.id);send({"type":"notice","message":"找到了燈芯（"+str(optional.cores.size())+"／3）。確認後可用來製作符紋燈。"})
   nearest_object=""
 
+func place_player(at:Vector3):
+ player.position=at;player.velocity=Vector3.ZERO;player.reset_physics_interpolation();camera_started=false
+
+func update_weapon_pose():
+ if not is_instance_valid(weapon_node):return
+ var t=clampf(1-attack_pose/maxf(.01,attack_total),0.0,1.0)
+ var angle=actor.direction*TAU/8.0
+ var side=-.32*cos(angle)+.12*sin(angle)
+ var swing=sin(t*PI) if attack_pose>0 else 0.0
+ var right=camera.global_basis.x;var up=camera.global_basis.y;var toward=camera.global_basis.z
+ var origin=player.get_global_transform_interpolated().origin
+ weapon_node.visible=mode!="museum"
+ var heading=actor.get_global_transform_interpolated().basis.z
+ var idle_angle=-.75 if side<0 else .75
+ var strike_angle=atan2(heading.dot(right),heading.dot(up))
+ var blade_angle=lerp_angle(idle_angle,strike_angle,swing)
+ var aim=(up*cos(blade_angle)+right*sin(blade_angle)).normalized()
+ var axis_x=toward.cross(aim).normalized();var axis_y=aim.cross(axis_x).normalized()
+ weapon_node.global_transform=Transform3D(Basis(axis_x,axis_y,aim),origin+up*(.90+swing*.05)+right*(side+swing*heading.dot(right)*.18)+toward*.08)
+
 func _process(delta):
  if player==null:return
- var target=player.position+Vector3(0,.8,-2.6 if mode=="field" else 0.0) if focus_at==null else focus_at
- var offset=Vector3(sin(yaw)*cos(elevation),sin(elevation),cos(yaw)*cos(elevation))*35
- camera.position=target+offset if not camera_started else camera.position.lerp(target+offset,1-exp(-10*delta))
+ update_render_quality(delta)
+ var visual_position=player.get_global_transform_interpolated().origin
+ var target=visual_position+Vector3(0,.8,-2.6 if mode=="field" else 0.0) if focus_at==null else focus_at
+ render_yaw=lerp_angle(render_yaw,yaw,1-exp(-16*delta));render_elevation=lerpf(render_elevation,elevation,1-exp(-16*delta))
+ var offset=Vector3(sin(render_yaw)*cos(render_elevation),sin(render_elevation),cos(render_yaw)*cos(render_elevation))*35
+ camera.position=target+offset
  var viewport_size=get_viewport().get_visible_rect().size
  var portrait=viewport_size.y>viewport_size.x
  camera.keep_aspect=Camera3D.KEEP_WIDTH if portrait else Camera3D.KEEP_HEIGHT
  camera.look_at(target);camera.size=zoom_size*(1.4 if portrait else 1.0);camera_started=true
  for wall in rear_walls:
   if is_instance_valid(wall):wall.visible=camera.position.z>-6
- actor.face_camera(camera,actor.global_basis.z,hd_motion=="Run",attack_pose>0,delta if not paused else 0.0)
+ var attack_progress=1-attack_pose/maxf(.01,attack_total)
+ actor.face_camera(camera,actor.get_global_transform_interpolated().basis.z,hd_motion=="Run",attack_pose>0,delta if not paused else 0.0,attack_progress)
+ update_weapon_pose()
  for foe in enemies:
-  if not foe.dead and is_instance_valid(foe.visual):foe.visual.face_camera(camera,foe.node.global_basis.z,foe.charging>0 or foe.node.position.distance_to(player.position)>3.0,foe.windup>0,delta if not paused else 0.0)
- if not paused:
-  attack_pose=maxf(0,attack_pose-delta)
-  if weapon_node:
-   var t=1-attack_pose/maxf(.01,attack_total)
-   weapon_node.rotation=Vector3(-.7*sin(t*PI),sin(t*PI)*1.8,0) if attack_pose>0 else Vector3.ZERO
-  if skeleton:
-   for bone in arm_bones:
-    if attack_pose>0:skeleton.set_bone_pose_rotation(bone,Quaternion(Vector3.RIGHT,-sin((1-attack_pose/maxf(.01,attack_total))*PI)*1.15))
-  if status=="failed":actor.rotation.z=lerpf(actor.rotation.z,.8,minf(1,delta*4))
-  else:actor.rotation.z=lerpf(actor.rotation.z,-.16 if dash_time>0 else 0.0,minf(1,delta*10))
-  if mode=="museum":
-   for holder in display_models:holder.rotation.y+=delta*.12
+  if not foe.dead and is_instance_valid(foe.visual):foe.visual.face_camera(camera,foe.node.get_global_transform_interpolated().basis.z,foe.charging>0 or foe.node.position.distance_to(player.position)>3.0,foe.windup>0,delta if not paused else 0.0)
+ if not paused and mode=="museum":
+  for holder in display_models:holder.rotation.y+=delta*.12
  feedback_time+=delta
  if feedback_time>.16:
   feedback_time=0
   var boss={}
   for e in enemies:
    if not e.dead and e.kind=="fox":boss={"hp":e.hp,"max":e.max,"phase":phase,"shielded":phase==3 and shield_window<=0,"window":shield_window}
-  send({"type":"mythState","mode":mode,"status":status,"hp":health,"maxHp":max_health,"energy":energy,"maxEnergy":max_energy,"cooldowns":cooldowns,"stage":stage,"phase":phase,"seconds":int(active_time),"hits":hits_taken,"kills":kills,"lamps":lit_lamps,"lampCount":lamp_count,"boss":boss,"near":nearest_object,"x":snapped(player.position.x,.01),"z":snapped(player.position.z,.01),"fps":Engine.get_frames_per_second()})
+  send({"type":"mythState","mode":mode,"status":status,"hp":health,"maxHp":max_health,"energy":energy,"maxEnergy":max_energy,"cooldowns":cooldowns,"stage":stage,"phase":phase,"seconds":int(active_time),"hits":hits_taken,"kills":kills,"lamps":lit_lamps,"lampCount":lamp_count,"boss":boss,"near":nearest_object,"x":snapped(player.position.x,.01),"z":snapped(player.position.z,.01),"fps":Engine.get_frames_per_second(),"renderScale":quality_scale})
 
 func blocked(pos:Vector2):
  if mode=="museum":
@@ -848,6 +929,7 @@ func receive(args):
     update_character();equip_weapon()
    museum_slots=msg.get("slots",[])
    if msg.get("view")=="museum":mode="museum";status="ready";build_museum()
+   await warm_character()
    send({"type":"configured","mode":mode})
   "appearance":
    var value=msg.get("appearance",{})
@@ -855,6 +937,7 @@ func receive(args):
     for k in look:
      if value.has(k):look[k]=str(value[k])
     update_character();equip_weapon()
+    await warm_character()
   "startRun":begin_run(msg.get("run",{}))
   "museum":mode="museum";status="ready";paused=false;museum_slots=msg.get("slots",[]);build_museum()
   "display":museum_slots=msg.get("slots",[]);update_displays()
@@ -879,8 +962,8 @@ func receive(args):
     enemies.clear()
     for h in hazards:h.node.queue_free()
     for p in projectiles:p.node.queue_free()
-    hazards.clear();projectiles.clear();health=max_health;energy=max_energy;shield=0;invulnerable=1;status="playing";lit_lamps=[false,false];phase=1;shield_window=0
-    player.position=Vector3(0,.15,[25,10,-8,-28.5][mini(stage,3)]);spawn_stage()
+    hazards.clear();projectiles.clear();health=max_health;energy=max_energy;shield=0;invulnerable=1;status="playing";pending_strike={};attack_pose=0;lit_lamps=[false,false];phase=1;shield_window=0
+    place_player(Vector3(0,.15,[25,10,-8,-28.5][mini(stage,3)]));spawn_stage()
   "testPhase":
    if run_data.get("test",false):
     for e in enemies:

@@ -1,0 +1,18 @@
+{
+  "male": {
+    "directions": 8,
+    "frames": 96,
+    "pages": 4,
+    "alphaCalibrated": true,
+    "stableHipAndFootAnchors": true,
+    "originalPixelsUnchanged": true
+  },
+  "female": {
+    "directions": 8,
+    "frames": 96,
+    "pages": 4,
+    "alphaCalibrated": true,
+    "stableHipAndFootAnchors": true,
+    "originalPixelsUnchanged": true
+  }
+}
