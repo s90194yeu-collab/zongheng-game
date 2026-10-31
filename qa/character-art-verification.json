@@ -1,0 +1,871 @@
+{
+  "version": "4.27.0-google",
+  "scope": {
+    "personalCharacterChapters": 52,
+    "spring": 18,
+    "warring": 13,
+    "chuhan": 9,
+    "zhuzi": 12
+  },
+  "browser": {
+    "desktopDOM": [
+      {
+        "id": "S_cq08_weizheng",
+        "buttons": 0,
+        "canvas": true,
+        "overflow": false,
+        "panorama": false,
+        "text": false
+      },
+      {
+        "id": "S_cq16_datong",
+        "buttons": 0,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq16_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg11_zhuke",
+        "buttons": 0,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg11_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch01_shaqiu",
+        "buttons": 5,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch01_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch02_dazexiang",
+        "buttons": 3,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch02_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch03_julu",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch03_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch04_hongmen",
+        "buttons": 6,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch04_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch05_sanqin",
+        "buttons": 18,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch05_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch06_xingyang",
+        "buttons": 6,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch06_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch07_hanxin",
+        "buttons": 9,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch07_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch08_gaixia",
+        "buttons": 16,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch08_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_ch09_dafeng",
+        "buttons": 17,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_ch09_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg01_sanjia",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg01_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg02_weiwen",
+        "buttons": 13,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg02_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg03_shangyang",
+        "buttons": 3,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg03_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg04_jixia",
+        "buttons": 4,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg04_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg05_maling",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg05_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg06_hezong",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg06_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg07_quyuan",
+        "buttons": 4,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg07_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg08_hufu",
+        "buttons": 1,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg08_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg09_mengchang",
+        "buttons": 21,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg09_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg10_changping",
+        "buttons": 9,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg10_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg12_handan",
+        "buttons": 18,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg12_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zg13_tongyi",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zg13_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq00_dongqian",
+        "buttons": 6,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq00_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq01_zhengzhuang",
+        "buttons": 13,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq01_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq02_handong",
+        "buttons": 17,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq02_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq03_qihuan",
+        "buttons": 4,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq03_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq04_chonger",
+        "buttons": 23,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq04_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq05_hanyuan",
+        "buttons": 4,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq05_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq06_songxiang",
+        "buttons": 15,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq06_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq07_chengpu",
+        "buttons": 25,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq07_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq09_xiao",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq09_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq10_wending",
+        "buttons": 3,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq10_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq11_jinba",
+        "buttons": 5,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq11_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq12_jinchu",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq12_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq13_zichan",
+        "buttons": 13,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq13_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq14_wushi",
+        "buttons": 13,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq14_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq15_kongzi",
+        "buttons": 3,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq15_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_cq17_wuyue",
+        "buttons": 10,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_cq17_world.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz01_laobio",
+        "buttons": 7,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_laozi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz02_laoread",
+        "buttons": 37,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_laozi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz03_zhuangbio",
+        "buttons": 4,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_zhuangzi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz04_zhuangread",
+        "buttons": 4,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_zhuangzi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz05_xunbio",
+        "buttons": 10,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_xunzi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz06_xunread",
+        "buttons": 2,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_xunzi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz07_hanbio",
+        "buttons": 8,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_hanfei_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz08_hanread",
+        "buttons": 28,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_hanfei_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz09_mobio",
+        "buttons": 16,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_mozi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz10_moread",
+        "buttons": 17,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_mozi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz11_mengbio",
+        "buttons": 17,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_mengzi_ai.webp",
+        "text": false
+      },
+      {
+        "id": "S_zz12_mengread",
+        "buttons": 9,
+        "canvas": false,
+        "overflow": false,
+        "panorama": true,
+        "scene": "/media/scene_zhuzi_mengzi_ai.webp",
+        "text": false
+      }
+    ],
+    "mobileDOM": [
+      {
+        "id": "S_cq08_weizheng",
+        "badText": false,
+        "canvas": {
+          "height": 233,
+          "width": 388
+        },
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq16_datong",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg11_zhuke",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch01_shaqiu",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch02_dazexiang",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch03_julu",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch04_hongmen",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch05_sanqin",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch06_xingyang",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch07_hanxin",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch08_gaixia",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_ch09_dafeng",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg01_sanjia",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg02_weiwen",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg03_shangyang",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg04_jixia",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg05_maling",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg06_hezong",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg07_quyuan",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg08_hufu",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg09_mengchang",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg10_changping",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg12_handan",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zg13_tongyi",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq00_dongqian",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq01_zhengzhuang",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq02_handong",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq03_qihuan",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq04_chonger",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq05_hanyuan",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq06_songxiang",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq07_chengpu",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq09_xiao",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq10_wending",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq11_jinba",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq12_jinchu",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq13_zichan",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq14_wushi",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq15_kongzi",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_cq17_wuyue",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz01_laobio",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz02_laoread",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz03_zhuangbio",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz04_zhuangread",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz05_xunbio",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz06_xunread",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz07_hanbio",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz08_hanread",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz09_mobio",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz10_moread",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz11_mengbio",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      },
+      {
+        "id": "S_zz12_mengread",
+        "badText": false,
+        "canvas": null,
+        "overflow": false,
+        "viewportOverflow": false
+      }
+    ],
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "realMobileHardware": false,
+    "all52ManuallyPlayedToCompletion": false,
+    "actualAppEntryChecked": [
+      "S_cq08_weizheng",
+      "S_cq16_datong",
+      "S_zg11_zhuke"
+    ],
+    "consoleErrors": 0
+  },
+  "tests": {
+    "passed": 313,
+    "skipped": 7,
+    "failed": 0
+  },
+  "studentRecordsWritten": 0,
+  "gameRulesChanged": false,
+  "fpsLimitAdded": false,
+  "release": "v4-5c8749d2ed732c"
+}

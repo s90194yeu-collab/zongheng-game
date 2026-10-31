@@ -1,0 +1,71 @@
+/* 同行畫面以原章插畫為主景；盤面維持每篇既有幾何與操作區域。 */
+.oc-layer{background:radial-gradient(ellipse at 50% 10%,#263c4ce8,#060e18f5);--oc-gold:#d9bd7d;--oc-ink:#142a35}
+.oc-dialog{border-color:#c6ae78;border-radius:15px;background:linear-gradient(140deg,#263c48,#101f2d);box-shadow:0 30px 100px #000b,inset 0 0 0 4px #1a303c,inset 0 0 0 5px #a28d5c44}
+.oc-top{background:linear-gradient(110deg,#122734f5,#263b46f5);border-bottom:1px solid #bca16a77}
+.oc-playing .oc-mission-head{padding:8px 0}.oc-playing .oc-mini-avatar{width:52px;height:68px}.oc-playing .oc-mission-head h3{font-size:21px;margin:0}.oc-playing .oc-mission-head p{font-size:12px;margin:3px 0}
+.oc-playing .oc-row{gap:7px;margin:8px 0}.oc-playing .oc-row>button{font-size:13px;padding:6px 11px}.oc-playing .oc-chapter-progress{margin:9px 0}
+.oc-playing .oc-frozen-route{font-size:12px;margin:4px 0;color:#d0cbb7}.oc-playing .oc-rule{font-size:13px}
+.oc-hud{background:linear-gradient(90deg,#132c3c,#243e48);border-color:#bea66d99;box-shadow:inset 0 1px #f6dfa422;font-size:14px;padding:9px 13px}
+.oc-ability-bar{margin:7px 0;gap:7px}.oc-ability-bar button{background:linear-gradient(140deg,#345954,#1c3e42);font-size:13px;border-color:#90b7a67d;min-height:41px;padding:4px 10px}
+.oc-stage{background-size:cover;background-position:center;border-color:#c4ae7b;box-shadow:inset 0 0 0 3px #102431,0 5px 22px #0004;isolation:isolate}
+.oc-stage :is(.oc-sp-board,.oc-wa-board,.oc-ch-board,.oc-zz-board){padding:0 22px 20px;max-width:none;background:linear-gradient(#132a36aa,#112531e8 80%);color:#efe8d4}
+.oc-tableau{position:relative;min-height:212px;margin:0 -22px 18px;overflow:hidden;display:flex;align-items:flex-end;padding:32px 160px 25px 28px;background:linear-gradient(110deg,#142e3d,#4e635c);border-bottom:1px solid #d8bb7c88;isolation:isolate}
+.oc-tableau::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#0a1b2bf2,transparent 80%),linear-gradient(90deg,#0b2139c9,transparent 80%);pointer-events:none}
+.oc-tableau-scene{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 56%;z-index:-2;opacity:1!important}
+.oc-tableau-copy{max-width:650px;text-shadow:0 2px 5px #071626}.oc-tableau-kicker{display:block;font-size:12px;letter-spacing:.18em;color:#efdab0}
+.oc-tableau h4{font:700 clamp(24px,3vw,34px)/1.35 "Noto Serif TC","Songti TC",serif!important;letter-spacing:.09em;color:#ffe6ac!important;margin:7px 0!important}
+.oc-tableau p{font-size:13px!important;color:#e1e8d9!important;margin:5px 0!important}
+.oc-tableau-actor{position:absolute;right:36px;bottom:8px;width:116px;height:174px;filter:drop-shadow(0 5px 5px #0008)}.oc-tableau-actor svg{width:100%;height:100%}
+.oc-tableau-seal{position:absolute;top:17px;right:20px;border:1px solid #e6c8a5;background:#9c4e3ee0;padding:3px 6px;font:18px "Songti TC",serif;color:#f8e4be;box-shadow:0 0 0 3px #902c2822}
+.oc-layer button{background:linear-gradient(145deg,#37525b,#1c3542);border-color:#a7af8b99;box-shadow:inset 0 1px 0 #f8e7b21a,0 2px 4px #0002;transition:background-color .12s,border-color .12s,box-shadow .12s}
+.oc-layer button:disabled{opacity:.66}.oc-layer button:hover:not(:disabled){background:linear-gradient(135deg,#5a7869,#2a514d);box-shadow:inset 0 0 0 1px #ebd69b,0 3px 8px #0004}
+.oc-layer button:focus-visible{outline:3px solid #c3f4e9;outline-offset:3px}.oc-layer button:active:not(:disabled){box-shadow:inset 0 2px 8px #0007}
+.oc-layer .oc-primary{background:linear-gradient(125deg,#f1dba4,#bea065);border-color:#f7df9b;color:#172e38;text-shadow:0 1px #fff6}
+.oc-prop{display:inline-block;width:42px;height:42px;vertical-align:middle;margin:0 7px 1px 0;pointer-events:none;filter:drop-shadow(0 2px 2px #07182766)}
+:is(.oc-sp-grid,.oc-wa-grid,.oc-ch-grid,.oc-zz-grid)>button>.oc-prop{display:block;margin:0 auto 4px;width:38px;height:38px}
+:is(.oc-sp-board,.oc-wa-board,.oc-ch-board,.oc-zz-board) :is(button,svg){-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+:is(.oc-sp-grid,.oc-wa-grid,.oc-ch-grid,.oc-zz-grid){padding:12px;border:1px solid #9d9f7b77;border-radius:10px;background:linear-gradient(120deg,#132c36bb,#243f43aa);box-shadow:inset 0 3px 10px #0004,0 1px #f4d7a122}
+:is(.oc-sp-grid,.oc-wa-grid,.oc-ch-grid,.oc-zz-grid)>button{border-radius:5px;box-shadow:inset 0 0 0 2px #0d283033,0 3px 0 #071c2a66}
+:is(.oc-sp-board,.oc-wa-board,.oc-ch-board,.oc-zz-board) :is(.is-selected,.is-current,[aria-pressed="true"]){border-color:#e8cf8b!important;outline-color:#e8cf8b;box-shadow:inset 0 0 15px #e4bf5533,0 0 0 2px #d6c08199!important}
+:is(.oc-sp-board,.oc-wa-board,.oc-ch-board,.oc-zz-board) :is(.is-done,.is-path){background:linear-gradient(140deg,#69866b,#315750);border-color:#c4d3a0!important}
+:is(.oc-sp-board,.oc-wa-board,.oc-ch-board,.oc-zz-board) .is-danger{background:linear-gradient(130deg,#925e4b,#4d3535);border-color:#e1a17f}
+:is(.oc-sp-instruction,.oc-wa-instruction,.oc-zz-instruction){border-left:3px solid #d4ba7b;background:linear-gradient(90deg,#1d3747ef,#263d47a8);padding:11px 14px;font-size:14px;border-radius:0 7px 7px 0;line-height:1.8}
+:is(.oc-sp-stats,.oc-zz-stats)>span{background:#163344de;border-color:#c4b57866;color:#e2ddc9}
+:is(.oc-sp-hint,.oc-wa-hint,.oc-ch-hint,.oc-zz-hint){border-top:1px solid #d7c28255;color:#bfe3d4;padding-top:10px}
+/* 石城／地圖：保留路線格、障礙與當前位置的區別。 */
+:is([data-sp-layout="tunnel"],[data-sp-layout="scouts"],[data-sp-layout="retreat"],[data-ch-layout="maze"],[data-ch-layout="relay"]) :is(.oc-sp-grid,.oc-ch-grid){background:repeating-linear-gradient(8deg,#54675c22 0 2px,transparent 2px 28px),linear-gradient(135deg,#47645cce,#223d40e8);border:6px ridge #827b5b}
+:is([data-sp-layout="tunnel"],[data-sp-layout="scouts"],[data-ch-layout="maze"]) :is(.oc-sp-grid,.oc-ch-grid)>button{background:linear-gradient(155deg,#5d6f67,#344a4c);color:#f5ead1;border-color:#9caa8c}
+.oc-sp-beacon-lights>span.is-lit{background:radial-gradient(#ffdb8f,#995b32);box-shadow:0 0 20px #dba14b55;color:#fff0c4}.oc-sp-beacon-report{background:linear-gradient(115deg,#1d3842e6,#243b42cc)!important}
+.oc-sp-wheel>section,.oc-sp-chariot{background:radial-gradient(ellipse,#768773,#324e4c)!important;box-shadow:inset 0 0 0 4px #a4a77c55,inset 0 0 15px #081e2a88}
+.oc-sp-drum{box-shadow:inset 0 0 0 5px #c9af7a66,0 6px 15px #0004;background:radial-gradient(#e2cda5,#9b7352)!important;color:#233b40}
+/* 水面反光和木岸；幾何位置、可點擊的河格仍沿用各篇原規則。 */
+:is(.oc-sp-river,.oc-wa-river,.oc-wa-aim-board){background:repeating-linear-gradient(176deg,transparent 0 20px,#d7f2e11a 21px,transparent 23px),linear-gradient(140deg,#214f63,#42766c 60%,#233d4a)!important;border:1px solid #88b8ae;box-shadow:inset 0 15px 30px #0c2a3c66,inset 0 -12px 0 #c8ba8133}
+.oc-sp-bridge-track{background:linear-gradient(#386b74,#1c4b62)!important;padding:17px 8px;border-top:6px solid #9b8e68;border-bottom:6px solid #9b8e68}
+.oc-sp-bridge-track button{background:repeating-linear-gradient(90deg,#b59d72 0 18px,#746247 19px 21px);color:#172e35}
+.oc-wa-scale-pans,.oc-wa-beam{background:linear-gradient(130deg,#47685d,#193a42);border-color:#a6af85;box-shadow:inset 0 0 0 3px #b5b28422}
+.oc-wa-lock{background:radial-gradient(#657868,#263f43)!important;border:5px ridge #a4aa7c!important}
+/* 木架、行囊、工作坊：木紋不取代格線、標籤或數值。 */
+:is(.oc-sp-tower,.oc-sp-slip-stack,.oc-zz-lift,.oc-zz-workshops,.oc-zz-production){background:repeating-linear-gradient(92deg,#ac9b6920 0 2px,transparent 3px 27px),linear-gradient(110deg,#4e5140e8,#233d3ce8)!important;border:4px ridge #a39267;box-shadow:inset 0 0 28px #071c2b66}
+.oc-sp-tower .oc-sp-layer{background:repeating-linear-gradient(90deg,#c4b17c 0 12px,#8b784e 13px 14px);color:#253e3d;border-color:#dfcb9b;box-shadow:0 2px 3px #0004}
+.oc-zz-lift-shelf{background:repeating-linear-gradient(90deg,#a88d5b 0 10px,#6f583f 11px 13px)!important;border-bottom:5px solid #dbc28b!important;box-shadow:0 4px 7px #0005;color:#fff0c7;text-shadow:0 1px 3px #192932}
+.oc-zz-lift-store{background:linear-gradient(#89764e,#554b36)!important;border:3px ridge #b5a27c}.oc-zz-lift-shaft{background:linear-gradient(90deg,#314a46,#102c36,#314a46)!important;border-left:4px solid #b49c66;border-right:4px solid #b49c66}
+.oc-zz-escort,.oc-zz-leap{background:linear-gradient(#183c4a55,#1a3746bd),repeating-linear-gradient(175deg,#788c5733 0 10px,transparent 11px 40px)!important;border:1px solid #a7b794}
+.oc-zz-truss,.oc-zz-web{background:radial-gradient(ellipse,#7c8d7933,transparent),linear-gradient(125deg,#274f54,#102c3d)!important;border:2px solid #a6b28d}
+/* 簡冊與校勘採宣紙／竹片材質，文字保持高對比。 */
+.oc-stage.collation{padding:0 20px 20px}.oc-stage.collation .oc-tableau{margin:0 -20px 18px}.oc-stage.strategy>.oc-tableau{margin:0}
+.oc-witness{background:repeating-linear-gradient(90deg,#a88e4e33 0 2px,transparent 3px 35px),linear-gradient(130deg,#e5d5a8,#c4b582);color:#203a3d;border:5px ridge #a58a58;box-shadow:inset 0 2px 15px #77603455,0 5px 10px #0003}
+.oc-witness span{border-color:#98845277}.oc-draft{padding:13px;background:linear-gradient(110deg,#273b3e,#4a4f3e);border-top:4px solid #ad9469;border-bottom:4px solid #ad9469}
+.oc-draft button{color:#273a3c;background:linear-gradient(90deg,#b9a270,#e0c991 48%,#b59e6c)!important;border-color:#e1cb9b;border-radius:2px;text-shadow:none;box-shadow:inset 1px 0 #ebd6a4,1px 3px 4px #0005}
+:is(.oc-zz-sheet,.oc-zz-reference,.oc-zz-ledger,.oc-sp-ledger){background:linear-gradient(120deg,#dfcf9c,#bcae80)!important;color:#213b3f;border-color:#9c8d62;box-shadow:0 3px 12px #0004}
+:is(.oc-zz-sheet,.oc-zz-reference) :is(h4,p,small){color:#293f40!important}
+.oc-people>button{border-radius:9px;background:linear-gradient(135deg,#3e6261,#234448);position:relative;padding:12px 12px 12px 20px}.oc-people>button::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;background:#e4c987}
+.oc-jobs>button{background:linear-gradient(150deg,#527966dc,#193d43f0);border:1px solid #c0b17d!important;box-shadow:inset 0 0 0 3px #09263744,0 5px 12px #0004}.oc-jobs>.oc-prop{width:60px;height:60px}
+.oc-stage.action canvas{max-height:none;aspect-ratio:5/3;background:#102331}.oc-night-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 20px;background:#102a38;padding:7px 12px;color:#dfd6bc;font-size:12px;border-top:1px solid #a48c5966}.oc-night-legend i{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;background:#edc67e}.oc-night-legend span:nth-child(2) i{background:#7bc9ba}.oc-night-legend span:nth-child(3) i{background:#e7a665}
+.oc-action-controls{background:linear-gradient(120deg,#152f3d,#213a43);padding:10px;gap:8px}.oc-action-controls button{font-size:14px}.oc-night-legend,.oc-stage canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media(min-width:900px){.oc-playing .oc-dialog{width:min(1220px,96vw)}.oc-playing .oc-body{padding:15px 24px}.oc-stage.action canvas{width:min(100%,calc(64dvh * 5 / 3));height:auto;max-height:none;object-fit:fill;margin-inline:auto}.oc-stage.action{background:#102331}}
+@media(max-width:600px){.oc-stage :is(.oc-sp-board,.oc-wa-board,.oc-ch-board,.oc-zz-board){padding:0 12px 15px}.oc-tableau{margin:0 -12px 13px;min-height:173px;padding:24px 105px 20px 16px}.oc-tableau-actor{width:91px;height:136px;right:9px;bottom:7px}.oc-tableau h4{font-size:25px!important}.oc-tableau-kicker{font-size:10px;letter-spacing:.08em}.oc-tableau p{font-size:12px!important}.oc-tableau-seal{top:12px;right:12px;font-size:13px}.oc-prop{width:31px;height:31px;margin-right:4px}:is(.oc-sp-grid,.oc-wa-grid,.oc-ch-grid,.oc-zz-grid){padding:7px;gap:6px}:is(.oc-sp-grid,.oc-wa-grid,.oc-ch-grid,.oc-zz-grid)>button>.oc-prop{width:29px;height:29px}.oc-layer button{overflow-wrap:anywhere}.oc-stage.collation{padding:0 12px 14px}.oc-stage.collation .oc-tableau{margin:0 -12px 12px}.oc-jobs{gap:8px;padding:12px}.oc-action-controls button{font-size:12px;min-height:44px;padding:6px}.oc-night-legend{gap:5px 12px;font-size:11px}.oc-playing .oc-body{padding:12px}.oc-hud{font-size:12px;line-height:1.8}.oc-playing .oc-mission-head p{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.oc-layer button{transition:none}}
+
+.oc-pipe{width:58px;height:58px;display:block;margin:5px auto;filter:drop-shadow(0 3px 2px #0005)}.oc-field-illustration{height:80px;width:100%;display:block}.oc-sp-field-art{height:auto!important;background:linear-gradient(#526d5c88,#2d4b4388)!important}.oc-zz-fish{width:66px!important;height:52px!important;background:none!important;font-size:0!important}.oc-zz-fish .oc-prop{width:100%;height:100%;margin:0}.oc-zz-water-view{background:radial-gradient(ellipse at 30% 20%,#d3e5c547,transparent 55%),repeating-linear-gradient(175deg,transparent 0 25px,#acd7c622 26px,transparent 29px),linear-gradient(140deg,#286176,#163e54 65%,#24615a)!important;border:6px ridge #91a589!important}.oc-zz-vessel{background:linear-gradient(140deg,#788d6a,#253e41)!important;border:9px ridge #b1b78c;box-shadow:inset 0 0 20px #14282d99;border-radius:24% 24% 10% 10%!important;padding:22px!important}.oc-zz-vessel .is-hollow{background:#112e3e!important;box-shadow:inset 0 4px 7px #0008}.oc-zz-vessel .is-wall{background:linear-gradient(140deg,#c7c895,#77876a)!important;color:#223c3c!important}.oc-zz-truss .is-laid{stroke:#e2c995;stroke-width:2.8;filter:drop-shadow(0 1px 1px #0007)}@media(max-width:600px){.oc-pipe{width:44px;height:44px}.oc-zz-vessel{padding:12px!important;border-width:5px}.oc-field-illustration{height:65px}}
+
+.oc-zz-escort-cart .oc-zz-pawn{height:36px;width:27px;margin-bottom:-15px;margin-left:12px;z-index:1}.oc-zz-escort-cart .oc-cart-art{position:static!important;inset:auto!important;width:55px!important;height:55px!important;filter:drop-shadow(0 3px 2px #0007)}.oc-zz-escort-cart .oc-zz-pawn svg{position:static!important;inset:auto!important}.oc-zz-escort>svg>line{stroke:#b7ac82;stroke-width:1.6;stroke-dasharray:1 .15;filter:drop-shadow(0 .2px .15px #172e38)}.oc-zz-escort>svg>circle{fill:#b7b28744;stroke:#dfcb96;stroke-width:.4}.oc-zz-leap .oc-zz-jump-platform{background:repeating-linear-gradient(90deg,#a69a74 0 13px,#6c765e 14px 16px);border-top:3px solid #c4c39b;box-shadow:0 4px 0 #384f4c,0 7px 7px #061a2c66}

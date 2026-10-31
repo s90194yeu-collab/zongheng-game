@@ -16,7 +16,7 @@ function bridge(){
  return {e,cache,props,requests,user:value=>who=value};
 }
 test('歷史40話、諸子12關、古文新增11關、經典20個新舊路由與六個平台頁面、每份內容完整可驗證',()=>{
- assert.equal(manifest.chapterCount,90);assert.equal(manifest.activeChapterCount,86);assert.equal(Object.keys(manifest.pages).length,96);assert.equal(manifest.mediaCount,231);assert.equal(manifest.musicCount,7);
+ assert.equal(manifest.chapterCount,90);assert.equal(manifest.activeChapterCount,86);assert.equal(Object.keys(manifest.pages).length,96);assert.equal(manifest.mediaCount,232);assert.equal(manifest.musicCount,7);
  for(const [name,entry]of Object.entries(manifest.pages)){
   const html=fs.readFileSync(path.join(dist,'releases',release,entry.file),'utf8');
   assert.equal(crypto.createHash('sha256').update(html).digest('hex'),entry.sha256,name);

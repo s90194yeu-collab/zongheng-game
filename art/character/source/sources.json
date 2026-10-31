@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-01",
+  "tool": "built-in image_gen",
+  "prompt": "Use case: historical-scene. Production game background, wide 5:3 2000x1200 illustration for a refined Chinese historical night-rope descent game, Spring and Autumn period Zheng city. Hand-painted detailed historical adventure game art, rich ink blue moonlight and warm amber lantern reflected light, original polished illustrated strategy game quality. Camera square-on facing a massive ancient stone city wall, NOT looking obliquely along the wall. IMPORTANT gameplay composition: the front face of the wall fills almost the entire canvas, spanning x=4% to96%, from y=8% to89%; the whole wall is unobstructed and continuous for a freely moving small rope climber. Oversized weathered irregular bluish gray stone blocks with cracks, varied rough surfaces, moss and tiny ivy at edges, age and fine architectural detail, strong but not overly contrasty form shading. Narrow band of starry deep navy sky with wispy clouds and partial moon at top10%; crenellations along wall crown; farthest left and right narrow edges glimpse distant Chinese mountains and military tents. At bottom y=89% a narrow safe ground strip with grass, small stones, muted distant camp firelight. No people, no ropes, no objects in foreground, no visible doors or windows or niches, no marked objectives, no torches on wall, no text or labels, no UI, no watermark. Keep central stone surface readable, layered painterly detail rather than flat vectors or pixel art. At x22% y26%, x78% y57%, x42% y83% leave ordinary wall surface, interactive niches will be composited later. Perspective stable frontal orthographic elevation suitable for 2D game placement.",
+  "original": "art/character/source/zheng-rope-wall-v1.png",
+  "runtime": "public/media/scene_cq08_rope_wall_ai.webp",
+  "processing": "WebP encoding only; no illustration edits",
+  "sha256": "08fc7e16f37cea48fc862157cc29286205732245fd289d8694f4863e9a560043",
+  "otherAssets": "Existing chapter AI illustrations retained under public/media; props and character shading editable in src/character/art.js and night-art.js."
+}

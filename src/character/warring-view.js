@@ -1,9 +1,10 @@
+import {illustratedStage,controlArt,propIcon} from './art.js';
 // 戰國同行：規則由 R.WA 決定；畫面只把點選、觸控與鍵盤操作送往指令橋接。
 export function createWarringView({host,world:w,R,esc,avatar,send,paused}){
  const C=R.WA;
  let signature='',hover=-1,dragging=null,selectedCountry=null,selectedKey=null,suppressUntil=0;
  const attr=value=>esc(String(value));
- const b=(label,name,value,extra='')=>'<button type="button" data-wa="'+name+'"'+(value===undefined?'':' data-v="'+encodeURIComponent(JSON.stringify(value))+'"')+' '+extra+'>'+label+'</button>';
+ const b=(label,name,value,extra='')=>'<button type="button" data-wa="'+name+'"'+(value===undefined?'':' data-v="'+encodeURIComponent(JSON.stringify(value))+'"')+' '+extra+'>'+controlArt(name)+label+'</button>';
  const grid=(count,cell,cols=4,extra='')=>'<div class="oc-wa-grid" style="--wa-cols:'+cols+'" '+extra+'>'+Array.from({length:count},(_,i)=>cell(i)).join('')+'</div>';
  const row=html=>'<div class="oc-wa-row">'+html+'</div>';
  const instruction=text=>'<p class="oc-wa-instruction">'+esc(text)+'</p>';
@@ -22,7 +23,7 @@ export function createWarringView({host,world:w,R,esc,avatar,send,paused}){
   const g=w.campaign,p=C.pilot(w);
   let html='';
   if(g.done||w.status!=='playing'){
-   host.innerHTML='<section class="oc-wa-board" aria-label="'+esc(p.title)+'"><header class="oc-wa-head"><div class="oc-wa-avatar" aria-hidden="true">'+avatar()+'</div><div><h4>'+esc(p.title)+'</h4><p>'+(g.done?'本次同行操作已完成':'本次操作已結束')+'</p></div></header><p data-wa-hint class="oc-wa-hint" aria-live="polite"></p></section>';return;
+   host.innerHTML='<section class="oc-wa-board" data-wa-layout="'+attr(g.mechanic)+'" aria-label="'+esc(p.title)+'">'+illustratedStage({world:w,R,esc,avatar})+'<p data-wa-hint class="oc-wa-hint" aria-live="polite"></p></section>';return;
   }
   if(g.mechanic==='flood'){
    const f=C.floodState(w),total=g.gates.reduce((a,n)=>a+n,0);
@@ -49,7 +50,7 @@ export function createWarringView({host,world:w,R,esc,avatar,send,paused}){
   }
   if(g.mechanic==='drift'){
    const f=C.river(w),free=w.snapshot.config.skills.includes('light')||active('swift');
-   html=instruction('先划槳修正一個航道，或停槳休息，再順流一段。水流會再把船推移；接近書簡可收取，碰到障礙會損船。每段最多下槳一次。')+'<p>第 '+Math.min(8,g.stage+1)+'／8 段 · 體力 '+g.energy+' · 護簡 '+g.scrolls+'／至少4 · 船體 '+g.hull+'</p><div class="oc-wa-river">'+grid(3,i=>'<section><h4>'+['左岸','中流','右岸'][i]+'</h4><p>'+(f.scroll===i?'▤ 書簡':'　')+' '+(f.obstacle===i?'▲ 障礙':'　')+'</p><p>'+(g.lane===i?'<span class="oc-wa-pawn" aria-label="我的角色">'+avatar()+'</span>':'≈')+'</p></section>',3)+'</div><p>水流：'+(f.current===0?'平流，不推移':f.current<0?'← 向左推一格':'向右推一格 →')+' · '+(g.paddled?'本段已下槳':'本段尚可下槳')+'</p>'+row(b('← 划向左道','row',-1,lock(g.paddled||g.lane===0||g.energy<=0&&!free))+b('停槳休息＋2體力','row',0,lock(g.paddled))+b('划向右道 →','row',1,lock(g.paddled||g.lane===2||g.energy<=0&&!free)))+row(b('順流一段','drift',undefined,lock(!g.paddled)));
+   html=instruction('先划槳修正一個航道，或停槳休息，再順流一段。水流會再把船推移；接近書簡可收取，碰到障礙會損船。每段最多下槳一次。')+'<p>第 '+Math.min(8,g.stage+1)+'／8 段 · 體力 '+g.energy+' · 護簡 '+g.scrolls+'／至少4 · 船體 '+g.hull+'</p><div class="oc-wa-river">'+grid(3,i=>'<section><h4>'+['左岸','中流','右岸'][i]+'</h4><p>'+(f.scroll===i?propIcon('scroll')+'書簡':'　')+' '+(f.obstacle===i?propIcon('gate')+'障礙':'　')+'</p><p>'+(g.lane===i?'<span class="oc-wa-pawn" aria-label="我的角色">'+avatar()+'</span>':'≈')+'</p></section>',3)+'</div><p>水流：'+(f.current===0?'平流，不推移':f.current<0?'← 向左推一格':'向右推一格 →')+' · '+(g.paddled?'本段已下槳':'本段尚可下槳')+'</p>'+row(b('← 划向左道','row',-1,lock(g.paddled||g.lane===0||g.energy<=0&&!free))+b('停槳休息＋2體力','row',0,lock(g.paddled))+b('划向右道 →','row',1,lock(g.paddled||g.lane===2||g.energy<=0&&!free)))+row(b('順流一段','drift',undefined,lock(!g.paddled)));
   }
   if(g.mechanic==='archery'){
    html=instruction('點靶盤或調整兩個滑桿瞄準，再按放箭。箭的橫向落點受風與馬背晃動影響；準星是瞄準位置，亮點是當下預估落點。')+'<p>第 '+Math.min(8,g.target+1)+'／8 靶 · 已中 '+g.hits+' · 落空 '+g.misses+'／最多4 · 已射 '+g.shots+' 支</p><div class="oc-wa-aim-board" data-wa-aim tabindex="0" role="group" aria-label="騎射靶盤，可點選瞄準；也可使用下方滑桿"><i data-wa-target-disc></i><span data-wa-reticle>＋</span><b data-wa-impact>●</b></div><p data-wa-wind class="oc-wa-time-note"></p>'+['橫向','高低'].map((title,i)=>'<label class="oc-wa-slider">'+title+'<input type="range" min="0" max="100" step="1" value="'+g.aim[i?'y':'x']+'" data-wa-range="'+(i?'y':'x')+'" aria-label="'+title+'瞄準位置"><output data-wa-output="'+(i?'y':'x')+'">'+g.aim[i?'y':'x']+'</output></label>').join('')+row(b('放箭','fire'))+'<p class="oc-wa-stage-note">按住滑桿拖動，放開後更新瞄準。靶盤可用觸控；所有操作也可用 Tab、方向鍵與 Enter。</p>';
@@ -74,7 +75,7 @@ export function createWarringView({host,world:w,R,esc,avatar,send,paused}){
    const f=C.measureState(w),total=g.weights.reduce((n,q,i)=>n+q*f.unit[i],0),count=g.weights.reduce((a,n)=>a+n,0);
    html=instruction('三種砝碼的單位不同。增減砝碼，使總重符合本輪目標，同時不超過枚數限制，再放上天秤校驗。')+'<p>第 '+Math.min(3,g.round+1)+'／3 輪 · 最多 '+f.cap+' 枚</p><div class="oc-wa-scale-pans"><div>標準衡<strong>'+f.target+' 單位</strong></div><div>目前砝碼<strong>'+total+' 單位</strong><small>'+count+'／'+f.cap+' 枚</small></div></div><div class="oc-wa-beam" aria-hidden="true"><div style="transform:rotate('+Math.max(-16,Math.min(16,(total-f.target)*2))+'deg)"></div></div>'+grid(3,i=>qty('每枚 '+f.unit[i]+' 單位',g.weights[i],4,'setWeight',i),3)+row(b('上秤，校驗本輪','weigh'))+'<p class="oc-wa-stage-note">砝碼數值是教學推演設定；本任務練習換算與約束，不能當作出土秦制器物的實測值。</p>';
   }
-  host.innerHTML='<section class="oc-wa-board" aria-label="'+esc(p.title)+'"><header class="oc-wa-head"><div class="oc-wa-avatar" aria-hidden="true">'+avatar()+'</div><div><h4>'+esc(p.title)+'</h4><p>'+esc(p.role)+'</p><small>本篇獨立操作 · 原劇情接續進行</small></div></header>'+html+'<p data-wa-hint class="oc-wa-hint" aria-live="polite"></p></section>';
+  host.innerHTML='<section class="oc-wa-board" data-wa-layout="'+attr(g.mechanic)+'" aria-label="'+esc(p.title)+'">'+illustratedStage({world:w,R,esc,avatar})+''+html+'<p data-wa-hint class="oc-wa-hint" aria-live="polite"></p></section>';
  }
  host.addEventListener('click',e=>{
   const el=e.target.closest?.('[data-wa]');

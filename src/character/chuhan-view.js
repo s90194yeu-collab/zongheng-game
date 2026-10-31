@@ -1,7 +1,8 @@
+import {illustratedStage,controlArt} from './art.js';
 // 各章使用同一操作橋接，棋盤與規則各自呈現；點選、觸控與鍵盤按鈕皆可操作。
 export function createChuhanView({host,world:w,R,esc,avatar,send,paused}){
  const C=R.CH;let signature='',hover=-1;
- const b=(label,name,value,extra='')=>'<button type="button" data-ch="'+name+'"'+(value===undefined?'':' data-v="'+value+'"')+' '+extra+'>'+label+'</button>';
+ const b=(label,name,value,extra='')=>'<button type="button" data-ch="'+name+'"'+(value===undefined?'':' data-v="'+value+'"')+' '+extra+'>'+controlArt(name)+label+'</button>';
  const grid=(count,cell,cols=4)=>'<div class="oc-ch-grid" style="--ch-cols:'+cols+'">'+Array.from({length:count},(_,i)=>cell(i)).join('')+'</div>';
  const arrow=n=>'↑→↓←'[n],on=k=>(w.buffs[k]||0)>w.time;
  function render(){const g=w.campaign,k=g.mechanic;let html='';
@@ -14,7 +15,7 @@ export function createChuhanView({host,world:w,R,esc,avatar,send,paused}){
   if(k==='flags')html='<p>軍令 '+g.moves+'／'+g.budget+' · 點旗會連動本格及上下左右</p>'+grid(9,i=>b(g.flags[i]?'漢':'趙','flag',i,'class="'+(g.flags[i]?'is-han':'is-zhao')+'" aria-label="第'+(i+1)+'格'+(g.flags[i]?'漢':'趙')+'旗"'),3);
   if(k==='maze')html='<p>'+(g.rescued?'✓ 同伴同行，前往右下角':'先到左下角接同伴，再往右下會合')+'</p>'+grid(16,i=>b('<span data-maze-label="'+i+'"></span>','walk',i,'data-cell="'+i+'" aria-label="第'+(i+1)+'路格"'))+'<p>可看見曾走過與身邊的路；聽息／望勢能暫時看見全圖。巡察格須等暗窗。</p>';
   if(k==='city')html='<div class="oc-row">'+['民居 2×2','糧倉 2×2','道路 1×4'].map((s,i)=>b(s+(g.selected===i?' ✓':''),'selectPiece',i,'aria-pressed="'+(g.selected===i)+'"')).join('')+b('旋轉道路 '+(g.rotation?'直':'橫'),'rotatePiece')+b('收回選取建物','removePiece')+'</div><p>試放 '+g.spent+'／'+g.budget+' 次 · 點起格，整塊放入</p>'+grid(12,i=>{const piece=g.pieces.findIndex(p=>p?.cells.includes(i));return b(piece<0?'·':['居','倉','道'][piece],'place',i,'data-cell="'+i+'" class="oc-city-'+piece+'"');})+'<p>民居和糧倉都須鄰接道路。巧勁可在指向起格時預覽範圍。</p>';
-  host.innerHTML='<section class="oc-ch-board" aria-label="'+esc(C.pilot(w).title)+'">'+html+'<p data-ch-hint class="oc-ch-hint" aria-live="polite"></p></section>';
+  host.innerHTML='<section class="oc-ch-board" data-ch-layout="'+esc(g.mechanic)+'" aria-label="'+esc(C.pilot(w).title)+'">'+illustratedStage({world:w,R,esc,avatar})+html+'<p data-ch-hint class="oc-ch-hint" aria-live="polite"></p></section>';
  }
  host.addEventListener('click',e=>{const el=e.target.closest('[data-ch]');if(!el||paused()||el.disabled)return;send(el.dataset.ch,el.dataset.v===undefined?undefined:+el.dataset.v);});
  host.addEventListener('pointerover',e=>{const el=e.target.closest('[data-cell]');hover=el?+el.dataset.cell:-1;});
