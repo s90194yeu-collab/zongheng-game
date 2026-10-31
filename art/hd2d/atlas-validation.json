@@ -1,0 +1,14 @@
+{
+  "male": {
+    "regions": 16,
+    "actualTransparency": true
+  },
+  "female": {
+    "regions": 16,
+    "actualTransparency": true
+  },
+  "enemies": {
+    "regions": 16,
+    "actualTransparency": true
+  }
+}

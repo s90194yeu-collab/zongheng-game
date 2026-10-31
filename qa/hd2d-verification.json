@@ -1,0 +1,32 @@
+{
+  "version": "4.26.0-google",
+  "release": "v4-51ea7d5d91385d",
+  "node": {
+    "total": 315,
+    "pass": 308,
+    "skip": 7,
+    "fail": 0,
+    "skipReason": "Private GAS source fixtures not included in public-source staging"
+  },
+  "godot": {
+    "checks": 27,
+    "pass": true,
+    "originalVillageRegression": true
+  },
+  "browser": {
+    "loadedCurrentBundle": true,
+    "movementAttackDodge": true,
+    "maleFemaleSwitch": true,
+    "teacherBossPractice": true,
+    "portrait": [
+      390,
+      844
+    ],
+    "portraitCameraPreservesWidth": true,
+    "cameraTouchButtonsMinPixels": 44,
+    "textSelectionAfterHold": "",
+    "realMobileHardwareTested": false
+  },
+  "studentRecordsWritten": 0,
+  "fpsCap": 0
+}

@@ -1,16 +1,48 @@
 extends SceneTree
 var game
 var failures=[]
+var check_count=0
 func _initialize():call_deferred("run_tests")
 func check(value,label):
+ check_count+=1
  if not value:failures.append(label);printerr("FAIL ",label)
 func run_tests():
  game=load("res://myth.tscn").instantiate();root.add_child(game)
  await physics_frame
+ root.size=Vector2i(390,844)
+ await process_frame
+ await process_frame
+ check(game.camera.keep_aspect==Camera3D.KEEP_WIDTH,"portrait camera preserves horizontal combat space")
+ root.size=Vector2i(1280,720)
+ await process_frame
+ await process_frame
+ check(game.camera.keep_aspect==Camera3D.KEEP_HEIGHT,"landscape camera returns to original framing")
  check(game.player is CharacterBody3D,"real physics character")
  check(Engine.max_fps==0,"no FPS cap")
+ check(game.actor.sprite is Sprite3D,"painted player is a real sprite in 3D")
+ check(game.actor.data.regions.size()==16,"sixteen painted player frames")
+ var heading=Vector3.BACK
+ game.camera.position=game.player.position+Vector3(0,8,10)
+ game.camera.look_at(game.player.position)
+ game.actor.face_camera(game.camera,heading,false,false,0.0)
+ check(game.actor.current_frame==0,"front view faces camera")
+ game.actor.face_camera(game.camera,heading,true,false,.15)
+ check(game.actor.current_frame in [1,2],"walk uses painted stepping frames")
+ game.actor.face_camera(game.camera,heading,false,true,0.0)
+ check(game.actor.current_frame==3,"attack uses painted action frame")
+ game.camera.position=game.player.position+Vector3(0,8,-10)
+ game.camera.look_at(game.player.position)
+ game.actor.face_camera(game.camera,heading,false,false,0.0)
+ check(game.actor.current_frame==8,"camera orbit selects actual back artwork")
+ game.look.body="female";game.update_character();game.equip_weapon()
+ check(game.actor.data.texture.resource_path.ends_with("female.png"),"female character has independent painted atlas")
  game.begin_run({"id":"test","weapon":"sword","difficulty":"standard","stats":{"agility":2,"strength":2,"dexterity":2,"focus":2,"insight":2,"planning":2},"abilities":["steady","listen"],"checkpoint":0,"seed":4})
  check(game.enemies.size()==3,"three first-encounter enemies")
+ check(game.enemies[0].visual.sprite is Sprite3D,"monsters use directional standees")
+ await process_frame
+ game.tap_screen(game.enemy_screen_rect(game.enemies[0]).get_center())
+ check(game.selected==game.enemies[0],"painted enemy body is clickable")
+ game.auto_attack=false;game.selected={}
  var before=game.player.position
  game.remote_keys.right=true
  for i in range(20):await physics_frame
@@ -52,5 +84,5 @@ func run_tests():
  check(game.display_models[0].get_child_count()>0,"owned item is instantiated")
  game.navigate(Vector3(0,.15,4))
  check(game.route.size()>0,"museum has real pathfinding")
- print("MYTH_SCENE_TESTS ",JSON.stringify({"ok":failures.is_empty(),"failures":failures,"checks":15}))
+ print("MYTH_SCENE_TESTS ",JSON.stringify({"ok":failures.is_empty(),"failures":failures,"checks":check_count}))
  quit(0 if failures.is_empty() else 1)

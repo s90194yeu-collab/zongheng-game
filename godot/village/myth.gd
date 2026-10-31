@@ -1,6 +1,8 @@
 extends "res://village.gd"
 
 # Actual single-player combat. No student identity or cloud credentials enter this scene.
+const PaintedActor = preload("res://hd2d_actor.gd")
+var hd_motion = "Idle"
 var mode = "lobby"
 var level_root: Node3D
 var decor: Node3D
@@ -93,9 +95,9 @@ func _ready():
  camera.current = true
  camera.far = 180
  add_child(camera)
- zoom_size = 12.8
+ zoom_size = 11.6
  yaw = .3
- elevation = .67
+ elevation = .72
  update_character()
  equip_weapon()
  build_forest()
@@ -104,6 +106,7 @@ func _ready():
   bridge = JavaScriptBridge.get_interface("ZH_GODOT")
   callback_ref = JavaScriptBridge.create_callback(receive)
   bridge.register(callback_ref)
+ install_hd2d_finish()
  send({"type":"ready","mode":"myth"})
 
 func material(color:String,alpha=1.0):
@@ -120,9 +123,50 @@ func material(color:String,alpha=1.0):
 
 func painted_ground(low:String,high:String,density:float):
  var shader=Shader.new()
- shader.code="shader_type spatial;render_mode unshaded;varying vec3 world;uniform vec4 low_color:source_color;uniform vec4 high_color:source_color;uniform float density=1.0;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0)),f.x),f.y);}void vertex(){world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){float v=n(world.xz*density)*0.65+n(world.xz*density*5.0)*0.35;ALBEDO=mix(low_color.rgb,high_color.rgb,v);ROUGHNESS=1.0;}"
- var m=ShaderMaterial.new();m.shader=shader;m.set_shader_parameter("low_color",Color(low));m.set_shader_parameter("high_color",Color(high));m.set_shader_parameter("density",density)
+ shader.code="shader_type spatial;render_mode unshaded;varying vec3 world;uniform sampler2D atlas:source_color,filter_linear_mipmap,repeat_disable;uniform vec2 tile;uniform float density;void vertex(){world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){vec2 p=fract(world.xz*density);vec2 uv=(tile+mix(vec2(.008),vec2(.992),p))*.5;vec3 c=texture(atlas,uv).rgb;float light=.94+.06*sin(world.x*.47+world.z*.31);ALBEDO=c*light;ROUGHNESS=1.0;}"
+ var m=ShaderMaterial.new();m.shader=shader
+ m.set_shader_parameter("atlas",load("res://assets/hd2d/terrain.png"))
+ m.set_shader_parameter("tile",Vector2(1,0) if low=="#b9a77b" else Vector2(0,0))
+ m.set_shader_parameter("density",.20 if low=="#b9a77b" else .15)
  return m
+
+func install_hd2d_finish():
+ var layer=CanvasLayer.new();layer.layer=1;add_child(layer)
+ var finish=ColorRect.new();finish.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);finish.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ var finish_material=ShaderMaterial.new();finish_material.shader=load("res://hd2d_finish.gdshader");finish.material=finish_material
+ layer.add_child(finish)
+
+func update_character():
+ if actor:
+  player.remove_child(actor);actor.queue_free()
+ actor=PaintedActor.new();player.add_child(actor)
+ actor.setup("res://assets/hd2d/"+("female" if look.get("body")=="female" else "male")+".png",2.15)
+ actor.set_appearance(look);animation=null;hd_motion="Idle"
+ disc(Vector3(0,.04,0),.42,"#203c38",.22,actor)
+
+func set_motion(next):
+ hd_motion=next
+
+func hd_surface(tile:Vector2,tint:Color=Color.WHITE):
+ var shader=Shader.new()
+ shader.code="shader_type spatial;render_mode unshaded;varying vec3 world;varying vec3 wn;varying vec4 baked;uniform sampler2D atlas:source_color,filter_linear_mipmap;uniform vec2 tile;uniform vec4 tint:source_color;void vertex(){world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;wn=normalize(mat3(MODEL_MATRIX)*NORMAL);baked=COLOR;}void fragment(){vec3 n=abs(wn);vec2 p=n.y>max(n.x,n.z)?world.xz:n.x>n.z?world.zy:world.xy;vec2 uv=(tile+mix(vec2(.015),vec2(.985),fract(p*.38)))*.5;vec3 c=texture(atlas,uv).rgb;ALBEDO=c*tint.rgb*baked.rgb;ROUGHNESS=1.0;}"
+ var m=ShaderMaterial.new();m.shader=shader;m.set_shader_parameter("atlas",load("res://assets/hd2d/terrain.png"));m.set_shader_parameter("tile",tile);m.set_shader_parameter("tint",tint);return m
+
+func paint_world(root):
+ super.paint_world(root)
+ for part in root.find_children("*","MeshInstance3D",true,false):
+  for i in part.mesh.get_surface_count():
+   var m=part.get_active_material(i)
+   if m is StandardMaterial3D:
+    var label=str(m.resource_name)
+    if label in ["HD_Stone","Rock","RockLight"]:part.set_surface_override_material(i,hd_surface(Vector2(1,0)))
+    elif label in ["HD_Jade","HD_Roof"]:part.set_surface_override_material(i,hd_surface(Vector2(1,1),Color("#bdd5c5")))
+    elif label=="HD_Leaf":part.set_surface_override_material(i,hd_surface(Vector2(0,1),Color("#b9c49f")))
+
+func water_surface():
+ var shader=Shader.new();shader.code="shader_type spatial;render_mode unshaded;varying vec3 p;void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){float flow=sin(p.x*2.7+p.z*9.0+TIME*1.6)*.5+.5;float glint=pow(flow,18.0)*.15;float bank=smoothstep(1.2,1.65,abs(p.z-5.5));ALBEDO=mix(vec3(.16,.43,.42),vec3(.45,.65,.56),bank)+vec3(glint);ROUGHNESS=.5;}"
+ var m=ShaderMaterial.new();m.shader=shader;return m
+
 
 func shape_mesh(shape:Mesh,at:Vector3,color:String,parent:Node=null,alpha=1.0):
  var node = MeshInstance3D.new()
@@ -155,7 +199,7 @@ func disc(at:Vector3,radius:float,color:String,alpha=1.0,parent:Node=null):
  return shape_mesh(mesh,at,color,parent,alpha)
 
 func model(id:String,parent:Node,at:Vector3,scale_value=1.0):
- if not models.has(id):models[id]=load("res://assets/qingqiu-"+id+".glb")
+ if not models.has(id):models[id]=load("res://assets/hd2d-"+id.trim_prefix("hd_")+".glb") if id.begins_with("hd_") else load("res://assets/qingqiu-"+id+".glb")
  var node = models[id].instantiate()
  parent.add_child(node)
  node.position = at
@@ -164,7 +208,7 @@ func model(id:String,parent:Node,at:Vector3,scale_value=1.0):
  return node
 
 func instanced_trees(points:Array):
- if not models.has("tree"):models.tree=load("res://assets/qingqiu-tree.glb")
+ if not models.has("tree"):models.tree=load("res://assets/hd2d-tree.glb")
  var template = models.tree.instantiate()
  level_root.add_child(template)
  paint_world(template)
@@ -200,7 +244,8 @@ func build_forest():
  ground.material_override=painted_ground("#698e65","#92aa77",.8)
  var path=box(Vector3(0,-.005,-8),Vector3(8,.035,78),"#d6c496")
  path.material_override=painted_ground("#b9a77b","#ded0a3",1.6)
- box(Vector3(0,.005,5.5),Vector3(37,.035,3.5),"#6eb5b5")
+ var stream=box(Vector3(0,.005,5.5),Vector3(37,.035,3.5),"#6eb5b5")
+ stream.material_override=water_surface()
  box(Vector3(0,.055,5.5),Vector3(7,.1,4.1),"#b8a37c")
  for plank in range(12):box(Vector3(0,.12,3.55+plank*.35),Vector3(7,.05,.29),"#b3a17a")
  for x in [-3.4,3.4]:
@@ -211,6 +256,10 @@ func build_forest():
   for x in [-4.0,4.0]:
    var stone = disc(Vector3(x,.07,z),.52,"#d4d0b1")
    stone.scale.z = 1.25
+   stone.material_override=hd_surface(Vector2(1,0))
+ model("hd_bridge",level_root,Vector3(0,0,5.5))
+ model("hd_gate",level_root,Vector3(0,0,32))
+ for point in [Vector3(-7,0,-9),Vector3(8,0,-22),Vector3(-9,0,-41)]:model("hd_ruins",level_root,point)
  var trees = []
  for i in range(46):
   var z = 30-(i/2)*3.8
@@ -222,7 +271,8 @@ func build_forest():
   var x=side*(5.2+(i%4)*.75)
   var z=29-i*2.6
   var rock=SphereMesh.new();rock.radius=.3+(i%3)*.12;rock.height=rock.radius*1.2;rock.radial_segments=7;rock.rings=4
-  shape_mesh(rock,Vector3(x,.13,z),"#8d9a78" if i%3 else "#b0b695")
+  var rock_node=shape_mesh(rock,Vector3(x,.13,z),"#8d9a78" if i%3 else "#b0b695")
+  rock_node.material_override=hd_surface(Vector2(1,0))
   for j in range(3):
    var flower=SphereMesh.new();flower.radius=.07;flower.height=.14;flower.radial_segments=6;flower.rings=3
    shape_mesh(flower,Vector3(x+.45+j*.16,.28,z+.12*j),"#f4dfad" if i%2 else "#d3b4ba")
@@ -232,8 +282,10 @@ func build_forest():
   model("pillar",level_root,p,1.1)
   box(p+Vector3(0,1,0),Vector3(.7,2.0,.7),"#999e7f",true)
   pillars.append(p)
- disc(Vector3(0,.025,-37),11.5,"#b7c5a0")
- disc(Vector3(0,.055,-37),9.4,"#cad0b1")
+ var arena_border=disc(Vector3(0,.025,-37),11.5,"#b7c5a0")
+ arena_border.material_override=hd_surface(Vector2(1,1),Color("#c5d3b4"))
+ var arena=disc(Vector3(0,.055,-37),9.4,"#cad0b1")
+ arena.material_override=hd_surface(Vector2(1,0))
  for x in [-5.5,5.5]:
   lamp_nodes.append(model("lantern",level_root,Vector3(x,.08,-37),1.45))
   var ring_mesh=TorusMesh.new();ring_mesh.inner_radius=1.87;ring_mesh.outer_radius=2.0;ring_mesh.rings=32;ring_mesh.ring_segments=4
@@ -246,7 +298,7 @@ func build_forest():
   box(p,Vector3(1,3,90) if abs(p.x)>10 else Vector3(42,3,1),"#567f62",true)
  for item in [["core1",Vector3(-6,0,13)],["core2",Vector3(7,0,-2)],["core3",Vector3(-7,0,-19)],["creek",Vector3(-9,0,6)]]:
   var node = model("jade" if item[0]=="creek" else "lantern",level_root,item[1],.65)
-  disc(item[1]+Vector3(0,.06,0),1.0,"#f0d58a",.45)
+  disc(item[1]+Vector3(0,.06,0),1.0,"#f0d58a",.16)
   pickups.append({"id":item[0],"node":node,"pos":item[1],"taken":false})
  rebuild_myth_navigation()
 
@@ -299,8 +351,8 @@ func equip_weapon():
  actor.add_child(weapon_node)
  weapon_node.position=Vector3(.45,.95,.15)
  if weapon=="sword":
-  var blade=BoxMesh.new();blade.size=Vector3(.07,.07,1.12)
-  shape_mesh(blade,Vector3(0,0,.48),"#e7eadc",weapon_node)
+  var blade=CylinderMesh.new();blade.top_radius=.012;blade.bottom_radius=.055;blade.height=1.12;blade.radial_segments=4
+  var steel=shape_mesh(blade,Vector3(0,0,.48),"#bdcdd1",weapon_node);steel.rotation.x=PI/2
   var guard=BoxMesh.new();guard.size=Vector3(.36,.08,.12)
   shape_mesh(guard,Vector3.ZERO,"#caa458",weapon_node)
  else:
@@ -334,7 +386,9 @@ func spawn_enemy(kind:String,at:Vector3,small=false):
  var scale_value=.75 if kind=="ink" else 1.0
  if kind=="fox" or kind=="ghost":scale_value=1.18
  if small:scale_value*=.60
- var visual=model(asset,root,Vector3.ZERO,scale_value)
+ var visual=PaintedActor.new();root.add_child(visual)
+ var row={"ink":0,"paper":1,"ape":2,"fox":3,"ghost":3}.get(kind,0)
+ visual.setup("res://assets/hd2d/enemies.png",[1.25,1.65,2.9,3.8][row],row);visual.scale=Vector3.ONE*scale_value
  var hp={"ink":125,"paper":150,"ape":850,"fox":4200,"ghost":1}.get(kind,100)
  if small:hp=55
  if difficulty=="guided":hp*=.72
@@ -514,7 +568,7 @@ func update_enemies(delta:float):
  for e in enemies.duplicate():
   if e.dead:continue
   e.age+=delta;e.cd-=delta;e.special-=delta;e.stun=maxf(0,e.stun-delta)
-  e.bar.rotation=Vector3.ZERO
+  e.bar.rotation.y=yaw
   e.visual.scale=e.visual.scale.lerp(Vector3.ONE*(1.18 if e.kind in ["fox","ghost"] else .45 if e.kind=="ink" and e.split else .75 if e.kind=="ink" else 1.0),minf(1,delta*9))
   if e.kind=="ghost":
    if e.age>7:e.dead=true;e.node.queue_free()
@@ -700,9 +754,15 @@ func _process(delta):
  var target=player.position+Vector3(0,.8,-2.6 if mode=="field" else 0.0) if focus_at==null else focus_at
  var offset=Vector3(sin(yaw)*cos(elevation),sin(elevation),cos(yaw)*cos(elevation))*35
  camera.position=target+offset if not camera_started else camera.position.lerp(target+offset,1-exp(-10*delta))
- camera.look_at(target);camera.size=zoom_size*(1.3 if get_viewport().get_visible_rect().size.x<650 else 1.0);camera_started=true
+ var viewport_size=get_viewport().get_visible_rect().size
+ var portrait=viewport_size.y>viewport_size.x
+ camera.keep_aspect=Camera3D.KEEP_WIDTH if portrait else Camera3D.KEEP_HEIGHT
+ camera.look_at(target);camera.size=zoom_size*(1.4 if portrait else 1.0);camera_started=true
  for wall in rear_walls:
   if is_instance_valid(wall):wall.visible=camera.position.z>-6
+ actor.face_camera(camera,actor.global_basis.z,hd_motion=="Run",attack_pose>0,delta if not paused else 0.0)
+ for foe in enemies:
+  if not foe.dead and is_instance_valid(foe.visual):foe.visual.face_camera(camera,foe.node.global_basis.z,foe.charging>0 or foe.node.position.distance_to(player.position)>3.0,foe.windup>0,delta if not paused else 0.0)
  if not paused:
   attack_pose=maxf(0,attack_pose-delta)
   if weapon_node:
@@ -749,8 +809,18 @@ func navigate(target:Vector3,goal=""):
  for i in range(1,points.size()):route.append(Vector3(points[i].x,.15,points[i].y))
  route.append(target);auto_attack=false;focus_at=null
 
+func enemy_screen_rect(foe:Dictionary):
+ var painted=foe.visual.sprite
+ var size=painted.region_rect.size*painted.pixel_size*foe.visual.global_basis.get_scale().y
+ var center=camera.unproject_position(painted.global_position)
+ var edge=camera.unproject_position(painted.global_position+camera.global_basis.x*size.x*.5+camera.global_basis.y*size.y*.5)
+ var half=(center-edge).abs()
+ return Rect2(center-half,half*2)
+
 func tap_screen(pos):
  if paused:return
+ for foe in enemies:
+  if not foe.dead and enemy_screen_rect(foe).has_point(pos):selected=foe;auto_attack=true;route.clear();return
  var origin=camera.project_ray_origin(pos)
  var point=Plane(Vector3.UP,.15).intersects_ray(origin,camera.project_ray_normal(pos))
  if point==null:return

@@ -2,43 +2,43 @@
   "version": 1,
   "engine": "4.7.2.stable.official.ed1daf0bf",
   "threadSupport": false,
-  "entry": "godot/village-fc1506f08773daa6/index.html",
+  "entry": "godot/village-4cce94a46a23820a/index.html",
   "files": [
     {
-      "path": "godot/village-fc1506f08773daa6/index.audio.position.worklet.js",
+      "path": "godot/village-4cce94a46a23820a/index.audio.position.worklet.js",
       "bytes": 2973,
       "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
     },
     {
-      "path": "godot/village-fc1506f08773daa6/index.audio.worklet.js",
+      "path": "godot/village-4cce94a46a23820a/index.audio.worklet.js",
       "bytes": 7298,
       "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
     },
     {
-      "path": "godot/village-fc1506f08773daa6/index.html",
-      "bytes": 4743,
-      "sha256": "b5a8bdcae520b0b254d120f387e993a43a110a93f6a7edaa40290084896bf650"
+      "path": "godot/village-4cce94a46a23820a/index.html",
+      "bytes": 4744,
+      "sha256": "2e17344bab68db5c6f7abe7e9bdaae272087fb2e044239512b709439d008d95c"
     },
     {
-      "path": "godot/village-fc1506f08773daa6/index.js",
+      "path": "godot/village-4cce94a46a23820a/index.js",
       "bytes": 279815,
       "sha256": "33c94cb3175f3333b82e2a3be5e8e86f77986f0aa2042b1631f6367a4e5bb6ba"
     },
     {
-      "path": "godot/village-fc1506f08773daa6/index.pck",
-      "bytes": 8841452,
-      "sha256": "a5a19a43749a3b482659c72b92cd33138fa4cd95057a3c43ba7b95747c359b33"
+      "path": "godot/village-4cce94a46a23820a/index.pck",
+      "bytes": 16038612,
+      "sha256": "34c2a3f003dcee5e38779901c0c825982b63a4aeee337fba84612198ffd1f0cd"
     },
     {
-      "path": "godot/village-fc1506f08773daa6/index.wasm",
+      "path": "godot/village-4cce94a46a23820a/index.wasm",
       "bytes": 39514754,
       "sha256": "fc74679e3b97f76878947fcd4fbe1268cbfa6188182a2e33bbc3f5dc9bfa57d0"
     },
     {
-      "path": "godot/village-fc1506f08773daa6/index.wasm.gz",
+      "path": "godot/village-4cce94a46a23820a/index.wasm.gz",
       "bytes": 10054758,
       "sha256": "2862a06f11ad1579c4ceb764f724013c1e62f8916d5d8d237fe5ee209c76f56e"
     }
   ],
-  "estimatedTransferBytes": 19191039
+  "estimatedTransferBytes": 26388200
 }
