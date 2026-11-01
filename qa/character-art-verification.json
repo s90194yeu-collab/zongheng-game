@@ -868,5 +868,41 @@
   "gameRulesChanged": false,
   "fpsLimitAdded": false,
   "release": "v4-cde776252e9672",
-  "lightBoundsMatchGameplay": true
+  "lightBoundsMatchGameplay": true,
+  "formalGas": {
+    "ok": true,
+    "version": 77,
+    "previousVersion": 76,
+    "release": "v4-cde776252e9672",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 231,
+    "files": 232,
+    "sourceHash": "9f0a301a785a720ce7d922c664c1c36045366ad8a4fbeb9f97304f63511d4172",
+    "studentRecordsWritten": 0
+  },
+  "github": {
+    "commit": "0da17c865d24fb409d5303240e4e4a70af71ed93",
+    "workflow": 41254817840,
+    "conclusion": "success"
+  },
+  "public": {
+    "pages": 96,
+    "resources": 532,
+    "sha256Readback": true
+  },
+  "formalBrowser": {
+    "originalUrl": true,
+    "guest": true,
+    "nightArtLoaded": true,
+    "movementAndRopeDescent": true,
+    "pause": true,
+    "viewport": [
+      1280,
+      1000
+    ],
+    "consoleErrors": 0,
+    "studentRecordsWritten": 0
+  }
 }
