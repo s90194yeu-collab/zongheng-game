@@ -30,3 +30,9 @@ test('手機、桌面與高解析畫布拖曳皆對齊角色座標，上下端�
  }
  assert(nightPoint({x:50,y:0}).y>=68);assert(nightPoint({x:50,y:100}).y<=560);
 });
+test('巡燈光帶含四角，投影後邊界吻合規則橫向14及縱向5的範圍',async()=>{
+ const {nightLightBox,nightPointer}=await import('../src/character/night-art.js');
+ const box=nightLightBox({x:50,y:57});
+ const near=nightPointer(box.x,box.y,1000,600);assert.equal(near.x,36);assert(Math.abs(near.y-52)<1e-9);
+ const far=nightPointer(box.x+box.width,box.y+box.height,1000,600);assert.equal(far.x,64);assert(Math.abs(far.y-62)<1e-9);
+});

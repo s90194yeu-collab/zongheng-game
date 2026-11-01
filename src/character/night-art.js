@@ -2,6 +2,7 @@
 const layers=new WeakMap();
 export const nightPoint=p=>({x:p.x*10,y:80+p.y*4.6});
 export const nightPointer=(x,y,width,height)=>({x:x/width*100,y:(y/height*600-80)/4.6});
+export const nightLightBox=p=>{const q=nightPoint(p);return {x:q.x-140,y:q.y-23,width:280,height:46};};
 export function nightLayout(world,R){
  return {covers:R.coverPoints(world).map((p,i)=>({...p,index:i,done:world.delivered.includes(i)})),lights:R.lit(world),player:{x:world.x,y:world.y},objectives:world.chapter?R.chapterObjectives(world).filter(o=>o.x!==undefined&&o.y!==undefined&&!o.done):[]};
 }
@@ -37,11 +38,11 @@ function niche(c,p){
 function light(c,p,time,forecast=false){
  const {x,y}=nightPoint(p);
  c.save();c.translate(x,y);
- // 可見外緣就是規則裡的140×30巡燈區，不以裝飾光暈擴張命中。
- const glow=c.createRadialGradient(0,0,4,0,0,140);
- glow.addColorStop(0,forecast?'#9ed9dd30':'#fff5c1b0');glow.addColorStop(.45,forecast?'#9ed9dd22':'#efbd6677');glow.addColorStop(1,'#e5ae4f08');
- c.scale(1,30/140);c.fillStyle=glow;c.strokeStyle=forecast?'#a9e6dc':'#ffe2a0';c.lineWidth=1.4;
- if(forecast)c.setLineDash([7,6]);c.beginPath();c.arc(0,0,140,0,Math.PI*2);c.fill();c.stroke();c.restore();
+ // 規則為橫向±14、縱向±5的光帶；投影後是280×46，四角亦清楚標示。
+ const glow=c.createLinearGradient(-140,0,140,0);
+ glow.addColorStop(0,forecast?'#9ed9dd30':'#efbd6626');glow.addColorStop(.5,forecast?'#9ed9dd55':'#fff5c1a0');glow.addColorStop(1,forecast?'#9ed9dd30':'#efbd6626');
+ c.fillStyle=glow;c.strokeStyle=forecast?'#a9e6dc':'#ffe2a0';c.lineWidth=1.2;
+ if(forecast)c.setLineDash([7,6]);c.fillRect(-140,-23,280,46);c.strokeRect(-140,-23,280,46);c.restore();
  if(forecast)return;
  // 中央提燈的金屬框與暖光，取代舊版黃色方塊。
  c.save();c.translate(x,y);c.strokeStyle='#e5ce97';c.lineWidth=2;

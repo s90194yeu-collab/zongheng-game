@@ -860,12 +860,13 @@
     "consoleErrors": 0
   },
   "tests": {
-    "passed": 313,
+    "passed": 314,
     "skipped": 7,
     "failed": 0
   },
   "studentRecordsWritten": 0,
   "gameRulesChanged": false,
   "fpsLimitAdded": false,
-  "release": "v4-5c8749d2ed732c"
+  "release": "v4-cde776252e9672",
+  "lightBoundsMatchGameplay": true
 }
