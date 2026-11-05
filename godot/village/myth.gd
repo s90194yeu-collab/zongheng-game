@@ -24,8 +24,9 @@ var pillars: Array = []
 var pickups: Array = []
 var display_models: Array = []
 var weapon_node: Node3D
-var skeleton: Skeleton3D
-var arm_bones: Array = []
+var loaded_body = ""
+var loaded_weapon = ""
+var anchor_node: Node3D = null
 var health = 600.0
 var max_health = 600.0
 var energy = 100.0
@@ -150,10 +151,15 @@ func install_hd2d_finish():
  layer.add_child(finish)
 
 func update_character():
+ var target_body="female" if look.get("body")=="female" else "male"
+ if actor and is_instance_valid(actor) and loaded_body==target_body:
+  actor.set_appearance(look);animation=null;hd_motion="Idle"
+  return
  if actor:
   player.remove_child(actor);actor.queue_free()
+ loaded_body=target_body;loaded_weapon=""
  actor=PaintedActor.new();player.add_child(actor)
- actor.setup("res://assets/hd2d-motion/"+("female" if look.get("body")=="female" else "male")+".json",2.15)
+ actor.setup("res://assets/hd2d-motion/"+target_body+".json",2.15)
  actor.set_appearance(look);animation=null;hd_motion="Idle"
  disc(Vector3(0,.04,0),.42,"#203c38",.22,actor)
 
@@ -248,7 +254,13 @@ func instanced_trees(points:Array):
   level_root.add_child(node)
  template.queue_free()
 
+func clear_anchor():
+ anchor=null
+ if anchor_node and is_instance_valid(anchor_node):anchor_node.queue_free()
+ anchor_node=null
+
 func clear_level():
+ clear_anchor()
  for c in level_root.get_children():
   level_root.remove_child(c)
   c.queue_free()
@@ -315,8 +327,8 @@ func build_forest():
   box(p,Vector3(1,3,90) if abs(p.x)>10 else Vector3(42,3,1),"#567f62",true)
  for item in [["core1",Vector3(-6,0,13)],["core2",Vector3(7,0,-2)],["core3",Vector3(-7,0,-19)],["creek",Vector3(-9,0,6)]]:
   var node = model("jade" if item[0]=="creek" else "lantern",level_root,item[1],.65)
-  disc(item[1]+Vector3(0,.06,0),1.0,"#f0d58a",.16)
-  pickups.append({"id":item[0],"node":node,"pos":item[1],"taken":false})
+  var ring = disc(item[1]+Vector3(0,.06,0),1.05,"#f5dc82",.34)
+  pickups.append({"id":item[0],"node":node,"ring":ring,"pos":item[1],"taken":false})
  rebuild_myth_navigation()
 
 func build_museum():
@@ -364,34 +376,33 @@ func box_scene_frame(holder:Node3D,id:String):
  shape_mesh(center,Vector3(.4,.7,.21),"#ead5a0",holder)
 
 func equip_weapon():
+ if weapon_node and is_instance_valid(weapon_node) and weapon_node.get_parent()==actor and loaded_weapon==weapon:
+  return
  if weapon_node and is_instance_valid(weapon_node):weapon_node.queue_free()
+ loaded_weapon=weapon
  weapon_node=Node3D.new()
  actor.add_child(weapon_node)
  weapon_node.top_level=true;weapon_node.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_OFF
  weapon_node.position=Vector3(.45,.95,.15)
+ weapon_node.visible=false
  if weapon=="sword":
   var blade=CylinderMesh.new();blade.top_radius=.012;blade.bottom_radius=.055;blade.height=1.12;blade.radial_segments=4
-  var steel=shape_mesh(blade,Vector3(0,0,.48),"#bdcdd1",weapon_node);steel.rotation.x=PI/2
+  var steel=shape_mesh(blade,Vector3(0,0,.48),"#bdcdd1",weapon_node,.82);steel.rotation.x=PI/2
   var guard=BoxMesh.new();guard.size=Vector3(.36,.08,.12)
-  shape_mesh(guard,Vector3.ZERO,"#caa458",weapon_node)
+  shape_mesh(guard,Vector3.ZERO,"#caa458",weapon_node,.85)
  else:
   var paper=BoxMesh.new();paper.size=Vector3(.22,.34,.035)
-  shape_mesh(paper,Vector3(0,.1,.1),"#f9dfa2",weapon_node)
- arm_bones.clear();skeleton=null
- for b in actor.find_children("*","Skeleton3D",true,false):skeleton=b
- if skeleton:
-  for i in skeleton.get_bone_count():
-   var n=skeleton.get_bone_name(i).to_lower()
-   if "upperarm" in n or "upper_arm" in n or "j_bip_r_upperarm" in n:arm_bones.append(i)
+  shape_mesh(paper,Vector3(0,.1,.1),"#f9dfa2",weapon_node,.88)
 
 func reset_forest_run():
+ clear_anchor()
  for e in enemies:
   if is_instance_valid(e.node):e.node.queue_free()
  for list_value in [hazards,projectiles,transient]:
   for entry in list_value:
    if is_instance_valid(entry.node):entry.node.queue_free()
  enemies.clear();hazards.clear();projectiles.clear();transient.clear();selected={};stop_route();remote_keys.clear()
- for pickup in pickups:pickup.taken=false;pickup.node.visible=true
+ for pickup in pickups:pickup.taken=false;pickup.node.visible=true;pickup.ring.visible=true
 
 func warm_character():
  # Force each already-loaded atlas onto the GPU under the HTML loading cover.
@@ -420,14 +431,14 @@ func begin_run(data:Dictionary):
  health=600;max_health=600;max_energy=80 if "light" in abilities else 100;energy=max_energy;shield=0;hits_taken=0;kills=0;lamp_count=0;phase=1
  pending_strike={};attack_pose=0;attack_cd=0;combo=0;dash_time=0;regen_delay=0;invulnerable=0;combat_pressed=false;hd_motion="Idle"
  actor.walk_phase=0;actor.was_attacking=false
- active_time=0;cooldowns=[0.0,0.0,0.0];status="playing";mode="field";paused=false;auto_attack=false;combat_pressed=false;anchor=null
+ active_time=0;cooldowns=[0.0,0.0,0.0];status="playing";mode="field";paused=false;auto_attack=false;combat_pressed=false;clear_anchor()
  optional=data.get("optional",{"creek":false,"cores":[]}).duplicate(true)
  rng.seed=int(data.get("seed",1))
  if landscape=="forest":reset_forest_run()
  else:build_forest()
  equip_weapon()
  for p in pickups:
-  if p.id in optional.cores or (p.id=="creek" and optional.creek):p.taken=true;p.node.visible=false
+  if p.id in optional.cores or (p.id=="creek" and optional.creek):p.taken=true;p.node.visible=false;p.ring.visible=false
  place_player(Vector3(0,.15,[25,10,-8,-28.5][mini(stage,3)]))
  spawn_stage()
  send({"type":"notice","message":"青丘林地：先清理林口墨靈。點地面移動，點怪物攻擊；空白鍵閃避。" if stage==0 else "已從確認的區段接續冒險。"})
@@ -452,8 +463,7 @@ func spawn_enemy(kind:String,at:Vector3,small=false):
  var fg=QuadMesh.new();fg.size=Vector2(.96,.045)
  var f=shape_mesh(fg,Vector3(0,0,.004),"#d8b36b",bar)
  disc(Vector3(0,.04,0),1.0 if kind in ["fox","ghost"] else .50,"#355846",.24,root)
- var tails=visual.find_children("Tail*","Node3D",true,false) if kind in ["fox","ghost"] else []
- var e={"tails":tails,"kind":kind,"node":root,"visual":visual,"hp":float(hp),"max":float(hp),"cd":rng.randf_range(1,2.2),"windup":0.0,"dead":false,"split":small,"stun":0.0,"facing":Vector3.FORWARD,"charging":0.0,"charge_hit":false,"bar":bar,"fill":f,"age":0.0,"special":5.0,"exposure":0.0}
+ var e={"kind":kind,"node":root,"visual":visual,"hp":float(hp),"max":float(hp),"cd":rng.randf_range(1,2.2),"windup":0.0,"dead":false,"split":small,"stun":0.0,"facing":Vector3.FORWARD,"charging":0.0,"charge_hit":false,"bar":bar,"fill":f,"age":0.0,"special":5.0,"exposure":0.0,"flash":0.0}
  enemies.append(e)
  return e
 
@@ -490,7 +500,9 @@ func damage_enemy(e:Dictionary,amount:float,heavy=false):
  e.hp=maxf(0,e.hp-amount)
  send({"type":"sfx","kind":"hit"})
  e.fill.scale.x=maxf(.01,e.hp/e.max)
- e.visual.scale*=1.025
+ e.visual.scale*=1.06
+ e.flash=.12
+ if is_instance_valid(e.visual) and e.visual.sprite:e.visual.sprite.modulate=Color(1.65,1.55,1.35)
  damage_number(e.node.position,int(amount),"#fff0b2")
  if e.hp<=0:
   e.dead=true;e.node.visible=false;e.node.queue_free();kills+=1
@@ -542,6 +554,8 @@ func target_enemy():
 
 func skill(index:int):
  if status!="playing" or paused or index<0 or index>2 or cooldowns[index]>0:return
+ if index==1 and "trace" in abilities and anchor!=null and player.position.distance_to(anchor)>=12.0:
+  send({"type":"notice","message":"距離撤退標記太遠（需在 12 公尺內），請靠近標記再發動。"});return
  var cost=[15,18,25][index]*(1-.02*(int(stats.get("planning",2))-2))
  if energy<cost:send({"type":"notice","message":"精力不足，稍微拉開距離再出招。"});return
  energy-=cost;regen_delay=.9;cooldowns[index]=[6.0,9.0,10.0][index];attack_pose=.6;attack_total=.6
@@ -549,10 +563,15 @@ func skill(index:int):
  var direction=Vector3(sin(actor.rotation.y),0,cos(actor.rotation.y))
  if not target.is_empty():direction=(target.node.position-player.position).normalized();direction.y=0;actor.rotation.y=atan2(direction.x,direction.z)
  if index==1 and "trace" in abilities:
-  if anchor==null:anchor=player.position;cooldowns[index]=1.0;send({"type":"notice","message":"已留下撤退標記，再按此招回到標記旁。"})
+  if anchor==null:
+   anchor=player.position;cooldowns[index]=1.0
+   if anchor_node and is_instance_valid(anchor_node):anchor_node.queue_free()
+   anchor_node=disc(anchor+Vector3(0,.05,0),.85,"#67c7b8",.55)
+   disc(Vector3(0,.02,0),.42,"#d9fff0",.75,anchor_node)
+   send({"type":"notice","message":"已留下撤退標記，再按此招回到標記旁。"})
   else:
-   if player.position.distance_to(anchor)<12:place_player(anchor);invulnerable=.35
-   anchor=null
+   var return_pos=anchor;clear_anchor()
+   place_player(return_pos);invulnerable=.35;disc_effect(return_pos,1.1,"#79c6b5")
   return
  if index==2 and "plan" in abilities:
   var circle=disc(player.position+Vector3(0,.06,0),3.2,"#79baa9",.45)
@@ -606,9 +625,13 @@ func hazard(at:Vector3,radius:float,delay:float,damage:float,angle=TAU,facing=Ve
   verts.append(Vector3.ZERO);verts.append(Vector3(sin(a)*radius,0,cos(a)*radius));verts.append(Vector3(sin(b)*radius,0,cos(b)*radius))
  var arrays=[];arrays.resize(Mesh.ARRAY_MAX);arrays[Mesh.ARRAY_VERTEX]=verts
  mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays)
- var node=shape_mesh(mesh,at+Vector3(0,.085,0),"#e7a45e",level_root,.58)
+ var node=shape_mesh(mesh,at+Vector3(0,.085,0),"#e7a45e",level_root,.48)
  node.material_override.cull_mode=BaseMaterial3D.CULL_DISABLED
- hazards.append({"node":node,"pos":at,"radius":radius,"left":delay+(.18 if "foresight" in abilities else 0.0)+.04*(int(stats.get("insight",2))-2),"damage":damage,"angle":angle,"facing":facing})
+ var ring=shape_mesh(mesh,Vector3(0,.004,0),"#ef5b41",node,.68)
+ ring.material_override.cull_mode=BaseMaterial3D.CULL_DISABLED
+ ring.scale=Vector3(.15,1,.15)
+ var total=maxf(.1,delay+(.18 if "foresight" in abilities else 0.0)+.04*(int(stats.get("insight",2))-2))
+ hazards.append({"node":node,"ring":ring,"pos":at,"radius":radius,"left":total,"total":total,"damage":damage,"angle":angle,"facing":facing})
 
 func swing_effect(at:Vector3,direction:Vector3,radius:float,color:String):
  var mesh=TorusMesh.new();mesh.inner_radius=radius*.85;mesh.outer_radius=radius;mesh.rings=24;mesh.ring_segments=4
@@ -624,21 +647,38 @@ func projectile(from:Vector3,to:Vector3,kind:String,damage:float):
  var node=shape_mesh(mesh,from,"#a7e6c6" if kind=="hero" else "#f0b95d")
  projectiles.append({"node":node,"dir":(to-from).normalized(),"kind":kind,"damage":damage,"life":10.0})
 
+func clamp_enemy_position(pos:Vector3)->Vector3:
+ return Vector3(clampf(pos.x,-17.5,17.5),pos.y,clampf(pos.z,-49.5,31.5))
+
+func pillar_blocks_line(from:Vector3,to:Vector3)->bool:
+ var a=Vector2(from.x,from.z);var b=Vector2(to.x,to.z);var ab=b-a;var len2=ab.length_squared()
+ if len2<.01:return false
+ for p in pillars:
+  var c=Vector2(p.x,p.z);var t=clampf((c-a).dot(ab)/len2,0.0,1.0)
+  if (a+ab*t).distance_to(c)<.95:return true
+ return false
+
 func update_enemies(delta:float):
  for e in enemies.duplicate():
   if e.dead:continue
-  e.age+=delta;e.cd-=delta;e.special-=delta;e.stun=maxf(0,e.stun-delta)
+  e.age+=delta;e.cd-=delta;e.special-=delta;e.stun=maxf(0,e.stun-delta);e.flash=maxf(0,float(e.get("flash",0.0))-delta)
   e.bar.rotation.y=yaw
-  e.visual.scale=e.visual.scale.lerp(Vector3.ONE*(1.18 if e.kind in ["fox","ghost"] else .45 if e.kind=="ink" and e.split else .75 if e.kind=="ink" else 1.0),minf(1,delta*9))
+  var base_s=1.18 if e.kind in ["fox","ghost"] else .45 if e.kind=="ink" and e.split else .75 if e.kind=="ink" else 1.0
+  var target_s=Vector3(base_s*1.08,base_s*.92,base_s) if e.windup>0 else Vector3.ONE*base_s
+  e.visual.scale=e.visual.scale.lerp(target_s,minf(1,delta*9))
+  if is_instance_valid(e.visual) and e.visual.sprite:
+   e.visual.sprite.modulate=Color(1.65,1.55,1.35) if e.flash>0 else Color(1.28,.82,.72) if e.windup>0 else Color(.78,.88,1.0) if e.stun>0 else Color.WHITE
   if e.kind=="ghost":
    if e.age>7:e.dead=true;e.node.queue_free()
    continue
   if e.stun>0:continue
   var offset=player.position-e.node.position;offset.y=0
   var distance=offset.length();var direction=offset.normalized()
-  if distance>16 and e.kind!="fox":continue
+  if distance>16 and e.kind!="fox" and e.charging<=0:continue
   if e.charging>0:
-   e.charging-=delta;e.node.position+=e.facing*delta*10
+   e.charging-=delta;var next_pos=e.node.position+e.facing*delta*10
+   e.node.position=clamp_enemy_position(next_pos)
+   if e.node.position.distance_to(next_pos)>.01:e.charging=0
    for p in pillars:
     if e.node.position.distance_to(p)<1.3:
      e.charging=0;e.stun=4.5;disc_effect(p,1.5,"#f0d28b");send({"type":"notice","message":"撞柱破甲！趁現在攻擊石甲猿妖。"})
@@ -649,7 +689,14 @@ func update_enemies(delta:float):
    continue
   var reach=2.5 if e.kind=="ink" else 9.0 if e.kind=="paper" else 4.5
   if distance>reach:
-   e.node.position+=direction*delta*(2.2 if e.kind=="ink" else 1.5);e.node.rotation.y=atan2(direction.x,direction.z)
+   var move_dir=direction
+   for p in pillars:
+    var to_pillar=p-e.node.position;to_pillar.y=0
+    if to_pillar.length()<1.15 and to_pillar.normalized().dot(move_dir)>.2:
+     var side=Vector3(-to_pillar.z,0,to_pillar.x).normalized()
+     if side.dot(move_dir)<0:side=-side
+     move_dir=side
+   e.node.position=clamp_enemy_position(e.node.position+move_dir*delta*(2.2 if e.kind=="ink" else 1.5));e.node.rotation.y=atan2(direction.x,direction.z)
   elif e.cd<=0:
    e.facing=direction;e.node.rotation.y=atan2(direction.x,direction.z)
    e.cd=2.7 if e.kind=="ink" else 3.5 if e.kind=="paper" else 4.8
@@ -664,7 +711,6 @@ func update_enemies(delta:float):
   e.visual.position.y=sin(e.age*4)*.045
 
 func update_fox(e:Dictionary,delta:float,direction:Vector3):
- for i in e.tails.size():e.tails[i].rotation.z=sin(e.age*2+i*.45)*.035
  var wanted=3 if e.hp/e.max<=.35 else 2 if e.hp/e.max<=.70 else 1
  if wanted!=phase:
   phase=wanted
@@ -709,6 +755,10 @@ func update_fox(e:Dictionary,delta:float,direction:Vector3):
 func update_attacks(delta:float):
  for h in hazards.duplicate():
   h.left-=delta
+  if is_instance_valid(h.get("ring")):
+   var progress=clampf(1.0-h.left/maxf(.1,float(h.get("total",1.0))),.15,1.0)
+   h.ring.scale=Vector3(progress,1.0,progress)
+   if h.left<.25:h.node.material_override=h.ring.material_override
   if h.left<=0:
    var offset=player.position-h.pos;offset.y=0
    if h.damage>0 and offset.length()<h.radius and (h.angle>=TAU-.1 or offset.normalized().dot(h.facing)>cos(h.angle*.5)):hero_hurt(h.damage)
@@ -716,7 +766,12 @@ func update_attacks(delta:float):
  for p in projectiles.duplicate():
   p.life-=delta
   if p.kind=="fire":
-   var target=player.position+Vector3(0,.7,0);p.dir=(target-p.node.position).normalized()
+   var target=player.position+Vector3(0,.7,0)
+   for i in lamp_nodes.size():
+    if not lit_lamps[i] and p.node.position.distance_to(lamp_nodes[i].position+Vector3(0,.7,0))<2.6:
+     target=lamp_nodes[i].position+Vector3(0,.7,0);break
+   var desired=(target-p.node.position).normalized()
+   p.dir=desired if delta<=0 else p.dir.lerp(desired,minf(1.0,delta*6.5)).normalized()
   p.node.position+=p.dir*delta*(13 if p.kind=="hero" else 3.9)
   var done=p.life<=0
   if p.kind=="hero":
@@ -724,8 +779,8 @@ func update_attacks(delta:float):
     if not e.dead and p.node.position.distance_to(e.node.position+Vector3(0,.8,0))<(1.25 if e.kind in ["fox","ghost"] else .8):damage_enemy(e,p.damage);done=true;break
   else:
    for i in lamp_nodes.size():
-    if not lit_lamps[i] and p.node.position.distance_to(lamp_nodes[i].position+Vector3(0,.7,0))<2.0:
-     lit_lamps[i]=true;lamp_count+=1;done=true;disc_effect(lamp_nodes[i].position,1.7,"#f9dc8d")
+    if not lit_lamps[i] and p.node.position.distance_to(lamp_nodes[i].position+Vector3(0,.7,0))<2.1:
+     lit_lamps[i]=true;lamp_count+=1;done=true;invulnerable=maxf(invulnerable,.35);disc_effect(lamp_nodes[i].position,1.7,"#f9dc8d")
      if lit_lamps[0] and lit_lamps[1]:shield_window=7.0;send({"type":"notice","message":"雙燈已亮，護盾解除！趁現在反擊。"})
    if not done and p.node.position.distance_to(player.position+Vector3(0,.7,0))<.65:hero_hurt(p.damage);done=true
   if done:p.node.queue_free();projectiles.erase(p)
@@ -762,7 +817,14 @@ func _physics_process(delta):
   if regen_delay<=0:energy=minf(max_energy,energy+18*delta)
   if (combat_pressed or auto_attack or Input.is_physical_key_pressed(KEY_J)) and dash_time<=0:
    var target=target_enemy()
-   if auto_attack and not target.is_empty() and player.position.distance_to(target.node.position)>(2.0 if weapon=="sword" else 9.0):direction=(target.node.position-player.position).normalized();direction.y=0
+   if auto_attack and not target.is_empty() and player.position.distance_to(target.node.position)>(2.0 if weapon=="sword" else 9.0):
+    var goal_pos=target.node.position
+    if pillar_blocks_line(player.position,goal_pos):
+     var start_cell=Vector2i(roundi(player.position.x),roundi(player.position.z));var end_cell=Vector2i(roundi(goal_pos.x),roundi(goal_pos.z))
+     if astar.is_in_boundsv(start_cell) and astar.is_in_boundsv(end_cell) and not astar.is_point_solid(end_cell):
+      var pts=astar.get_point_path(start_cell,end_cell)
+      if pts.size()>1:goal_pos=Vector3(pts[1].x,player.position.y,pts[1].y)
+    direction=(goal_pos-player.position).normalized();direction.y=0
    attack()
   if dash_time>0:dash_time-=delta;direction=dash_direction
   update_enemies(delta);update_attacks(delta)
@@ -770,6 +832,11 @@ func _physics_process(delta):
    checkpoint=stage+1
    send({"type":"checkpoint","checkpoint":checkpoint,"optional":optional.duplicate(true)})
    stage+=1;health=minf(max_health,health+220);energy=max_energy;selected={};auto_attack=false;spawn_stage()
+   var next_z=[25.0,10.0,-8.0,-28.5][mini(stage,3)]
+   for step_i in range(1,5):
+    var guide_pos=player.position.lerp(Vector3(0,.10,next_z),step_i/5.0)
+    var guide_disc=disc(Vector3(guide_pos.x,.09,guide_pos.z),.38,"#a8e6cf",.65)
+    transient.append({"node":guide_disc,"life":2.4+step_i*.25,"kind":"spark"})
    send({"type":"notice","message":["","林口已清理，往溪橋後的符紋遺跡前進。","前往石燈庭：把石甲猿妖引向石柱。","九尾狐在北方石環臺；先整頓精力再前進。"][stage]})
  var speed=4.6*(1.15 if "light" in abilities else 1.0)*(1+.02*(int(stats.get("agility",2))-2))
  if dash_time>0:speed=11.0*(1.16 if "swift" in abilities else 1.0)
@@ -808,7 +875,7 @@ func interact():
   send({"type":"inspectSlot","slot":int(nearest_object.trim_prefix("slot"))});return
  for p in pickups:
   if p.id!=nearest_object or p.taken:continue
-  p.taken=true;p.node.visible=false
+  p.taken=true;p.node.visible=false;p.ring.visible=false
   send({"type":"discovery","id":p.id})
   if p.id=="creek":optional.creek=true;send({"type":"notice","message":"溪水中的足跡與倒影，是辨認真身的線索。「溪畔照影」已送出保存。"})
   else:
@@ -826,7 +893,7 @@ func update_weapon_pose():
  var swing=sin(t*PI) if attack_pose>0 else 0.0
  var right=camera.global_basis.x;var up=camera.global_basis.y;var toward=camera.global_basis.z
  var origin=player.get_global_transform_interpolated().origin
- weapon_node.visible=mode!="museum"
+ weapon_node.visible=mode!="museum" and attack_pose>0
  var heading=actor.get_global_transform_interpolated().basis.z
  var idle_angle=-.75 if side<0 else .75
  var strike_angle=atan2(heading.dot(right),heading.dot(up))
@@ -856,6 +923,9 @@ func _process(delta):
   if not foe.dead and is_instance_valid(foe.visual):foe.visual.face_camera(camera,foe.node.get_global_transform_interpolated().basis.z,foe.charging>0 or foe.node.position.distance_to(player.position)>3.0,foe.windup>0,delta if not paused else 0.0)
  if not paused and mode=="museum":
   for holder in display_models:holder.rotation.y+=delta*.12
+ elif not paused and mode=="field":
+  for p in pickups:
+   if not p.taken and is_instance_valid(p.node):p.node.rotation.y+=delta*.8
  feedback_time+=delta
  if feedback_time>.16:
   feedback_time=0
@@ -962,7 +1032,7 @@ func receive(args):
     enemies.clear()
     for h in hazards:h.node.queue_free()
     for p in projectiles:p.node.queue_free()
-    hazards.clear();projectiles.clear();health=max_health;energy=max_energy;shield=0;invulnerable=1;status="playing";pending_strike={};attack_pose=0;lit_lamps=[false,false];phase=1;shield_window=0
+    clear_anchor();hazards.clear();projectiles.clear();health=max_health;energy=max_energy;shield=0;invulnerable=1;status="playing";pending_strike={};attack_pose=0;lit_lamps=[false,false];phase=1;shield_window=0
     place_player(Vector3(0,.15,[25,10,-8,-28.5][mini(stage,3)]));spawn_stage()
   "testPhase":
    if run_data.get("test",false):
