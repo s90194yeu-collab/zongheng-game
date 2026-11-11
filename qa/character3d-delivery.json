@@ -1,0 +1,28 @@
+{
+  "sourcesApplied": true,
+  "release": "v4-bd52dc10ef27fb",
+  "tests": {
+    "passed": 233,
+    "failed": 0,
+    "skipped": 0
+  },
+  "protectedFilesUnchanged": 23,
+  "deployment": "local-only",
+  "sourceHashes": {
+    "src/legacy/Profile.html": "6332ecedfd37e5e92759da2375038325e39966d9dfe1b97d32ca257702af3cd0",
+    "scripts/build.cjs": "9314c5749fac4e8ed242c155a24c6f2ee6931e61431314e33a84e035049fc619",
+    "scripts/serve.cjs": "d1fff9a5d206298225371f1542c8c0f6bb6dc32577d4131a03c9eb1d55a29452",
+    "project.json": "ce1637680a27b177cc0134b3de43b660e52344093d3ae9a062dc233834c91481",
+    "00_目前進度.md": "f2a3c563940e62a5999d21ac4f3e09940b2cf2c74a2294803eda283f6e1c1777",
+    "src/character3d/preview.js": "ad72c9525d00838fd141ff4ada24f4b5f4d326c3abd50b83ffaf146c40298366",
+    "src/legacy/Character3D_boot.html": "ffa08b5731288df0aca8e2e5eee3cfcd9ce95b2449b187da32aeb30c8bf1979a",
+    "public/models/scholar-pilot.glb": "051f0ddbd926f229fca4cedc9a2711fde8d85f4c20172a3ba133835102799973",
+    "art/character3d/create_scholar.py": "c75a85ff7725614e2100231d890ffc5e39523d1db36bf2a080c37854822c53c5",
+    "art/character3d/scholar-pilot.blend": "52e2c15a3915414215d95b01e99552bab47f723aafbff5b98a1703966835a121",
+    "art/character3d/ASSET_LICENSE.md": "03c80273808fdff5a3fa95020dc8d5e06c0f66db2f29bbebe031a5f5baa32ef0",
+    "art/character3d/THREE_LICENSE.txt": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+    "docs/策士3D試點_v4.16.0.md": "8d9c9e834de522e3e8fb6a7c74fe3cfc6527f28ec627151f7970900965bf5c98",
+    "tests/character3d.test.cjs": "20a5b24ee641e5df00925d2b4f3c8fe51718533b2eca7c13c928195b8445da32",
+    "tests/character3d-browser.cjs": "2f135d77d4f257f6135d41bab226a76219c8abcc071df685bab1ca7cf1467785"
+  }
+}

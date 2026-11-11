@@ -5,7 +5,13 @@ function route(sid,id,state){if(!eligible(state))return null;const c=D.activitie
 function helpHTML(sid,meta={}){const base=D.chapters[sid],variant=base?.variants?.[meta.player];const ch=variant?{...base,...variant}:base;if(!ch)return '';return '<p><b>你是：'+E(ch.actor)+'</b></p><p>'+E(ch.situation)+'</p><p>'+E(ch.cause)+'</p><ul>'+Object.values(D.activities).filter(a=>a.scenarioId===sid&&a.id!=='ws_yanwu').map(a=>'<li><b>'+E(a.title)+'</b>：'+E(a.goal)+'</li>').join('')+'</ul><p>'+E(ch.limit)+'</p><p>各活動可讀自己的操作說明；閱讀與暫停時停止活動計時。提示保留首次表現。</p>';}
 function recordId(id){return String(id).startsWith('wen_')?'wen_t3_'+id.slice(4):'t3_'+id;}
 function chapter(id){return D.chapters[id]||null;}
-function briefHtml(c){const ch=chapter(c.scenarioId)||c;return '<div class="t3-eyebrow">'+E(ch.volume)+' · '+E(ch.name||c.chapter)+' · '+E(names[c.kind]||'文本任務')+'</div><h2>'+E(c.title)+'</h2><div class="t3-role">你現在是：'+E(c.actor||ch.actor)+'</div><p>'+E(c.situation||ch.situation)+'</p><div class="t3-goal">'+E(c.goal)+'</div><p class="t3-cause"><b>這次操作要看見</b><br>'+E(c.reason||ch.cause)+'</p><p class="t3-note">'+E(c.limit||ch.limit)+'</p>';}
+function avatarHtml(name){
+ if(!w.ART||typeof w.ART.portrait!=='function')return '';
+ const raw=String(name||'').replace(/^[「『]|[」』]$/g,'').split(/[・·／/\s（(、，]/)[0].trim();
+ const spec=(raw&&typeof w.ART.specOf==='function'?w.ART.specOf(raw,raw):null)||{hat:'cap',robe:'#2f5e68',trim:'#e6c678',sleeves:'#1e3d44',prop:'scroll'};
+ try{return '<div class="t3-avatar" aria-hidden="true">'+w.ART.portrait(spec)+'</div>';}catch(_){return '';}
+}
+function briefHtml(c){const ch=chapter(c.scenarioId)||c,role=c.actor||ch.actor||'主事者';return '<div class="t3-brief-head">'+avatarHtml(role)+'<div class="t3-brief-meta"><div class="t3-eyebrow">'+E(ch.volume)+' · '+E(ch.name||c.chapter)+' · '+E(names[c.kind]||'文本任務')+'</div><h2>'+E(c.title)+'</h2><div class="t3-role">你現在是：'+E(role)+'</div></div></div><p>'+E(c.situation||ch.situation)+'</p><div class="t3-goal">'+E(c.goal)+'</div><p class="t3-cause"><b>這次操作要看見</b><br>'+E(c.reason||ch.cause)+'</p><p class="t3-note">'+E(c.limit||ch.limit)+'</p>';}
 function b(a,label,value,disabled=false,extra=''){return'<button type="button" data-t3="'+a+'"'+(value===undefined?'':' data-value="'+E(typeof value==='string'?value:JSON.stringify(value))+'"')+(disabled?' disabled':'')+' '+extra+'>'+E(label)+'</button>';}
 function wrap(c,state,legacy){return async function(body,g){
  if(c.mode==='replace')return play(c,body,g);

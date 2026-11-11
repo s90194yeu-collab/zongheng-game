@@ -1,0 +1,76 @@
+{
+  "version": "4.20.0-google",
+  "release": "v4-9eae8fb91a8b35",
+  "commit": "226ae7c6f6330bc5144f1155a252e1fc859dcda6",
+  "workflow": {
+    "id": 40672576241,
+    "conclusion": "success",
+    "pass": 273,
+    "skip": 5,
+    "fail": 0
+  },
+  "localTests": {
+    "pass": 278,
+    "fail": 0
+  },
+  "art": {
+    "style": "暖色水彩繪本",
+    "hallCount": 6,
+    "sourceImages": 10,
+    "exteriorTriangles": 1046,
+    "exteriorMeshes": 25,
+    "glbBytes": 6347792,
+    "scope": "村莊外景；室內保留原3D"
+  },
+  "manualDesktop": [
+    "全景六館與遠山分層",
+    "春秋史館帶路抵達與入館",
+    "室內方向鍵行走與展櫃",
+    "3D竹簡近看、收展與觀察提示",
+    "燭之武原篇章入口"
+  ],
+  "fps": {
+    "artificialCap": false,
+    "hardwareMeasured": false
+  },
+  "studentRecordsWritten": 0,
+  "gas": {
+    "ok": true,
+    "version": 67,
+    "release": "v4-9eae8fb91a8b35",
+    "sourceHash": "ff96a2e0edbfee566f412ba34c523fe36f153219cce45443dc1150e41bc14d39",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 229,
+    "previousVersion": 66,
+    "studentRecordsWritten": 0
+  },
+  "publicVerification": {
+    "ok": true,
+    "version": "4.20.0-google",
+    "release": "v4-9eae8fb91a8b35",
+    "pages": 96,
+    "referencedResources": 271,
+    "villageAssets": {
+      "version": 1,
+      "app": "assets/village-app-b494f2c742348844.js",
+      "css": "assets/village-style-41e1f8d3f1f8c508.css",
+      "assets": {
+        "character": "models/scholar-pilot-051f0ddbd926f229.glb",
+        "exterior": "models/watercolor-village-c54d0d04ee15d5cc.glb",
+        "interior": "models/museum-interior-eec72bc2b36dea3c.glb",
+        "springInterior": "models/spring-interior-9f077766a25e3a92.glb"
+      }
+    }
+  },
+  "formalEntry": {
+    "ok": true,
+    "release": "v4-9eae8fb91a8b35",
+    "hasVillageEntry": true,
+    "responseBytes": 20006,
+    "url": "https://script.google.com/macros/s/AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg/exec?page=hub",
+    "entryUpdated": true
+  },
+  "formalBrowserManual": "not rerun after activation: Mac locked; identical local release tested in Edge"
+}

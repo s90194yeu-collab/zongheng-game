@@ -1,6 +1,29 @@
 <script>
 (function(ZH){
  'use strict';const L=ZH.literary;
+ const chibiCache=new Map();
+ function getChibi(label,title){
+  if(typeof Image==='undefined'||!window.ART||typeof window.ART.chibi!=='function')return null;
+  const key=(label||'')+'|'+(title||'');
+  if(chibiCache.has(key))return chibiCache.get(key);
+  const raw=String(label||title||'').replace(/^[「『]|[」』]$/g,'').split(/[・·／/\s（(、，]/)[0].trim();
+  let spec=raw&&typeof window.ART.specOf==='function'?window.ART.specOf(raw,raw):null;
+  if(!spec&&title&&typeof window.ART.specOf==='function')spec=window.ART.specOf(title,title);
+  if(!spec){
+   if(/黛玉|湘雲|劉姥姥|老婦|女/.test(raw))spec={gender:'f',hair:'twin',robe:'#b86b77',trim:'#f2d89c',sleeves:'#8a4853',eyes:'bright'};
+   else if(/幼童|童/.test(raw))spec={hair:'topknot',robe:'#5ca393',trim:'#f0d48a',sleeves:'#3c7568',eyes:'bright'};
+   else if(/老翁|村人|長者/.test(raw))spec={hat:'cloth',beard:'long',robe:'#6b7565',trim:'#d8c394',sleeves:'#4d5548',eyes:'kind'};
+   else spec={hat:'cap',robe:'#366873',trim:'#e5c77b',sleeves:'#22454d',prop:'scroll'};
+  }
+  try{
+   const svg=window.ART.chibi(spec);
+   if(!svg){chibiCache.set(key,null);return null;}
+   const img=new Image();
+   img.src='data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+   chibiCache.set(key,img);
+   return img;
+  }catch(_){chibiCache.set(key,null);return null;}
+ }
  function draw(ctx,w,t,images){
   const cfg=t.mission,P=L.U.cells(),pick=i=>i===w.selected,light='#edcf84',ink='#f3e6bc',green='#a8d4bd',red='#e7a28b',blue='#9bcddd';
   function rect(x,y,a,b,fill='#173444dd',stroke='#dcc17c88',r=10){ctx.beginPath();ctx.roundRect(x,y,a,b,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}
@@ -8,7 +31,7 @@
   function circle(x,y,r,fill,stroke){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke();}}
   function line(a,b,color=light,width=4){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
   function arrow(a,b,color=light,width=4){line(a,b,color,width);const q=Math.atan2(b.y-a.y,b.x-a.x);line(b,{x:b.x-16*Math.cos(q-.45),y:b.y-16*Math.sin(q-.45)},color,width);line(b,{x:b.x-16*Math.cos(q+.45),y:b.y-16*Math.sin(q+.45)},color,width);}
-  function actor(p,label='你',img=images.player,s=.9){ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s);ctx.fillStyle='#06151d77';ctx.beginPath();ctx.ellipse(0,12,25,9,0,0,Math.PI*2);ctx.fill();if(img?.complete&&img.naturalWidth)ctx.drawImage(img,-29,-65,58,80);else{circle(0,-28,15,'#f1cba2');rect(-18,-14,36,38,'#679c99',light);}if(label)text(label,0,43,18);ctx.restore();}
+  function actor(p,label='你',img=images.player,s=.9){ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s);ctx.fillStyle='#06151d77';ctx.beginPath();ctx.ellipse(0,12,25,9,0,0,Math.PI*2);ctx.fill();const sp=(img?.complete&&img.naturalWidth)?img:getChibi(label,cfg?.title);if(sp?.complete&&sp.naturalWidth)ctx.drawImage(sp,-32,-72,64,90);else{rect(-19,-22,38,36,'#4b8285',light,14);line({x:-8,y:-20},{x:8,y:8},light,2.5);circle(0,-40,18,'#f6dec2','#2b2118');ctx.fillStyle='#2b221e';ctx.beginPath();ctx.arc(0,-43,18,Math.PI*.95,Math.PI*2.05);ctx.fill();rect(-8,-66,16,10,'#2c3847',light,4);circle(-6,-39,2.4,'#221a17');circle(6,-39,2.4,'#221a17');circle(-6.8,-40.2,1,'#fff');circle(5.2,-40.2,1,'#fff');ctx.fillStyle='#eb8f8285';ctx.beginPath();ctx.ellipse(-10.5,-34,3.5,1.8,0,0,Math.PI*2);ctx.ellipse(10.5,-34,3.5,1.8,0,0,Math.PI*2);ctx.fill();}if(label)text(label,0,43,18);ctx.restore();}
   function sel(p,r=55){circle(p.x,p.y,r,'#f0d17c13','#f5d58d');}
   function card(p,top,bottom,selected=false,color='#24464ae9'){rect(p.x-87,p.y-46,174,92,color,selected?'#ffe4a0':'#b7d1bd88');text(top,p.x,p.y-6,23);if(bottom!==undefined)text(bottom,p.x,p.y+27,19,green);}
   function edges(nodes,es,color='#c7c49a88'){es.forEach(([a,b])=>line(nodes[a],nodes[b],color,5));}

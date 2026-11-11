@@ -261,7 +261,11 @@
 
   .slg-choice { position: fixed; inset: 0; z-index: 46; display: grid; place-items: center; padding: 16px; background: rgba(8, 10, 22, .72); animation: zh-fade-in .2s ease both; }
   .slg-choice__card { width: min(560px, 100%); max-height: 100%; overflow: auto; padding: 20px; border: 1px solid var(--gilt); border-radius: 14px; background: linear-gradient(180deg, var(--night-3), var(--night-2)); box-shadow: var(--shadow); }
-  .slg-choice__card h2 { font-size: 22px; margin-bottom: 8px; }
+  .slg-choice__head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .slg-choice__avatar { width: 64px; height: 82px; flex: none; border-radius: 10px; overflow: hidden; border: 2px solid var(--gilt); background: radial-gradient(circle at 50% 38%, #fffaf0, #e3d0a4); box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
+  .slg-choice__avatar .ck { display: block; width: 100%; height: 100%; }
+  .slg-choice__card h2 { font-size: 22px; margin-bottom: 6px; }
+  .slg-choice__card p { margin-bottom: 0; line-height: 1.75; }
   .slg-choice__card > p { margin-bottom: 14px; line-height: 1.8; }
   .slg-choice .zh-choice__text small { display: block; font-family: var(--f-body); font-size: 13px; color: var(--text-dim); line-height: 1.5; }
 
@@ -1354,9 +1358,11 @@
     function choose(o) {
       return new Promise(resolve => {
         const previous = document.activeElement;
+        const heroSp = speakerOf(o.who || o.speaker || (ST.castIds && ST.castIds[0]) || (C.characters && C.characters[0] && C.characters[0].id));
+        const avatarHtml = hasArt() && heroSp ? '<div class="slg-choice__avatar" aria-hidden="true">' + global.ART.portrait(artSpec(heroSp)) + '</div>' : '';
         const wrap = ZH.html(
           '<div class="slg-choice" role="dialog" aria-modal="true" aria-labelledby="slg-choice-t"><div class="slg-choice__card">' +
-          '<h2 id="slg-choice-t">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') +
+          '<div class="slg-choice__head">' + avatarHtml + '<div class="slg-choice__meta"><h2 id="slg-choice-t">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') + '</div></div>' +
           '<div class="zh-choices">' + (o.options || []).map((op, i) =>
             '<button type="button" class="zh-choice" data-i="' + i + '"><span class="zh-choice__key">' + '甲乙丙丁戊己'[i] + '</span>' +
             '<span class="zh-choice__text">' + esc(op.label) + (op.desc ? '<small>' + esc(op.desc) + '</small>' : '') + '</span></button>').join('') +

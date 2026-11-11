@@ -1,0 +1,47 @@
+{
+  "readOnly": true,
+  "checkedAt": "2026-10-17T03:12:47.221Z",
+  "deploymentCount": 2,
+  "versionCount": 3,
+  "deployments": [
+    {
+      "deploymentId": "AKfycbwGbxwnTO06x0skbwb66DMwIxroc8oXUqQaL0JA3v-u",
+      "version": "HEAD",
+      "description": "",
+      "updatedAt": "1970-01-01T00:00:00Z",
+      "urls": [
+        "https://script.google.com/macros/s/AKfycbwGbxwnTO06x0skbwb66DMwIxroc8oXUqQaL0JA3v-u/exec"
+      ],
+      "isGameUrl": false,
+      "entryTypes": [
+        "WEB_APP"
+      ]
+    },
+    {
+      "deploymentId": "AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg",
+      "version": 45,
+      "description": "Re:縱橫鼎業 v4.0.0｜GitHub素材＋Google試算表",
+      "updatedAt": "2026-10-17T01:52:54.817Z",
+      "urls": [
+        "https://script.google.com/macros/s/AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg/exec"
+      ],
+      "isGameUrl": true,
+      "entryTypes": [
+        "WEB_APP"
+      ]
+    }
+  ],
+  "unreferencedVersions": [
+    {
+      "version": 44,
+      "description": "",
+      "createdAt": "2026-10-17T00:14:53.040Z"
+    },
+    {
+      "version": 43,
+      "description": "",
+      "createdAt": "2026-10-16T06:01:17.468Z"
+    }
+  ],
+  "noChangesMade": true
+}

@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "version": 73,
+  "release": "v4-508ca2599fd75c",
+  "sourceHash": "6e1e810966bc6e0f9d405a58508291eebd467b88091af7a9dcf5ec82bbff3957",
+  "changed": [
+    "GitHubBridge"
+  ],
+  "unchangedFiles": 229,
+  "previousVersion": 72,
+  "studentRecordsWritten": 0
+}

@@ -1,0 +1,75 @@
+{
+  "sourcesApplied": true,
+  "version": "4.17.0-google",
+  "release": "v4-ba33d827d69573",
+  "originalGameTests": {
+    "passed": 244,
+    "failed": 0,
+    "skipped": 0
+  },
+  "protectedFilesUnchanged": 237,
+  "originalHubOnlyNewEntry": true,
+  "deployment": "published-and-activated",
+  "tripoSubmittedTasks": 0,
+  "tripoAuthenticated": false,
+  "standaloneUnitTests": {
+    "passed": 4,
+    "failed": 0
+  },
+  "standaloneBrowser": {
+    "passed": true,
+    "checks": [
+      "GLB村莊、角色與展廳實際載入WebGL",
+      "桌面村莊全景",
+      "鍵盤確實移動策士並切換跑步",
+      "策士沿路自動走到春秋史館門口",
+      "進入真正3D展廳，展櫃有碰撞",
+      "展櫃開啟本館18篇原有篇章，選擇事件正確",
+      "可離館並回到原館門口",
+      "390px手機排版與方向控制",
+      "減少動態關閉角色待機循環",
+      "退出釋放資源且可重新進入"
+    ],
+    "errors": [],
+    "failures": [],
+    "finalState": {
+      "place": "village",
+      "position": {
+        "x": 0,
+        "z": 7
+      },
+      "museum": null,
+      "animation": "Idle",
+      "animationTime": 0,
+      "moving": false,
+      "pathRemaining": 0,
+      "near": null,
+      "drawCalls": 67,
+      "quality": "low",
+      "pixelRatio": 1,
+      "reduced": true,
+      "lost": false,
+      "disposed": false,
+      "dialog": false,
+      "chapterCount": 0
+    }
+  },
+  "integratedBrowser": {
+    "passed": true,
+    "checks": [
+      "原首頁與清單保留，未開啟時不下載村莊模型",
+      "原首頁可開啟完整3D村莊",
+      "進館與展櫃使用正式18篇春秋目錄",
+      "展櫃遵守原本訪客／學校帳號權限",
+      "行走、進館與閱覽展櫃不呼叫新GAS API",
+      "選章關閉村莊後，接回原本openScenario入口",
+      "退出釋放3D畫面，可繼續使用原清單"
+    ],
+    "errors": [],
+    "failures": []
+  },
+  "dependencyLockVerified": true,
+  "scope": "Blender prototype; six exterior halls, one shared interior, fixed scholar; Tripo plans only, no generated Tripo assets",
+  "publicationEvidence": "../deliverables/3D博物館村發布_v4.17.0/發布核對記錄.json",
+  "formalManualBrowser": "blocked by locked Mac; formal HTTP entry and all public resources verified"
+}

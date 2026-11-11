@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "version": "4.23.0-google",
+  "gasVersion": 71,
+  "release": "v4-6ca8fefe7a9197",
+  "browser": {
+    "maleLoaded": true,
+    "femaleLoaded": true,
+    "outfitSwitching": true,
+    "consoleErrors": 0
+  },
+  "localTests": 296,
+  "staticPages": 96,
+  "staticResources": 275,
+  "profileRecordsWritten": 0,
+  "note": "正式站僅試看；外觀保存與村莊進館以本機訪客驗證。"
+}

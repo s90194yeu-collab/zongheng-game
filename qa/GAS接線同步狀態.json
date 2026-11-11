@@ -1,0 +1,14 @@
+{
+  "attempted": true,
+  "originalFiles": 155,
+  "preparedFiles": 156,
+  "changed": [
+    "Code.gs",
+    "GitHubBridge.gs",
+    "S_cq13_zichan_data.gs"
+  ],
+  "backup": "/Users/chiuemacminim4/Library/CloudStorage/GoogleDrive-s90194yeu@gm.nssh.ntpc.edu.tw/我的雲端硬碟/Chiue's Google/多元選修/115 AI導入數位教學示範學校/縱橫鼎業/縱橫鼎業_全專案交接_20261013/GitHub_Google雲端版/gas-private-source/雲端備份_2026-10-17T01-49-06-262Z.json",
+  "productionDeploymentChanged": false,
+  "ok": true,
+  "cloudSourceUpdated": true
+}

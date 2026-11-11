@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "site": "https://s90194yeu-collab.github.io/zongheng-game/",
+  "release": "v4-d06977533301bd",
+  "chapters": 40,
+  "pagesVerified": 46,
+  "media": 202,
+  "home": 4,
+  "music": 7,
+  "samples": [
+    {
+      "file": "home/cq.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 288690,
+      "cors": "*"
+    },
+    {
+      "file": "media/scene_zhongyuan_ai.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 318984,
+      "cors": "*"
+    },
+    {
+      "file": "media/font_dialogue.woff2",
+      "status": 200,
+      "contentType": "font/woff2",
+      "bytes": 996460,
+      "cors": "*"
+    },
+    {
+      "file": "music/menu.m4a",
+      "status": 200,
+      "contentType": "audio/mp4",
+      "bytes": 3954390,
+      "cors": "*"
+    },
+    {
+      "file": "assets/three-r180.min.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 181137,
+      "cors": "*"
+    }
+  ],
+  "checkedAt": "2026-10-17T02:05:50.919Z"
+}

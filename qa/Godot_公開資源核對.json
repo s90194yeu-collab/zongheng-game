@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "version": "4.24.1-google",
+  "release": "v4-508ca2599fd75c",
+  "pages": 96,
+  "referencedResources": 286,
+  "villageAssets": {
+    "version": 1,
+    "app": "assets/village-app-1d79942856db9c55.js",
+    "css": "assets/village-style-c03bae6df93c6ac1.css",
+    "assets": {
+      "character": "models/scholar-pilot-051f0ddbd926f229.glb",
+      "hero": "models/anime-male-mobile-897d5de88da95d79.glb",
+      "heroFemale": "models/anime-female-mobile-c171b31ee9a2299b.glb",
+      "exterior": "models/orbit-village-dec63bf6f4d20231.glb",
+      "interior": "models/museum-interior-eec72bc2b36dea3c.glb",
+      "springInterior": "models/spring-interior-9f077766a25e3a92.glb"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "version": "4.18.1-google",
+  "release": "v4-d1c0e6daacd2c9",
+  "localTests": {
+    "passed": 264,
+    "failed": 0
+  },
+  "ciTests": {
+    "passed": 259,
+    "skippedPrivateSource": 5,
+    "failed": 0
+  },
+  "gitCommit": "96c9be66da6c3dd3dc7f321885ed5e6dcffc6d4a",
+  "workflowRun": "https://github.com/s90194yeu-collab/zongheng-game/actions/runs/40627810230",
+  "publicVerification": {
+    "ok": true,
+    "version": "4.18.1-google",
+    "release": "v4-d1c0e6daacd2c9",
+    "pages": 96,
+    "referencedResources": 270,
+    "villageAssets": {
+      "version": 1,
+      "app": "assets/village-app-c0ba845f889ddbe5.js",
+      "css": "assets/village-style-25ce9ec04b110825.css",
+      "assets": {
+        "character": "models/scholar-pilot-051f0ddbd926f229.glb",
+        "exterior": "models/museum-village-739b721eb15164b4.glb",
+        "interior": "models/museum-interior-eec72bc2b36dea3c.glb"
+      }
+    }
+  },
+  "gas": {
+    "ok": true,
+    "version": 64,
+    "release": "v4-d1c0e6daacd2c9",
+    "sourceHash": "2f52dd6e0ea4f0cb282d718756beb9bf5feb90ecdec26f1d0fbc3c49f7ed4b8c",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 229,
+    "previousVersion": 63,
+    "studentRecordsWritten": 0
+  },
+  "formalEntry": {
+    "ok": true,
+    "release": "v4-d1c0e6daacd2c9",
+    "hasVillageEntry": true,
+    "responseBytes": 20012,
+    "url": "https://script.google.com/macros/s/AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg/exec?page=hub",
+    "entryUpdated": true
+  },
+  "formalBrowserManualCheck": {
+    "scope": "visitor desktop: formal hub → village → hall navigation → enter hall → exhibit navigation → open lesson list",
+    "passed": true,
+    "schoolAuthenticatedTest": false,
+    "physicalPhoneTest": false,
+    "finalPerspectiveSwitchAttempt": "Not observed: Mac locked after hotfix exhibit/list verification; perspective switching already verified on local preview, logic unchanged in hotfix."
+  },
+  "evidenceRecord": "../deliverables/村莊指引互動_v4.18.0/發布核對記錄.json",
+  "completedAt": "2026-10-28T11:46:39+08:00"
+}

@@ -26,9 +26,61 @@
   "browserManualCheck": "not completed: Chrome currently being used elsewhere; independent preview tab connection unavailable",
   "artDirection": "five generated options stored locally; choice pending; runtime art unchanged",
   "schoolRecordsWritten": 0,
-  "pending": [
-    "GitHub publication",
-    "public verification",
-    "GAS frontend pin activation"
-  ]
+  "pending": [],
+  "gitCommit": "368fdb558dbbe5aa68c49aad4fa8ac30062ddc46",
+  "deployment": "published-and-activated",
+  "workflowRun": "https://github.com/s90194yeu-collab/zongheng-game/actions/runs/40666636003",
+  "artOptions": {
+    "saved": 5,
+    "selection": "pending",
+    "runtimeSceneChanged": false,
+    "gallery": "五款美術範例/五款風格比較.html",
+    "prompts": "五款美術範例/提示詞與圖片對照.json"
+  },
+  "workflow": "success",
+  "ciTests": {
+    "passed": 269,
+    "skippedPrivateSource": 5,
+    "failed": 0
+  },
+  "publicVerification": {
+    "ok": true,
+    "version": "4.19.1-google",
+    "release": "v4-998c49b08ac4d7",
+    "pages": 96,
+    "referencedResources": 271,
+    "villageAssets": {
+      "version": 1,
+      "app": "assets/village-app-4829dcb56b7b3425.js",
+      "css": "assets/village-style-41e1f8d3f1f8c508.css",
+      "assets": {
+        "character": "models/scholar-pilot-051f0ddbd926f229.glb",
+        "exterior": "models/museum-village-0fd7af8b240cf3fd.glb",
+        "interior": "models/museum-interior-eec72bc2b36dea3c.glb",
+        "springInterior": "models/spring-interior-9f077766a25e3a92.glb"
+      }
+    }
+  },
+  "gas": {
+    "ok": true,
+    "version": 66,
+    "release": "v4-998c49b08ac4d7",
+    "sourceHash": "b202b38f52392f437c125aa829a99e62a5f3b691abc7754e12aca797210d39f9",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 229,
+    "previousVersion": 65,
+    "studentRecordsWritten": 0
+  },
+  "formalEntry": {
+    "ok": true,
+    "release": "v4-998c49b08ac4d7",
+    "hasVillageEntry": true,
+    "responseBytes": 20012,
+    "url": "https://script.google.com/macros/s/AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg/exec?page=hub",
+    "entryUpdated": true
+  },
+  "completedAt": "2026-10-28T17:52:09+08:00",
+  "manualFpsMeasurement": "not claimed; hardware FPS was not measured"
 }

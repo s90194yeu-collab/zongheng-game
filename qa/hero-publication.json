@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "version": 70,
+  "release": "v4-bfd453313545f6",
+  "sourceHash": "def1a66750dc73f4329fff95a95da5e14ce57cd77a2ba992ef870d5facae3d9b",
+  "changed": [
+    "GitHubBridge",
+    "Data_doll3d"
+  ],
+  "unchangedFiles": 228,
+  "previousVersion": 69,
+  "studentRecordsWritten": 0,
+  "frontendVersion": "4.22.0-google",
+  "commit": "80727cb003ba2258a65333dfcd78599a24aa2043",
+  "workflow": {
+    "id": 40820069500,
+    "conclusion": "success",
+    "url": "https://github.com/s90194yeu-collab/zongheng-game/actions/runs/40820069500"
+  },
+  "localTests": {
+    "pass": 290,
+    "fail": 0
+  },
+  "publicPagesVerified": 96,
+  "publicResourcesVerified": 273,
+  "formalBrowser": [
+    "角色載入",
+    "輕甲切換",
+    "跑步",
+    "暫停"
+  ],
+  "formalAccountAppearanceWritten": false
+}

@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "version": "4.24.1-google",
+  "gasVersion": 73,
+  "release": "v4-508ca2599fd75c",
+  "engine": "Godot 4.7.2 Web single thread",
+  "browser": {
+    "formalGameReady": true,
+    "femaleOutfitSwitch": true,
+    "physicalMovement": true,
+    "zoom": true,
+    "consoleErrors": 0
+  },
+  "nodeTests": 302,
+  "scenePhysicsTests": "passed: same gameplay PCK",
+  "staticPages": 96,
+  "staticResources": 286,
+  "firstTransferBytes": 18803923,
+  "realProfileSavesPerformed": 0,
+  "note": "正式站僅試看與操作；外觀保存重載、入館選課與手機尺寸在本機訪客驗證。"
+}

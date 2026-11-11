@@ -196,10 +196,18 @@ test('三段亮點自動驅動器（燭之武、青丘林地、楚漢大地圖�
  assert.equal(focusedCity,'hanzhong','楚漢大地圖應由電腦自動聚焦漢中並執行內政');
 });
 
-test('建置產物包含 showcase-shells.json，具備燭之武與楚漢大地圖完整空殼',()=>{
+test('建置產物包含 showcase-shells.json，具備燭之武與楚漢大地圖完整空殼，且各場景角色皆串接內建 Q 版人物圖',()=>{
  const shellsFile=path.join(root,'dist/assets/showcase-shells.json');
  assert(fs.existsSync(shellsFile),'應產生 dist/assets/showcase-shells.json');
  const shells=JSON.parse(fs.readFileSync(shellsFile,'utf8'));
  assert(shells.S_cq08_weizheng&&shells.S_cq08_weizheng.includes('<!--ZH_SERVER_BOOT-->'));
  assert(shells.Map&&shells.Map.includes('<!--ZH_SERVER_BOOT-->'));
+ const {SC}=setupShowcase();
+ assert.equal(SC.stages[0].durationMs,72000,'展示段落預設應有充足72秒導覽時間');
+ SC.setSpeed(1.45);
+ assert.equal(SC.inspect().speedFactor,1.45,'應支援切換慢速細看節奏倍率');
+ assert(raw('Textplay_canvas').includes('A.chibi'),'Textplay_canvas 應使用內建 ART.chibi 可愛人物');
+ assert(raw('GameplayCanvas').includes('w.ART.chibi'),'GameplayCanvas 應使用內建 ART.chibi 可愛人物');
+ assert(raw('Adventure_canvas').includes('window.ART.chibi'),'Adventure_canvas 應使用內建 ART.chibi 可愛人物');
+ assert(raw('Literary_canvas').includes('window.ART.chibi'),'Literary_canvas 應使用內建 ART.chibi 可愛人物');
 });

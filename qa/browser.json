@@ -1,0 +1,283 @@
+{
+  "passed": true,
+  "pages": [
+    {
+      "name": "Hub",
+      "loaded": true,
+      "ms": 713
+    },
+    {
+      "name": "Profile",
+      "loaded": true,
+      "ms": 7308
+    },
+    {
+      "name": "Gallery",
+      "loaded": true,
+      "ms": 2912
+    },
+    {
+      "name": "Map",
+      "loaded": true,
+      "ms": 1112
+    },
+    {
+      "name": "Result",
+      "loaded": true,
+      "ms": 1458
+    },
+    {
+      "name": "Teacher",
+      "loaded": true,
+      "ms": 375
+    },
+    {
+      "name": "S_cq00_dongqian",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1615
+    },
+    {
+      "name": "S_cq01_zhengzhuang",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1432
+    },
+    {
+      "name": "S_cq02_handong",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1383
+    },
+    {
+      "name": "S_cq03_qihuan",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1499
+    },
+    {
+      "name": "S_cq04_chonger",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1335
+    },
+    {
+      "name": "S_cq05_hanyuan",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1330
+    },
+    {
+      "name": "S_cq06_songxiang",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1385
+    },
+    {
+      "name": "S_cq07_chengpu",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1417
+    },
+    {
+      "name": "S_cq08_weizheng",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 892
+    },
+    {
+      "name": "S_cq09_xiao",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1443
+    },
+    {
+      "name": "S_cq10_wending",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1347
+    },
+    {
+      "name": "S_cq11_jinba",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1370
+    },
+    {
+      "name": "S_cq12_jinchu",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1373
+    },
+    {
+      "name": "S_cq13_zichan",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1365
+    },
+    {
+      "name": "S_cq14_wushi",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1347
+    },
+    {
+      "name": "S_cq15_kongzi",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1382
+    },
+    {
+      "name": "S_cq16_datong",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1349
+    },
+    {
+      "name": "S_cq17_wuyue",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1341
+    },
+    {
+      "name": "S_zg01_sanjia",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1380
+    },
+    {
+      "name": "S_zg02_weiwen",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1400
+    },
+    {
+      "name": "S_zg03_shangyang",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1399
+    },
+    {
+      "name": "S_zg04_jixia",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1400
+    },
+    {
+      "name": "S_zg05_maling",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1399
+    },
+    {
+      "name": "S_zg06_hezong",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1388
+    },
+    {
+      "name": "S_zg07_quyuan",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1381
+    },
+    {
+      "name": "S_zg08_hufu",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1401
+    },
+    {
+      "name": "S_zg09_mengchang",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1394
+    },
+    {
+      "name": "S_zg10_changping",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1428
+    },
+    {
+      "name": "S_zg11_zhuke",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1397
+    },
+    {
+      "name": "S_zg12_handan",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1397
+    },
+    {
+      "name": "S_zg13_tongyi",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1373
+    },
+    {
+      "name": "S_ch01_shaqiu",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1382
+    },
+    {
+      "name": "S_ch02_dazexiang",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1366
+    },
+    {
+      "name": "S_ch03_julu",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1364
+    },
+    {
+      "name": "S_ch04_hongmen",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1354
+    },
+    {
+      "name": "S_ch05_sanqin",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1393
+    },
+    {
+      "name": "S_ch06_xingyang",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1409
+    },
+    {
+      "name": "S_ch07_hanxin",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1391
+    },
+    {
+      "name": "S_ch08_gaixia",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1350
+    },
+    {
+      "name": "S_ch09_dafeng",
+      "started": true,
+      "mediaRpcCalls": 0,
+      "ms": 1351
+    }
+  ],
+  "pageErrors": [],
+  "resourceFailures": [],
+  "doll": {
+    "canvas": 1,
+    "text": "Re:\n縱橫鼎業\n訪客\n回關卡選擇\n配樂\n我的策士\n逛逛3D收藏館 →\n\n換裝、玩耍，也為下一局搭配技能。\n\n已完成 0 個不同篇章\n\n訪客造型只留在此分頁；關閉後即清除。\n\n我的策士\n2D\n3D\n\n訪客策士\n\n揮手\n轉一圈\n跳躍\n鞠躬\n跳舞\n歡呼\n思考\n敬禮\n拱手\n左看右看\n踏步\n\n選個動作，陪策士玩一下。\n\n停止動作\n3D拍照\n下載2D造型\n鏡頭、走動與畫質\n\n拖曳旋轉、雙指縮放；點方向鍵讓策士走一小步。換裝與環境儲存後同步到收藏館。\n\n紙娃娃\n名稱設定\n裝備技能\n搭配你的造型\n\n男生、女生都能自由選擇所有服裝與配件。\n\n外型\n穿搭\n裝飾\n場景\n角色造型\n男生\n女生\n膚色\n白瓷\n暖杏\n蜜棕\n深褐\n髮型\n束髮\n短髮\n長髮\n編髮\n馬尾\n雙髮髻\n圓短髮\n蓬鬆捲髮\n髮色\n墨黑\n栗棕\n霜白\n玫瑰棕\n蜂蜜金\n丁香紫\n表情\n微笑\n閃亮眼\n認真\n眨眼笑\n臉部裝飾\n不戴\n圓框眼鏡\n單片鏡\n小雀斑\n眼睛顏色\n墨瞳\n琥珀瞳\n青玉瞳\n丁香瞳\n隨機搭配\n還原已存造型\n青玉小書生\n桃庭小花仙\n雲間小旅人\n月色收藏家\n套用十二組預設搭配\n\n尚未變更。造型搭配不影響能力與技能。\n\n儲存策士資料\n重新讀取\n學校資料與紀錄管理\n新北市南山高級中學國文科 闕宏宇老師\n版權與製作\n本機完整試玩｜不登入、不寫入學校紀錄",
+    "female": true,
+    "motion": true
+  }
+}

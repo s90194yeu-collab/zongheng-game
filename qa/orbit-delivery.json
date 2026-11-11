@@ -1,0 +1,104 @@
+{
+  "version": "4.21.1-google",
+  "release": "v4-4ef1628ffcd463",
+  "commit": "65cc0de300f6416c84f0240c73ccd9996b7a462c",
+  "workflow": {
+    "id": 40790897975,
+    "conclusion": "success",
+    "pass": 280,
+    "skip": 5,
+    "fail": 0
+  },
+  "localTests": {
+    "pass": 285,
+    "fail": 0
+  },
+  "followupTests": {
+    "pass": 16,
+    "fail": 0
+  },
+  "features": [
+    "共用操作鍵防長按選字與選單",
+    "村莊與六館室內360度旋轉",
+    "按鈕、滾輪及雙指縮放",
+    "單擊尋路與拖曳旋轉分流",
+    "室內背牆剖開",
+    "暖色繪本配色立體六館"
+  ],
+  "manual": {
+    "desktop": [
+      "旋轉到建築背面",
+      "地面拖曳旋轉",
+      "縮放按鈕",
+      "帶路到春秋館與諸子學宮",
+      "春秋館與通用展館後方視角"
+    ],
+    "mobileViewport": {
+      "width": 390,
+      "height": 844,
+      "longPressMs": 1800,
+      "selectedText": "",
+      "buttonMinSize": 44,
+      "zoomOverlayBottom": 147,
+      "routeOverlayTop": 163,
+      "overlap": false
+    },
+    "physicalPhoneTested": false,
+    "hardwareFpsMeasured": false
+  },
+  "studentRecordsWritten": 0,
+  "gas": {
+    "ok": true,
+    "version": 69,
+    "release": "v4-4ef1628ffcd463",
+    "sourceHash": "5a7b8258b9f6268a6b1b2812c68a01412a11fce682f992d9b91b65295b0d13b7",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 229,
+    "previousVersion": 68,
+    "studentRecordsWritten": 0
+  },
+  "publicVerification": {
+    "ok": true,
+    "version": "4.21.1-google",
+    "release": "v4-4ef1628ffcd463",
+    "pages": 96,
+    "referencedResources": 271,
+    "villageAssets": {
+      "version": 1,
+      "app": "assets/village-app-cf7bd7df3f87f0d2.js",
+      "css": "assets/village-style-c03bae6df93c6ac1.css",
+      "assets": {
+        "character": "models/scholar-pilot-051f0ddbd926f229.glb",
+        "exterior": "models/orbit-village-dec63bf6f4d20231.glb",
+        "interior": "models/museum-interior-eec72bc2b36dea3c.glb",
+        "springInterior": "models/spring-interior-9f077766a25e3a92.glb"
+      }
+    }
+  },
+  "formalEntry": {
+    "ok": true,
+    "release": "v4-4ef1628ffcd463",
+    "hasVillageEntry": true,
+    "responseBytes": 20006,
+    "url": "https://script.google.com/macros/s/AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg/exec?page=hub",
+    "entryUpdated": true
+  },
+  "previousRelease": {
+    "version": "4.21.0-google",
+    "release": "v4-ef393ea8deb01d",
+    "commit": "57d578900b657ba393179922172647374781dbd1",
+    "workflow": 40789698063,
+    "gasVersion": 68
+  },
+  "formalBrowserManual": [
+    "4.21.1正式首頁→村莊→旋轉與縮放",
+    "遠景純紙色確認",
+    "正式站帶路入春秋史館→轉至後方視角"
+  ],
+  "notes": [
+    "手機版面與長按為瀏覽器尺寸模擬，尚未實機驗證",
+    "不限制FPS，未量測硬體FPS"
+  ]
+}

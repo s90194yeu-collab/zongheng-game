@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "checks": [
+    "初始頁保留原換裝，模型與新模組均延後下載",
+    "桌面WebGL成功載入與畫面截圖",
+    "跑步片段持續推進",
+    "暫停凍結動畫時間",
+    "暫停時可獨立換衣色",
+    "暫停後重選相同動作可恢復播放",
+    "鍵盤旋轉與鏡頭回正",
+    "行禮播放完成自動回待機",
+    "角色照片可下載",
+    "試看操作不呼叫GAS或寫入角色存檔",
+    "關閉釋放畫布，重開保留本次試看配色",
+    "390px手機排版無橫向溢出並自動降低畫質",
+    "減少動態設定顯示靜態姿勢",
+    "模型404有錯誤提示，可原頁重試成功",
+    "載入中關閉會取消請求且不留下畫布",
+    "WebGL context遺失有提示，重新載入可恢復",
+    "模型損壞顯示可理解的錯誤提示",
+    "無WebGL可返回原造型，頁面仍可操作"
+  ],
+  "pageErrors": [],
+  "localFailures": [
+    {
+      "url": "/models/scholar-pilot-051f0ddbd926f229.glb",
+      "status": 404
+    }
+  ],
+  "asset": {
+    "engine": "three",
+    "revision": "180",
+    "asset": "scholar-pilot-v1",
+    "clips": [
+      "Bow",
+      "Idle",
+      "Run"
+    ],
+    "bones": 14,
+    "triangles": 18688,
+    "height": 1.7999999129024296,
+    "footY": 0,
+    "motion": "idle",
+    "time": 0.08,
+    "clothColor": "#46745f",
+    "clothMaterials": 8,
+    "colorId": "jade",
+    "reduced": false,
+    "paused": false,
+    "disposed": false,
+    "lost": false,
+    "quality": "auto",
+    "pixelRatio": 1,
+    "drawCalls": 50,
+    "camera": [
+      2.4,
+      1.7999999999999996,
+      3.8000000000000003
+    ],
+    "geometries": 50
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "blender": "4.5.3 LTS",
+  "mesh_objects": 48,
+  "triangles": 18688,
+  "bones": 14,
+  "clips": [
+    "Bow",
+    "Idle",
+    "Run"
+  ],
+  "target_height_m": 1.8,
+  "bytes": 700916,
+  "original_procedural_asset": true
+}

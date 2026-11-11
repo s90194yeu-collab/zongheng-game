@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "changed": [
+    "GitHubBridge.gs"
+  ],
+  "fileCount": 156,
+  "visibleFunctions": [
+    "installGitHubFrontend",
+    "checkGitHubFrontend",
+    "disableGitHubFrontend"
+  ],
+  "backup": "/Users/chiuemacminim4/Library/CloudStorage/GoogleDrive-s90194yeu@gm.nssh.ntpc.edu.tw/我的雲端硬碟/Chiue's Google/多元選修/115 AI導入數位教學示範學校/縱橫鼎業/縱橫鼎業_全專案交接_20261013/GitHub_Google雲端版/gas-private-source/選單修正前備份_2026-10-17T02-18-49-698Z.json",
+  "productionDeploymentChanged": false,
+  "studentDataMoved": false,
+  "needsRefreshEditor": true,
+  "needsInstallerRun": true,
+  "verifiedAt": "2026-10-17T02:19:45.373Z"
+}

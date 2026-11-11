@@ -727,9 +727,11 @@
     function choose(o) {
       return new Promise(resolve => {
         const opts = (o.options || []).filter(Boolean);
+        const heroSp = speakerOf(o.who || o.speaker || (S.cast && S.cast[0] && S.cast[0].id) || (C.speakers && Object.keys(C.speakers)[0]));
+        const avatarHtml = hasArt() && heroSp ? '<div class="sty-choice__avatar" aria-hidden="true" style="width:62px;height:80px;flex:none;border-radius:10px;overflow:hidden;border:2px solid var(--gilt);background:radial-gradient(circle at 50% 38%,#fffaf0,#e3d0a4)">' + global.ART.portrait(artSpec(heroSp)) + '</div>' : '';
         const wrap = ZH.html(
           '<div class="sty-choice" role="dialog" aria-modal="true" aria-labelledby="sty-choice-t"><div class="sty-choice__card">' +
-          '<h2 id="sty-choice-t">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') +
+          '<div class="sty-choice__head" style="display:flex;align-items:center;gap:14px;margin-bottom:12px">' + avatarHtml + '<div style="min-width:0;flex:1"><h2 id="sty-choice-t" style="margin-bottom:4px">' + esc(o.title || '抉擇') + '</h2>' + (o.text ? '<p style="margin-bottom:0">' + esc(o.text) + '</p>' : '') + '</div></div>' +
           (o.timeout ? '<div class="sty-timer" role="timer" aria-label="限時"><i style="--ms:' + Number(o.timeout) + 'ms"></i></div>' : '') +
           '<div class="zh-choices">' + opts.map((op, i) =>
             '<button type="button" class="zh-choice" data-i="' + i + '"' + (op.disabled ? ' disabled' : '') + '><span class="zh-choice__key">' + KEYS[i] + '</span>' +

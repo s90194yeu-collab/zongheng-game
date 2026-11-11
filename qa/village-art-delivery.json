@@ -35,9 +35,71 @@
       "embeddedPaintedTextures": 16
     }
   },
-  "pending": [
-    "GitHub release",
-    "public resource verification",
-    "formal GAS activation"
-  ]
+  "pending": [],
+  "gitCommit": "cf49695a7bf9cf42b2013ad19863b0118808d18f",
+  "workflowRun": "https://github.com/s90194yeu-collab/zongheng-game/actions/runs/40633474241",
+  "studentRecordsWritten": 0,
+  "deployment": "published-and-activated",
+  "publicVerification": {
+    "ok": true,
+    "version": "4.19.0-google",
+    "release": "v4-99e47d224aeed8",
+    "pages": 96,
+    "referencedResources": 271,
+    "villageAssets": {
+      "version": 1,
+      "app": "assets/village-app-37d578fa62f19aa3.js",
+      "css": "assets/village-style-41e1f8d3f1f8c508.css",
+      "assets": {
+        "character": "models/scholar-pilot-051f0ddbd926f229.glb",
+        "exterior": "models/museum-village-0fd7af8b240cf3fd.glb",
+        "interior": "models/museum-interior-eec72bc2b36dea3c.glb",
+        "springInterior": "models/spring-interior-9f077766a25e3a92.glb"
+      }
+    }
+  },
+  "workflow": "success",
+  "ciTests": {
+    "passed": 265,
+    "skippedPrivateSource": 5,
+    "failed": 0
+  },
+  "gas": {
+    "ok": true,
+    "version": 65,
+    "release": "v4-99e47d224aeed8",
+    "sourceHash": "4d93fff565e905da1d4a45b6609ebf3f2ceb1807761c0628806f6c23f36aa876",
+    "changed": [
+      "GitHubBridge"
+    ],
+    "unchangedFiles": 229,
+    "previousVersion": 64,
+    "studentRecordsWritten": 0
+  },
+  "formalEntry": {
+    "ok": true,
+    "release": "v4-99e47d224aeed8",
+    "hasVillageEntry": true,
+    "responseBytes": 20012,
+    "url": "https://script.google.com/macros/s/AKfycby4e-xyGt8dUuGAnwZbSIaTbXnyP_JTrP8O0xwAgRdEg-EjPmzp3LxHT9X1BjFH0AIvXg/exec?page=hub",
+    "entryUpdated": true
+  },
+  "workspaceFilesVerified": 124,
+  "formalBrowserManualCheck": {
+    "passed": true,
+    "mode": "visitor desktop",
+    "checks": [
+      "原正式首頁顯示春秋文物近看",
+      "精修村莊與春秋館獨立展廳載入",
+      "館門及主展櫃帶路抵達後可互動",
+      "三件模型（青銅禮器／盟書竹簡／列國沙盤）均實際開啟",
+      "竹簡收攏及展開按鈕切換",
+      "看編繩更新觀察文字",
+      "展櫃顯示學校帳號鎖定提示，訪客可選燭之武",
+      "由文物返回導讀、選燭之武後原鄭／秦／晉入口完成載入"
+    ],
+    "schoolAuthenticatedTest": false,
+    "physicalPhoneTest": false
+  },
+  "completedAt": "2026-10-28T17:04:41+08:00"
 }

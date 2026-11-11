@@ -1,0 +1,1546 @@
+{
+  "head": "98fc75290e4933e3f4193376e128d598476d36f3",
+  "release": "v4-cde776252e9672",
+  "files": [
+    {
+      "path": "project.json",
+      "sha": "9973e4e13aec10472e8a224d9086c1b783a78439",
+      "bytes": 258,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "00_目前進度.md",
+      "sha": "1e263110fe1845412efa816d47adb39b2a04cb50",
+      "bytes": 58174,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "gas/GitHubBridge.gs",
+      "sha": "66643c7ef867286f1ef93f1977fcc9c6c6fea540",
+      "bytes": 8577,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "scripts/build.cjs",
+      "sha": "f0086b0e468d51cbc0f963dc69f94ee870dacb44",
+      "bytes": 20089,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/legacy/Data_assets.html",
+      "sha": "6f87f98dcdde80f509975fd389399e9dd84b6e0a",
+      "bytes": 43482,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/app.js",
+      "sha": "2f66bf4875e2c632a465d5bb0418f284f9f500ab",
+      "bytes": 48308,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/art.js",
+      "sha": "6445f43127add111d088a8714e59f592550b0e9e",
+      "bytes": 11173,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/art.css",
+      "sha": "6b07bd608c47e5d116bd5c8b84fd3b947a0c20e1",
+      "bytes": 14365,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/night-art.js",
+      "sha": "6433361b0f587fd08ffef2479421914d2d317ca9",
+      "bytes": 6376,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/spring-view.js",
+      "sha": "641b452ff953635a7d7c1c150a1b08d0ef2ac979",
+      "bytes": 26036,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/warring-view.js",
+      "sha": "1f9ddeac1ec4fecfee01ccad0a48fcb17ac0f57d",
+      "bytes": 23025,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/chuhan-view.js",
+      "sha": "891a802e36b7c63f8118006d87c0cd3b7b950ca7",
+      "bytes": 8254,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "src/character/zhuzi-view.js",
+      "sha": "a73f3a524de870dfc3f8a1eda75411598491ead8",
+      "bytes": 34327,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "tests/character-art.test.cjs",
+      "sha": "962b320a36c0b1088c5213356b1f32f4786f3b56",
+      "bytes": 4189,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "tests/migration.test.cjs",
+      "sha": "b10c720d4c9ca6bb238fd808d2751d85fecb80e5",
+      "bytes": 7288,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "docs/個人角色美術_v4.27.0.md",
+      "sha": "0aea4f833e5224cb037116351984e45d6630b8ee",
+      "bytes": 2370,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "qa/character-art-verification.json",
+      "sha": "d39073c17e0455501f6c5bccf2ebea658bcc1ab9",
+      "bytes": 20520,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/media/scene_cq08_rope_wall_ai.webp",
+      "sha": "362446b61974ff66b96e8ffd816bfdb0403cc5f1",
+      "bytes": 506426,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "art/character/source/zheng-rope-wall-v1.png",
+      "sha": "ce357ffc861fa58a84530b4dc2c47553e060cc2b",
+      "bytes": 3543205,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "art/character/source/sources.json",
+      "sha": "ebe03a63d42849c0e84b94a77efdef411efa319f",
+      "bytes": 2125,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/manifest.json",
+      "sha": "0581385d021e56f5623d441ada59975a2c3f4ec6",
+      "bytes": 19895,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al26_zhiyu.html",
+      "sha": "bcaa8bb6d6f11309b20523ce87120fc4a07ba00e",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg09_mengchang.html",
+      "sha": "de22d5aa20654fef92f68272ff4a4051e2599d70",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al22_denglou.html",
+      "sha": "ed91da18084ab10d28e7eb41e0cd692c4bd86fd1",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al12_ji.html",
+      "sha": "2254ec5e4907020758ddad6d0968712afc80ba3a",
+      "bytes": 3834,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq09_xiao.html",
+      "sha": "9ab02106cce38b4b5e6012474b83757033da11c4",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/Profile.html",
+      "sha": "f4349dfdaca7063b687fc3c62136f76b2468ad7f",
+      "bytes": 5253,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz01_laobio.html",
+      "sha": "26257528cc32027b647261c7b097dcf0941c86d2",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq02_handong.html",
+      "sha": "072509a8094f2b4c10dcc0d93c9362abdbfbcb0a",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq14_wushi.html",
+      "sha": "3d28c4d53d0924031145aca2b588330e63185e8f",
+      "bytes": 5964,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq05_hanyuan.html",
+      "sha": "a3494a1fff6fd91f5ee04a95f0d10aa07b308c96",
+      "bytes": 5620,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/Map.html",
+      "sha": "b61fa3f817929c8a78fc9f4a9f7aea19f123b080",
+      "bytes": 4073,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq11_jinba.html",
+      "sha": "c9b1a06b18a2b32d046456b3f12c33dcbbe959ef",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al18_shihao.html",
+      "sha": "925063cc69b1756be978cd37f3b2d9f05b3a1a79",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg05_maling.html",
+      "sha": "3b5a04aa7e397df4000b3ed88101c17012548dfe",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al01_yufu.html",
+      "sha": "5aa43ec331ffeb224fd155af968a463d0be75147",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al17_shisi.html",
+      "sha": "54986e15034d3fd35791805812fc9293c0a67021",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al15_zuo.html",
+      "sha": "15cf73ef0d5f872565da5fb5f36be5dced7337db",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw06_taoyuan.html",
+      "sha": "ee57a40d1415ac934316e3932bb083e35b3c4fe2",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg07_quyuan.html",
+      "sha": "795213e490face3c2701fbdedae53234a43af44c",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg03_shangyang.html",
+      "sha": "7eb7adb3957dfcb84b6eb5d23505fa7fe9137be1",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al04_wangdao.html",
+      "sha": "4b7114d60b70e9e813304f6d459cdf1397de7a1f",
+      "bytes": 3867,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz02_laoread.html",
+      "sha": "d755890b3a9737defd4b1cdb051038aaf22193e5",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw13_quanhe.html",
+      "sha": "fecf83e233d6d7b52dd75ac84475edf659211450",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq00_dongqian.html",
+      "sha": "b22dcf8d1029eccc040bdf49fac9e8b0acd51d9e",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/Hub.html",
+      "sha": "429a5f7587b1e341e56ad9ee7405472ed74b291f",
+      "bytes": 6785,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg02_weiwen.html",
+      "sha": "c90c0f5c8e123f4dcfdd105b785e6cffacb14d62",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg04_jixia.html",
+      "sha": "f11adbb0a8da572eec364a808a3572078d57bc9b",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch04_hongmen.html",
+      "sha": "7ec2e71cbffebc3bc06efc293af3954afcf9eacb",
+      "bytes": 5603,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch02_dazexiang.html",
+      "sha": "bf54666a140d62c4531cbc3ded949d9657322458",
+      "bytes": 5633,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg01_sanjia.html",
+      "sha": "404dcfd902ebcf8cc31c49e1d3b19bf7123323bb",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al06_ruxiao.html",
+      "sha": "c3cf7ce94f9c3b5bb223d9c7dc7ceac9f76edd73",
+      "bytes": 3864,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al25_maigan.html",
+      "sha": "3dc7a56bf26e3372e60d65ff59c0195c0f77cad8",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al24_xishan.html",
+      "sha": "0bb96d8950f8591fe59a06d50e825ea1727e54f4",
+      "bytes": 3852,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz10_moread.html",
+      "sha": "c89b7abdb6b8fa2abed3251f5e2f16867d5d9243",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz04_zhuangread.html",
+      "sha": "5d1d6bc2df28f96a6b20cb73db3f3dd0de2b6459",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al08_wenren.html",
+      "sha": "91a80d489b892842ae3fa1da6bd9efd3c96b1ce9",
+      "bytes": 3867,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq06_songxiang.html",
+      "sha": "8d6aea42ab88048dbd4179f2ee7c1af550ff70a9",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg06_hezong.html",
+      "sha": "6d50b561d68e40705913602830b926f158786602",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq10_wending.html",
+      "sha": "26cf6e78d9818614cd1f8d6960b404f2dac85f2e",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al02_liulao.html",
+      "sha": "0015dca53e682347d60103304947bbcb9d9b71a4",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq03_qihuan.html",
+      "sha": "fedf1fbe3daa00c389f4f0d6f830dc79c0df04dc",
+      "bytes": 5620,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw15_huaju.html",
+      "sha": "35f4ad03d367a326948748651f58602cf37e40e3",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq15_kongzi.html",
+      "sha": "bd894dbff37e147f6f52e79d1ed7e070bd64d6e0",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al10_cheng.html",
+      "sha": "089d7781c56070cca5cd10ba6e3f55998eb93ee5",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg08_hufu.html",
+      "sha": "764c3e6f060acf64ad6b73a49ee95b6d8fcb7018",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg11_zhuke.html",
+      "sha": "14452a3cdee3ebcb279653aee80ab3d8bb2b84c4",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch07_hanxin.html",
+      "sha": "82287ce120749612c645a3f614cbc446ed3e1cf6",
+      "bytes": 5632,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al27_tongshi.html",
+      "sha": "73e666ed1e003b2e5b0cf0ac2c0d4e1449767b9c",
+      "bytes": 3846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw12_laoshan.html",
+      "sha": "b2829d1b37fa6ed2855e0f29844bbf3dc40d1ccc",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz03_zhuangbio.html",
+      "sha": "56f341a140d48def6b5737e850b15ca6fb2797cd",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw09_chibi.html",
+      "sha": "0e282d62a7872c52abac878d5b4dcd443d7d1cbf",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz11_mengbio.html",
+      "sha": "f7cd749db453869acec69c58b3e3ea2c491c8ccc",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw11_liuqiao.html",
+      "sha": "19b99e5aa78836db3354bb323201b0e375616f11",
+      "bytes": 3852,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw05_chushi.html",
+      "sha": "59b6f070f202f3050042fabc3f1ecbffafa9b158",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al05_zhixue.html",
+      "sha": "93b33f59993696e55db4514c9f3f3e7be6788a82",
+      "bytes": 3855,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz12_mengread.html",
+      "sha": "faa76cc8b4a40f097d875549c9c9189bb9f358ab",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch03_julu.html",
+      "sha": "80caec0d1ff1d525994e966dff744f2ab9a71351",
+      "bytes": 5633,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/Gallery.html",
+      "sha": "ab000df1a67fc32f1b56167276ee3a8ace899199",
+      "bytes": 8239,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch05_sanqin.html",
+      "sha": "7065f70f6c7bb93218f8afd72cf6034153f7ae65",
+      "bytes": 5631,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al07_xuesi.html",
+      "sha": "947c9ca7672a1e42efdc413fc6b1dde90a51d9ca",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq17_wuyue.html",
+      "sha": "48a3db126b02058ae33043a7cb0945f43d1f0295",
+      "bytes": 5846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw07_shishuo.html",
+      "sha": "e4c02b9b09fa4b308c72d12842e8dbf583105b27",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al11_sanxi.html",
+      "sha": "9e70b2c6c3052ce2724602f4dad911633c015839",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg13_tongyi.html",
+      "sha": "2beff97570cf7b9f22f16d051aca7064cf421b0d",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al14_zuiweng.html",
+      "sha": "be6edbcb900de67e03f9b1d28178d8a30189aa0e",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al19_taohua.html",
+      "sha": "f6fc360ddc45e67182b93e0eb3d61fbb90e8a588",
+      "bytes": 3855,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq07_chengpu.html",
+      "sha": "422ba0defd36ba483c911f0405666be4a1bc136c",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al03_paoding.html",
+      "sha": "282966eddcc2cac1b9e85acb57a6f452a2975857",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw10_xiangji.html",
+      "sha": "81bf3a1b12fb3ff1131220539e7273e496bf7115",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch06_xingyang.html",
+      "sha": "4246dfb15832de3feae7c335bf2c2e1af38af0e9",
+      "bytes": 5633,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq16_datong.html",
+      "sha": "5fc2cb3107b0163f8301feb216cd2abecb553e96",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch09_dafeng.html",
+      "sha": "b3084242b8ade158b22c1e4e82d3055712aea5d8",
+      "bytes": 5631,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al23_lanting.html",
+      "sha": "42f54195f051de5b7843b2ee4d4f34095ddfcf34",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq13_zichan.html",
+      "sha": "38633a7ae5ec02eb303d10f5f724d1c346c62c23",
+      "bytes": 5846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz08_hanread.html",
+      "sha": "89170086d37dd6769cb8ea72a77c8ecf51c71564",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq12_jinchu.html",
+      "sha": "98fea53567dcb0adcc6e9d43090d6fb3ae6a6a78",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz06_xunread.html",
+      "sha": "0083733520994283ff05ac372369467a7fb03dd6",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch01_shaqiu.html",
+      "sha": "1d4a62ebec6fbeaa7fd32602b07ee42b24e34f1d",
+      "bytes": 5614,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw14_lugang.html",
+      "sha": "ba35fd6e44f4991ed59190808cef5e5370a63b32",
+      "bytes": 3846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al21_guoqin.html",
+      "sha": "38c6718c80b183466e839670facac0d4b1ca640a",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz05_xunbio.html",
+      "sha": "e20132e43e10aa140e7084ddfab993e2ed0ad7a3",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq01_zhengzhuang.html",
+      "sha": "f90f4284a2319a42b3a3de475b55c7a5ea048672",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/Result.html",
+      "sha": "fe018087bda8911bef747cb53b14008f0a21a45e",
+      "bytes": 5537,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_ch08_gaixia.html",
+      "sha": "bb419a23da262f7e2a7495095a701bedf52e5023",
+      "bytes": 5632,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg12_handan.html",
+      "sha": "d7f90bcc03c04e56bb736a22a3cc955c03e3d4af",
+      "bytes": 5743,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz07_hanbio.html",
+      "sha": "cc4c43b893911b58cad7f801ea56581b3335f898",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq08_weizheng.html",
+      "sha": "caf62ea5ee771a0c757c68a7c552e1eedf74242a",
+      "bytes": 5955,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al13_yueyang.html",
+      "sha": "c545645b30d4a743c67ee8afb1836cb47ba9a0bc",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_gw08_qiuran.html",
+      "sha": "4f5e01cda89346770f783295817bbad2de1df9fc",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al20_linchong.html",
+      "sha": "b90f0dbe2b59ec57e6f1720b18cf717606be0fd7",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al09_kong.html",
+      "sha": "17be2fc487265ada569a04398d60014550eab67e",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/Teacher.html",
+      "sha": "a0568a8a657f1692241a63cbe94a72be2c07c557",
+      "bytes": 5521,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_cq04_chonger.html",
+      "sha": "eef26aee5fc10a6ee8dee3c943236def9999a041",
+      "bytes": 5620,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zg10_changping.html",
+      "sha": "0a8cb75bb780c00d5681dd7ca5d87ef6e49b6f4b",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_zz09_mobio.html",
+      "sha": "e104b0dcf259ef66651114caee003a0d38c25538",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-5c8749d2ed732c/pages/S_al16_dianlun.html",
+      "sha": "70f8a834d31e29f3efb7ea74b6797c29204f3c2c",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/assets/585e9ac43f1d7aca4221b76b.js",
+      "sha": "a60d15dadad12ce384f90ec1cfb7c6b6b1742cc9",
+      "bytes": 65845,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "public/assets/75e3988735003d14d9fd5070.js",
+      "sha": "ecdd09d5dc10baa7865490a0e9f3d5538c1f59b3",
+      "bytes": 62959,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "public/assets/character-app-8d842400fcf6406f.js",
+      "sha": "eb52ec6ae3e47c98b195674559e09821693e718d",
+      "bytes": 345132,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "public/assets/character-style-6dc465cb9a9269d3.css",
+      "sha": "66a4ca1d3cffee3524df96131a6f98cb8cacf7ee",
+      "bytes": 78031,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/manifest.json",
+      "sha": "59c6abf23482ac0feff1aa0ef98fb2c47d2e87e3",
+      "bytes": 19895,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al26_zhiyu.html",
+      "sha": "f256b88c4da142be8fae6719dc8b6b105de0c207",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg09_mengchang.html",
+      "sha": "61ebce7005e7347e425054990a0b343e8582d82d",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al22_denglou.html",
+      "sha": "1975d9170bec6a611e301d92823d17cb51d072ef",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al12_ji.html",
+      "sha": "01a5c9f2f778ff45a9d99a3eda649dbc48a511f5",
+      "bytes": 3834,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq09_xiao.html",
+      "sha": "2fe103d4aaa68ba049d570715fef0b5c5836f209",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/Profile.html",
+      "sha": "827ddf19cf08a23e37a885c1faf541e4c69019d5",
+      "bytes": 5253,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz01_laobio.html",
+      "sha": "0a09f2e2de0e7f7314e1b56f282549a7f8da530e",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq02_handong.html",
+      "sha": "fbbad093b7366b56991354d367aefbad3164b3d8",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq14_wushi.html",
+      "sha": "6cf4c642755fa88b8587ad4b964dff58e600f969",
+      "bytes": 5964,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq05_hanyuan.html",
+      "sha": "9eddc93d45c7eda865a3a087b4f511f1df8eb370",
+      "bytes": 5620,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/Map.html",
+      "sha": "90e400c1c2aae369aa2941b501d9f3f250dfef5a",
+      "bytes": 4073,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq11_jinba.html",
+      "sha": "5e025d08207e58783faed07ea878c2c75ba1eeb5",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al18_shihao.html",
+      "sha": "f3b4317459cefab392587b47d7c92d56858bf4fc",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg05_maling.html",
+      "sha": "f1f8e7a99f3ea94c20c4aa03bd76093a97602a56",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al01_yufu.html",
+      "sha": "6f83e030c5363af2e4f76efe0fa5fbb24cf40302",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al17_shisi.html",
+      "sha": "9e14aaf4b137ff4775df2af82445d49d64a1ef7c",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al15_zuo.html",
+      "sha": "d7398c935464e807973224a83eade12708f7b189",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw06_taoyuan.html",
+      "sha": "8216f477142ac75289be48220fb4405836f6305a",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg07_quyuan.html",
+      "sha": "0893542d57331644df2704ec6bdd7e46b402ddb8",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg03_shangyang.html",
+      "sha": "60c9e7c6a8056fb1eab0d1bcb34eb97c77d873a8",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al04_wangdao.html",
+      "sha": "ec439acdddaf4a553d3c18cdb680fcebbcab1a44",
+      "bytes": 3867,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz02_laoread.html",
+      "sha": "6e665a6ef89179dbdb4af23f0ab5b0ddba00cad5",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw13_quanhe.html",
+      "sha": "c17ddc256a857701021a33396a3fd8d604d465c5",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq00_dongqian.html",
+      "sha": "eff8f954ecf45f2b40db42ce0ba575e1f7800354",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/Hub.html",
+      "sha": "5abd09970b3ad2a77796110efcf7c48f78c863f6",
+      "bytes": 6785,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg02_weiwen.html",
+      "sha": "ee0e2ec4bce08c2bd5880c0730e50a7f5335594e",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg04_jixia.html",
+      "sha": "0fccb06bc792ad2b5e2ff92f5933cdecfd8014b1",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch04_hongmen.html",
+      "sha": "64403063c59a93abd5426b577924aeb892e53bef",
+      "bytes": 5603,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch02_dazexiang.html",
+      "sha": "a1d8bea2004723beac55870a385060e705d45c36",
+      "bytes": 5633,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg01_sanjia.html",
+      "sha": "9d910fa3f3796e81646d59555b97ea078a83f533",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al06_ruxiao.html",
+      "sha": "47e8d67a48e23a5752215f0250835f28f75e4df9",
+      "bytes": 3864,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al25_maigan.html",
+      "sha": "f5f015d00878ea8bfc4d0a289bdf5164cb8e819d",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al24_xishan.html",
+      "sha": "eb04954bba53e9f71b218a97d5c97312631485e4",
+      "bytes": 3852,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz10_moread.html",
+      "sha": "7f97b2aec285bb3827b6bb475941be0648dd7863",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz04_zhuangread.html",
+      "sha": "0d329959de58d8921fafcdd1e4282d0db41d8e2d",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al08_wenren.html",
+      "sha": "4b925cbddbefb32370783d828b81f3c0841dc1a7",
+      "bytes": 3867,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq06_songxiang.html",
+      "sha": "f4c23b258cbee9a37a0b077c46bbae8516e14132",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg06_hezong.html",
+      "sha": "60806d9b74aac9537a5e70a5be3875826648ce0f",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq10_wending.html",
+      "sha": "ba4e14b8fb642e8ee6f2165d93806c9f8d992f96",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al02_liulao.html",
+      "sha": "a334007caf2cf8312689a93795e45dd5b972a429",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq03_qihuan.html",
+      "sha": "2580a613d17db745a61f3d08cc048e990d3a45fb",
+      "bytes": 5620,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw15_huaju.html",
+      "sha": "25311c2264425f3faee7a4c4519c1101bd3ba37e",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq15_kongzi.html",
+      "sha": "c4b71d0a8a9355df7b7d04d31878f2c786f9a78e",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al10_cheng.html",
+      "sha": "9f748515cc2680b1f12212f91b8cf1b8e0226ac0",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg08_hufu.html",
+      "sha": "4d3365d15efe1368f420b97cf8b3e7d6da210d26",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg11_zhuke.html",
+      "sha": "4a33e26451d205628bc1fd9c2a7d913bcdeac2e1",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch07_hanxin.html",
+      "sha": "0c564672f2e3e9ce8ad2f65ce135a051b5a5df71",
+      "bytes": 5632,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al27_tongshi.html",
+      "sha": "5bde652907754ad916afb4f73e81d47d122bc72b",
+      "bytes": 3846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw12_laoshan.html",
+      "sha": "e5294abc1410a48586d263bf8fb0f229b7b4d813",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz03_zhuangbio.html",
+      "sha": "e2cfdcc933b907ab068968d1eb07fdb0fb520fe4",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw09_chibi.html",
+      "sha": "9d0c4a5ecc455a971db5277ba8337e6874d8e7c0",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz11_mengbio.html",
+      "sha": "49a19fa41cacc8ac711ce3c5117d05f8eaf21aa4",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw11_liuqiao.html",
+      "sha": "fed4046c61855c124de1f8194a4aef37c818fb42",
+      "bytes": 3852,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw05_chushi.html",
+      "sha": "5eddb57854e4725de43d386e26a139a37d403c03",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al05_zhixue.html",
+      "sha": "0150945732c4c3ea84dbc1a5588a58af1316087c",
+      "bytes": 3855,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz12_mengread.html",
+      "sha": "1e899c5dca0f002a457e912e32def9febef7516a",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch03_julu.html",
+      "sha": "57831c80e43b7430e589953d87fee7f07f06f227",
+      "bytes": 5633,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/Gallery.html",
+      "sha": "e58d19fa6f1e114a15b980a4315a02470784d6bb",
+      "bytes": 8239,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch05_sanqin.html",
+      "sha": "b9c02dfdcd516a0abf78d165bea63e0fe6e10f38",
+      "bytes": 5631,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al07_xuesi.html",
+      "sha": "e07de20fd464a7d8f5531b10e89fc6028e58f22a",
+      "bytes": 3849,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq17_wuyue.html",
+      "sha": "69b9c18ab1c9eb7461e48cb1f33a5f7d8408ed05",
+      "bytes": 5846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw07_shishuo.html",
+      "sha": "0593b07a031bc06f3f8557158a9feecccac72211",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al11_sanxi.html",
+      "sha": "4eaa60dee242327e17af73e27ab65db3b89bf391",
+      "bytes": 3837,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg13_tongyi.html",
+      "sha": "4c3ac116aa1434170025305593a390220ce6adf7",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al14_zuiweng.html",
+      "sha": "5b8f4d5eebbf0cf92d075e7e649695febd3ab344",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al19_taohua.html",
+      "sha": "2aa874543d28ac3adf4271d043e920559048f7ff",
+      "bytes": 3855,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq07_chengpu.html",
+      "sha": "2c54de0edbe649f0e6f15743df34eb1d35197004",
+      "bytes": 5628,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al03_paoding.html",
+      "sha": "15ce6ad4dd88c8581cf9d816c12b8e35c06c110e",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw10_xiangji.html",
+      "sha": "2ca967c94bb0c3521c4475fd7e314b92d8cfb48e",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch06_xingyang.html",
+      "sha": "ce76846afad86beaeb8cf0b29a544d7ad885252e",
+      "bytes": 5633,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq16_datong.html",
+      "sha": "5de75862bd36fb494a9db570323f91fec26b0c9a",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch09_dafeng.html",
+      "sha": "ee42a81e18c48ac11bf915ed51b43f196767fdec",
+      "bytes": 5631,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al23_lanting.html",
+      "sha": "4bfd61f2cc5ba9df3b41bb24f275301afe9b5818",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq13_zichan.html",
+      "sha": "bf5fe8ba24f4088cba5e1f01fa1b0ecb83eb23d1",
+      "bytes": 5846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz08_hanread.html",
+      "sha": "bb9ed80cfe3f3411b46f7b4480729fca10494a27",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq12_jinchu.html",
+      "sha": "a1c56de1e9a305e8cac36182f01eb859786ab692",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz06_xunread.html",
+      "sha": "05053b83efaefb51f0ad6df71b78b75bf8ac9b56",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch01_shaqiu.html",
+      "sha": "02fefd5b8d6fa865580f8de7452f88386494589c",
+      "bytes": 5614,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw14_lugang.html",
+      "sha": "ff524c84149ae11b45e2e19a055102a2cc589100",
+      "bytes": 3846,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al21_guoqin.html",
+      "sha": "2f01a90476c35f040a60fc9f73cd87d7b7fb5cb3",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz05_xunbio.html",
+      "sha": "e75ecdfa0cab411d0b76fdb800d96462dadc52cc",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq01_zhengzhuang.html",
+      "sha": "c372c23b43c1442ba22ded989cf320fd99afd84f",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/Result.html",
+      "sha": "fc0ef19a71b3c7231583d914ef6a6ba819bbacc6",
+      "bytes": 5537,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_ch08_gaixia.html",
+      "sha": "3edad31e0b3bed7bfa3603ff174132b02a99a140",
+      "bytes": 5632,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg12_handan.html",
+      "sha": "3adf215930ecb8ed1f0b6c516b5ec8d40863526c",
+      "bytes": 5743,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz07_hanbio.html",
+      "sha": "5ea0789a9b24fd3c245e7d2f266e8746e3c6afd4",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq08_weizheng.html",
+      "sha": "72bed36aa6394ba310af70616b752fdfcc0768c7",
+      "bytes": 5955,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al13_yueyang.html",
+      "sha": "5efdbae21d8508c308ecb86bed0cc94259fd8b63",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_gw08_qiuran.html",
+      "sha": "a56f8229ba21a98f588c5e10e00443cc06c4b0ef",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al20_linchong.html",
+      "sha": "7b1327f6b811e1bbd6b86dc7edb7c36dc31c77a0",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al09_kong.html",
+      "sha": "cd36b39b16185f663b19ba70556c14fd3729440f",
+      "bytes": 3840,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/Teacher.html",
+      "sha": "5c82f130ee983409a00131c1cbf3cb70f4002b15",
+      "bytes": 5521,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_cq04_chonger.html",
+      "sha": "c15d3486e2203fe0d56281c9150c14715012c1d8",
+      "bytes": 5620,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zg10_changping.html",
+      "sha": "56ee833a71b9c68e1582e97afbf7e1f783635fd1",
+      "bytes": 5627,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_zz09_mobio.html",
+      "sha": "8fe6573689cb542bf05a0e3eb3bc2776aec48d61",
+      "bytes": 3854,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/releases/v4-cde776252e9672/pages/S_al16_dianlun.html",
+      "sha": "71d3253d28d01bd5d2cf2db55eb7eb90c51f6a98",
+      "bytes": 3843,
+      "binary": false,
+      "upload": false
+    },
+    {
+      "path": "public/assets/385cbce7d19397e9e1655210.js",
+      "sha": "9dc9e18e51bc9269f43772840473ea0dc6c0d271",
+      "bytes": 62959,
+      "binary": true,
+      "upload": true
+    },
+    {
+      "path": "public/assets/character-app-17333d2a5f7bfa1f.js",
+      "sha": "76cc0c855c2e4f932272b4c9ec6f188056d86f6b",
+      "bytes": 345123,
+      "binary": true,
+      "upload": true
+    }
+  ]
+}
