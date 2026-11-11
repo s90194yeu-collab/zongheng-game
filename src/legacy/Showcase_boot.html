@@ -1,0 +1,795 @@
+<!-- 自動展示模式：全由電腦自動操作，輪播燭之武退秦師（鄭國篇）、山海異境 · 青丘林地、楚漢大地圖；不寫入任何存檔或成績。 -->
+<style>
+.zh-showcase-entry{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px;padding:16px 20px;border:1px solid #e2be6e;border-radius:16px;background:linear-gradient(115deg,#1d2e42f2,#132234f2 58%,#2a2318e8);box-shadow:0 12px 28px #040b1666,inset 0 1px 0 #ffe6a829}
+.zh-showcase-entry h2{font-size:22px;color:#ffe2a2;margin:2px 0 4px;letter-spacing:.06em}
+.zh-showcase-entry p{font-size:13.5px;color:#e5dcc8;line-height:1.65;margin:0}
+.zh-showcase-entry small{display:block;margin-top:4px;font-size:12px;color:#d6be88;letter-spacing:.04em}
+.zh-showcase-entry__actions{display:flex;flex-wrap:wrap;gap:8px;flex:none}
+.zh-showcase-entry__badge{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;background:#e0b44c26;border:1px solid #e0b44c88;color:#ffe2a2;font-size:11px;letter-spacing:.1em}
+.zh-showcase-entry__badge::before{content:'';width:7px;height:7px;border-radius:50%;background:#f0c869;box-shadow:0 0 8px #f0c869}
+@media(max-width:720px){.zh-showcase-entry{flex-direction:column;align-items:stretch;padding:14px}.zh-showcase-entry h2{font-size:19px}.zh-showcase-entry__actions button{flex:1 1 auto}}
+
+.zh-showcase{position:fixed;inset:0;z-index:240;display:grid;grid-template-rows:auto 1fr auto;background:#0a101d;color:#f4e8c9;font-family:var(--f-body,"PingFang TC",sans-serif)}
+.zh-showcase[hidden]{display:none!important}
+.zh-showcase__top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding:8px 16px;background:linear-gradient(90deg,#10192bf8,#18273df8);border-bottom:1px solid #c9a65877;z-index:5}
+.zh-showcase__brand{display:flex;align-items:center;gap:10px;min-width:0}
+.zh-showcase__pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#3a2d14;border:1px solid #e3bd68;color:#ffe4a6;font-size:12px;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+.zh-showcase__pill i{width:8px;height:8px;border-radius:50%;background:#67e0a3;box-shadow:0 0 8px #67e0a3;animation:zhScPulse 1.1s ease-in-out infinite alternate}
+.zh-showcase.is-paused .zh-showcase__pill i{background:#e0b44c;box-shadow:none;animation:none}
+@keyframes zhScPulse{from{opacity:.45;transform:scale(.85)}to{opacity:1;transform:scale(1.15)}}
+.zh-showcase__tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.zh-showcase__tab{padding:5px 11px;border-radius:8px;border:1px solid #96825566;background:#142033;color:#d6ccb6;font:inherit;font-size:12.5px;cursor:pointer;transition:all .18s}
+.zh-showcase__tab:hover{border-color:#e0b44c;color:#fff}
+.zh-showcase__tab[aria-selected="true"]{background:linear-gradient(120deg,#d8b056,#b98932);color:#171f2c;border-color:#ffe4a3;font-weight:700;box-shadow:0 0 14px #e0b44c44}
+.zh-showcase__ctrls{display:flex;align-items:center;gap:6px}
+.zh-showcase__btn{min-height:34px;padding:5px 11px;border-radius:8px;border:1px solid #b5996388;background:#19283d;color:#f3e5c2;font:inherit;font-size:12.5px;cursor:pointer}
+.zh-showcase__btn:hover{border-color:#f0cf82;background:#223550}
+.zh-showcase__btn--close{background:#472325;border-color:#d46b5f88;color:#ffd8d2}
+.zh-showcase__btn--close:hover{background:#5e2c2f;border-color:#ff9b8e}
+
+.zh-showcase__viewport{position:relative;width:100%;height:100%;min-height:0;overflow:hidden;background:#0d1524}
+.zh-showcase__frame,.zh-showcase__myth{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0d1524}
+.zh-showcase__foot{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:7px 16px;background:#0e1726f5;border-top:1px solid #c9a65855;font-size:12.5px;z-index:5}
+.zh-showcase__status{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0}
+.zh-showcase__highlight{color:#ffe09c;font-weight:700}
+.zh-showcase__action{color:#bfe6d4}
+.zh-showcase__meta{color:#b9b2a0;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zh-showcase__bar{position:absolute;left:0;right:0;top:0;height:3px;background:#ffffff14;overflow:hidden}
+.zh-showcase__bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#67e0a3,#e0b44c);transition:width .25s linear}
+
+.zh-sc-cursor{position:fixed;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #ffe5a3;background:radial-gradient(circle,#ffe5a388 0%,#e0b44c22 70%,transparent 100%);box-shadow:0 0 16px #e0b44ccc;pointer-events:none;z-index:9999;transition:left .32s cubic-bezier(.22,1,.36,1),top .32s cubic-bezier(.22,1,.36,1),transform .18s ease;opacity:0}
+.zh-sc-cursor.is-on{opacity:1}
+.zh-sc-cursor.is-tap{transform:scale(.72);background:#ffe5a3aa}
+.zh-sc-cursor::after{content:'自動';position:absolute;left:22px;top:14px;padding:1px 6px;border-radius:999px;background:#121d2fee;border:1px solid #e0b44caa;color:#ffe4a6;font-size:10px;white-space:nowrap;box-shadow:0 2px 8px #0009}
+.zh-sc-ripple{position:fixed;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:2px solid #ffe4a3;pointer-events:none;z-index:9998;animation:zhScRipple .55s ease-out forwards}
+@keyframes zhScRipple{from{opacity:.95;transform:scale(.35)}to{opacity:0;transform:scale(1.85)}}
+@media(max-width:680px){.zh-showcase__top{padding:6px 10px;gap:6px}.zh-showcase__tab{padding:4px 8px;font-size:11px}.zh-showcase__btn{min-height:30px;padding:4px 8px;font-size:11px}.zh-showcase__foot{padding:6px 10px;font-size:11px}}
+</style>
+<script>
+(function(w){
+ 'use strict';
+ const ZH=w.ZH=w.ZH||{};
+ if(ZH.showcase)return;
+ const ASSETS=w.ZH_SHOWCASE_ASSETS||{};
+ const boot=ZH.boot||w.ZH_BOOT||{},params=boot.params||{};
+ const STAGES=[
+  {id:'weizheng',index:0,page:'S_cq08_weizheng',title:'① 燭之武退秦師（鄭國篇）',shortTitle:'燭之武退秦師',sub:'非對稱圍城 SLG · 夜縋出城潛行 · 帳中利害說秦伯',durationMs:36000},
+  {id:'myth',index:1,page:'myth',title:'② 山海異境 · 青丘林地',shortTitle:'山海異境 · 青丘林地',sub:'HD-2D 立體林地 · 劍士與符師連招 · 九尾狐三階段引火點燈',durationMs:36000},
+  {id:'chuhan',index:2,page:'Map',params:{w:'ch'},title:'③ 楚漢大地圖',shortTitle:'楚漢大地圖',sub:'天下十八諸侯 · 關中巴蜀內政國策 · 列國辯才交涉 · 韓信出陣',durationMs:36000}
+ ];
+
+ const childMode=String(params.showcase||'')==='1'||(String(params.demo||'')==='1'&&['S_cq08_weizheng','map','Map'].includes(String(boot.page||'')));
+ let carouselOpen=false,paused=false,stageIdx=0,stageStart=0,stageDuration=36000,stageTimer=null,progressTimer=null,driverTimer=null,actionCount=0,lastHighlight='',lastAction='',shellsCache=null,mythInstance=null,slgCaptured=null;
+ const memory={local:new Map(),session:new Map()},copy=v=>v===undefined?undefined:JSON.parse(JSON.stringify(v));
+ const isIsolated=()=>childMode||carouselOpen;
+
+ // ───── 資料隔離：展示模式絕不讀寫正式存檔、成績、首答或雲端紀錄 ─────
+ const rawCall=ZH.call;
+ if(rawCall){
+  ZH.call=function(name,...args){
+   if(!isIsolated())return rawCall.call(ZH,name,...args);
+   if(name==='api_getAnchors'||name==='api_getStoryAnchors'){
+    const sid=args[0]||'S_cq08_weizheng';
+    const list=ASSETS.anchors?.[sid]||w.ZH_PREVIEW_ANCHORS?.[sid]||[];
+    return Promise.resolve({ok:true,showcase:true,anchors:copy(list)});
+   }
+   if(name==='api_getStudentProfile'||name==='api_getPlayerProfile'){
+    return Promise.resolve({ok:true,showcase:true,profile:{displayName:'自動展示策士',studentId:'000000',rank:'上卿',avatarId:'scholar',appearance:{body:'male',characterStyle:'hero'},stats:{history:90,letters:88,strategy:94,virtue:86,erudition:92}}});
+   }
+   if(name==='api_getScenarioProgress')return Promise.resolve({ok:true,showcase:true,factions:{}});
+   if(name==='api_listSaves')return Promise.resolve({ok:true,showcase:true,saves:[]});
+   return Promise.resolve({ok:true,showcase:true,blocked:true,state:null,runs:[],saves:[],completed:{}});
+  };
+ }
+ for(const kind of ['local','session']){
+  const store=ZH[kind];if(!store)continue;
+  for(const method of ['get','set','remove']){
+   const orig=store[method].bind(store);
+   store[method]=function(key,val){
+    if(!isIsolated())return orig(key,val);
+    const box=memory[kind];
+    if(method==='get')return box.has(key)?copy(box.get(key)):val;
+    if(method==='set')box.set(key,copy(val));
+    else box.delete(key);
+   };
+  }
+ }
+ const guard=(owner,name,fn)=>{
+  if(!owner||typeof owner[name]!=='function')return;
+  const orig=owner[name];
+  owner[name]=function(...args){return isIsolated()?fn.apply(this,args):orig.apply(this,args);};
+ };
+ guard(ZH,'save',()=>Promise.resolve({ok:true,showcase:true}));
+ guard(ZH,'load',()=>Promise.resolve({ok:true,showcase:true,state:null}));
+ for(const name of ['deleteSave','clearDeviceSave','discardAndLeave','flush','flushAll'])guard(ZH,name,()=>Promise.resolve({ok:true,showcase:true}));
+ guard(ZH,'track',()=>{});
+ guard(ZH,'pendingCount',()=>0);
+ guard(ZH,'finishScenario',res=>Promise.resolve({ok:true,showcase:true,result:copy(res)}));
+ if(ZH.runs){
+  for(const name of ['record','ensure','choose','restart'])guard(ZH.runs,name,()=>Promise.resolve({ok:true,showcase:true,runs:[]}));
+  guard(ZH.runs,'begin',(id,st)=>{if(st)st._playRunId='showcase_'+Date.now().toString(36);});
+ }
+ if(ZH.records){
+  guard(ZH.records,'remove',()=>Promise.resolve({ok:true,showcase:true}));
+  guard(ZH.records,'summary',()=>Promise.resolve({ok:true,showcase:true,saves:[],chapters:[],collection:{items:[]}}));
+ }
+ if(ZH.codex){
+  guard(ZH.codex,'unlock',()=>true);
+  guard(ZH.codex,'grantFor',()=>[]);
+  guard(ZH.codex,'fresh',()=>[]);
+ }
+ if(ZH.player){
+  guard(ZH.player,'initRun',(st,scope,ctx)=>{if(st)st._player={runId:'showcase',scope,context:ctx,loadout:['anmin','tongpin','yunchou'],uses:[],applied:[]};return Promise.resolve(st?._player);});
+  guard(ZH.player,'consume',(st,id,target)=>Promise.resolve({id,target,key:'showcase_'+id,assisted:true,showcase:true}));
+ }
+ if(childMode){
+  ZH.go=function(page,p){reportStep('展示區段完成','維持於展示畫面（不跳轉外部頁面：'+String(page||'')+'）');};
+  if(ZH.settings)ZH.settings.textSpeed='fast';
+ }
+
+ // ───── 視覺化自動游標與操作通知 ─────
+ let cursorEl=null;
+ function ensureCursor(){
+  if(cursorEl&&cursorEl.isConnected)return cursorEl;
+  if(!document.body)return null;
+  cursorEl=document.createElement('div');
+  cursorEl.className='zh-sc-cursor';
+  cursorEl.setAttribute('aria-hidden','true');
+  document.body.appendChild(cursorEl);
+  return cursorEl;
+ }
+ function reportStep(highlight,action){
+  actionCount++;
+  if(highlight)lastHighlight=highlight;
+  if(action)lastAction=action;
+  updateHudText();
+  if(childMode&&w.parent&&w.parent!==w){
+   try{w.parent.postMessage({type:'zh:showcase-step',page:boot.page,highlight:lastHighlight,action:lastAction,actionCount},'*');}catch{}
+  }
+ }
+ function pulsePoint(x,y){
+  const c=ensureCursor();
+  if(!c)return;
+  c.style.left=Math.round(x)+'px';
+  c.style.top=Math.round(y)+'px';
+  c.classList.add('is-on','is-tap');
+  setTimeout(()=>c.classList.remove('is-tap'),180);
+  if(document.body){
+   const r=document.createElement('div');
+   r.className='zh-sc-ripple';
+   r.style.left=Math.round(x)+'px';
+   r.style.top=Math.round(y)+'px';
+   document.body.appendChild(r);
+   setTimeout(()=>r.remove(),580);
+  }
+ }
+ function tap(target,action,highlight){
+  const el=typeof target==='string'?document.querySelector(target):target;
+  if(!el)return false;
+  try{
+   const rect=el.getBoundingClientRect();
+   const x=rect.width>0?rect.left+rect.width*0.5:innerWidth*0.5;
+   const y=rect.height>0?rect.top+rect.height*0.5:innerHeight*0.5;
+   pulsePoint(x,y);
+  }catch{}
+  reportStep(highlight,action);
+  try{el.click();}catch{}
+  return true;
+ }
+
+ // ───── 第一段驅動：燭之武退秦師（鄭國篇） ─────
+ function hookSlgCreate(){
+  if(!ZH.slg||ZH.slg._showcaseHooked)return;
+  const orig=ZH.slg.create;
+  ZH.slg.create=function(root,cfg){
+   const instance=orig.call(this,root,cfg);
+   slgCaptured={game:instance,cfg,root};
+   return instance;
+  };
+  ZH.slg._showcaseHooked=true;
+ }
+
+ function answerAnchorMap(){
+  const map={wz_01:'B',wz_02:'B',wz_03:'C',wz_04:'B',wz_05:'A',wz_06:'B',wz_07:'B',wz_08:'C',wz_09:'B',wz_10:'A',wz_11:'C',wz_12:'B',wz_13:'A',wz_14:'B'};
+  for(const item of (ASSETS.anchors?.S_cq08_weizheng||w.ZH_PREVIEW_ANCHORS?.S_cq08_weizheng||[])){
+   if(item?.id&&item?.answer)map[item.id]=item.answer;
+  }
+  return map;
+ }
+
+ function startWeizhengDriver(){
+  hookSlgCreate();
+  if(ZH.settings)ZH.settings.textSpeed='fast';
+  const answers=answerAnchorMap();
+  const startedAt=Date.now();
+  let cmdStep=0,phase='act1',ropeTicks=0,patrolIdx=0,marchTriggered=false;
+  const patrolMoves=['r','r','u','r','d','r','r','u','r'];
+
+  reportStep('圍城之急：三方非對稱態勢與朝議夜探','準備進入鄭國篇');
+  clearInterval(driverTimer);
+  driverTimer=setInterval(()=>{
+   if(paused)return;
+   hookSlgCreate();
+   const elapsed=(Date.now()-startedAt)/1000;
+
+   // 1. 標題頁：自動點選「開始鄭國篇」
+   const startBtn=document.querySelector('.wz-title [data-a="new"], .wz-title [data-a="continue"]');
+   if(startBtn){
+    tap(startBtn,'點選「開始鄭國篇」進入新鄭危局','圍城之急：三方非對稱態勢與朝議夜探');
+    return;
+   }
+
+   // 2. 階段切換：12.5 秒切換至亮點二「夜縋出城（城牆垂降與避哨潛行）」
+   if(elapsed>=12.5&&phase==='act1'&&slgCaptured?.game){
+    phase='stealth';
+    document.querySelectorAll('.za,.slg-coach,.zh-modal').forEach(n=>n.remove());
+    document.body.classList.remove('za-lock');
+    if(ZH.character)ZH.character.enabled=()=>false;
+    const sneakEvt=(slgCaptured.cfg.previewEvents||[]).find(e=>e.id==='nightSneak');
+    if(sneakEvt){
+     reportStep('夜縋出城：城牆垂降與避開晉軍巡哨','啟動第二幕「夜縋潛行」亮點體驗');
+     Promise.resolve().then(()=>sneakEvt.run(slgCaptured.game.ctx)).catch(()=>{});
+     return;
+    }
+   }
+
+   // 3. 階段切換：23.5 秒切換至亮點三「帳中說秦伯（利害交涉与秦伯心意）」
+   if(elapsed>=23.5&&phase!=='talk'&&slgCaptured?.game){
+    phase='talk';
+    document.querySelectorAll('.stl,.za,.slg-coach,.zh-modal').forEach(n=>n.remove());
+    document.body.classList.remove('za-lock');
+    const st=slgCaptured.game.state;
+    if(st){
+     st.intel=['far','neighbor','past','ambition'];
+     st.flags=st.flags||{};
+     st.flags.a2_tent=1;
+     st.flags.persuade=48;
+     st.flags.talk={};
+    }
+    const talkEvt=(slgCaptured.cfg.previewEvents||[]).find(e=>e.id==='qinTalk');
+    if(talkEvt){
+     reportStep('帳中說秦伯：四重利害論據與秦伯心意交涉','進入氾南秦營中軍大帳，展開說秦交涉');
+     Promise.resolve().then(()=>talkEvt.run(slgCaptured.game.ctx)).catch(()=>{});
+     return;
+    }
+   }
+
+   // 4. 在 31.5 秒展示「秦鄭結盟・秦軍拔營西歸」行軍動畫
+   if(elapsed>=31.5&&phase==='talk'&&!marchTriggered&&slgCaptured?.game){
+    marchTriggered=true;
+    document.querySelectorAll('.za,.zh-modal').forEach(n=>n.remove());
+    document.body.classList.remove('za-lock');
+    const ctx=slgCaptured.game.ctx;
+    try{
+     ctx.scene?.(null);
+     ctx.node?.('fanan',{sub:'杞子等戍守',badge:'盟',badgeColor:'#3f9d84'});
+     ctx.node?.('xinzheng',{badge:'解圍',badgeColor:'#3f9d84'});
+     ctx.fx?.march?.('fanan','yong',{faction:'qin',ms:2400,curve:[420,60]});
+     ctx.fx?.pulse?.('xinzheng','#3f9d84');
+     reportStep('一言退秦：秦伯結盟退師・新鄭解圍','秦伯心折結盟，秦軍自氾南拔營西歸');
+    }catch{}
+    return;
+   }
+
+   // 5. 夜縋潛行畫面（.stl）自動操作
+   const stl=document.querySelector('.stl');
+   if(stl){
+    const goBtn=stl.querySelector('[data-go="start"]');
+    if(goBtn){
+     tap(goBtn,'開始「夜縋出城」潛行挑戰','夜縋出城：城牆垂降與避開晉軍巡哨');
+     return;
+    }
+    const holdBtn=stl.querySelector('[data-act="hold"]');
+    if(holdBtn&&holdBtn.offsetParent!==null){
+     ropeTicks++;
+     const rect=holdBtn.getBoundingClientRect();
+     pulsePoint(rect.left+rect.width*0.5,rect.top+rect.height*0.5);
+     reportStep('夜縋出城：城牆垂降與避開晉軍巡哨','趁晉軍火把間隙按住繩索垂降城牆（第 '+ropeTicks+' 段）');
+     try{
+      holdBtn.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:1}));
+      setTimeout(()=>{try{holdBtn.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:1}));}catch{}},620);
+     }catch{}
+     return;
+    }
+    const dir=patrolMoves[patrolIdx%patrolMoves.length];
+    const padBtn=stl.querySelector('[data-d="'+dir+'"]')||stl.querySelector('[data-d="r"]');
+    if(padBtn){
+     patrolIdx++;
+     tap(padBtn,'操控燭之武潛行避開晉軍視野（方向：'+({r:'向東往秦營',u:'向北繞蘆葦',d:'向南避火光'}[dir]||'前進')+'）','夜縋出城：蘆葦潛行避開晉軍巡哨');
+     return;
+    }
+   }
+
+   // 6. 教學提示（.slg-coach）自動略過或下一步
+   const coachBtn=document.querySelector('.slg-coach [data-c="skip"], .slg-coach [data-c="next"]');
+   if(coachBtn){
+    tap(coachBtn,'快速通過操作指引','圍城之急：三方非對稱態勢與朝議夜探');
+    return;
+   }
+
+   // 7. 史實錨點（.za）自動作答並繼續
+   const za=document.querySelector('.za');
+   if(za){
+    const nextBtn=za.querySelector('.za-actions .zh-btn--primary');
+    if(nextBtn){
+     tap(nextBtn,'確認史實解析並推進劇情',phase==='talk'?'帳中說秦伯：四重利害論據與秦伯心意交涉':'圍城之急：古文原典錨點判讀');
+     return;
+    }
+    const choices=[...za.querySelectorAll('.za__choices button:not([disabled])')];
+    if(choices.length){
+     const pickBtn=choices.find(b=>Object.values(answers).includes(b.dataset.key)&&b.dataset.key==='B')||choices[0];
+     tap(pickBtn,'選擇史實決策：「'+pickBtn.textContent.trim().slice(0,22)+'」',phase==='talk'?'帳中說秦伯：陳明越國鄙遠與亡鄭陪鄰之害':'圍城之急：古文原典錨點判讀');
+     return;
+    }
+   }
+
+   // 8. 對話框（.slg-say）自動推進
+   const say=document.querySelector('.slg-say');
+   if(say){
+    const nextSay=say.querySelector('.slg-say__next')||say;
+    tap(nextSay,'推進古文人物對話',phase==='talk'?'帳中說秦伯：燭之武剖析秦晉利害':'圍城之急：新鄭朝議與戰局對話');
+    return;
+   }
+
+   // 9. 一般彈窗（.zh-modal）自動確認
+   const modalBtn=document.querySelector('.zh-modal .zh-btn--primary, .zh-modal button');
+   if(modalBtn){
+    tap(modalBtn,'確認戰局提示','圍城之急：三方非對稱態勢與朝議夜探');
+    return;
+   }
+
+   // 10. SLG 棋盤指令與地圖互動
+   if(slgCaptured?.game){
+    const ctx=slgCaptured.game.ctx;
+    if(cmdStep===0){
+     cmdStep++;
+     ctx.fx?.pulse?.('hanling','#c4473a');
+     ctx.fx?.pulse?.('fanan','#e0b44c');
+     const council=document.querySelector('[data-cmd="council"]:not([disabled])');
+     if(council){tap(council,'下令「召開朝議」：佚之狐舉薦燭之武','圍城之急：每夜三道令・召開朝議');return;}
+    }
+    if(cmdStep===1){
+     cmdStep++;
+     const scout=document.querySelector('[data-cmd="scout"]:not([disabled])');
+     if(scout){
+      tap(scout,'下令「夜探敵營」：派遣斥候窺探秦晉虛實','圍城之急：夜探秦營・蒐集說秦論據');
+      setTimeout(()=>{
+       const target=document.querySelector('[data-target="fanan"], [data-target="hanling"]');
+       if(target)tap(target,'選擇夜探目標：氾南秦營（揭露秦軍戰意與論據）','圍城之急：夜探秦營・蒐集說秦論據');
+      },280);
+      return;
+     }
+    }
+    if(cmdStep===2){
+     cmdStep++;
+     const invite=document.querySelector('[data-cmd="invite"]:not([disabled])');
+     if(invite){tap(invite,'下令「請燭之武」：鄭伯引咎自責，請老臣出城','圍城之急：鄭伯謝過・燭之武許諾出使');return;}
+     const repair=document.querySelector('[data-cmd="repair"]:not([disabled])');
+     if(repair){tap(repair,'下令「修補城防」：加固新鄭女牆','圍城之急：固守孤城・維持城防與民心');return;}
+    }
+    if(cmdStep===3){
+     cmdStep++;
+     const intelTab=document.querySelector('[data-tab="intel"]');
+     if(intelTab){tap(intelTab,'切換至「論據」分頁，檢視說服秦伯的關鍵論據','圍城之急：情報與說秦論據總覽');return;}
+    }
+    cmdStep=0;
+    const cmdTab=document.querySelector('[data-tab="cmd"]');
+    if(cmdTab)tap(cmdTab,'檢視新鄭守城指令與三方局勢','圍城之急：三方非對稱態勢與朝議夜探');
+   }
+  },880);
+ }
+
+ // ───── 第二段驅動：山海異境 · 青丘林地（Godot HD-2D） ─────
+ function startMythDriver(viewInstance){
+  const act=cmd=>(viewInstance?.demoAction?viewInstance.demoAction(cmd):ZH.myth?.demoAction?.(cmd));
+  let step=0;
+  const plan=[
+   ()=>{act({type:'startCheckpoint',checkpoint:0,weapon:'sword',abilities:['swift','precise'],notice:'展示亮點一：青丘林口 · 劍士手繪八向連擊與折鋒突進'});return['青丘林口：手繪旅人與立體林地','啟動劍士流派（近戰破甲 · 迅影＋巧勁）'];},
+   ()=>{act({type:'key',key:'up',ms:650});return['青丘林口：手繪旅人與立體林地','向前踏入青丘林道，接近墨團精'];},
+   ()=>{act({type:'attack',ms:500});return['青丘林口：手繪旅人與立體林地','施展劍士三段普通連擊'];},
+   ()=>{act({type:'skill',index:0});return['青丘林口：手繪旅人與立體林地','施放一技「折鋒突進」破陣斬擊'];},
+   ()=>{act({type:'key',key:'right',ms:600});act({type:'attack',ms:450});return['青丘林口：手繪旅人與立體林地','右側走位追擊分裂小墨靈'];},
+   ()=>{act({type:'dodge'});return['青丘林口：手繪旅人與立體林地','空白鍵瞬步閃避，觸發無敵幀與殘影'];},
+   ()=>{act({type:'skill',index:2});return['青丘林口：手繪旅人與立體林地','施放絕技「迴風斬」範圍清場'];},
+   ()=>{act({type:'rotate',delta:0.35});act({type:'zoom',delta:-2});return['青丘林口：360° 景深鏡頭與動態遮擋','旋轉並拉近 HD-2D 鏡頭，觀察林間光影'];},
+   ()=>{act({type:'skill',index:1});act({type:'key',key:'up',ms:600});return['符紋遺跡：溪橋與地面符陣','施放「守勢反擊」格擋並推進溪橋'];},
+   ()=>{act({type:'reset'});act({type:'attack',ms:500});return['符紋遺跡：溪橋與地面符陣','回正視角並連擊清理符紙妖'];},
+
+   // 10s+：切換至石燈庭（符師流派）
+   ()=>{act({type:'startCheckpoint',checkpoint:2,weapon:'talisman',abilities:['foresight','plan'],notice:'展示亮點二：石燈庭 · 符師遠程控場與引石甲猿妖撞柱破甲'});return['石燈庭：符師遠程控場與引柱破甲','切換符師流派，進入第三區段「石燈庭」'];},
+   ()=>{act({type:'key',key:'up',ms:600});act({type:'attack',ms:480});return['石燈庭：符師遠程控場與引柱破甲','遠程靈符連射牽制石甲猿妖'];},
+   ()=>{act({type:'skill',index:0});return['石燈庭：符師遠程控場與引柱破甲','施放「鎖靈符」定身控場'];},
+   ()=>{act({type:'key',key:'left',ms:620});act({type:'dodge'});return['石燈庭：符師遠程控場與引柱破甲','引導石甲猿妖衝撞石柱，閃避震波'];},
+   ()=>{act({type:'skill',index:1});return['石燈庭：符師遠程控場與引柱破甲','展開「護身紙陣」提升防禦與定力'];},
+   ()=>{act({type:'skill',index:2});act({type:'attack',ms:520});return['石燈庭：符師遠程控場與引柱破甲','趁猿妖撞柱破甲，施放「支援符陣」全力輸出'];},
+   ()=>{act({type:'rotate',delta:-0.35});act({type:'key',key:'right',ms:550});return['石燈庭：符師遠程控場與引柱破甲','環繞石燈走位，拾取青丘燈芯'];},
+
+   // 18s+：切換至狐影環臺（青丘九尾狐三階段首領戰）
+   ()=>{act({type:'startCheckpoint',checkpoint:3,weapon:'sword',abilities:['swift','listen'],notice:'展示亮點三：狐影環臺 · 青丘九尾狐三階段首領戰'});return['狐影環臺：青丘九尾狐三階段首領試煉','進入最終首領戰「青丘九尾狐」第一階段'];},
+   ()=>{act({type:'key',key:'up',ms:580});act({type:'skill',index:0});return['狐影環臺：第一階段・辨識金色足跡真身','觀察地面金色足跡，折鋒突進直取真身'];},
+   ()=>{act({type:'attack',ms:520});act({type:'skill',index:1});return['狐影環臺：第一階段・辨識金色足跡真身','連擊壓制九尾狐並以守勢反擊狐火'];},
+   ()=>{act({type:'testPhase',phase:2,notice:'九尾狐第二階段：扇形狐火預警與安全退路'});return['狐影環臺：第二階段・扇形狐火與留退路','推進至九尾狐第二階段，場地浮現狐火預警'];},
+   ()=>{act({type:'dodge'});act({type:'key',key:'left',ms:560});return['狐影環臺：第二階段・扇形狐火與留退路','瞬步閃出扇形預警區，保留安全退路'];},
+   ()=>{act({type:'skill',index:2});act({type:'attack',ms:500});return['狐影環臺：第二階段・扇形狐火與留退路','抓住收招空檔施放「迴風斬」重創首領'];},
+   ()=>{act({type:'testPhase',phase:3,notice:'九尾狐第三階段：引追蹤狐火點亮雙石燈破除護盾'});return['狐影環臺：第三階段・引狐火點亮雙燈破盾','推進至第三階段，九尾狐展開狐火護盾'];},
+   ()=>{act({type:'key',key:'right',ms:640});act({type:'dodge'});return['狐影環臺：第三階段・引狐火點亮雙燈破盾','走位牽引追蹤狐火，點亮東側青丘石燈'];},
+   ()=>{act({type:'key',key:'left',ms:640});act({type:'skill',index:0});return['狐影環臺：第三階段・引狐火點亮雙燈破盾','牽引狐火點亮西側石燈，破除九尾狐護盾'];},
+   ()=>{act({type:'skill',index:2});act({type:'attack',ms:600});return['狐影環臺：第三階段・引狐火點亮雙燈破盾','護盾擊破！全力連招輸出反擊窗口'];},
+
+   // 28s+：切換至我的博物館 · 收藏展室
+   ()=>{act({type:'museum',notice:'展示亮點四：我的博物館 · 六展位神話藏品與《山海經》原典對照'});return['我的博物館：立體收藏展室與原典記述','進入「我的博物館」預覽六件青丘神話藏品'];},
+   ()=>{act({type:'focusSlot',slot:0});return['我的博物館：立體收藏展室與原典記述','聚焦展位一：九尾狐立像（《山海經・南山經》）'];},
+   ()=>{act({type:'focusSlot',slot:2});return['我的博物館：立體收藏展室與原典記述','聚焦展位三：青丘石燈（引火破盾器物）'];},
+   ()=>{act({type:'focusSlot',slot:4});return['我的博物館：立體收藏展室與原典記述','聚焦展位五：狐火玉佩與青丘旗館藏'];}
+  ];
+
+  const runStep=()=>{
+   if(paused)return;
+   const fn=plan[step%plan.length];
+   step++;
+   const [hl,ac]=fn()||[];
+   pulsePoint(innerWidth*(0.35+(step%5)*0.08),innerHeight*(0.42+((step*3)%4)*0.08));
+   reportStep(hl,ac);
+  };
+  runStep();
+  clearInterval(driverTimer);
+  driverTimer=setInterval(runStep,1050);
+ }
+
+ // ───── 第三段驅動：楚漢大地圖（Map / w=ch） ─────
+ function startChuhanDriver(){
+  let step=0;
+  reportStep('楚漢逐鹿：十八諸侯開局與關中經略','準備展開楚漢天下大地圖');
+  clearInterval(driverTimer);
+  driverTimer=setInterval(()=>{
+   if(paused)return;
+
+   // 1. 標題選勢力畫面
+   const titleBox=document.querySelector('.wld-title');
+   if(titleBox){
+    const hanCard=titleBox.querySelector('[data-f="han"]:not(.is-on)');
+    if(hanCard){
+     tap(hanCard,'選擇開局勢力：漢王劉邦（據漢中、巴蜀以爭天下）','楚漢逐鹿：十八諸侯開局與關中經略');
+     return;
+    }
+    const startBtn=titleBox.querySelector('[data-t="start"]');
+    if(startBtn){
+     tap(startBtn,'點擊「以此勢力開局」進入前 206 年楚漢大地圖','楚漢逐鹿：十八諸侯開局與關中經略');
+     return;
+    }
+   }
+
+   // 2. 處理彈出視窗（序章劇本提示、國策確認、外交交涉、出陣確認等）
+   const modal=document.querySelector('.zh-modal');
+   if(modal){
+    const laterBtn=modal.querySelector('[data-p="later"]');
+    if(laterBtn){
+     tap(laterBtn,'略過序章劇本跳轉，直接展示大地圖戰略推演','楚漢逐鹿：關中與巴蜀內政經略');
+     return;
+    }
+    const dipChoice=modal.querySelector('[data-dip="ally"]:not(.is-on), [data-dip="gift"]:not(.is-on)');
+    if(dipChoice&&!modal.dataset.scPicked){
+     modal.dataset.scPicked='1';
+     tap(dipChoice,'選擇交涉方案，即時預覽「辯才 × 利害 × 國勢」成功率公式','列國交涉：辯才公式與使者說辭');
+     return;
+    }
+    const sendBtn=modal.querySelector('[data-x="send"], [data-x="go"], [data-x="1"], [data-x="ok"], .zh-btn--primary');
+    if(sendBtn){
+     tap(sendBtn,'確認執行戰略指令：'+sendBtn.textContent.trim().slice(0,18),'楚漢逐鹿：戰略決策確認');
+     return;
+    }
+   }
+
+   // 3. 大地圖亮點腳本序列
+   const W=ZH.world;
+   if(!W||!W.state)return;
+   step++;
+   switch(step){
+    case 1:
+     W.debug?.focus?.('hanzhong',540);
+     tap('[data-city="hanzhong"]','聚焦漢中王都，檢視城池錢糧、兵力與民心','關中與巴蜀經略：城池內政與錢糧整備');
+     break;
+    case 2:
+     tap('[data-dev="fa"]:not([disabled])','執行「開墾」：提升漢中農業與每季糧草收入','關中與巴蜀經略：城池內政與錢糧整備');
+     break;
+    case 3:
+     tap('[data-dev="draft"]:not([disabled])','執行「徵兵」：擴充漢中主力兵源','關中與巴蜀經略：城池內政與錢糧整備');
+     break;
+    case 4:
+     if(!tap('[data-mode="外交"]','切換地圖模式至「外交態勢」檢視諸侯敵友','多維地圖視角：勢力・外交・民心・地形'))W.debug?.mode?.('外交');
+     break;
+    case 5:
+     if(!tap('[data-mode="民心"]','切換地圖模式至「民心分佈」檢視各郡安危','多維地圖視角：勢力・外交・民心・地形'))W.debug?.mode?.('民心');
+     break;
+    case 6:
+     if(!tap('[data-mode="勢力"]','切回「勢力版圖」模式','多維地圖視角：勢力・外交・民心・地形'))W.debug?.mode?.('勢力');
+     break;
+    case 7:
+     if(!tap('[data-t="國策"]','切換至「國策」分頁，檢視漢王專屬國策樹','國策與制度：漢中對策與關中約法'))W.debug?.pane?.('國策');
+     break;
+    case 8:{
+     const nf=document.querySelector('[data-nf]:not([disabled])');
+     if(nf)tap(nf,'啟動國策研發：「'+nf.textContent.trim().slice(0,16)+'」','國策與制度：漢中對策與關中約法');
+     else reportStep('國策與制度：漢中對策與關中約法','檢視國策加成與回合進度');
+     break;
+    }
+    case 9:
+     if(!tap('[data-t="人才"]','切換至「人才」分頁，檢視韓信、張良、蕭何五維能力','楚漢將相：五維能力與列傳寶物'))W.debug?.pane?.('人才');
+     break;
+    case 10:{
+     const ch=document.querySelector('[data-char="hanxin"], [data-char="zhangliang"], [data-char]');
+     if(ch)tap(ch,'檢視名將能力剖析與隨身寶物','楚漢將相：五維能力與列傳寶物');
+     break;
+    }
+    case 11:
+     if(!tap('[data-t="勢力"]','切換至「勢力」分頁，準備展開列國交涉','列國交涉：辯才公式與使者說辭'))W.debug?.pane?.('勢力');
+     break;
+    case 12:
+     try{W.debug?.diplomacy?.('yong');}catch{}
+     reportStep('列國交涉：辯才公式與使者說辭','開啟對雍王章邯之外交交涉，計算辯才×利害×國勢');
+     break;
+    case 13:
+     if(!tap('[data-t="城池"]','返回「城池」分頁，準備明修棧道、暗度陳倉','大軍出陣：韓信北定三秦與月度推演'))W.debug?.pane?.('城池');
+     break;
+    case 14:
+     W.debug?.focus?.('hanzhong',620);
+     try{W.debug?.march?.('hanzhong','chencang',9000);}catch{}
+     reportStep('大軍出陣：韓信北定三秦與月度推演','命韓信率漢中精兵九千出陣，北伐陳倉');
+     break;
+    case 15:
+     W.debug?.fit?.();
+     if(!tap('[data-ui="next"]','推進至下一月：大軍沿秦嶺棧道行軍推進','大軍出陣：韓信北定三秦與月度推演'))try{W.debug?.tick?.();}catch{}
+     break;
+    case 16:
+     W.debug?.focus?.('chencang',620);
+     if(!tap('[data-ui="next"]','推進月度結算：漢軍合圍陳倉，展開攻城戰','大軍出陣：韓信北定三秦與月度推演'))try{W.debug?.tick?.();}catch{}
+     break;
+    case 17:
+     try{W.debug?.take?.('chencang','han');W.debug?.march?.('chencang','feiqiu',8500);}catch{}
+     W.debug?.focus?.('feiqiu',640);
+     reportStep('大軍出陣：攻克陳倉・進逼廢丘','漢軍克復陳倉，乘勝東進圍攻章邯於廢丘');
+     break;
+    case 18:
+     if(!tap('[data-t="計策"]','切換至「計策」分頁，檢視劇本通關所得計策卡','大地圖計策卡與史紀連動'))W.debug?.pane?.('計策');
+     break;
+    case 19:
+     if(!tap('[data-t="史紀"]','切換至「史紀」分頁，閱覽本局編年戰報','大地圖計策卡與史紀連動'))W.debug?.pane?.('史紀');
+     break;
+    default:
+     step=14;
+     W.debug?.fit?.();
+     if(!tap('[data-ui="next"]','持續推進月度天下局勢演變','大軍出陣：楚漢天下逐鹿推演'))try{W.debug?.tick?.();}catch{}
+     break;
+   }
+  },920);
+ }
+
+ // ───── 取得子頁面 HTML 空殼並建立隔離 srcdoc ─────
+ async function loadShells(){
+  if(shellsCache)return shellsCache;
+  if(ASSETS.shells&&typeof ASSETS.shells==='object'){shellsCache=ASSETS.shells;return shellsCache;}
+  if(typeof w.fetch==='function'&&typeof w.ZH_STATIC_URL==='function'){
+   try{
+    const res=await fetch(w.ZH_STATIC_URL(ASSETS.shellsUrl||'assets/showcase-shells.json'),{credentials:'omit'});
+    if(res.ok){shellsCache=await res.json();return shellsCache;}
+   }catch{}
+  }
+  return {};
+ }
+
+ function buildSrcdoc(rawHtml,page,extraParams={}){
+  if(!rawHtml)return '';
+  const base=typeof w.ZH_STATIC_URL==='function'?w.ZH_STATIC_URL(''):(ASSETS.siteUrl||'https://s90194yeu-collab.github.io/zongheng-game/');
+  const childBoot={
+   appUrl:'',
+   assetBase:base,
+   assetRelease:boot.assetRelease||ASSETS.release||'',
+   page:page,
+   params:{page,...extraParams,demo:'1',showcase:'1'},
+   version:boot.version||ASSETS.version||'v4',
+   user:{email:'',isSchool:false,isGuest:true,isTeacher:false},
+   guestScenarios:['S_cq08_weizheng','S_zg08_jiezhu','S_ch04_hongmen','S_ch10_垓下']
+  };
+  const bootScript='<scr'+'ipt>window.'+'ZH_BOOT='+JSON.stringify(childBoot).replace(/</g,'\\u003c')+';window.ZH_SHOWCASE_ASSETS='+JSON.stringify({anchors:ASSETS.anchors||{}}).replace(/</g,'\\u003c')+';<\/scr'+'ipt>';
+  return rawHtml
+   .replaceAll('https://s90194yeu-collab.github.io/zongheng-game/',base)
+   .replace(/<base[^>]*>/i,'<base href="'+base+'">')
+   .replace('<!--ZH_SERVER_'+'BOOT-->',bootScript);
+ }
+
+ // ───── 輪播主介面（Hub 與全站通用） ─────
+ let overlayEl=null;
+ function ensureOverlay(){
+  if(overlayEl&&overlayEl.isConnected)return overlayEl;
+  overlayEl=document.createElement('section');
+  overlayEl.className='zh-showcase';
+  overlayEl.hidden=true;
+  overlayEl.setAttribute('role','dialog');
+  overlayEl.setAttribute('aria-modal','true');
+  overlayEl.setAttribute('aria-label','Re:縱橫鼎業 自動展示模式');
+  overlayEl.innerHTML=
+   '<header class="zh-showcase__top">'+
+    '<div class="zh-showcase__brand">'+
+     '<span class="zh-showcase__pill" data-sc-pill><i></i><span>自動展示模式 · 電腦操作輪播中</span></span>'+
+    '</div>'+
+    '<div class="zh-showcase__tabs" role="tablist" aria-label="展示輪播項目">'+
+     STAGES.map((s,i)=>'<button type="button" class="zh-showcase__tab" role="tab" data-sc-stage="'+i+'" aria-selected="'+(i===0)+'">'+s.title+'</button>').join('')+
+    '</div>'+
+    '<div class="zh-showcase__ctrls">'+
+     '<button type="button" class="zh-showcase__btn" data-sc-pause>暫停輪播</button>'+
+     '<button type="button" class="zh-showcase__btn" data-sc-next>下一段 ▶</button>'+
+     '<button type="button" class="zh-showcase__btn zh-showcase__btn--close" data-sc-close>結束展示 ✕</button>'+
+    '</div>'+
+   '</header>'+
+   '<div class="zh-showcase__viewport">'+
+    '<iframe class="zh-showcase__frame" data-sc-frame title="自動展示畫面" allow="autoplay; fullscreen"></iframe>'+
+    '<div class="zh-showcase__myth" data-sc-myth hidden></div>'+
+   '</div>'+
+   '<footer class="zh-showcase__foot">'+
+    '<div class="zh-showcase__bar"><i data-sc-bar></i></div>'+
+    '<div class="zh-showcase__status">'+
+     '<span class="zh-showcase__highlight" data-sc-hl>準備啟動自動展示……</span>'+
+     '<span class="zh-showcase__action" data-sc-act>全由電腦自動操作 · 不影響任何正式存檔與成績</span>'+
+    '</div>'+
+    '<div class="zh-showcase__meta" data-sc-meta>第 1／3 段 · 36 秒輪播</div>'+
+   '</footer>';
+  document.body.appendChild(overlayEl);
+
+  overlayEl.querySelectorAll('[data-sc-stage]').forEach(btn=>{
+   btn.addEventListener('click',()=>switchStage(Number(btn.dataset.scStage)));
+  });
+  overlayEl.querySelector('[data-sc-pause]').addEventListener('click',()=>{
+   paused=!paused;
+   overlayEl.classList.toggle('is-paused',paused);
+   overlayEl.querySelector('[data-sc-pause]').textContent=paused?'繼續輪播':'暫停輪播';
+   overlayEl.querySelector('[data-sc-pill] span').textContent=paused?'自動展示模式 · 已暫停':'自動展示模式 · 電腦操作輪播中';
+  });
+  overlayEl.querySelector('[data-sc-next]').addEventListener('click',()=>nextStage());
+  overlayEl.querySelector('[data-sc-close]').addEventListener('click',()=>close());
+  return overlayEl;
+ }
+
+ function updateHudText(){
+  if(!overlayEl||overlayEl.hidden)return;
+  const st=STAGES[stageIdx]||STAGES[0];
+  const hlEl=overlayEl.querySelector('[data-sc-hl]');
+  const actEl=overlayEl.querySelector('[data-sc-act]');
+  const metaEl=overlayEl.querySelector('[data-sc-meta]');
+  if(hlEl)hlEl.textContent='【'+st.shortTitle+'】'+(lastHighlight||st.sub);
+  if(actEl)actEl.textContent='電腦操作：'+(lastAction||'自動執行亮點操作中');
+  if(metaEl){
+   const remain=Math.max(0,Math.ceil((stageDuration-(Date.now()-stageStart))/1000));
+   metaEl.textContent='第 '+(stageIdx+1)+'／'+STAGES.length+' 段 · 操作 '+actionCount+' 次 · '+remain+' 秒後切換';
+  }
+ }
+
+ function disposeActiveStage(){
+  clearInterval(driverTimer);driverTimer=null;
+  clearTimeout(stageTimer);stageTimer=null;
+  if(mythInstance){try{mythInstance.dispose();}catch{}mythInstance=null;}
+  if(overlayEl){
+   const frame=overlayEl.querySelector('[data-sc-frame]');
+   if(frame){frame.removeAttribute('srcdoc');frame.src='about:blank';}
+   const mythBox=overlayEl.querySelector('[data-sc-myth]');
+   if(mythBox)mythBox.replaceChildren();
+  }
+ }
+
+ async function switchStage(index){
+  if(!carouselOpen)return;
+  stageIdx=((index%STAGES.length)+STAGES.length)%STAGES.length;
+  const stage=STAGES[stageIdx];
+  disposeActiveStage();
+  stageStart=Date.now();
+  stageDuration=stage.durationMs;
+  lastHighlight=stage.sub;
+  lastAction='正在載入「'+stage.shortTitle+'」亮點場景……';
+
+  const ui=ensureOverlay();
+  ui.querySelectorAll('[data-sc-stage]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===stageIdx)));
+  const frame=ui.querySelector('[data-sc-frame]');
+  const mythBox=ui.querySelector('[data-sc-myth]');
+  updateHudText();
+
+  if(stage.id==='myth'){
+   frame.hidden=true;
+   mythBox.hidden=false;
+   if(ZH.myth?.mountShowcase){
+    try{
+     mythInstance=await ZH.myth.mountShowcase(mythBox,()=>close());
+     if(!carouselOpen||STAGES[stageIdx]?.id!=='myth')return;
+     startMythDriver(mythInstance);
+    }catch(err){
+     lastAction='青丘場景載入提示：'+(err?.message||'請稍候');
+     updateHudText();
+    }
+   }else{
+    startMythDriver(null);
+   }
+  }else{
+   mythBox.hidden=true;
+   frame.hidden=false;
+   const shells=await loadShells();
+   if(!carouselOpen||STAGES[stageIdx]?.id!==stage.id)return;
+   const rawHtml=shells[stage.page]||'';
+   if(rawHtml){
+    frame.srcdoc=buildSrcdoc(rawHtml,stage.page==='Map'?'map':stage.page,stage.params||{});
+   }else if(typeof ZH.url==='function'){
+    frame.src=ZH.url(stage.page==='Map'?'map':stage.page,{...(stage.params||{}),demo:'1',showcase:'1'});
+   }
+  }
+
+  clearInterval(progressTimer);
+  progressTimer=setInterval(()=>{
+   if(!carouselOpen||paused){stageStart+=250;return;}
+   const elapsed=Date.now()-stageStart;
+   const pct=Math.min(100,(elapsed/stageDuration)*100);
+   const bar=overlayEl?.querySelector('[data-sc-bar]');
+   if(bar)bar.style.width=pct.toFixed(1)+'%';
+   updateHudText();
+   if(elapsed>=stageDuration)nextStage();
+  },250);
+ }
+
+ function nextStage(){
+  return switchStage((stageIdx+1)%STAGES.length);
+ }
+
+ async function open(startIndex=0){
+  carouselOpen=true;
+  paused=false;
+  const ui=ensureOverlay();
+  ui.hidden=false;
+  ui.classList.remove('is-paused');
+  await switchStage(typeof startIndex==='string'?Math.max(0,STAGES.findIndex(s=>s.id===startIndex||s.page===startIndex)):Number(startIndex)||0);
+  return true;
+ }
+
+ function close(){
+  carouselOpen=false;
+  paused=false;
+  disposeActiveStage();
+  clearInterval(progressTimer);progressTimer=null;
+  if(cursorEl)cursorEl.classList.remove('is-on');
+  if(overlayEl)overlayEl.hidden=true;
+ }
+
+ w.addEventListener('message',event=>{
+  const d=event?.data;
+  if(!d||d.type!=='zh:showcase-step')return;
+  actionCount++;
+  if(d.highlight)lastHighlight=d.highlight;
+  if(d.action)lastAction=d.action;
+  updateHudText();
+ });
+
+ ZH.showcase={
+  version:'1.0.0',
+  stages:STAGES,
+  open,
+  close,
+  next:nextStage,
+  switchStage,
+  pause:()=>{paused=true;},
+  resume:()=>{paused=false;},
+  isActive:()=>isIsolated(),
+  inspect:()=>({open:carouselOpen,childMode,paused,stageIdx,stage:STAGES[stageIdx]?.id||null,actionCount,lastHighlight,lastAction}),
+  _startWeizhengDriver:startWeizhengDriver,
+  _startMythDriver:startMythDriver,
+  _startChuhanDriver:startChuhanDriver
+ };
+
+ ZH.ready?.(()=>{
+  document.querySelectorAll('[data-showcase-open]').forEach(btn=>{
+   btn.addEventListener('click',()=>open(btn.dataset.showcaseOpen||0));
+  });
+  const pg=String(boot.page||'hub');
+  if(childMode){
+   if(pg==='S_cq08_weizheng')startWeizhengDriver();
+   else if(pg==='map'||pg==='Map')startChuhanDriver();
+  }else if(String(params.showcase||params.demo||'')==='1'&&pg==='hub'){
+   open(0);
+  }
+ });
+})(window);
+</script>

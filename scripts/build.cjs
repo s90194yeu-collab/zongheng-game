@@ -59,6 +59,7 @@ const godotApp=esbuild.buildSync({entryPoints:[path.join(root,'src/godot/app.js'
 const godotAssets={version:1,entry:godotBundle.entry,app:academyAsset('godot-app',godotApp),css:academyAsset('godot-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/godot/style.css'),'utf8'),{loader:'css',minify:true}).code)};
 const mythApp=esbuild.buildSync({entryPoints:[path.join(root,'src/myth/app.js')],bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020'}).outputFiles[0].text;
 const mythAssets={version:1,entry:godotBundle.entry,app:academyAsset('myth-app',mythApp),css:academyAsset('myth-style',esbuild.transformSync(fs.readFileSync(path.join(root,'src/myth/style.css'),'utf8'),{loader:'css',minify:true}).code)};
+const showcaseAssets={version:config.version,release,siteUrl:config.siteUrl,shellsUrl:'assets/showcase-shells.json',anchors:{}};
 const media={},home={};
 for(const [id,entry]of Object.entries(manifest.entries)){
  const file=path.join(dist,'media',entry.file);if(!fs.existsSync(file))throw Error('缺少素材：'+entry.file);
@@ -93,6 +94,7 @@ function read(name){let text=raw(name);
  }
  if(name==='Core_js')text+='\n'+raw('Teacher_preview')+'\n<script>window.ZH_ACADEMY_ASSETS='+JSON.stringify(academyAssets)+';</script>\n'+raw('Academy_boot');
  if(name==='Core_js')text+='\n<script>window.ZH_CHARACTER_ASSETS='+JSON.stringify(characterAssets)+';</script>\n'+raw('Character_boot');
+ if(name==='Core_js')text+='\n<script>window.ZH_SHOWCASE_ASSETS='+JSON.stringify(showcaseAssets)+';</script>\n'+raw('Showcase_boot');
  return text;
 }
 function environment(){
@@ -136,6 +138,7 @@ for(const s of chapters)localAnchors[s.id]=(registry[s.id]?.anchors||central[s.i
 const studyChapters={...require('./generate-zhuzi.cjs').chapters,...require('./generate-classics.cjs').chapters,...require('./generate-a-selections.cjs').chapters};
 const activityEnv={window:{}};vm.createContext(activityEnv);vm.runInContext(raw('Textplay_data').replace(/<\/?script>/g,''),activityEnv);
 academyAssets.data=academyAsset('academy-data',JSON.stringify(require('../src/academy/content.cjs').makeData(chapters,studyChapters,localAnchors,activityEnv.window.ZH_TEXTPLAY.activities)));
+showcaseAssets.anchors.S_cq08_weizheng=localAnchors.S_cq08_weizheng||[];
 fs.writeFileSync(path.join(root,'qa/anchors.json'),JSON.stringify(localAnchors));
 const routes={Hub:'hub',Profile:'profile',Gallery:'gallery',Map:'map',Result:'result',Teacher:'teacher',...Object.fromEntries(chapters.map(s=>[s.id,s.id]))};
 const pages={};fs.mkdirSync(path.join(releaseDir,'pages'),{recursive:true});
@@ -144,6 +147,7 @@ for(const [name,page]of Object.entries(routes)){
  const file='pages/'+name+'.html';fs.writeFileSync(path.join(releaseDir,file),html);
  pages[name]={file,sha256:hash(html),bytes:Buffer.byteLength(html)};
 }
+fs.writeFileSync(path.join(dist,'assets/showcase-shells.json'),JSON.stringify({S_cq08_weizheng:fs.readFileSync(path.join(releaseDir,'pages/S_cq08_weizheng.html'),'utf8'),Map:fs.readFileSync(path.join(releaseDir,'pages/Map.html'),'utf8')}));
 const result={release,version:config.version,myth:mythAssets,character3d:character3dAssets,village:villageAssets,godotVillage:{...godotAssets,engine:godotBundle.engine,estimatedTransferBytes:godotBundle.estimatedTransferBytes,files:godotBundle.files},chapterCount:chapters.length,activeChapterCount:chapters.filter(c=>!c.legacyOnly).length,mediaCount:Object.keys(media).length,homeCount:4,musicCount:7,pages};
 fs.writeFileSync(path.join(releaseDir,'manifest.json'),JSON.stringify(result,null,2));
 fs.writeFileSync(path.join(dist,'release.json'),JSON.stringify({release,manifest:'releases/'+release+'/manifest.json'},null,2));
