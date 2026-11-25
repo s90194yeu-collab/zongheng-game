@@ -13,16 +13,21 @@ export function heroSelection(appearance={}){
   hairColor:Object.hasOwn(HAIR,appearance.hairColor)?appearance.hairColor:'ink',
   skin:Object.hasOwn(SKIN,appearance.skin)?appearance.skin:'warm'};
 }
-export function isHero(root){let found=false;root.traverse(o=>{if(['zongheng-hero-v1','zongheng-anime-v1'].includes(o.userData?.assetId))found=true;});return found;}
+export function isHero(root){let found=false;root.traverse(o=>{if(['zongheng-hero-v1','zongheng-anime-v1','zongheng-hero-ai-v1'].includes(o.userData?.assetId))found=true;});return found;}
+export function isAiHero(root){let found=false;root.traverse(o=>{if(o.userData?.assetId==='zongheng-hero-ai-v1')found=true;});return found;}
 export function heroMetadata(object){
  const result={};for(let o=object;o;o=o.parent)for(const key of ['assetId','body','outfit'])if(result[key]===undefined&&o.userData?.[key]!==undefined)result[key]=o.userData[key];
  return result;
 }
 export function applyHeroAppearance(root,appearance={}){
- let modelBody;root.traverse(o=>{if(o.userData?.assetId==='zongheng-anime-v1'&&['male','female'].includes(o.userData.body))modelBody=o.userData.body;});
- const look=heroSelection({...appearance,...(modelBody?{body:modelBody}:{})});let visibleTriangles=0,visibleMeshes=0;
+ let modelBody,modelOutfit,ai=false;root.traverse(o=>{
+  if(o.userData?.assetId==='zongheng-anime-v1'&&['male','female'].includes(o.userData.body))modelBody=o.userData.body;
+  if(o.userData?.assetId==='zongheng-hero-ai-v1'){ai=true;if(['male','female'].includes(o.userData.body))modelBody=o.userData.body;if(HERO_OUTFITS.includes(o.userData.outfit))modelOutfit=o.userData.outfit;}
+ });
+ const look=heroSelection({...appearance,...(modelBody?{body:modelBody}:{}),...(modelOutfit?{outfit:modelOutfit}:{})});let visibleTriangles=0,visibleMeshes=0;
  root.traverse(o=>{
   if(!o.isMesh)return;
+  if(ai){o.visible=true;visibleMeshes++;visibleTriangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;return;}
   const outfit=heroMetadata(o).outfit||'shared';o.visible=outfit==='shared'||outfit===look.outfit;
   if(o.visible){visibleMeshes++;visibleTriangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;}
   for(const m of Array.isArray(o.material)?o.material:[o.material]){

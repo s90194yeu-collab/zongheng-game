@@ -16,6 +16,7 @@ for(const file of fs.readdirSync(path.join(root,'src/character3d')).sort())finge
 fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'))));
 for(const file of ['hero-scholar.glb','hero-scholar-mobile.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 for(const file of ['anime-male.glb','anime-male-mobile.glb','anime-female.glb','anime-female-mobile.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
+for(const body of ['male','female'])for(const outfit of ['scholar','traveler','armor'])for(const suffix of ['','-mobile'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',`hero-ai-${body}-${outfit}${suffix}.glb`))));
 for(const file of fs.readdirSync(path.join(root,'src/village')).sort())fingerprints.push(hash(fs.readFileSync(path.join(root,'src/village',file))));
 for(const file of ['orbit-village.glb','museum-interior.glb','spring-interior.glb'])fingerprints.push(hash(fs.readFileSync(path.join(root,'public/models',file))));
 const godotBundle=JSON.parse(fs.readFileSync(path.join(root,'public/godot/release.json'),'utf8'));
@@ -43,14 +44,21 @@ const character3dApp=esbuild.buildSync({stdin:{contents:character3dSource,resolv
 const character3dModel=fs.readFileSync(path.join(root,'public/models/scholar-pilot.glb'));
 const character3dModelFile='models/scholar-pilot-'+hash(character3dModel).slice(0,16)+'.glb';
 fs.mkdirSync(path.join(dist,'models'),{recursive:true});fs.writeFileSync(path.join(dist,character3dModelFile),character3dModel);
-const character3dAssets={version:1,app:academyAsset('character3d-app',character3dApp),model:character3dModelFile};
+const character3dAssets={version:1,app:academyAsset('character3d-app',character3dApp),model:character3dModelFile,ai:{},aiMobile:{}};
 for(const [key,name] of Object.entries({hero:'anime-male',heroMobile:'anime-male-mobile',heroFemale:'anime-female',heroFemaleMobile:'anime-female-mobile'})){
  const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';
  fs.writeFileSync(path.join(dist,file),bytes);character3dAssets[key]=file;
 }
+for(const body of ['male','female'])for(const outfit of ['scholar','traveler','armor']){
+ const k=`${body}_${outfit}`,dName=`hero-ai-${body}-${outfit}`,mName=`${dName}-mobile`;
+ const dBytes=fs.readFileSync(path.join(root,'public/models',dName+'.glb')),dFile=`models/${dName}-${hash(dBytes).slice(0,16)}.glb`;
+ fs.writeFileSync(path.join(dist,dFile),dBytes);character3dAssets.ai[k]=dFile;
+ const mBytes=fs.readFileSync(path.join(root,'public/models',mName+'.glb')),mFile=`models/${mName}-${hash(mBytes).slice(0,16)}.glb`;
+ fs.writeFileSync(path.join(dist,mFile),mBytes);character3dAssets.aiMobile[k]=mFile;
+}
 const villageSource=fs.readFileSync(path.join(root,'src/village/app.js'),'utf8').replace(/from 'three\/addons\/([^']+)'/g,(_,file)=>'from '+JSON.stringify(require.resolve('three/addons/'+file)));
 const villageApp=esbuild.buildSync({stdin:{contents:villageSource,resolveDir:path.join(root,'src/village'),sourcefile:'app.js'},bundle:true,format:'esm',minify:true,charset:'utf8',legalComments:'none',write:false,target:'es2020',external:['three']}).outputFiles[0].text.replace(/from"three"/g,'from"./three-r180.min.js"');
-const villageModels={character:character3dModelFile,hero:character3dAssets.heroMobile,heroFemale:character3dAssets.heroFemaleMobile};
+const villageModels={character:character3dModelFile,hero:character3dAssets.heroMobile,heroFemale:character3dAssets.heroFemaleMobile,...Object.fromEntries(Object.entries(character3dAssets.aiMobile).map(([k,v])=>['ai_'+k,v]))};
 for(const [key,name]of Object.entries({exterior:'orbit-village',interior:'museum-interior',springInterior:'spring-interior'})){
  const bytes=fs.readFileSync(path.join(root,'public/models',name+'.glb')),file='models/'+name+'-'+hash(bytes).slice(0,16)+'.glb';fs.writeFileSync(path.join(dist,file),bytes);villageModels[key]=file;
 }

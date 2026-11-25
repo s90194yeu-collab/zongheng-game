@@ -1,12 +1,41 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import {isHero,applyHeroAppearance} from './appearance.js';
+import {isHero,isAiHero,applyHeroAppearance} from './appearance.js';
 import {isAnime,prepareAnime,animeClips} from './anime.js';
 
 const CLIPS = Object.freeze({idle:'Idle',run:'Run',bow:'Bow'});
 const COLORS = Object.freeze({jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'});
 export { CLIPS, COLORS };
+
+function measureModelBox(model){
+  const boneBox=new THREE.Box3();
+  model.updateMatrixWorld(true);
+  model.traverse(o=>{if(o.isBone)boneBox.expandByPoint(o.getWorldPosition(new THREE.Vector3()));});
+  const meshBox=new THREE.Box3().setFromObject(model,true);
+  const meshH=meshBox.max.y-meshBox.min.y;
+  if(!boneBox.isEmpty()&&(!Number.isFinite(meshH)||meshH<.2||meshH>4))return boneBox;
+  return meshBox;
+}
+
+function prepareAiHero(model,maxAniso=4){
+  model.traverse(o=>{
+    if(!o.isMesh)return;
+    o.castShadow=true;o.receiveShadow=false;
+    if(o.isSkinnedMesh)o.frustumCulled=false;
+    for(const m of Array.isArray(o.material)?o.material:[o.material]){
+      if(!m||!m.isMeshStandardMaterial)continue;
+      m.metalnessMap=null;m.metalness=0;m.roughness=m.roughnessMap?.92:.85;
+      if(m.map){
+        m.map.anisotropy=maxAniso;
+        m.emissive=new THREE.Color(0xffffff);m.emissiveMap=m.map;m.emissiveIntensity=.14;
+      }
+      if(m.normalMap)m.normalMap.anisotropy=maxAniso;
+      if(m.roughnessMap)m.roughnessMap.anisotropy=maxAniso;
+      m.needsUpdate=true;
+    }
+  });
+}
 
 function release(root) {
   const geometries=new Set(),materials=new Set(),textures=new Set(),skeletons=new Set();
@@ -52,16 +81,17 @@ export async function createPreview(host, {modelUrl,color='jade',appearance={},q
 }
 
 function mount(host,model,clips,{color,appearance,quality,onState}) {
-  const anime=isAnime(model);if(anime){prepareAnime(model);clips=animeClips(model,clips);}
+  const anime=isAnime(model),aiHero=isAiHero(model);if(anime){prepareAnime(model);clips=animeClips(model,clips);}
   let renderer;
   const scene=new THREE.Scene(),canvas=document.createElement('canvas');
   canvas.className='c3-canvas';canvas.tabIndex=0;
-  canvas.setAttribute('aria-label',(anime?'動漫角色':'古風策士')+'立體試看；拖曳旋轉、雙指或滾輪縮放，方向鍵旋轉，加減鍵縮放，Home回正。');
+  canvas.setAttribute('aria-label',(anime||aiHero?'動漫角色':'古風策士')+'立體試看；拖曳旋轉、雙指或滾輪縮放，方向鍵旋轉，加減鍵縮放，Home回正。');
   try {renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'default'});}
   catch(error){release(model);throw Error('目前無法開啟立體試看，請返回我的造型，或換個瀏覽器再試。');}
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  if(aiHero){const maxA=Math.min(8,renderer.capabilities?.getMaxAnisotropy?.()||4);prepareAiHero(model,maxA);}
   scene.background=new THREE.Color('#172e36');
   scene.add(new THREE.HemisphereLight('#fff0d8','#6b8b91',1.8));
   const sun=new THREE.DirectionalLight('#ffedc5',2.5);sun.position.set(-3,5,4);sun.castShadow=true;
@@ -89,14 +119,15 @@ function mount(host,model,clips,{color,appearance,quality,onState}) {
     object.material=Array.isArray(object.material)?object.material.map(convert):convert(object.material);
   });
   if(hero)lookStats=applyHeroAppearance(model,look);
-  model.updateMatrixWorld(true);
-  const bounds=new THREE.Box3().setFromObject(model,true),size=bounds.getSize(new THREE.Vector3());
+  const bounds=measureModelBox(model),size=bounds.getSize(new THREE.Vector3());
   if(!Number.isFinite(size.y)||size.y<.01){release(scene);renderer.dispose();throw Error('角色尺寸無法辨識。');}
+  if(aiHero&&(size.y<1.45||size.y>1.95)){const targetH=lookStats?.body==='female'?1.65:1.75;model.scale.multiplyScalar(targetH/size.y);model.updateMatrixWorld(true);}
+  const alignedBounds=aiHero?measureModelBox(model):bounds,alignedSize=alignedBounds.getSize(new THREE.Vector3());
   // Wrapper alignment does not overwrite the skeleton's animation tracks.
-  actor.position.set(-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,-(bounds.min.z+bounds.max.z)/2);
-  const camera=new THREE.PerspectiveCamera(35,1,.05,30);camera.position.set(hero?1.5:2.4,hero?1.5:1.8,hero?2.6:3.8);
+  actor.position.set(-(alignedBounds.min.x+alignedBounds.max.x)/2,-alignedBounds.min.y,-(alignedBounds.min.z+alignedBounds.max.z)/2);
+  const camera=new THREE.PerspectiveCamera(35,1,.05,30);camera.position.set(aiHero?.85:hero?1.5:2.4,aiHero?1.38:hero?1.5:1.8,aiHero?3.35:hero?2.6:3.8);
   const controls=new OrbitControls(camera,canvas);
-  controls.target.set(0,.93,0);controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.12;
+  controls.target.set(0,aiHero?.88:.93,0);controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.12;
   controls.minDistance=hero?1.2:2.4;controls.maxDistance=6.5;controls.minPolarAngle=.4;controls.maxPolarAngle=Math.PI*.52;
   controls.update();controls.saveState();
   const mixer=new THREE.AnimationMixer(model),actions={};
@@ -114,6 +145,7 @@ function mount(host,model,clips,{color,appearance,quality,onState}) {
   function setColor(value){
     if(disposed||!Object.hasOwn(COLORS,value))return false;
     colorId=value;for(const entry of cloth){entry.material.color.set(COLORS[value]);if(entry.shade)entry.material.color.multiplyScalar(.72);}
+    if(aiHero){edge.material.color.set(COLORS[value]);fill.color.set(COLORS[value]);fill.intensity=.95;}
     if(hero){look.color=value;lookStats=applyHeroAppearance(model,look);}
     draw();notify();return true;
   }
@@ -166,15 +198,15 @@ function mount(host,model,clips,{color,appearance,quality,onState}) {
     controls.dispose();mixer.removeEventListener('finished',finished);mixer.stopAllAction();mixer.uncacheRoot(model);
     release(scene);sun.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
   }
-  const controller={play,setColor,setAppearance,setQuality,setPaused,dispose,reset(){actor.position.x=-(bounds.min.x+bounds.max.x)/2;actor.position.z=-(bounds.min.z+bounds.max.z)/2;controls.reset();draw();},
+  const controller={play,setColor,setAppearance,setQuality,setPaused,dispose,reset(){actor.position.x=-(alignedBounds.min.x+alignedBounds.max.x)/2;actor.position.z=-(alignedBounds.min.z+alignedBounds.max.z)/2;controls.reset();draw();},
     stop(){play('idle');setPaused(true);},home(){actor.position.x=0;actor.position.z=0;draw();},
     wide(){camera.position.set(2.4,1.8,3.8);controls.target.set(0,.93,0);controls.update();draw();},
     rotate(delta){const offset=camera.position.clone().sub(controls.target).applyAxisAngle(new THREE.Vector3(0,1,0),delta);camera.position.copy(controls.target).add(offset);controls.update();draw();},
     zoom(delta){const offset=camera.position.clone().sub(controls.target),length=THREE.MathUtils.clamp(offset.length()+delta,controls.minDistance,controls.maxDistance);camera.position.copy(controls.target).add(offset.setLength(length));controls.update();draw();},
     move(x,z){const nx=actor.position.x+x,nz=actor.position.z+z;if(Math.hypot(nx,nz)>.7)return false;actor.position.x=nx;actor.position.z=nz;play('walk');draw();return true;},
     snapshot(){if(disposed||lost)throw Error('畫面暫時無法拍照。');draw();return canvas.toDataURL('image/png');},
-    inspect(){return {engine:'three',revision:THREE.REVISION,asset:anime?'zongheng-anime-v1':hero?'zongheng-hero-v1':'scholar-pilot-v1',clips:clips.map(item=>item.name),bones,triangles,hero,anime,appearance:lookStats,contextLost:lost,
-      height:size.y,footY:bounds.min.y+actor.position.y,motion:current,time:actions[current]?.time,
+    inspect(){return {engine:'three',revision:THREE.REVISION,asset:aiHero?'zongheng-hero-ai-v1':anime?'zongheng-anime-v1':hero?'zongheng-hero-v1':'scholar-pilot-v1',clips:clips.map(item=>item.name),bones,triangles,hero,anime,aiHero,appearance:lookStats,contextLost:lost,
+      height:alignedSize.y,footY:alignedBounds.min.y+actor.position.y,motion:current,time:actions[current]?.time,
       clothColor:COLORS[colorId],clothMaterials:cloth.length,colorId,reduced,paused,disposed,lost,
       quality:qualityMode,pixelRatio:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,
       camera:camera.position.toArray(),geometries:renderer.info.memory.geometries};}

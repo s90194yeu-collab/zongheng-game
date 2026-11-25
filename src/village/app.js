@@ -7,7 +7,7 @@ import {artifactFor,mountArtifactViewer} from './artifacts.js';
 import {HALL_GUIDES,createGuideState,advanceGuide,guideStep,recommendChapters} from './guidance.js';
 
 import {createOrbit,rotateOrbit,orbitOffset,cameraMovement,installCameraInput,prepareMuseumWalls} from './camera.js';
-import {isHero,applyHeroAppearance} from '../character3d/appearance.js';
+import {isHero,isAiHero,applyHeroAppearance} from '../character3d/appearance.js';
 import {prepareAnime,animeClips} from '../character3d/anime.js';
 
 const robeColors={jade:'#46745f',ink:'#47627a',amber:'#967342',crane:'#84959f',plum:'#986579',moon:'#77749d',peach:'#c68e91',sky:'#73a2ad'};
@@ -46,7 +46,9 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  }
  try{
   if(signal?.aborted)throw new DOMException('Cancelled','AbortError');
-  const actorAsset=appearance.characterStyle==='hero'&&assets.hero?(appearance.body==='female'&&assets.heroFemale?assets.heroFemale:assets.hero):assets.character;
+  const body=appearance.body==='female'?'female':'male',outfit=['scholar','traveler','armor'].includes(appearance.outfit)?appearance.outfit:'scholar';
+  const aiAsset=appearance.characterStyle==='hero'?assets['ai_'+body+'_'+outfit]:null;
+  const actorAsset=aiAsset||(appearance.characterStyle==='hero'&&assets.hero?(body==='female'&&assets.heroFemale?assets.heroFemale:assets.hero):assets.character);
   [environment,interior,character,spring]=await Promise.all([load(assets.exterior),load(assets.interior),load(actorAsset),load(assets.springInterior)]);
   if(aborter.signal.aborted||!root.isConnected)throw new DOMException('Cancelled','AbortError');
  }catch(error){abort();for(const model of loaded)disposeTree(model);throw Error(signal?.aborted?'已停止載入。':'村莊暫時無法開啟，請重試或返回原選關頁。');}
@@ -69,9 +71,10 @@ export async function mountVillage(root,{assets,catalog=[],canPlay=()=>false,onS
  const plazaShadow=actorShadow.clone();plazaShadow.scale.set(2.8,2.8,1);plazaShadow.position.set(3.6,.055,3);environment.scene.add(plazaShadow);
  const plazaDing=spring.scene.getObjectByName('Artifact_Ding')?.clone(true);if(plazaDing){plazaDing.name='VillageBronzeDing';plazaDing.position.set(3.6,.30,3);plazaDing.scale.setScalar(1.28);environment.scene.add(plazaDing);}
  prepareAnime(character.scene);character.animations=animeClips(character.scene,character.animations);
- const hero=isHero(character.scene),heroLook=hero?applyHeroAppearance(character.scene,appearance):null;
+ const hero=isHero(character.scene),aiHero=isAiHero(character.scene),heroLook=hero?applyHeroAppearance(character.scene,appearance):null;
  character.scene.traverse(o=>{
   if(!o.isMesh)return;o.receiveShadow=false;
+  if(aiHero){if(o.isSkinnedMesh)o.frustumCulled=false;for(const m of Array.isArray(o.material)?o.material:[o.material])if(m?.isMeshStandardMaterial){m.metalnessMap=null;m.metalness=0;m.roughness=.88;if(m.map){m.emissive=new THREE.Color(0xffffff);m.emissiveMap=m.map;m.emissiveIntensity=.16;}m.needsUpdate=true;}return;}
   if(hero)return;
   const convert=m=>{const n=new THREE.MeshToonMaterial({name:m.name,color:m.color.clone(),map:m.map||null,normalMap:m.normalMap||null,alphaMap:m.alphaMap||null,transparent:m.transparent,opacity:m.opacity,alphaTest:m.alphaTest,side:m.side});if(/^Robe_(Main|Shade)$/.test(m.name)){n.color.set(robeColors[color]||robeColors.jade);if(m.name==='Robe_Shade')n.color.multiplyScalar(.72);}m.dispose();return n;};
   o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
